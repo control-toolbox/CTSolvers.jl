@@ -5,11 +5,23 @@ authors = ["Olivier Cots <olivier.cots@toulouse-inp.fr>"]
 
 [deps]
 ADNLPModels = "54578032-b7ea-4c30-94aa-7cbd1cce6c9a"
+CommonSolve = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
 ExaModels = "1037b233-b668-4ce9-9b63-f9f681f55dd2"
 KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
+MadNLP = "2621e9c9-9eb4-46b1-8089-e8c72242dfb6"
+MadNLPMumps = "3b83494e-c0a4-4895-918b-9157a7a085a1"
+NLPModels = "a4795742-8479-5a88-8948-cc11e1c8c1a6"
+NLPModelsIpopt = "f4238b75-b362-5c4c-b852-0801c9a21d71"
+SolverCore = "ff4d7338-4cf1-434d-91df-b86cb86fb843"
 
 [compat]
 ADNLPModels = "0.8.13"
+CommonSolve = "0.2.4"
 ExaModels = "0.9.2"
 KernelAbstractions = "0.9.39"
+MadNLP = "0.8.12"
+MadNLPMumps = "0.5.1"
+NLPModels = "0.21.5"
+NLPModelsIpopt = "0.11.0"
+SolverCore = "0.3.8"
 julia = "1.11"
