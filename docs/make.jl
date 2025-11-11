@@ -13,7 +13,7 @@ cp(
     force=true,
 )
 
-repo_url = "github.com/control-toolbox/CTAppTemplate.jl"
+repo_url = "github.com/control-toolbox/CTSolvers.jl"
 
 makedocs(;
     draft=false, # if draft is true, then the julia code from .md is not executed
@@ -25,7 +25,7 @@ makedocs(;
     =#
     remotes=nothing,
     warnonly=:cross_references,
-    sitename="CTAppTemplate",
+    sitename="CTSolvers",
     format=Documenter.HTML(;
         repolink="https://" * repo_url,
         prettyurls=false,

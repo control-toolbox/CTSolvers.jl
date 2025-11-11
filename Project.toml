@@ -1,7 +1,7 @@
-name = "CTAppTemplate"
-uuid = "eb604665-d64b-4d02-aa6d-8b42324a08dc"
+name = "CTSolvers"
+uuid = "d3e8d392-8e4b-4d9b-8e92-d7d4e3650ef6"
 authors = ["Olivier Cots <olivier.cots@toulouse-inp.fr>"]
-version = "0.2.0"
+version = "0.1.0"
 
 [compat]
 julia = "1.11"

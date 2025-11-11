@@ -1,27 +1,19 @@
-# CTAppTemplate.jl
-
-This repository is a template to create an application or a package for the [control-toolbox ecosystem](https://github.com/control-toolbox). 
-
-The instructions to set up a new application / package are given in discussion https://github.com/control-toolbox/CTAppTemplate.jl/discussions/9.
-
-[![**Click here to follow instructions to use this template!** ⬅️](https://img.shields.io/badge/Click_here_to_follow_instructions_to_use_this_template!-darkgreen)](https://github.com/orgs/control-toolbox/discussions/65)
-
-----
+# CTSolvers.jl
 
 <!-- 
 For instructions on how to customize this README.template.md and use the centralized workflow,
 please see the user guide: https://github.com/orgs/control-toolbox/discussions/67
 -->
 
-The CTAppTemplate.jl repo is part of the [control-toolbox ecosystem](https://github.com/control-toolbox).
+The CTSolvers.jl repo is part of the [control-toolbox ecosystem](https://github.com/control-toolbox).
 
 | **Category** | **Badge** |
 |-----------------------|-----------|
-| **Documentation** | [![Stable Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://control-toolbox.org/CTAppTemplate.jl/stable/) [![Dev Docs](https://img.shields.io/badge/docs-dev-8A2BE2.svg)](https://control-toolbox.org/CTAppTemplate.jl/dev/) |
-| **CI / Build** | [![Build Status](https://github.com/control-toolbox/CTAppTemplate.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/control-toolbox/CTAppTemplate.jl/actions/workflows/CI.yml?query=branch%3Amain) |
-| **Test Coverage** | [![Coverage](https://codecov.io/gh/control-toolbox/CTAppTemplate.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/control-toolbox/CTAppTemplate.jl) |
-| **Release / Version** | [![Release](https://img.shields.io/github/v/release/control-toolbox/CTAppTemplate.jl.svg)](https://github.com/control-toolbox/CTAppTemplate.jl/releases) |
-| **License** | [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/control-toolbox/CTAppTemplate.jl/blob/master/LICENSE) |
+| **Documentation** | [![Stable Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://control-toolbox.org/CTSolvers.jl/stable/) [![Dev Docs](https://img.shields.io/badge/docs-dev-8A2BE2.svg)](https://control-toolbox.org/CTSolvers.jl/dev/) |
+| **CI / Build** | [![Build Status](https://github.com/control-toolbox/CTSolvers.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/control-toolbox/CTSolvers.jl/actions/workflows/CI.yml?query=branch%3Amain) |
+| **Test Coverage** | [![Coverage](https://codecov.io/gh/control-toolbox/CTSolvers.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/control-toolbox/CTSolvers.jl) |
+| **Release / Version** | [![Release](https://img.shields.io/github/v/release/control-toolbox/CTSolvers.jl.svg)](https://github.com/control-toolbox/CTSolvers.jl/releases) |
+| **License** | [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/control-toolbox/CTSolvers.jl/blob/master/LICENSE) |
 | **Code Style / Quality** | [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/JuliaDiff/BlueStyle) [![Aqua.jl](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl) |
 
 ## About control-toolbox
@@ -49,8 +41,8 @@ The **control-toolbox** ecosystem brings together <a href="https://julialang.org
 
 ## Contributing
 
-[issue-url]: https://github.com/control-toolbox/CTAppTemplate.jl/issues
-[first-good-issue-url]: https://github.com/control-toolbox/CTAppTemplate.jl/contribute
+[issue-url]: https://github.com/control-toolbox/CTSolvers.jl/issues
+[first-good-issue-url]: https://github.com/control-toolbox/CTSolvers.jl/contribute
 
 If you think you found a bug or if you have a feature request / suggestion, feel free to open an [issue][issue-url].  
 Before opening a pull request, please start an issue or a discussion on the topic. 

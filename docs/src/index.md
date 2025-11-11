@@ -1,6 +1,6 @@
-# CTAppTemplate
+# CTSolvers
 
-Documentation for [CTAppTemplate](https://github.com/control-toolbox/CTAppTemplate.jl).
+Documentation for [CTSolvers](https://github.com/control-toolbox/CTSolvers.jl).
 
 ## Reproducibility
 
