@@ -1,5 +1,8 @@
 module CTSolvers
 
-greet() = print("Hello World!")
+using ADNLPModels
+using ExaModels
+
+include("models.jl")
 
 end

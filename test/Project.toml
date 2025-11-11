@@ -1,5 +1,8 @@
 [deps]
+ADNLPModels = "54578032-b7ea-4c30-94aa-7cbd1cce6c9a"
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+ExaModels = "1037b233-b668-4ce9-9b63-f9f681f55dd2"
+NLPModels = "a4795742-8479-5a88-8948-cc11e1c8c1a6"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
