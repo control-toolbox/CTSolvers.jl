@@ -8,8 +8,20 @@ on:
   pull_request:
     
 jobs:
-  call:
+  # Job pour les runners GitHub hosted (ubuntu, windows, macos)
+  test-github:
     uses: control-toolbox/CTActions/.github/workflows/ci.yml@main
     with:
-      runners: '["ubuntu-latest"]'
-      versions: '["1.12"]'
+      versions: '["1.10", "1.11", "1.12"]'
+      runs_on: '["ubuntu-latest", "windows-latest"]'
+      archs: '["x64"]'
+      runner_type: 'github'
+
+  # Job pour le runner self-hosted moonshot (GPU/CUDA)
+  test-moonshot:
+    uses: control-toolbox/CTActions/.github/workflows/ci.yml@main
+    with:
+      versions: '["1"]'
+      runs_on: '[["self-hosted", "Linux", "gpu", "cuda", "cuda12"]]'
+      archs: '["x64"]'
+      runner_type: 'self-hosted'
