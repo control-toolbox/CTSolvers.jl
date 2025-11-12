@@ -40,13 +40,14 @@ function CommonSolve.solve(
     initial_guess,
     modeler::AbstractNLPModelBackend,
     solver::AbstractNLPSolverBackend;
+    display::Bool=__display(),
 ):: SolverCore.AbstractExecutionStats
 
     # build the model
     nlp = nlp_model(prob, initial_guess, modeler)
 
     # solve the problem
-    return solver(nlp)
+    return solver(nlp; display=display)
 end
 
 # ------------------------------------------------------------------------------
@@ -79,11 +80,15 @@ struct NLPModelsIpoptBackend{KW} <: AbstractNLPSolverBackend
     end
 end
 
-function (solver::NLPModelsIpoptBackend)(nlp::NLPModels.AbstractNLPModel):: SolverCore.GenericExecutionStats
+function (solver::NLPModelsIpoptBackend)(nlp::NLPModels.AbstractNLPModel; display::Bool):: SolverCore.GenericExecutionStats
+    # If display==false, then set print_level to 0
+    print_level = display ? solver.print_level : 0
+
+    # solve the problem
     return solve_with_ipopt(nlp; 
         max_iter=solver.max_iter, 
-        tol=solver.tol, 
-        print_level=solver.print_level, 
+        tol=solver.tol,
+        print_level=print_level, 
         mu_strategy=solver.mu_strategy, 
         linear_solver=solver.linear_solver, 
         sb=solver.sb,
@@ -116,11 +121,15 @@ struct MadNLPBackend{
     end
 end
 
-function (solver::MadNLPBackend)(nlp::NLPModels.AbstractNLPModel):: MadNLP.MadNLPExecutionStats
+function (solver::MadNLPBackend)(nlp::NLPModels.AbstractNLPModel; display::Bool):: MadNLP.MadNLPExecutionStats
+    # If display==false, then set print_level to MadNLP.ERROR
+    print_level = display ? solver.print_level : MadNLP.ERROR
+
+    # solve the problem
     return solve_with_madnlp(nlp; 
         max_iter=solver.max_iter, 
         tol=solver.tol, 
-        print_level=solver.print_level, 
+        print_level=print_level, 
         linear_solver=solver.linear_solver,
         solver.kwargs... 
     )
@@ -152,12 +161,25 @@ struct MadNCLBackend{
     end
 end
 
-function (solver::MadNCLBackend)(nlp::NLPModels.AbstractNLPModel):: MadNCL.NCLStats
+function (solver::MadNCLBackend{BaseType})(nlp::NLPModels.AbstractNLPModel; display::Bool):: MadNCL.NCLStats where {BaseType<:AbstractFloat}
+
+    # If display==false, then set print_level to MadNLP.ERROR
+    print_level = display ? solver.print_level : MadNLP.ERROR
+
+    # and set the verbose option in ncl_options
+    ncl_options_dict = Dict()
+    for field in fieldnames(MadNCL.NCLOptions)
+        ncl_options_dict[field] = getfield(solver.ncl_options, field)
+    end
+    ncl_options_dict[:verbose] = display
+    ncl_options = MadNCL.NCLOptions{BaseType}(; ncl_options_dict...)
+
+    # solve the problem
     return solve_with_madncl(nlp;
         max_iter=solver.max_iter, 
-        print_level=solver.print_level, 
+        print_level=print_level, 
         linear_solver=solver.linear_solver,
-        ncl_options=solver.ncl_options,
+        ncl_options=ncl_options,
         solver.kwargs... 
     )
 end

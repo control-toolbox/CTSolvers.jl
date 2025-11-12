@@ -1,3 +1,6 @@
+# Common
+__display() = true
+
 # NLPModelsIpopt
 __nlp_models_ipopt_max_iter() = 1000
 __nlp_models_ipopt_tol() = 1e-8
