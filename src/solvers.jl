@@ -30,6 +30,15 @@ function solve_with_madncl(
     return MadNCL.solve!(solver)
 end
 
+# Knitro
+function solve_with_knitro(
+    nlp::NLPModels.AbstractNLPModel;
+    kwargs...,
+):: SolverCore.GenericExecutionStats
+    solver = NLPModelsKnitro.KnitroSolver(nlp; kwargs...)
+    return NLPModelsKnitro.solve!(solver, nlp)
+end
+
 # ------------------------------------------------------------------------------
 # Generic solver method
 # ------------------------------------------------------------------------------
@@ -180,6 +189,42 @@ function (solver::MadNCLBackend{BaseType})(nlp::NLPModels.AbstractNLPModel; disp
         print_level=print_level, 
         linear_solver=solver.linear_solver,
         ncl_options=ncl_options,
+        solver.kwargs... 
+    )
+end
+
+# ------------------------------------------------------------------------------
+# Knitro
+struct KnitroBackend{KW} <: AbstractNLPSolverBackend
+    # attributes
+    maxit::Int
+    feastol_abs::Float64
+    opttol_abs::Float64
+    print_level::Int
+    kwargs::KW
+
+    # constructor
+    function KnitroBackend(;
+        maxit::Int=__nlp_models_knitro_max_iter(),
+        feastol_abs::Float64=__nlp_models_knitro_feastol_abs(),
+        opttol_abs::Float64=__nlp_models_knitro_opttol_abs(),
+        print_level::Int=__nlp_models_knitro_print_level(),
+        kwargs...,
+    )
+        return new{typeof(kwargs)}(maxit, feastol_abs, opttol_abs, print_level, kwargs)
+    end
+end
+
+function (solver::KnitroBackend)(nlp::NLPModels.AbstractNLPModel; display::Bool):: SolverCore.GenericExecutionStats
+    # If display==false, then set print_level to 0
+    print_level = display ? solver.print_level : 0
+
+    # solve the problem
+    return solve_with_knitro(nlp; 
+        maxit=solver.maxit, 
+        feastol_abs=solver.feastol_abs,
+        opttol_abs=solver.opttol_abs,
+        print_level=print_level, 
         solver.kwargs... 
     )
 end

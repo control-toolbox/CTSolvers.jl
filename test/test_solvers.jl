@@ -314,4 +314,25 @@ function test_solvers()
         
     end
 
+    # GPU
+    if is_cuda_on()
+        Test.@testset "GPU" verbose=VERBOSE showtiming=SHOWTIMING begin
+
+            exa_backend = CUDA.CUDABackend()
+            linear_solver = MadNLPGPU.CUDSSSolver
+            modeler = CTSolvers.ExaModelBackend(; backend=exa_backend)
+
+            # MadNLP
+            solver = CTSolvers.MadNLPBackend(; linear_solver=linear_solver)
+            sol = CommonSolve.solve(elec_prob, elec_init, modeler, solver)
+            Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+
+            # MadNCL
+            solver = CTSolvers.MadNCLBackend(; linear_solver=linear_solver)
+            sol = CommonSolve.solve(elec_prob, elec_init, modeler, solver)
+            Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+
+        end
+    end
+
 end

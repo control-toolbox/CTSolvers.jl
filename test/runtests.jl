@@ -11,6 +11,11 @@ using MadNLP
 using MadNLPMumps
 using CTBase
 using MadNCL
+using CUDA
+using MadNLPGPU
+
+# CUDA
+is_cuda_on() = CUDA.functional()
 
 # ------------------------------------------------------------------------------
 # Problems definition

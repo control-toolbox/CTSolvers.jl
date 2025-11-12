@@ -27,3 +27,9 @@ __mad_ncl_ncl_options() = MadNCL.NCLOptions{Float64}(
     # rho_init=1e1,       # initial augmented Lagrangian penalty
     # max_auglag_iter=20, # maximum number of outer iterations
 )
+
+# Knitro
+__nlp_models_knitro_max_iter() = 1000
+__nlp_models_knitro_feastol_abs() = 1e-8
+__nlp_models_knitro_opttol_abs() = 1e-8
+__nlp_models_knitro_print_level() = 3
