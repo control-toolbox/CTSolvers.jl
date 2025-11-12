@@ -88,8 +88,14 @@ version = "1.1.2"
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 version = "1.11.0"
 
+[[deps.CTBase]]
+deps = ["DocStringExtensions"]
+git-tree-sha1 = "ebc7d07d0bf4db7a841c5e7d51b4271bcf1e921c"
+uuid = "54762871-cc72-4466-b8e8-f6c8b58076cd"
+version = "0.16.2"
+
 [[deps.CTSolvers]]
-deps = ["ADNLPModels", "CommonSolve", "ExaModels", "KernelAbstractions", "MadNLP", "MadNLPMumps", "NLPModels", "NLPModelsIpopt", "SolverCore"]
+deps = ["ADNLPModels", "CTBase", "CommonSolve", "ExaModels", "KernelAbstractions", "MadNCL", "MadNLP", "MadNLPMumps", "NLPModels", "NLPModelsIpopt", "SolverCore"]
 path = "/home/runner/work/CTSolvers.jl/CTSolvers.jl"
 uuid = "d3e8d392-8e4b-4d9b-8e92-d7d4e3650ef6"
 version = "0.1.0"
@@ -457,6 +463,18 @@ version = "500.800.100+0"
 git-tree-sha1 = "1e0228a030642014fe5cfe68c2c0a818f9e3f522"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 version = "0.5.16"
+
+[[deps.MadNCL]]
+deps = ["Atomix", "KernelAbstractions", "LinearAlgebra", "MadNLP", "NLPModels", "Printf", "Random", "SparseArrays"]
+git-tree-sha1 = "689a940bed463a66dada94a146695a42ff66b3cd"
+uuid = "434a0bcb-5a7c-42b2-a9d3-9e3f760e7af0"
+version = "0.1.1"
+
+    [deps.MadNCL.extensions]
+    MadNCLCUDAExt = ["MadNLPGPU"]
+
+    [deps.MadNCL.weakdeps]
+    MadNLPGPU = "d72a61cc-809d-412f-99be-fd81f4b8a598"
 
 [[deps.MadNLP]]
 deps = ["LDLFactorizations", "LinearAlgebra", "Logging", "NLPModels", "Pkg", "Printf", "SolverCore", "SparseArrays", "SuiteSparse"]
