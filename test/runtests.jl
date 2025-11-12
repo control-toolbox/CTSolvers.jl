@@ -16,6 +16,11 @@ using MadNLPGPU
 
 # CUDA
 is_cuda_on() = CUDA.functional()
+if is_cuda_on()
+    println("✓ CUDA functional, GPU benchmarks enabled")
+else
+    println("⚠️  CUDA not functional, GPU models will be skipped")
+end
 
 # ------------------------------------------------------------------------------
 # Problems definition
