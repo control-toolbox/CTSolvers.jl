@@ -5,18 +5,16 @@
 
 # NLPModelsIpopt
 function solve_with_ipopt(
-    nlp::NLPModels.AbstractNLPModel;
-    kwargs...,
-):: SolverCore.GenericExecutionStats
+    nlp::NLPModels.AbstractNLPModel; kwargs...
+)::SolverCore.GenericExecutionStats
     solver = NLPModelsIpopt.IpoptSolver(nlp)
     return NLPModelsIpopt.solve!(solver, nlp; kwargs...)
 end
 
 # MadNLP
 function solve_with_madnlp(
-    nlp::NLPModels.AbstractNLPModel;
-    kwargs...,
-):: MadNLP.MadNLPExecutionStats
+    nlp::NLPModels.AbstractNLPModel; kwargs...
+)::MadNLP.MadNLPExecutionStats
     solver = MadNLP.MadNLPSolver(nlp; kwargs...)
     return MadNLP.solve!(solver)
 end
@@ -57,20 +55,21 @@ function CommonSolve.solve(
     initial_guess,
     modeler::AbstractNLPModelBackend,
     solver::NLPModelsIpoptBackend;
-):: SolverCore.GenericExecutionStats
+)::SolverCore.GenericExecutionStats
 
     # build the model
     nlp = build_model(prob, initial_guess, modeler)
 
     # solve the problem
-    return solve_with_ipopt(nlp; 
-        max_iter=solver.max_iter, 
-        tol=solver.tol, 
-        print_level=solver.print_level, 
-        mu_strategy=solver.mu_strategy, 
-        linear_solver=solver.linear_solver, 
+    return solve_with_ipopt(
+        nlp;
+        max_iter=solver.max_iter,
+        tol=solver.tol,
+        print_level=solver.print_level,
+        mu_strategy=solver.mu_strategy,
+        linear_solver=solver.linear_solver,
         sb=solver.sb,
-        solver.kwargs... 
+        solver.kwargs...,
     )
 end
 
@@ -101,17 +100,18 @@ function CommonSolve.solve(
     initial_guess,
     modeler::AbstractNLPModelBackend,
     solver::MadNLPBackend;
-):: MadNLP.MadNLPExecutionStats
-    
+)::MadNLP.MadNLPExecutionStats
+
     # build the model
     nlp = build_model(prob, initial_guess, modeler)
 
     # solve the problem
-    return solve_with_madnlp(nlp; 
-        max_iter=solver.max_iter, 
-        tol=solver.tol, 
-        print_level=solver.print_level, 
+    return solve_with_madnlp(
+        nlp;
+        max_iter=solver.max_iter,
+        tol=solver.tol,
+        print_level=solver.print_level,
         linear_solver=solver.linear_solver,
-        solver.kwargs... 
+        solver.kwargs...,
     )
 end
