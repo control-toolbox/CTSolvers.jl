@@ -9,14 +9,25 @@ using NLPModels
 using CommonSolve
 using MadNLP
 using MadNLPMumps
+using CTBase
+using MadNCL
 
 # ------------------------------------------------------------------------------
 # Problems definition
-struct OptimizationProblem <: CTSolvers.AbstractOptimizationProblem
-    build_adnlp_model::CTSolvers.ADNLPProblem
-    build_exa_model::CTSolvers.ExaProblem
+struct OptimizationProblem <: CTSolvers.AbstractCTOptimizationProblem
+    build_adnlp_model::CTSolvers.ADNLPModelBuilder
+    build_exa_model::CTSolvers.ExaModelBuilder
+end
+function CTSolvers.get_build_adnlp_model(prob::OptimizationProblem)
+    return prob.build_adnlp_model
+end
+function CTSolvers.get_build_exa_model(prob::OptimizationProblem)
+    return prob.build_exa_model
 end
 include("rosenbrock.jl")
+include("elec.jl")
+
+struct DummyProblem <: CTSolvers.AbstractCTOptimizationProblem end
 
 # ------------------------------------------------------------------------------
 # Tests
