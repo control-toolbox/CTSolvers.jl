@@ -32,22 +32,24 @@ module CTSolversIpopt
         sb::String=__nlp_models_ipopt_sb(),
         kwargs...,
     )
-        return CTSolvers.NLPModelsIpoptBackend(Dict(
-            :max_iter => max_iter,
-            :tol => tol,
-            :print_level => print_level,
-            :mu_strategy => mu_strategy,
-            :linear_solver => linear_solver,
-            :sb => sb,
-            kwargs...,
-        ))
+        return CTSolvers.NLPModelsIpoptBackend(
+            (
+                :max_iter => max_iter,
+                :tol => tol,
+                :print_level => print_level,
+                :mu_strategy => mu_strategy,
+                :linear_solver => linear_solver,
+                :sb => sb,
+                kwargs...,
+            )
+        )
     end
 
     function (solver::CTSolvers.NLPModelsIpoptBackend)(
         nlp::NLPModels.AbstractNLPModel; 
         display::Bool,
     )::SolverCore.GenericExecutionStats
-        options = solver.options
+        options = Dict(solver.options)
         options[:print_level] = display ? options[:print_level] : 0
         return CTSolvers.solve_with_ipopt(nlp; options...)
     end

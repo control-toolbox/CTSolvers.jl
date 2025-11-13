@@ -28,20 +28,22 @@ module CTSolversKnitro
         print_level::Int=__nlp_models_knitro_print_level(),
         kwargs...,
     )
-        return CTSolvers.KnitroBackend(Dict(
-            :maxit => maxit,
-            :feastol_abs => feastol_abs,
-            :opttol_abs => opttol_abs,
-            :print_level => print_level,
-            kwargs...,
-        ))
+        return CTSolvers.KnitroBackend(
+            (
+                :maxit => maxit,
+                :feastol_abs => feastol_abs,
+                :opttol_abs => opttol_abs,
+                :print_level => print_level,
+                kwargs...,
+            )
+        )
     end
 
     function (solver::CTSolvers.KnitroBackend)(
         nlp::NLPModels.AbstractNLPModel; 
         display::Bool
     )::SolverCore.GenericExecutionStats
-        options = solver.options
+        options = Dict(solver.options)
         options[:print_level] = display ? options[:print_level] : 0
         return CTSolvers.solve_with_knitro(nlp; options...)
     end

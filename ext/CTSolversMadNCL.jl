@@ -37,7 +37,7 @@ module CTSolversMadNCL
         ncl_options::MadNCL.NCLOptions{BaseType}=__mad_ncl_ncl_options(),
         kwargs...,
     ) where {BaseType<:AbstractFloat}
-        options = Dict(
+        options = (
             :max_iter => max_iter,
             :print_level => print_level,
             :linear_solver => linear_solver,
@@ -52,7 +52,7 @@ module CTSolversMadNCL
         display::Bool
     )::MadNCL.NCLStats where {BaseType<:AbstractFloat}
         # options control
-        options = solver.options
+        options = Dict(solver.options)
         if !display
             options[:print_level] = MadNLP.ERROR    
             ncl_options_dict = Dict()

@@ -294,8 +294,8 @@ function test_solvers()
         end
     end
 
-    # All default
-    Test.@testset "Default values" verbose=VERBOSE showtiming=SHOWTIMING begin
+    # Default options
+    Test.@testset "Default options" verbose=VERBOSE showtiming=SHOWTIMING begin
 
         if :ipopt in SOLVERS_RUNTESTS[:default]
             Test.@testset "NLPModelsIpopt" verbose=VERBOSE showtiming=SHOWTIMING begin

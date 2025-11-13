@@ -34,11 +34,7 @@ function CommonSolve.solve(
     solver::AbstractNLPSolverBackend;
     display::Bool=__display(),
 ):: SolverCore.AbstractExecutionStats
-
-    # build the model
     nlp = nlp_model(prob, initial_guess, modeler)
-
-    # solve the problem
     return solver(nlp; display=display)
 end
 
@@ -46,26 +42,22 @@ end
 # Solver backends
 # ------------------------------------------------------------------------------
 
-# ------------------------------------------------------------------------------
 # NLPModelsIpopt
-struct NLPModelsIpoptBackend{T<:Dict{Symbol, Any}} <: AbstractNLPSolverBackend
+struct NLPModelsIpoptBackend{T<:Tuple} <: AbstractNLPSolverBackend
     options::T
 end
 
-# ------------------------------------------------------------------------------
 # MadNLP
-struct MadNLPBackend{T<:Dict{Symbol, Any}} <: AbstractNLPSolverBackend
+struct MadNLPBackend{T<:Tuple} <: AbstractNLPSolverBackend
     options::T
 end
 
-# ------------------------------------------------------------------------------
 # MadNCL
-struct MadNCLBackend{BaseType<:AbstractFloat, T<:Dict{Symbol, Any}} <: AbstractNLPSolverBackend
+struct MadNCLBackend{BaseType<:AbstractFloat, T<:Tuple} <: AbstractNLPSolverBackend
     options::T
 end
 
-# ------------------------------------------------------------------------------
 # Knitro
-struct KnitroBackend{T<:Dict{Symbol, Any}} <: AbstractNLPSolverBackend
+struct KnitroBackend{T<:Tuple} <: AbstractNLPSolverBackend
     options::T
 end

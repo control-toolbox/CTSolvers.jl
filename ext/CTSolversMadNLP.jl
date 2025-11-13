@@ -28,20 +28,22 @@ module CTSolversMadNLP
         linear_solver::Type{<:MadNLP.AbstractLinearSolver}=__mad_nlp_linear_solver(),
         kwargs...,
     )
-        return CTSolvers.MadNLPBackend(Dict(
-            :max_iter => max_iter,
-            :tol => tol,
-            :print_level => print_level,
-            :linear_solver => linear_solver,
-            kwargs...,
-        ))
+        return CTSolvers.MadNLPBackend(
+            (
+                :max_iter => max_iter,
+                :tol => tol,
+                :print_level => print_level,
+                :linear_solver => linear_solver,
+                kwargs...,
+            )
+        )
     end
 
     function (solver::CTSolvers.MadNLPBackend)(
         nlp::NLPModels.AbstractNLPModel; 
         display::Bool
     )::MadNLP.MadNLPExecutionStats
-        options = solver.options
+        options = Dict(solver.options)
         options[:print_level] = display ? options[:print_level] : MadNLP.ERROR
         return CTSolvers.solve_with_madnlp(nlp; options...)
     end
