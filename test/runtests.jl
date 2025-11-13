@@ -6,7 +6,6 @@ using ADNLPModels
 using ExaModels
 using NLPModels
 using CommonSolve
-using MadNLPMumps
 using CUDA
 using MadNLPGPU
 
@@ -18,6 +17,7 @@ end
 
 # Load extensions
 using NLPModelsIpopt
+using MadNLPMumps
 using MadNLP
 using MadNCL
 using NLPModelsKnitro
