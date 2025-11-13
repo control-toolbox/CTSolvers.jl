@@ -25,12 +25,6 @@ version = "1.18.0"
     ConstructionBase = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
     EnzymeCore = "f151be2c-9106-41f4-ab19-57ee4f262869"
 
-[[deps.AMD]]
-deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse_jll"]
-git-tree-sha1 = "45a1272e3f809d36431e57ab22703c6896b8908f"
-uuid = "14f7f29c-3bd6-536c-9a0b-7339e30b5a3e"
-version = "0.5.3"
-
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
 uuid = "a4c015fc-c6ff-483c-b24f-f7ea428134e9"
@@ -89,7 +83,7 @@ uuid = "54762871-cc72-4466-b8e8-f6c8b58076cd"
 version = "0.16.2"
 
 [[deps.CTSolvers]]
-deps = ["ADNLPModels", "CTBase", "CommonSolve", "ExaModels", "KernelAbstractions", "MadNLPMumps", "NLPModels", "SolverCore"]
+deps = ["ADNLPModels", "CTBase", "CommonSolve", "ExaModels", "KernelAbstractions", "NLPModels", "SolverCore"]
 path = "/home/runner/work/CTSolvers.jl/CTSolvers.jl"
 uuid = "d3e8d392-8e4b-4d9b-8e92-d7d4e3650ef6"
 version = "0.1.0"
@@ -97,12 +91,13 @@ version = "0.1.0"
     [deps.CTSolvers.extensions]
     CTSolversIpopt = "NLPModelsIpopt"
     CTSolversKnitro = "NLPModelsKnitro"
-    CTSolversMadNCL = ["MadNCL", "MadNLP"]
-    CTSolversMadNLP = "MadNLP"
+    CTSolversMadNCL = ["MadNCL", "MadNLP", "MadNLPMumps"]
+    CTSolversMadNLP = ["MadNLP", "MadNLPMumps"]
 
     [deps.CTSolvers.weakdeps]
     MadNCL = "434a0bcb-5a7c-42b2-a9d3-9e3f760e7af0"
     MadNLP = "2621e9c9-9eb4-46b1-8089-e8c72242dfb6"
+    MadNLPMumps = "3b83494e-c0a4-4895-918b-9157a7a085a1"
     NLPModelsIpopt = "f4238b75-b362-5c4c-b852-0801c9a21d71"
     NLPModelsKnitro = "bec4dd0d-7755-52d5-9a02-22f0ffc7efcb"
 
@@ -336,12 +331,6 @@ version = "0.9.39"
     LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
     SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
-[[deps.LDLFactorizations]]
-deps = ["AMD", "LinearAlgebra", "SparseArrays", "Test"]
-git-tree-sha1 = "70f582b446a1c3ad82cf87e62b878668beef9d13"
-uuid = "40e66cde-538c-5869-a4ad-c39174c6795b"
-version = "0.10.1"
-
 [[deps.LazilyInitializedFields]]
 git-tree-sha1 = "0f2da712350b020bc3957f269c9caad516383ee0"
 uuid = "0e77f7df-68c5-4e49-93ce-4cd80f5598bf"
@@ -429,40 +418,10 @@ version = "0.3.29"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
-[[deps.METIS_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "2eefa8baa858871ae7770c98c3c2a7e46daba5b4"
-uuid = "d00139f3-1899-568f-a2f0-47f597d42d70"
-version = "5.1.3+0"
-
-[[deps.MUMPS_seq_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "METIS_jll", "libblastrampoline_jll"]
-git-tree-sha1 = "fc0c8442887b48c15aec2b1787a5fc812a99b2fd"
-uuid = "d7ed1dd3-d0ae-5e8e-bfb4-87a502085b8d"
-version = "500.800.100+0"
-
 [[deps.MacroTools]]
 git-tree-sha1 = "1e0228a030642014fe5cfe68c2c0a818f9e3f522"
 uuid = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 version = "0.5.16"
-
-[[deps.MadNLP]]
-deps = ["LDLFactorizations", "LinearAlgebra", "Logging", "NLPModels", "Pkg", "Printf", "SolverCore", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "6d4d80f692d35e073d6e5796ebb0a8a07963d781"
-uuid = "2621e9c9-9eb4-46b1-8089-e8c72242dfb6"
-version = "0.8.12"
-
-    [deps.MadNLP.extensions]
-    MadNLPMOI = "MathOptInterface"
-
-    [deps.MadNLP.weakdeps]
-    MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
-
-[[deps.MadNLPMumps]]
-deps = ["LinearAlgebra", "MUMPS_seq_jll", "MadNLP", "OpenBLAS32_jll"]
-git-tree-sha1 = "83931ffc69f54e3c2376e751c6bfe5f4eef7d15b"
-uuid = "3b83494e-c0a4-4895-918b-9157a7a085a1"
-version = "0.5.1"
 
 [[deps.Markdown]]
 deps = ["Base64", "JuliaSyntaxHighlighting", "StyledStrings"]
@@ -494,12 +453,6 @@ version = "1.1.3"
 [[deps.NetworkOptions]]
 uuid = "ca575930-c2e3-43a9-ace4-1e988b2c1908"
 version = "1.3.0"
-
-[[deps.OpenBLAS32_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "ece4587683695fe4c5f20e990da0ed7e83c351e7"
-uuid = "656ef2d0-ae68-5445-9ca0-591084a874a2"
-version = "0.3.29+0"
 
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
@@ -708,10 +661,6 @@ version = "2.6.0"
 [[deps.StyledStrings]]
 uuid = "f489334b-da3d-4c2e-b8f0-e476e12c162b"
 version = "1.11.0"
-
-[[deps.SuiteSparse]]
-deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
-uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[deps.SuiteSparse_jll]]
 deps = ["Artifacts", "Libdl", "libblastrampoline_jll"]
