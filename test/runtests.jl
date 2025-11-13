@@ -1,18 +1,31 @@
 using Test
 using Aqua
 using CTSolvers
-
-#
+using CTBase
 using ADNLPModels
 using ExaModels
 using NLPModels
 using CommonSolve
-using MadNLP
 using MadNLPMumps
-using CTBase
-using MadNCL
 using CUDA
 using MadNLPGPU
+
+# Test extension exceptions: before loading the extensions
+@testset "Extension exceptions" begin
+    include("test_extensions.jl")
+    test_extensions()
+end
+
+# Load extensions
+using NLPModelsIpopt
+using MadNLP
+using MadNCL
+using NLPModelsKnitro
+
+const CTSolversIpopt = Base.get_extension(CTSolvers, :CTSolversIpopt)
+const CTSolversMadNLP = Base.get_extension(CTSolvers, :CTSolversMadNLP)
+const CTSolversMadNCL = Base.get_extension(CTSolvers, :CTSolversMadNCL)
+const CTSolversKnitro = Base.get_extension(CTSolvers, :CTSolversKnitro)
 
 # CUDA
 is_cuda_on() = CUDA.functional()
@@ -25,17 +38,41 @@ end
 # ------------------------------------------------------------------------------
 # Problems definition
 include("problems_definition.jl")
-include("rosenbrock.jl")
-include("elec.jl")
+include(joinpath("problems", "rosenbrock.jl"))
+include(joinpath("problems", "elec.jl"))
 
 # ------------------------------------------------------------------------------
 # Tests
 const VERBOSE = true
 const SHOWTIMING = true
 
+# tests to run
+const SOLVERS_RUNTESTS = Dict(
+    :specific => Symbol[
+        :ipopt,
+        :madnlp,
+        :madncl,
+    ],
+    :generic => Symbol[
+        :ipopt,
+        :madnlp,
+        :madncl,
+    ],
+    :default => Symbol[
+        :ipopt,
+        :madnlp,
+        :madncl,
+    ],
+    :gpu => Symbol[
+        :madnlp,
+        :madncl,
+    ],
+)
+
 @testset verbose=VERBOSE showtiming=SHOWTIMING "CTSolvers tests" begin
     for name in (
-        # :aqua,
+        :aqua,
+        :default,
         :models,
         :solvers,
     )
