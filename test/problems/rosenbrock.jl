@@ -18,25 +18,16 @@ function Rosenbrock()
 
     # define ADNLPModels builder
     function build_adnlp_model(
-        initial_guess::AbstractVector;
-        kwargs...
+        initial_guess::AbstractVector; kwargs...
     )::ADNLPModels.ADNLPModel
         return ADNLPModels.ADNLPModel(
-            F,
-            initial_guess,
-            c,
-            lcon,
-            ucon;
-            minimize=minimize, 
-            kwargs...
+            F, initial_guess, c, lcon, ucon; minimize=minimize, kwargs...
         )
     end
 
     # define ExaModels builder
     function build_exa_model(
-        ::Type{BaseType},
-        initial_guess::AbstractVector;
-        kwargs...
+        ::Type{BaseType}, initial_guess::AbstractVector; kwargs...
     )::ExaModels.ExaModel where {BaseType<:AbstractFloat}
         m = ExaModels.ExaCore(BaseType; minimize=minimize, kwargs...)
         x = ExaModels.variable(m, length(initial_guess); start=initial_guess)

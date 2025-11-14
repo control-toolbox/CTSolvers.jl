@@ -11,5 +11,4 @@ function test_extensions()
 
     # Knitro
     @test_throws CTBase.ExtensionError CTSolvers.solve_with_knitro(nothing)
-
 end
