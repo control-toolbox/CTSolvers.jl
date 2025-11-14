@@ -10,11 +10,7 @@ function test_solvers()
         :sb => "yes",
     )
 
-    madnlp_options = Dict(
-        :max_iter => 100,
-        :tol => 1e-6,
-        :print_level => MadNLP.ERROR,
-    )
+    madnlp_options = Dict(:max_iter => 100, :tol => 1e-6, :print_level => MadNLP.ERROR)
 
     f_madncl_options(BaseType) = Dict(
         :max_iter => 100,
@@ -29,8 +25,10 @@ function test_solvers()
         # NLPModelsIpopt
         if :ipopt in SOLVERS_RUNTESTS[:specific]
             Test.@testset "NLPModelsIpopt" verbose=VERBOSE showtiming=SHOWTIMING begin
-
-                modelers = [CTSolvers.ADNLPModelBackend(; backend=:manual), CTSolvers.ExaModelBackend()]
+                modelers = [
+                    CTSolvers.ADNLPModelBackend(; backend=:manual),
+                    CTSolvers.ExaModelBackend(),
+                ]
                 modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
 
                 # Rosenbrock
@@ -38,7 +36,9 @@ function test_solvers()
                     # solve
                     for (modeler, modeler_name) in zip(modelers, modelers_names)
                         Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                            nlp_adnlp = CTSolvers.nlp_model(rosenbrock_prob, rosenbrock_init, modeler)
+                            nlp_adnlp = CTSolvers.nlp_model(
+                                rosenbrock_prob, rosenbrock_init, modeler
+                            )
                             sol = CTSolvers.solve_with_ipopt(nlp_adnlp; ipopt_options...)
                             Test.@test sol.status == :first_order
                             Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
@@ -64,9 +64,11 @@ function test_solvers()
         # MadNLP
         if :madnlp in SOLVERS_RUNTESTS[:specific]
             Test.@testset "MadNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
-
                 BaseType = Float32
-                modelers = [CTSolvers.ADNLPModelBackend(; backend=:manual), CTSolvers.ExaModelBackend(; base_type=BaseType)]
+                modelers = [
+                    CTSolvers.ADNLPModelBackend(; backend=:manual),
+                    CTSolvers.ExaModelBackend(; base_type=BaseType),
+                ]
                 modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
                 linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
                 linear_solvers_names = ["Umfpack", "Mumps"]
@@ -75,13 +77,19 @@ function test_solvers()
                 Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
                     # solve
                     for (modeler, modeler_name) in zip(modelers, modelers_names)
-                        for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                        for (linear_solver, linear_solver_name) in
+                            zip(linear_solvers, linear_solvers_names)
                             Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                                nlp = CTSolvers.nlp_model(rosenbrock_prob, rosenbrock_init, modeler)
-                                sol = CTSolvers.solve_with_madnlp(nlp; linear_solver=linear_solver, madnlp_options...)
+                                nlp = CTSolvers.nlp_model(
+                                    rosenbrock_prob, rosenbrock_init, modeler
+                                )
+                                sol = CTSolvers.solve_with_madnlp(
+                                    nlp; linear_solver=linear_solver, madnlp_options...
+                                )
                                 Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                                 Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
-                                Test.@test sol.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
+                                Test.@test sol.objective ≈
+                                    rosenbrock_objective(rosenbrock_solu) atol=1e-6
                             end
                         end
                     end
@@ -91,10 +99,13 @@ function test_solvers()
                 Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
                     # solve
                     for (modeler, modeler_name) in zip(modelers, modelers_names)
-                        for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                        for (linear_solver, linear_solver_name) in
+                            zip(linear_solvers, linear_solvers_names)
                             Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                                 nlp = CTSolvers.nlp_model(elec_prob, elec_init, modeler)
-                                sol = CTSolvers.solve_with_madnlp(nlp; linear_solver=linear_solver, madnlp_options...)
+                                sol = CTSolvers.solve_with_madnlp(
+                                    nlp; linear_solver=linear_solver, madnlp_options...
+                                )
                                 Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                             end
                         end
@@ -107,7 +118,10 @@ function test_solvers()
         if :madncl in SOLVERS_RUNTESTS[:specific]
             Test.@testset "MadNCL" verbose=VERBOSE showtiming=SHOWTIMING begin
                 BaseType = Float64
-                modelers = [CTSolvers.ADNLPModelBackend(; backend=:manual), CTSolvers.ExaModelBackend(; base_type=BaseType)]
+                modelers = [
+                    CTSolvers.ADNLPModelBackend(; backend=:manual),
+                    CTSolvers.ExaModelBackend(; base_type=BaseType),
+                ]
                 modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
                 linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
                 linear_solvers_names = ["Umfpack", "Mumps"]
@@ -117,10 +131,13 @@ function test_solvers()
                 Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
                     # solve
                     for (modeler, modeler_name) in zip(modelers, modelers_names)
-                        for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                        for (linear_solver, linear_solver_name) in
+                            zip(linear_solvers, linear_solvers_names)
                             Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                                 nlp = CTSolvers.nlp_model(elec_prob, elec_init, modeler)
-                                sol = CTSolvers.solve_with_madncl(nlp; linear_solver=linear_solver, madncl_options...)
+                                sol = CTSolvers.solve_with_madncl(
+                                    nlp; linear_solver=linear_solver, madncl_options...
+                                )
                                 Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                             end
                         end
@@ -136,8 +153,10 @@ function test_solvers()
         # NLPModelsIpopt
         if :ipopt in SOLVERS_RUNTESTS[:generic]
             Test.@testset "NLPModelsIpopt" verbose=VERBOSE showtiming=SHOWTIMING begin
-
-                modelers = [CTSolvers.ADNLPModelBackend(; backend=:manual), CTSolvers.ExaModelBackend()]
+                modelers = [
+                    CTSolvers.ADNLPModelBackend(; backend=:manual),
+                    CTSolvers.ExaModelBackend(),
+                ]
                 modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
 
                 # Rosenbrock
@@ -146,10 +165,16 @@ function test_solvers()
                     Test.@testset "solve" verbose=VERBOSE showtiming=SHOWTIMING begin
                         for (modeler, modeler_name) in zip(modelers, modelers_names)
                             Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                                sol = CommonSolve.solve(rosenbrock_prob, rosenbrock_init, modeler, CTSolvers.NLPModelsIpoptBackend(; ipopt_options...))
+                                sol = CommonSolve.solve(
+                                    rosenbrock_prob,
+                                    rosenbrock_init,
+                                    modeler,
+                                    CTSolvers.NLPModelsIpoptBackend(; ipopt_options...),
+                                )
                                 Test.@test sol.status == :first_order
                                 Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
-                                Test.@test sol.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
+                                Test.@test sol.objective ≈
+                                    rosenbrock_objective(rosenbrock_solu) atol=1e-6
                             end
                         end
                     end
@@ -157,7 +182,14 @@ function test_solvers()
                     Test.@testset "initial_guess" verbose=VERBOSE showtiming=SHOWTIMING begin
                         for (modeler, modeler_name) in zip(modelers, modelers_names)
                             Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                                sol = CommonSolve.solve(rosenbrock_prob, rosenbrock_solu, modeler, CTSolvers.NLPModelsIpoptBackend(; ipopt_options..., max_iter=0))
+                                sol = CommonSolve.solve(
+                                    rosenbrock_prob,
+                                    rosenbrock_solu,
+                                    modeler,
+                                    CTSolvers.NLPModelsIpoptBackend(;
+                                        ipopt_options..., max_iter=0
+                                    ),
+                                )
                                 Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
                             end
                         end
@@ -170,7 +202,12 @@ function test_solvers()
                     Test.@testset "solve" verbose=VERBOSE showtiming=SHOWTIMING begin
                         for (modeler, modeler_name) in zip(modelers, modelers_names)
                             Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                                sol = CommonSolve.solve(elec_prob, elec_init, modeler, CTSolvers.NLPModelsIpoptBackend(; ipopt_options...))
+                                sol = CommonSolve.solve(
+                                    elec_prob,
+                                    elec_init,
+                                    modeler,
+                                    CTSolvers.NLPModelsIpoptBackend(; ipopt_options...),
+                                )
                                 Test.@test sol.status == :first_order
                             end
                         end
@@ -179,8 +216,16 @@ function test_solvers()
                     Test.@testset "initial_guess" verbose=VERBOSE showtiming=SHOWTIMING begin
                         for (modeler, modeler_name) in zip(modelers, modelers_names)
                             Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                                sol = CommonSolve.solve(elec_prob, elec_init, modeler, CTSolvers.NLPModelsIpoptBackend(; ipopt_options..., max_iter=0))
-                                Test.@test sol.solution ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
+                                sol = CommonSolve.solve(
+                                    elec_prob,
+                                    elec_init,
+                                    modeler,
+                                    CTSolvers.NLPModelsIpoptBackend(;
+                                        ipopt_options..., max_iter=0
+                                    ),
+                                )
+                                Test.@test sol.solution ≈
+                                    vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
                             end
                         end
                     end
@@ -191,9 +236,11 @@ function test_solvers()
         # MadNLP
         if :madnlp in SOLVERS_RUNTESTS[:generic]
             Test.@testset "MadNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
-
                 BaseType = Float32
-                modelers = [CTSolvers.ADNLPModelBackend(; backend=:manual), CTSolvers.ExaModelBackend(; base_type=BaseType)]
+                modelers = [
+                    CTSolvers.ADNLPModelBackend(; backend=:manual),
+                    CTSolvers.ExaModelBackend(; base_type=BaseType),
+                ]
                 modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
                 linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
                 linear_solvers_names = ["Umfpack", "Mumps"]
@@ -203,12 +250,21 @@ function test_solvers()
                     # solve
                     Test.@testset "solve" verbose=VERBOSE showtiming=SHOWTIMING begin
                         for (modeler, modeler_name) in zip(modelers, modelers_names)
-                            for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                            for (linear_solver, linear_solver_name) in
+                                zip(linear_solvers, linear_solvers_names)
                                 Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                                    sol = CommonSolve.solve(rosenbrock_prob, rosenbrock_init, modeler, CTSolvers.MadNLPBackend(; madnlp_options..., linear_solver=linear_solver))
+                                    sol = CommonSolve.solve(
+                                        rosenbrock_prob,
+                                        rosenbrock_init,
+                                        modeler,
+                                        CTSolvers.MadNLPBackend(;
+                                            madnlp_options..., linear_solver=linear_solver
+                                        ),
+                                    )
                                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                                     Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
-                                    Test.@test sol.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
+                                    Test.@test sol.objective ≈
+                                        rosenbrock_objective(rosenbrock_solu) atol=1e-6
                                 end
                             end
                         end
@@ -216,9 +272,19 @@ function test_solvers()
                     # initial_guess
                     Test.@testset "initial_guess" verbose=VERBOSE showtiming=SHOWTIMING begin
                         for (modeler, modeler_name) in zip(modelers, modelers_names)
-                            for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                            for (linear_solver, linear_solver_name) in
+                                zip(linear_solvers, linear_solvers_names)
                                 Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                                    sol = CommonSolve.solve(rosenbrock_prob, rosenbrock_solu, modeler, CTSolvers.MadNLPBackend(; madnlp_options..., max_iter=0, linear_solver=linear_solver))
+                                    sol = CommonSolve.solve(
+                                        rosenbrock_prob,
+                                        rosenbrock_solu,
+                                        modeler,
+                                        CTSolvers.MadNLPBackend(;
+                                            madnlp_options...,
+                                            max_iter=0,
+                                            linear_solver=linear_solver,
+                                        ),
+                                    )
                                     Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
                                 end
                             end
@@ -231,9 +297,17 @@ function test_solvers()
                     # solve
                     Test.@testset "solve" verbose=VERBOSE showtiming=SHOWTIMING begin
                         for (modeler, modeler_name) in zip(modelers, modelers_names)
-                            for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                            for (linear_solver, linear_solver_name) in
+                                zip(linear_solvers, linear_solvers_names)
                                 Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                                    sol = CommonSolve.solve(elec_prob, elec_init, modeler, CTSolvers.MadNLPBackend(; madnlp_options..., linear_solver=linear_solver))
+                                    sol = CommonSolve.solve(
+                                        elec_prob,
+                                        elec_init,
+                                        modeler,
+                                        CTSolvers.MadNLPBackend(;
+                                            madnlp_options..., linear_solver=linear_solver
+                                        ),
+                                    )
                                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                                 end
                             end
@@ -242,10 +316,21 @@ function test_solvers()
                     # initial_guess
                     Test.@testset "initial_guess" verbose=VERBOSE showtiming=SHOWTIMING begin
                         for (modeler, modeler_name) in zip(modelers, modelers_names)
-                            for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                            for (linear_solver, linear_solver_name) in
+                                zip(linear_solvers, linear_solvers_names)
                                 Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                                    sol = CommonSolve.solve(elec_prob, elec_init, modeler, CTSolvers.MadNLPBackend(; madnlp_options..., max_iter=0, linear_solver=linear_solver))
-                                    Test.@test sol.solution ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
+                                    sol = CommonSolve.solve(
+                                        elec_prob,
+                                        elec_init,
+                                        modeler,
+                                        CTSolvers.MadNLPBackend(;
+                                            madnlp_options...,
+                                            max_iter=0,
+                                            linear_solver=linear_solver,
+                                        ),
+                                    )
+                                    Test.@test sol.solution ≈
+                                        vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
                                 end
                             end
                         end
@@ -257,9 +342,11 @@ function test_solvers()
         # MadNCL
         if :madncl in SOLVERS_RUNTESTS[:generic]
             Test.@testset "MadNCL" verbose=VERBOSE showtiming=SHOWTIMING begin
-            
                 BaseType = Float64
-                modelers = [CTSolvers.ADNLPModelBackend(; backend=:manual), CTSolvers.ExaModelBackend(; base_type=BaseType)]
+                modelers = [
+                    CTSolvers.ADNLPModelBackend(; backend=:manual),
+                    CTSolvers.ExaModelBackend(; base_type=BaseType),
+                ]
                 modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
                 linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
                 linear_solvers_names = ["Umfpack", "Mumps"]
@@ -270,9 +357,17 @@ function test_solvers()
                     # solve
                     Test.@testset "solve" verbose=VERBOSE showtiming=SHOWTIMING begin
                         for (modeler, modeler_name) in zip(modelers, modelers_names)
-                            for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                            for (linear_solver, linear_solver_name) in
+                                zip(linear_solvers, linear_solvers_names)
                                 Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                                    sol = CommonSolve.solve(elec_prob, elec_init, modeler, CTSolvers.MadNCLBackend(; madncl_options..., linear_solver=linear_solver))
+                                    sol = CommonSolve.solve(
+                                        elec_prob,
+                                        elec_init,
+                                        modeler,
+                                        CTSolvers.MadNCLBackend(;
+                                            madncl_options..., linear_solver=linear_solver
+                                        ),
+                                    )
                                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                                 end
                             end
@@ -281,10 +376,21 @@ function test_solvers()
                     # initial_guess
                     Test.@testset "initial_guess" verbose=VERBOSE showtiming=SHOWTIMING begin
                         for (modeler, modeler_name) in zip(modelers, modelers_names)
-                            for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                            for (linear_solver, linear_solver_name) in
+                                zip(linear_solvers, linear_solvers_names)
                                 Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                                    sol = CommonSolve.solve(elec_prob, elec_init, modeler, CTSolvers.MadNCLBackend(; madncl_options..., max_iter=0, linear_solver=linear_solver))
-                                    Test.@test sol.solution ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
+                                    sol = CommonSolve.solve(
+                                        elec_prob,
+                                        elec_init,
+                                        modeler,
+                                        CTSolvers.MadNCLBackend(;
+                                            madncl_options...,
+                                            max_iter=0,
+                                            linear_solver=linear_solver,
+                                        ),
+                                    )
+                                    Test.@test sol.solution ≈
+                                        vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
                                 end
                             end
                         end
@@ -296,7 +402,6 @@ function test_solvers()
 
     # Default options
     Test.@testset "Default options" verbose=VERBOSE showtiming=SHOWTIMING begin
-
         if :ipopt in SOLVERS_RUNTESTS[:default]
             Test.@testset "NLPModelsIpopt" verbose=VERBOSE showtiming=SHOWTIMING begin
                 solver = CTSolvers.NLPModelsIpoptBackend()
@@ -304,7 +409,9 @@ function test_solvers()
                 modelers_names = ["ADNLPModelBackend", "ExaModelBackend"]
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        sol = CommonSolve.solve(rosenbrock_prob, rosenbrock_init, modeler, solver; display=false)
+                        sol = CommonSolve.solve(
+                            rosenbrock_prob, rosenbrock_init, modeler, solver; display=false
+                        )
                         Test.@test sol.status == :first_order
                         Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
                         Test.@test sol.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
@@ -320,7 +427,9 @@ function test_solvers()
                 modelers_names = ["ADNLPModelBackend", "ExaModelBackend"]
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        sol = CommonSolve.solve(rosenbrock_prob, rosenbrock_init, modeler, solver; display=false)
+                        sol = CommonSolve.solve(
+                            rosenbrock_prob, rosenbrock_init, modeler, solver; display=false
+                        )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                         Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
                         Test.@test sol.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
@@ -336,7 +445,9 @@ function test_solvers()
                 modelers_names = ["ADNLPModelBackend", "ExaModelBackend"]
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        sol = CommonSolve.solve(rosenbrock_prob, rosenbrock_init, modeler, solver; display=false)
+                        sol = CommonSolve.solve(
+                            rosenbrock_prob, rosenbrock_init, modeler, solver; display=false
+                        )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                         Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
                         Test.@test sol.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
@@ -349,7 +460,6 @@ function test_solvers()
     # GPU
     if is_cuda_on()
         Test.@testset "GPU" verbose=VERBOSE showtiming=SHOWTIMING begin
-
             exa_backend = CUDA.CUDABackend()
             linear_solver = MadNLPGPU.CUDSSSolver
             modelers = [CTSolvers.ExaModelBackend(; backend=exa_backend)]
@@ -360,7 +470,9 @@ function test_solvers()
                 solver = CTSolvers.MadNLPBackend(; linear_solver=linear_solver)
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        sol = CommonSolve.solve(elec_prob, elec_init, modeler, solver; display=false)
+                        sol = CommonSolve.solve(
+                            elec_prob, elec_init, modeler, solver; display=false
+                        )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     end
                 end
@@ -371,12 +483,13 @@ function test_solvers()
                 solver = CTSolvers.MadNCLBackend(; linear_solver=linear_solver)
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        sol = CommonSolve.solve(elec_prob, elec_init, modeler, solver; display=false)
+                        sol = CommonSolve.solve(
+                            elec_prob, elec_init, modeler, solver; display=false
+                        )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     end
                 end
             end
         end
     end
-
 end

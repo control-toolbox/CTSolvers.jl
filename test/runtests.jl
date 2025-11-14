@@ -48,34 +48,14 @@ const SHOWTIMING = true
 
 # tests to run
 const SOLVERS_RUNTESTS = Dict(
-    :specific => Symbol[
-        :ipopt,
-        :madnlp,
-        :madncl,
-    ],
-    :generic => Symbol[
-        :ipopt,
-        :madnlp,
-        :madncl,
-    ],
-    :default => Symbol[
-        :ipopt,
-        :madnlp,
-        :madncl,
-    ],
-    :gpu => Symbol[
-        :madnlp,
-        :madncl,
-    ],
+    :specific => Symbol[:ipopt, :madnlp, :madncl],
+    :generic => Symbol[:ipopt, :madnlp, :madncl],
+    :default => Symbol[:ipopt, :madnlp, :madncl],
+    :gpu => Symbol[:madnlp, :madncl],
 )
 
 @testset verbose=VERBOSE showtiming=SHOWTIMING "CTSolvers tests" begin
-    for name in (
-        :aqua,
-        :default,
-        :models,
-        :solvers,
-    )
+    for name in (:aqua, :default, :models, :solvers)
         @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
             test_name = Symbol(:test_, name)
             include("$(test_name).jl")
