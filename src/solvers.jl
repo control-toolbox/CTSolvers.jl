@@ -33,7 +33,7 @@ function CommonSolve.solve(
     modeler::AbstractNLPModelBackend,
     solver::AbstractNLPSolverBackend;
     display::Bool=__display(),
-):: SolverCore.AbstractExecutionStats
+)::SolverCore.AbstractExecutionStats
     nlp = nlp_model(prob, initial_guess, modeler)
     return solver(nlp; display=display)
 end
@@ -53,7 +53,7 @@ struct MadNLPBackend{T<:Tuple} <: AbstractNLPSolverBackend
 end
 
 # MadNCL
-struct MadNCLBackend{BaseType<:AbstractFloat, T<:Tuple} <: AbstractNLPSolverBackend
+struct MadNCLBackend{BaseType<:AbstractFloat,T<:Tuple} <: AbstractNLPSolverBackend
     options::T
 end
 
