@@ -11,7 +11,7 @@ __mad_ncl_max_iter() = 1000
 __mad_ncl_print_level() = MadNLP.INFO
 __mad_ncl_linear_solver() = MadNLPMumps.MumpsSolver
 function __mad_ncl_ncl_options()
-    MadNCL.NCLOptions{Float64}(
+    MadNCL.NCLOptions{Float64}(;
         verbose=true,       # print convergence logs
         # scaling=false,      # specify if we should scale the problem
         opt_tol=1e-8,       # tolerance on dual infeasibility
