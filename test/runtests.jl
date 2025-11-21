@@ -15,9 +15,9 @@ using SolverCore
 # CUDA
 is_cuda_on() = CUDA.functional()
 if is_cuda_on()
-    println("✓ CUDA functional, GPU benchmarks enabled")
+    println("✓ CUDA functional, GPU tests enabled")
 else
-    println("⚠️  CUDA not functional, GPU models will be skipped")
+    println("⚠️  CUDA not functional, GPU tests will be skipped")
 end
 
 # Select tests to run
