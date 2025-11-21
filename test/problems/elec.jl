@@ -77,6 +77,8 @@ function Elec(np::Int; seed::Int=2713)
     return OptimizationProblem(
         CTSolvers.ADNLPModelBuilder(build_adnlp_model),
         CTSolvers.ExaModelBuilder(build_exa_model),
+        ADNLPSolutionHelper(),
+        ExaSolutionHelper(),
     )
 end
 

@@ -1,53 +1,11 @@
 # ------------------------------------------------------------------------------
-# Problem definition
-# ------------------------------------------------------------------------------
-struct ADNLPModelBuilder{T<:Function}
-    build_adnlp_model::T
-end
-function (prob::ADNLPModelBuilder)(initial_guess; kwargs...)::ADNLPModels.ADNLPModel
-    return prob.build_adnlp_model(initial_guess; kwargs...)
-end
-
-struct ExaModelBuilder{T<:Function}
-    build_exa_model::T
-end
-function (prob::ExaModelBuilder)(
-    ::Type{BaseType}, initial_guess; kwargs...
-)::ExaModels.ExaModel where {BaseType<:AbstractFloat}
-    return prob.build_exa_model(BaseType, initial_guess; kwargs...)
-end
-
-abstract type AbstractCTOptimizationProblem end
-
-function get_build_exa_model(prob::AbstractCTOptimizationProblem)
-    return throw(
-        CTBase.NotImplemented("get_build_exa_model not implemented for $(typeof(prob))")
-    )
-end
-
-function get_build_adnlp_model(prob::AbstractCTOptimizationProblem)
-    return throw(
-        CTBase.NotImplemented("get_build_adnlp_model not implemented for $(typeof(prob))")
-    )
-end
-
-# ------------------------------------------------------------------------------
-# NLP Model builder
+# Model backends
 # ------------------------------------------------------------------------------
 abstract type AbstractNLPModelBackend end
 
-function nlp_model(
-    prob::AbstractCTOptimizationProblem, initial_guess, modeler::AbstractNLPModelBackend
-)::NLPModels.AbstractNLPModel
-    return modeler(prob, initial_guess)
-end
-
-# ------------------------------------------------------------------------------
-# Model backends
-# ------------------------------------------------------------------------------
-
 # ------------------------------------------------------------------------------
 # ADNLPModels
+# ------------------------------------------------------------------------------
 struct ADNLPModelBackend{EmptyBackends<:Tuple{Vararg{Symbol}},KW} <: AbstractNLPModelBackend
     # attributes
     show_time::Bool
@@ -89,13 +47,21 @@ function (modeler::ADNLPModelBackend)(
     end
 
     # build the model
-    return get_build_adnlp_model(prob)(
+    return get_adnlp_model_builder(prob)(
         initial_guess; show_time=modeler.show_time, backend_options..., modeler.kwargs...
     )
 end
 
+function (modeler::ADNLPModelBackend)(
+    prob::AbstractCTOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats
+)
+    helper = get_adnlp_solution_helper(prob)
+    return build_solution(nlp_solution, helper)
+end
+
 # ------------------------------------------------------------------------------
 # ExaModels
+# ------------------------------------------------------------------------------
 struct ExaModelBackend{
     BaseType<:AbstractFloat,BackendType<:Union{Nothing,KernelAbstractions.Backend},KW
 } <: AbstractNLPModelBackend
@@ -112,8 +78,15 @@ end
 
 function (modeler::ExaModelBackend{BaseType,BackendType,KW})(
     prob::AbstractCTOptimizationProblem, initial_guess
-)::ExaModels.ExaModel{BaseType} where {BaseType,BackendType,KW}
-    return get_build_exa_model(prob)(
+)::ExaModels.ExaModel{BaseType} where {BaseType<:AbstractFloat,BackendType<:Union{Nothing,KernelAbstractions.Backend},KW}
+    return get_exa_model_builder(prob)(
         BaseType, initial_guess; backend=modeler.backend, modeler.kwargs...
     )
+end
+
+function (modeler::ExaModelBackend)(
+    prob::AbstractCTOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats
+)
+    helper = get_exa_solution_helper(prob)
+    return build_solution(nlp_solution, helper)
 end

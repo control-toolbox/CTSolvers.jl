@@ -6,6 +6,8 @@ authors = ["Olivier Cots <olivier.cots@toulouse-inp.fr>"]
 [deps]
 ADNLPModels = "54578032-b7ea-4c30-94aa-7cbd1cce6c9a"
 CTBase = "54762871-cc72-4466-b8e8-f6c8b58076cd"
+CTDirect = "790bbbee-bee9-49ee-8912-a9de031322d5"
+CTModels = "34c4fa32-2049-4079-8329-de33c2a22e2d"
 CommonSolve = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
 ExaModels = "1037b233-b668-4ce9-9b63-f9f681f55dd2"
 KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
@@ -21,13 +23,15 @@ NLPModelsKnitro = "bec4dd0d-7755-52d5-9a02-22f0ffc7efcb"
 
 [extensions]
 CTSolversIpopt = "NLPModelsIpopt"
+CTSolversKnitro = "NLPModelsKnitro"
 CTSolversMadNCL = ["MadNCL", "MadNLP", "MadNLPMumps"]
 CTSolversMadNLP = ["MadNLP", "MadNLPMumps"]
-CTSolversKnitro = "NLPModelsKnitro"
 
 [compat]
 ADNLPModels = "0.8"
 CTBase = "0.16"
+CTDirect = "0.17.4"
+CTModels = "0.6.9"
 CommonSolve = "0.2"
 ExaModels = "0.9"
 KernelAbstractions = "0.9"

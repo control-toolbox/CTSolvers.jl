@@ -1,17 +1,4 @@
-function test_default()
-
-    # ADNLPModels
-    Test.@testset "ADNLPModels" verbose=VERBOSE showtiming=SHOWTIMING begin
-        Test.@test CTSolvers.__adnlp_model_show_time() isa Bool
-        Test.@test CTSolvers.__adnlp_model_backend() isa Symbol
-        Test.@test CTSolvers.__adnlp_model_empty_backends() isa Tuple{Vararg{Symbol}}
-    end
-
-    # ExaModels
-    Test.@testset "ExaModels" verbose=VERBOSE showtiming=SHOWTIMING begin
-        Test.@test CTSolvers.__exa_model_base_type() isa DataType
-        Test.@test CTSolvers.__exa_model_backend() isa Union{Nothing,Symbol}
-    end
+function test_ctsolvers_default()
 
     # Common
     Test.@testset "Common" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -45,6 +32,8 @@ function test_default()
         Test.@test CTSolversMadNCL.__mad_ncl_max_iter() isa Int
         Test.@test CTSolversMadNCL.__mad_ncl_max_iter() > 0
         Test.@test CTSolversMadNCL.__mad_ncl_print_level() isa MadNLP.LogLevels
+        Test.@test CTSolversMadNCL.__mad_ncl_linear_solver() isa Type
+        Test.@test CTSolversMadNCL.__mad_ncl_linear_solver() <: MadNLP.AbstractLinearSolver
         Test.@test CTSolversMadNCL.__mad_ncl_ncl_options() isa MadNCL.NCLOptions{Float64}
     end
 

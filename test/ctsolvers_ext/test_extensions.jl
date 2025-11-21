@@ -1,5 +1,4 @@
 function test_extensions()
-
     # NLPModelsIpopt
     @test_throws CTBase.ExtensionError CTSolvers.solve_with_ipopt(nothing)
 

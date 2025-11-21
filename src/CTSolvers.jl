@@ -3,15 +3,32 @@ module CTSolvers
 using ADNLPModels
 using CommonSolve: CommonSolve, solve
 using CTBase: CTBase
+using CTDirect: CTDirect
+using CTModels: CTModels
 using ExaModels
 using KernelAbstractions
 using NLPModels
 using SolverCore
 
-include("default_models.jl")
-include("models.jl")
+# Model
+include(joinpath("ctmodels", "default.jl"))
+include(joinpath("ctmodels", "problem_core.jl"))
+include(joinpath("ctmodels", "nlp_backends.jl"))
+include(joinpath("ctmodels", "discretized_ocp.jl"))
+include(joinpath("ctmodels", "model_api.jl"))
+include(joinpath("ctmodels", "initial_guess.jl"))
 
-include("default_solvers.jl")
-include("solvers.jl")
+# Direct
+include(joinpath("ctdirect", "core_types.jl"))
+include(joinpath("ctdirect", "default.jl"))
+include(joinpath("ctdirect", "discretization_api.jl"))
+include(joinpath("ctdirect", "collocation_impl.jl"))
+include(joinpath("ctdirect", "solution_builders.jl"))
+
+# Solver
+include(joinpath("ctsolvers", "default.jl"))
+include(joinpath("ctsolvers", "extension_stubs.jl"))
+include(joinpath("ctsolvers", "common_solve_api.jl"))
+include(joinpath("ctsolvers", "backends_types.jl"))
 
 end

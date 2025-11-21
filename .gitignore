@@ -30,3 +30,4 @@ Manifest.toml
 **/Manifest.toml
 # ...except the one inside docs/src/assets
 !docs/src/assets/Manifest.toml
+tmp/
