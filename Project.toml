@@ -21,9 +21,9 @@ NLPModelsKnitro = "bec4dd0d-7755-52d5-9a02-22f0ffc7efcb"
 
 [extensions]
 CTSolversIpopt = "NLPModelsIpopt"
+CTSolversKnitro = "NLPModelsKnitro"
 CTSolversMadNCL = ["MadNCL", "MadNLP", "MadNLPMumps"]
 CTSolversMadNLP = ["MadNLP", "MadNLPMumps"]
-CTSolversKnitro = "NLPModelsKnitro"
 
 [compat]
 ADNLPModels = "0.8"
@@ -34,7 +34,7 @@ KernelAbstractions = "0.9"
 MadNCL = "0.1"
 MadNLP = "0.8"
 MadNLPMumps = "0.5"
-NLPModels = "0.21"
+NLPModels = "0.22"
 NLPModelsIpopt = "0.11"
 NLPModelsKnitro = "0.9"
 SolverCore = "0.3"
