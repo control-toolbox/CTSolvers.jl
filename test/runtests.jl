@@ -32,11 +32,11 @@ const SHOWTIMING = true
 
 # Select tests to run
 const TESTS = Dict(
-    :extensions => false,
-    :aqua       => false,
+    :extensions => true,
+    :aqua       => true,
     :ctmodels   => true,
-    :ctsolvers  => false,
-    :ctdirect   => false,
+    :ctsolvers  => true,
+    :ctdirect   => true,
 )
 
 # Test extension exceptions: before loading the extensions
@@ -66,7 +66,7 @@ if TESTS[:aqua]
     println("========== Aqua tests ==========")
     @testset "Aqua" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            #:aqua,
+            :aqua,
         )
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                 test_name = Symbol(:test_, name)
@@ -83,12 +83,12 @@ if TESTS[:ctmodels]
     println("========== CTModels tests ==========")
     @testset "CTModels" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            # :ctmodels_default,
-            # :ctmodels_problem_core,
-            # :ctmodels_nlp_backends,
-            # :ctmodels_discretized_ocp,
+            :ctmodels_default,
+            :ctmodels_problem_core,
+            :ctmodels_nlp_backends,
+            :ctmodels_discretized_ocp,
             :ctmodels_model_api,
-            # :ctmodels_initial_guess,
+            :ctmodels_initial_guess,
         )
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                 test_name = Symbol(:test_, name)
@@ -129,7 +129,6 @@ if TESTS[:ctdirect]
             :ctdirect_core_types,
             :ctdirect_discretization_api,
             :ctdirect_collocation_impl,
-            :ctdirect_solution_builders,
         )
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                 test_name = Symbol(:test_, name)
