@@ -65,8 +65,9 @@ function test_ctmodels_problem_core()
 
     # Tests for the type hierarchy (abstract base types and concrete subtypes).
     Test.@testset "ctmodels/problem_core: type hierarchy" verbose=VERBOSE showtiming=SHOWTIMING begin
+        Test.@test isabstracttype(CTSolvers.AbstractBuilder)
         Test.@test isabstracttype(CTSolvers.AbstractModelBuilder)
-        Test.@test isabstracttype(CTSolvers.AbstractCTHelper)
+        Test.@test isabstracttype(CTSolvers.AbstractSolutionBuilder)
         Test.@test isabstracttype(CTSolvers.AbstractOptimizationProblem)
 
         Test.@test CTSolvers.ADNLPModelBuilder <: CTSolvers.AbstractModelBuilder
@@ -80,8 +81,8 @@ function test_ctmodels_problem_core()
 
         Test.@test_throws CTBase.NotImplemented CTSolvers.get_adnlp_model_builder(dummy)
         Test.@test_throws CTBase.NotImplemented CTSolvers.get_exa_model_builder(dummy)
-        Test.@test_throws CTBase.NotImplemented CTSolvers.get_adnlp_solution_helper(dummy)
-        Test.@test_throws CTBase.NotImplemented CTSolvers.get_exa_solution_helper(dummy)
+        Test.@test_throws CTBase.NotImplemented CTSolvers.get_adnlp_solution_builder(dummy)
+        Test.@test_throws CTBase.NotImplemented CTSolvers.get_exa_solution_builder(dummy)
     end
 
 end

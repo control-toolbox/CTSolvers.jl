@@ -9,8 +9,6 @@ struct FakeBackendAPI <: CTSolvers.AbstractOptimizationModeler
     solution_calls::Base.RefValue{Int}
 end
 
-struct DummyHelperAPI <: CTSolvers.AbstractCTHelper end
-
 function (b::FakeBackendAPI)(
     prob::CTSolvers.AbstractOptimizationProblem,
     initial_guess,
@@ -79,19 +77,6 @@ function test_ctmodels_model_api()
         Test.@test sol isa DummySolutionAPI
         Test.@test model_calls[] == 0
         Test.@test solution_calls[] == 1
-    end
-
-    # ------------------------------------------------------------------
-    # Tests for the generic NotImplemented stub build_solution(stats, helper)
-    # ------------------------------------------------------------------
-    # The fallback build_solution(::AbstractExecutionStats, helper::AbstractCTHelper)
-    # is expected to throw CTBase.NotImplemented unless a more specific
-    # method is defined.
-
-    Test.@testset "ctmodels/model_api: generic build_solution(stats, helper) NotImplemented" verbose=VERBOSE showtiming=SHOWTIMING begin
-        stats = DummyStatsAPI()
-        helper = DummyHelperAPI()
-        Test.@test_throws CTBase.NotImplemented CTSolvers.build_solution(stats, helper)
     end
 
 end

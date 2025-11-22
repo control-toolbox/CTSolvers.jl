@@ -27,7 +27,6 @@ include(joinpath("ctdirect", "core_types.jl"))
 include(joinpath("ctdirect", "default.jl"))
 include(joinpath("ctdirect", "discretization_api.jl"))
 include(joinpath("ctdirect", "collocation_impl.jl"))
-include(joinpath("ctdirect", "solution_builders.jl"))
 
 # Solver
 include(joinpath("ctsolvers", "default.jl"))

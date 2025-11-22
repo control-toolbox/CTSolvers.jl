@@ -126,11 +126,10 @@ function test_ctmodels_nlp_backends()
     # Solution-building via ADNLPModeler/ExaModeler(prob, nlp_solution)
     # ------------------------------------------------------------------
     # For OptimizationProblem (defined in test/problems/problems_definition.jl),
-    # get_adnlp_solution_helper and get_exa_solution_helper return custom
-    # helpers (ADNLPSolutionHelper, ExaSolutionHelper) that are wired to a
-    # specialized CTSolvers.build_solution(::AbstractExecutionStats, ::AbstractNLPSolutionHelper)
-    # which simply returns the nlp_solution unchanged. Here we verify that the
-    # backends correctly route through those helpers.
+    # get_adnlp_solution_builder and get_exa_solution_builder return custom
+    # solution builders (ADNLPSolutionBuilder, ExaSolutionBuilder) that are
+    # callable on the nlp_solution and simply return it unchanged. Here we
+    # verify that the backends correctly route through those builders.
 
     Test.@testset "ctmodels/nlp_backends: ADNLPModeler solution building" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Build an OptimizationProblem with dummy builders (unused in this test)
@@ -142,15 +141,15 @@ function test_ctmodels_nlp_backends()
         prob = OptimizationProblem(
             dummy_ad_builder,
             dummy_exa_builder,
-            ADNLPSolutionHelper(),
-            ExaSolutionHelper(),
+            ADNLPSolutionBuilder(),
+            ExaSolutionBuilder(),
         )
 
         stats = DummyBackendStats()
         modeler = CTSolvers.ADNLPModeler()
-        # Should call get_adnlp_solution_helper(prob) and then
-        # CTSolvers.build_solution(stats, helper), which is specialized
-        # in problems_definition.jl to return stats unchanged.
+        # Should call get_adnlp_solution_builder(prob) and then
+        # builder(stats), which is implemented in problems_definition.jl
+        # to return stats unchanged.
         result = modeler(prob, stats)
         Test.@test result === stats
     end
@@ -164,14 +163,14 @@ function test_ctmodels_nlp_backends()
         prob = OptimizationProblem(
             dummy_ad_builder,
             dummy_exa_builder,
-            ADNLPSolutionHelper(),
-            ExaSolutionHelper(),
+            ADNLPSolutionBuilder(),
+            ExaSolutionBuilder(),
         )
 
         stats = DummyBackendStats()
         modeler = CTSolvers.ExaModeler()
-        # Should call get_exa_solution_helper(prob) and then
-        # CTSolvers.build_solution(stats, helper), which returns stats.
+        # Should call get_exa_solution_builder(prob) and then
+        # builder(stats), which returns stats.
         result = modeler(prob, stats)
         Test.@test result === stats
     end

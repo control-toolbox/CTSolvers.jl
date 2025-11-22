@@ -156,7 +156,7 @@ From this, we deduce that we need:
 - The `AbstractOptimizationSolver` type being callable with a model as argument.
 
 >[!NOTE]
->If a user wants to add a solver, he has to define a callable struct `MySolver` and implement `MySolver(model::T)` where `T` is a type returned by the `build_model` function, either from the `build_model` already provided by the library or defined by the user. It must return a model solution that can be treated by the modeler. The modeler will use helper functions from the problem to build the solution.
+>If a user wants to add a solver, he has to define a callable struct `MySolver` and implement `MySolver(model::T)` where `T` is a type returned by the `build_model` function, either from the `build_model` already provided by the library or defined by the user. It must return a model solution that can be treated by the modeler. The modeler will use solution builders provided by the problem to build the final solution.
 
 ### [The `build_solution` function](#build-solution)
 
@@ -219,14 +219,14 @@ end
 and a second way to call it to build a solution:
 
 ```julia
-function(modeler::ADNLPModeler)(
-    problem::AbstractOptimizationProblem, 
-    nlp_solution::SolverCore.AbstractExecutionStats
+function (modeler::ADNLPModeler)(
+    problem::AbstractOptimizationProblem,
+    nlp_solution::SolverCore.AbstractExecutionStats,
 )
-    helper = get_adnlp_solution_helper(problem)
-    return build_solution(nlp_solution, helper)
+    builder = get_adnlp_solution_builder(problem)
+    return builder(nlp_solution)
 end
 ```
 
 >[!NOTE]
->The type of the initial guess depends on the problem itself. The modeler will get the `ADNLPModel` builder from the problem and use it to build the model solution. Besides, the built solution type is not imposed. The modeler will get the helper function to build the solution from the problem and use it to build the solution. The type of the helper will indicate what to do.
+>The type of the initial guess depends on the problem itself. The modeler will get the `ADNLPModel` builder from the problem and use it to build the model solution. Besides, the built solution type is not imposed. The modeler will get a solution builder from the problem and use it to build the solution. The type of the builder will indicate what to do.

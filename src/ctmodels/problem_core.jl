@@ -1,5 +1,6 @@
 # builders of NLP models
-abstract type AbstractModelBuilder end
+abstract type AbstractBuilder end
+abstract type AbstractModelBuilder <: AbstractBuilder end
 
 struct ADNLPModelBuilder{T<:Function} <: AbstractModelBuilder
     f::T
@@ -23,7 +24,7 @@ function (builder::ExaModelBuilder)(
 end
 
 # helpers to build solutions
-abstract type AbstractCTHelper end
+abstract type AbstractSolutionBuilder <: AbstractBuilder end
 
 # problem
 abstract type AbstractOptimizationProblem end
@@ -40,14 +41,14 @@ function get_adnlp_model_builder(prob::AbstractOptimizationProblem)
     )
 end
 
-function get_adnlp_solution_helper(prob::AbstractOptimizationProblem)
+function get_adnlp_solution_builder(prob::AbstractOptimizationProblem)
     throw(
-        CTBase.NotImplemented("get_adnlp_solution_helper not implemented for $(typeof(prob))")
+        CTBase.NotImplemented("get_adnlp_solution_builder not implemented for $(typeof(prob))")
     )
 end
 
-function get_exa_solution_helper(prob::AbstractOptimizationProblem)
+function get_exa_solution_builder(prob::AbstractOptimizationProblem)
     throw(
-        CTBase.NotImplemented("get_exa_solution_helper not implemented for $(typeof(prob))")
+        CTBase.NotImplemented("get_exa_solution_builder not implemented for $(typeof(prob))")
     )
 end

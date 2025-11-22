@@ -40,8 +40,8 @@ function Rosenbrock()
     return OptimizationProblem(
         CTSolvers.ADNLPModelBuilder(build_adnlp_model),
         CTSolvers.ExaModelBuilder(build_exa_model),
-        ADNLPSolutionHelper(),
-        ExaSolutionHelper(),
+        ADNLPSolutionBuilder(),
+        ExaSolutionBuilder(),
     )
 end
 

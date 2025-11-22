@@ -58,8 +58,8 @@ function (modeler::ADNLPModeler)(
     prob::AbstractOptimizationProblem, 
     nlp_solution::SolverCore.AbstractExecutionStats
 )
-    helper = get_adnlp_solution_helper(prob)
-    return build_solution(nlp_solution, helper)
+    builder = get_adnlp_solution_builder(prob)
+    return builder(nlp_solution)
 end
 
 # ------------------------------------------------------------------------------
@@ -93,6 +93,6 @@ function (modeler::ExaModeler)(
     prob::AbstractOptimizationProblem, 
     nlp_solution::SolverCore.AbstractExecutionStats,
 )
-    helper = get_exa_solution_helper(prob)
-    return build_solution(nlp_solution, helper)
+    builder = get_exa_solution_builder(prob)
+    return builder(nlp_solution)
 end

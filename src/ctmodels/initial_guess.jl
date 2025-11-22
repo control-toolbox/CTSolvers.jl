@@ -5,7 +5,7 @@
 
 abstract type AbstractOptimalControlInitialGuess end
 
-struct OptimalControlInitialGuess{X<:Function, U<:Function, V<:Vector{<:Real}} <: AbstractOptimalControlOptimalControlInitialGuess
+struct OptimalControlInitialGuess{X<:Function, U<:Function, V<:Vector{<:Real}} <: AbstractOptimalControlInitialGuess
 	state::X
 	control::U
 	variable::V

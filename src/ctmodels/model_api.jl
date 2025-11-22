@@ -32,12 +32,3 @@ function ocp_solution(
 )::AbstractOptimalControlSolution
     return build_solution(docp, model_solution, modeler)
 end
-
-function build_solution(
-    ::SolverCore.AbstractExecutionStats, 
-    ::AbstractCTHelper,
-)
-    throw(
-        CTBase.NotImplemented("build_solution not implemented for $(typeof(helper))")
-    )
-end

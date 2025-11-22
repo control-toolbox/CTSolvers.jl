@@ -4,27 +4,27 @@
 abstract type AbstractOptimizationSolver end
 
 function CommonSolve.solve(
-    problem::AbstractOptimalControlProblem,
+    ocp::AbstractOptimalControlProblem,
     initial_guess::AbstractOptimalControlInitialGuess,
     discretizer::AbstractOptimalControlDiscretizer,
     modeler::AbstractOptimizationModeler,
     solver::AbstractOptimizationSolver;
     display::Bool=__display(),
 )::AbstractOptimalControlSolution
-    discrete_problem = discretize(problem, discretizer)
+    discrete_problem = discretize(ocp, discretizer)
     return CommonSolve.solve(discrete_problem, initial_guess, modeler, solver; display=display)
 end
 
 function CommonSolve.solve(
-    prob::AbstractOptimizationProblem,
+    problem::AbstractOptimizationProblem,
     initial_guess,
     modeler::AbstractOptimizationModeler,
     solver::AbstractOptimizationSolver;
     display::Bool=__display(),
 )
-    nlp = build_model(prob, initial_guess, modeler)
+    nlp = build_model(problem, initial_guess, modeler)
     nlp_solution = CommonSolve.solve(nlp, solver; display=display)
-    solution = build_solution(prob, nlp_solution, modeler)
+    solution = build_solution(problem, nlp_solution, modeler)
     return solution
 end
 

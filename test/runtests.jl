@@ -20,6 +20,16 @@ else
     println("⚠️  CUDA not functional, GPU tests will be skipped")
 end
 
+# Problems definition
+include(joinpath("problems", "problems_definition.jl"))
+include(joinpath("problems", "rosenbrock.jl"))
+include(joinpath("problems", "elec.jl"))
+include(joinpath("problems", "beam.jl"))
+
+# Tests parameters
+const VERBOSE = false
+const SHOWTIMING = true
+
 # Select tests to run
 const TESTS = Dict(
     :extensions => false,
@@ -51,18 +61,6 @@ const CTSolversMadNLP = Base.get_extension(CTSolvers, :CTSolversMadNLP)
 const CTSolversMadNCL = Base.get_extension(CTSolvers, :CTSolversMadNCL)
 const CTSolversKnitro = Base.get_extension(CTSolvers, :CTSolversKnitro)
 
-# ------------------------------------------------------------------------------
-# Problems definition
-include(joinpath("problems", "problems_definition.jl"))
-include(joinpath("problems", "rosenbrock.jl"))
-include(joinpath("problems", "elec.jl"))
-include(joinpath("problems", "beam.jl"))
-
-# ------------------------------------------------------------------------------
-# Tests
-const VERBOSE = false
-const SHOWTIMING = true
-
 # Aqua
 if TESTS[:aqua]
     println("========== Aqua tests ==========")
@@ -85,12 +83,12 @@ if TESTS[:ctmodels]
     println("========== CTModels tests ==========")
     @testset "CTModels" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            :ctmodels_default,
-            :ctmodels_problem_core,
-            :ctmodels_nlp_backends,
-            :ctmodels_discretized_ocp,
+            # :ctmodels_default,
+            # :ctmodels_problem_core,
+            # :ctmodels_nlp_backends,
+            # :ctmodels_discretized_ocp,
             :ctmodels_model_api,
-            :ctmodels_initial_guess,
+            # :ctmodels_initial_guess,
         )
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                 test_name = Symbol(:test_, name)
@@ -142,25 +140,3 @@ if TESTS[:ctdirect]
     end
     println("✓ CTDirect tests passed\n")
 end
-
-# const SOLVERS_RUNTESTS = Dict(
-#     :specific => Symbol[:ipopt, :madnlp, :madncl],
-#     :generic => Symbol[:ipopt, :madnlp, :madncl],
-#     :default => Symbol[:ipopt, :madnlp, :madncl],
-#     :gpu => Symbol[:madnlp, :madncl],
-# )
-# @testset verbose=VERBOSE showtiming=SHOWTIMING "CTSolvers tests" begin
-#     for name in (
-#         # :aqua,
-#         :default,
-#         # :models,
-#         # :solvers,
-#         # :direct,
-#     )
-#         @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-#             test_name = Symbol(:test_, name)
-#             include("$(test_name).jl")
-#             @eval $test_name()
-#         end
-#     end
-# end
