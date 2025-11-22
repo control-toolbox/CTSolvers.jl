@@ -10,6 +10,10 @@ using KernelAbstractions
 using NLPModels
 using SolverCore
 
+#
+const AbstractOptimalControlProblem = CTModels.AbstractModel
+const AbstractOptimalControlSolution = CTModels.AbstractSolution
+
 # Model
 include(joinpath("ctmodels", "default.jl"))
 include(joinpath("ctmodels", "problem_core.jl"))

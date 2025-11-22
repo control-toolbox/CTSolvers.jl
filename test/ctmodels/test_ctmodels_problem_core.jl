@@ -65,12 +65,12 @@ function test_ctmodels_problem_core()
 
     # Tests for the type hierarchy (abstract base types and concrete subtypes).
     Test.@testset "ctmodels/problem_core: type hierarchy" verbose=VERBOSE showtiming=SHOWTIMING begin
-        Test.@test isabstracttype(CTSolvers.AbstractCTModelBuilder)
-        Test.@test isabstracttype(CTSolvers.AbstractCTSolutionHelper)
-        Test.@test isabstracttype(CTSolvers.AbstractCTOptimizationProblem)
+        Test.@test isabstracttype(CTSolvers.AbstractModelBuilder)
+        Test.@test isabstracttype(CTSolvers.AbstractCTHelper)
+        Test.@test isabstracttype(CTSolvers.AbstractOptimizationProblem)
 
-        Test.@test CTSolvers.ADNLPModelBuilder <: CTSolvers.AbstractCTModelBuilder
-        Test.@test CTSolvers.ExaModelBuilder  <: CTSolvers.AbstractCTModelBuilder
+        Test.@test CTSolvers.ADNLPModelBuilder <: CTSolvers.AbstractModelBuilder
+        Test.@test CTSolvers.ExaModelBuilder  <: CTSolvers.AbstractModelBuilder
     end
 
     # Tests for the generic "NotImplemented" behaviour of the get_* functions

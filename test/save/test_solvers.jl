@@ -26,10 +26,10 @@ function test_solvers()
         if :ipopt in SOLVERS_RUNTESTS[:specific]
             Test.@testset "NLPModelsIpopt" verbose=VERBOSE showtiming=SHOWTIMING begin
                 modelers = [
-                    CTSolvers.ADNLPModelBackend(; backend=:manual),
-                    CTSolvers.ExaModelBackend(),
+                    CTSolvers.ADNLPModeler(; backend=:manual),
+                    CTSolvers.ExaModeler(),
                 ]
-                modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
+                modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
 
                 # Rosenbrock
                 Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -66,10 +66,10 @@ function test_solvers()
             Test.@testset "MadNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
                 BaseType = Float32
                 modelers = [
-                    CTSolvers.ADNLPModelBackend(; backend=:manual),
-                    CTSolvers.ExaModelBackend(; base_type=BaseType),
+                    CTSolvers.ADNLPModeler(; backend=:manual),
+                    CTSolvers.ExaModeler(; base_type=BaseType),
                 ]
-                modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
+                modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
                 linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
                 linear_solvers_names = ["Umfpack", "Mumps"]
 
@@ -119,10 +119,10 @@ function test_solvers()
             Test.@testset "MadNCL" verbose=VERBOSE showtiming=SHOWTIMING begin
                 BaseType = Float64
                 modelers = [
-                    CTSolvers.ADNLPModelBackend(; backend=:manual),
-                    CTSolvers.ExaModelBackend(; base_type=BaseType),
+                    CTSolvers.ADNLPModeler(; backend=:manual),
+                    CTSolvers.ExaModeler(; base_type=BaseType),
                 ]
-                modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
+                modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
                 linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
                 linear_solvers_names = ["Umfpack", "Mumps"]
                 madncl_options = f_madncl_options(BaseType)
@@ -154,10 +154,10 @@ function test_solvers()
         if :ipopt in SOLVERS_RUNTESTS[:generic]
             Test.@testset "NLPModelsIpopt" verbose=VERBOSE showtiming=SHOWTIMING begin
                 modelers = [
-                    CTSolvers.ADNLPModelBackend(; backend=:manual),
-                    CTSolvers.ExaModelBackend(),
+                    CTSolvers.ADNLPModeler(; backend=:manual),
+                    CTSolvers.ExaModeler(),
                 ]
-                modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
+                modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
 
                 # Rosenbrock
                 Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -169,7 +169,7 @@ function test_solvers()
                                     rosenbrock_prob,
                                     rosenbrock_init,
                                     modeler,
-                                    CTSolvers.NLPModelsIpoptBackend(; ipopt_options...),
+                                    CTSolvers.IpoptSolver(; ipopt_options...),
                                 )
                                 Test.@test sol.status == :first_order
                                 Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
@@ -186,7 +186,7 @@ function test_solvers()
                                     rosenbrock_prob,
                                     rosenbrock_solu,
                                     modeler,
-                                    CTSolvers.NLPModelsIpoptBackend(;
+                                    CTSolvers.IpoptSolver(;
                                         ipopt_options..., max_iter=0
                                     ),
                                 )
@@ -206,7 +206,7 @@ function test_solvers()
                                     elec_prob,
                                     elec_init,
                                     modeler,
-                                    CTSolvers.NLPModelsIpoptBackend(; ipopt_options...),
+                                    CTSolvers.IpoptSolver(; ipopt_options...),
                                 )
                                 Test.@test sol.status == :first_order
                             end
@@ -220,7 +220,7 @@ function test_solvers()
                                     elec_prob,
                                     elec_init,
                                     modeler,
-                                    CTSolvers.NLPModelsIpoptBackend(;
+                                    CTSolvers.IpoptSolver(;
                                         ipopt_options..., max_iter=0
                                     ),
                                 )
@@ -238,10 +238,10 @@ function test_solvers()
             Test.@testset "MadNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
                 BaseType = Float32
                 modelers = [
-                    CTSolvers.ADNLPModelBackend(; backend=:manual),
-                    CTSolvers.ExaModelBackend(; base_type=BaseType),
+                    CTSolvers.ADNLPModeler(; backend=:manual),
+                    CTSolvers.ExaModeler(; base_type=BaseType),
                 ]
-                modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
+                modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
                 linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
                 linear_solvers_names = ["Umfpack", "Mumps"]
 
@@ -257,7 +257,7 @@ function test_solvers()
                                         rosenbrock_prob,
                                         rosenbrock_init,
                                         modeler,
-                                        CTSolvers.MadNLPBackend(;
+                                        CTSolvers.MadNLPSolver(;
                                             madnlp_options..., linear_solver=linear_solver
                                         ),
                                     )
@@ -279,7 +279,7 @@ function test_solvers()
                                         rosenbrock_prob,
                                         rosenbrock_solu,
                                         modeler,
-                                        CTSolvers.MadNLPBackend(;
+                                        CTSolvers.MadNLPSolver(;
                                             madnlp_options...,
                                             max_iter=0,
                                             linear_solver=linear_solver,
@@ -304,7 +304,7 @@ function test_solvers()
                                         elec_prob,
                                         elec_init,
                                         modeler,
-                                        CTSolvers.MadNLPBackend(;
+                                        CTSolvers.MadNLPSolver(;
                                             madnlp_options..., linear_solver=linear_solver
                                         ),
                                     )
@@ -323,7 +323,7 @@ function test_solvers()
                                         elec_prob,
                                         elec_init,
                                         modeler,
-                                        CTSolvers.MadNLPBackend(;
+                                        CTSolvers.MadNLPSolver(;
                                             madnlp_options...,
                                             max_iter=0,
                                             linear_solver=linear_solver,
@@ -344,10 +344,10 @@ function test_solvers()
             Test.@testset "MadNCL" verbose=VERBOSE showtiming=SHOWTIMING begin
                 BaseType = Float64
                 modelers = [
-                    CTSolvers.ADNLPModelBackend(; backend=:manual),
-                    CTSolvers.ExaModelBackend(; base_type=BaseType),
+                    CTSolvers.ADNLPModeler(; backend=:manual),
+                    CTSolvers.ExaModeler(; base_type=BaseType),
                 ]
-                modelers_names = ["ADNLPModelBackend (manual)", "ExaModelBackend (CPU)"]
+                modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
                 linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
                 linear_solvers_names = ["Umfpack", "Mumps"]
                 madncl_options = f_madncl_options(BaseType)
@@ -364,7 +364,7 @@ function test_solvers()
                                         elec_prob,
                                         elec_init,
                                         modeler,
-                                        CTSolvers.MadNCLBackend(;
+                                        CTSolvers.MadNCLSolver(;
                                             madncl_options..., linear_solver=linear_solver
                                         ),
                                     )
@@ -383,7 +383,7 @@ function test_solvers()
                                         elec_prob,
                                         elec_init,
                                         modeler,
-                                        CTSolvers.MadNCLBackend(;
+                                        CTSolvers.MadNCLSolver(;
                                             madncl_options...,
                                             max_iter=0,
                                             linear_solver=linear_solver,
@@ -404,9 +404,9 @@ function test_solvers()
     Test.@testset "Default options" verbose=VERBOSE showtiming=SHOWTIMING begin
         if :ipopt in SOLVERS_RUNTESTS[:default]
             Test.@testset "NLPModelsIpopt" verbose=VERBOSE showtiming=SHOWTIMING begin
-                solver = CTSolvers.NLPModelsIpoptBackend()
-                modelers = [CTSolvers.ADNLPModelBackend(), CTSolvers.ExaModelBackend()]
-                modelers_names = ["ADNLPModelBackend", "ExaModelBackend"]
+                solver = CTSolvers.IpoptSolver()
+                modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler()]
+                modelers_names = ["ADNLPModeler", "ExaModeler"]
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
@@ -422,9 +422,9 @@ function test_solvers()
 
         if :madnlp in SOLVERS_RUNTESTS[:default]
             Test.@testset "MadNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
-                solver = CTSolvers.MadNLPBackend()
-                modelers = [CTSolvers.ADNLPModelBackend(), CTSolvers.ExaModelBackend()]
-                modelers_names = ["ADNLPModelBackend", "ExaModelBackend"]
+                solver = CTSolvers.MadNLPSolver()
+                modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler()]
+                modelers_names = ["ADNLPModeler", "ExaModeler"]
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
@@ -440,9 +440,9 @@ function test_solvers()
 
         if :madncl in SOLVERS_RUNTESTS[:default]
             Test.@testset "MadNCL" verbose=VERBOSE showtiming=SHOWTIMING begin
-                solver = CTSolvers.MadNCLBackend()
-                modelers = [CTSolvers.ADNLPModelBackend(), CTSolvers.ExaModelBackend()]
-                modelers_names = ["ADNLPModelBackend", "ExaModelBackend"]
+                solver = CTSolvers.MadNCLSolver()
+                modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler()]
+                modelers_names = ["ADNLPModeler", "ExaModeler"]
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
@@ -462,12 +462,12 @@ function test_solvers()
         Test.@testset "GPU" verbose=VERBOSE showtiming=SHOWTIMING begin
             exa_backend = CUDA.CUDABackend()
             linear_solver = MadNLPGPU.CUDSSSolver
-            modelers = [CTSolvers.ExaModelBackend(; backend=exa_backend)]
-            modelers_names = ["ExaModelBackend (GPU)"]
+            modelers = [CTSolvers.ExaModeler(; backend=exa_backend)]
+            modelers_names = ["ExaModeler (GPU)"]
 
             # MadNLP
             if :madnlp in SOLVERS_RUNTESTS[:gpu]
-                solver = CTSolvers.MadNLPBackend(; linear_solver=linear_solver)
+                solver = CTSolvers.MadNLPSolver(; linear_solver=linear_solver)
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
@@ -480,7 +480,7 @@ function test_solvers()
 
             # MadNCL
             if :madncl in SOLVERS_RUNTESTS[:gpu]
-                solver = CTSolvers.MadNCLBackend(; linear_solver=linear_solver)
+                solver = CTSolvers.MadNCLSolver(; linear_solver=linear_solver)
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(

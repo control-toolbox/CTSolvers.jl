@@ -1,50 +1,52 @@
-# ------------------------------------------------------------------------------
-# Problem definition
-# ------------------------------------------------------------------------------
 # builders of NLP models
-abstract type AbstractCTModelBuilder end
+abstract type AbstractModelBuilder end
 
-struct ADNLPModelBuilder{T<:Function} <: AbstractCTModelBuilder
+struct ADNLPModelBuilder{T<:Function} <: AbstractModelBuilder
     f::T
 end
-function (builder::ADNLPModelBuilder)(initial_guess; kwargs...)::ADNLPModels.ADNLPModel
+function (builder::ADNLPModelBuilder)(
+    initial_guess;
+    kwargs...
+)::ADNLPModels.ADNLPModel
     return builder.f(initial_guess; kwargs...)
 end
 
-struct ExaModelBuilder{T<:Function} <: AbstractCTModelBuilder
+struct ExaModelBuilder{T<:Function} <: AbstractModelBuilder
     f::T
 end
 function (builder::ExaModelBuilder)(
-    ::Type{BaseType}, initial_guess; kwargs...
+    ::Type{BaseType},
+    initial_guess;
+    kwargs...
 )::ExaModels.ExaModel where {BaseType<:AbstractFloat}
     return builder.f(BaseType, initial_guess; kwargs...)
 end
 
 # helpers to build solutions
-abstract type AbstractCTSolutionHelper end
+abstract type AbstractCTHelper end
 
 # problem
-abstract type AbstractCTOptimizationProblem end
+abstract type AbstractOptimizationProblem end
 
-function get_exa_model_builder(prob::AbstractCTOptimizationProblem)
+function get_exa_model_builder(prob::AbstractOptimizationProblem)
     throw(
         CTBase.NotImplemented("get_exa_model_builder not implemented for $(typeof(prob))")
     )
 end
 
-function get_adnlp_model_builder(prob::AbstractCTOptimizationProblem)
+function get_adnlp_model_builder(prob::AbstractOptimizationProblem)
     throw(
         CTBase.NotImplemented("get_adnlp_model_builder not implemented for $(typeof(prob))")
     )
 end
 
-function get_adnlp_solution_helper(prob::AbstractCTOptimizationProblem)
+function get_adnlp_solution_helper(prob::AbstractOptimizationProblem)
     throw(
         CTBase.NotImplemented("get_adnlp_solution_helper not implemented for $(typeof(prob))")
     )
 end
 
-function get_exa_solution_helper(prob::AbstractCTOptimizationProblem)
+function get_exa_solution_helper(prob::AbstractOptimizationProblem)
     throw(
         CTBase.NotImplemented("get_exa_solution_helper not implemented for $(typeof(prob))")
     )

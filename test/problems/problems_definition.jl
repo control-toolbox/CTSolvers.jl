@@ -1,10 +1,10 @@
 # Helper types
-abstract type AbstractNLPSolutionHelper <: CTSolvers.AbstractCTSolutionHelper end
+abstract type AbstractNLPSolutionHelper <: CTSolvers.AbstractCTHelper end
 struct ADNLPSolutionHelper <: AbstractNLPSolutionHelper end
 struct ExaSolutionHelper <: AbstractNLPSolutionHelper end
 
 #
-struct OptimizationProblem <: CTSolvers.AbstractCTOptimizationProblem
+struct OptimizationProblem <: CTSolvers.AbstractOptimizationProblem
     build_adnlp_model::CTSolvers.ADNLPModelBuilder
     build_exa_model::CTSolvers.ExaModelBuilder
     adnlp_solution_helper::ADNLPSolutionHelper
@@ -35,4 +35,4 @@ function CTSolvers.build_solution(
 end
 
 #
-struct DummyProblem <: CTSolvers.AbstractCTOptimizationProblem end
+struct DummyProblem <: CTSolvers.AbstractOptimizationProblem end

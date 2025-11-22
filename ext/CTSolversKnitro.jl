@@ -20,14 +20,14 @@ function CTSolvers.solve_with_knitro(
 end
 
 # backend constructor
-function CTSolvers.KnitroBackend(;
+function CTSolvers.KnitroSolver(;
     maxit::Int=__nlp_models_knitro_max_iter(),
     feastol_abs::Float64=__nlp_models_knitro_feastol_abs(),
     opttol_abs::Float64=__nlp_models_knitro_opttol_abs(),
     print_level::Int=__nlp_models_knitro_print_level(),
     kwargs...,
 )
-    return CTSolvers.KnitroBackend((
+    return CTSolvers.KnitroSolver((
         :maxit => maxit,
         :feastol_abs => feastol_abs,
         :opttol_abs => opttol_abs,
@@ -36,7 +36,7 @@ function CTSolvers.KnitroBackend(;
     ))
 end
 
-function (solver::CTSolvers.KnitroBackend)(
+function (solver::CTSolvers.KnitroSolver)(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::SolverCore.GenericExecutionStats
     options = Dict(solver.options)

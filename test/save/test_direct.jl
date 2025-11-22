@@ -2,7 +2,7 @@ function test_direct()
 
     # Preliminary
     ocp, init = beam()
-    discretizer = CTSolvers.CollocationMethod()
+    discretizer = CTSolvers.Collocation()
     docp = CTSolvers.discretize(ocp, discretizer)
 
     # options
@@ -19,7 +19,7 @@ function test_direct()
 
     # Tests
     Test.@testset "Discretized problem and types" begin
-        Test.@test docp isa CTSolvers.AbstractCTOptimizationProblem
+        Test.@test docp isa CTSolvers.AbstractOptimizationProblem
         Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
         Test.@test CTSolvers.get_adnlp_model_builder(docp) isa CTSolvers.ADNLPModelBuilder
         Test.@test CTSolvers.get_exa_model_builder(docp) isa CTSolvers.ExaModelBuilder
@@ -27,13 +27,13 @@ function test_direct()
 
     Test.@testset "NLP model" begin
         # ADNLPModels
-        modeler = CTSolvers.ADNLPModelBackend(; backend=:manual)
+        modeler = CTSolvers.ADNLPModeler(; backend=:manual)
         nlp_adnlp = CTSolvers.nlp_model(docp, init, modeler)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         nlp_adnlp = CTSolvers.build_model(docp, init, modeler)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         # ExaModels
-        modeler = CTSolvers.ExaModelBackend()
+        modeler = CTSolvers.ExaModeler()
         nlp_exa = CTSolvers.nlp_model(docp, init, modeler)
         Test.@test nlp_exa isa ExaModels.ExaModel
         nlp_exa = CTSolvers.build_model(docp, init, modeler)
@@ -42,26 +42,26 @@ function test_direct()
 
     Test.@testset "Solvers" begin
         # ADNLPModels + Ipopt
-        modeler = CTSolvers.ADNLPModelBackend(; backend=:manual)
-        solver = CTSolvers.NLPModelsIpoptBackend(; ipopt_options...)
+        modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+        solver = CTSolvers.IpoptSolver(; ipopt_options...)
         sol_adnlp = CommonSolve.solve(docp, init, modeler, solver)
         Test.@test sol_adnlp.status == :first_order
 
         # ADNLPModels + MadNLP
-        modeler = CTSolvers.ADNLPModelBackend(; backend=:manual)
-        solver = CTSolvers.MadNLPBackend(; madnlp_options...)
+        modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+        solver = CTSolvers.MadNLPSolver(; madnlp_options...)
         sol_adnlp = CommonSolve.solve(docp, init, modeler, solver)
         Test.@test sol_adnlp.status == MadNLP.SOLVE_SUCCEEDED
 
         # ExaModels + Ipopt
-        modeler = CTSolvers.ExaModelBackend()
-        solver = CTSolvers.NLPModelsIpoptBackend(; ipopt_options...)
+        modeler = CTSolvers.ExaModeler()
+        solver = CTSolvers.IpoptSolver(; ipopt_options...)
         sol_exa = CommonSolve.solve(docp, init, modeler, solver)
         Test.@test sol_exa.status == :first_order
 
         # ExaModels + MadNLP
-        modeler = CTSolvers.ExaModelBackend()
-        solver = CTSolvers.MadNLPBackend(; madnlp_options...)
+        modeler = CTSolvers.ExaModeler()
+        solver = CTSolvers.MadNLPSolver(; madnlp_options...)
         sol_exa = CommonSolve.solve(docp, init, modeler, solver)
         Test.@test sol_exa.status == MadNLP.SOLVE_SUCCEEDED
     end

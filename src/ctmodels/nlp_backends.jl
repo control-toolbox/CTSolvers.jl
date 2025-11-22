@@ -1,12 +1,12 @@
 # ------------------------------------------------------------------------------
 # Model backends
 # ------------------------------------------------------------------------------
-abstract type AbstractNLPModelBackend end
+abstract type AbstractOptimizationModeler end
 
 # ------------------------------------------------------------------------------
 # ADNLPModels
 # ------------------------------------------------------------------------------
-struct ADNLPModelBackend{EmptyBackends<:Tuple{Vararg{Symbol}},KW} <: AbstractNLPModelBackend
+struct ADNLPModeler{EmptyBackends<:Tuple{Vararg{Symbol}},KW} <: AbstractOptimizationModeler
     # attributes
     show_time::Bool
     backend::Symbol
@@ -14,7 +14,7 @@ struct ADNLPModelBackend{EmptyBackends<:Tuple{Vararg{Symbol}},KW} <: AbstractNLP
     kwargs::KW
 
     # constructor
-    function ADNLPModelBackend(;
+    function ADNLPModeler(;
         show_time::Bool=__adnlp_model_show_time(),
         backend::Symbol=__adnlp_model_backend(),
         empty_backends::EmptyBackends=__adnlp_model_empty_backends(),
@@ -24,8 +24,9 @@ struct ADNLPModelBackend{EmptyBackends<:Tuple{Vararg{Symbol}},KW} <: AbstractNLP
     end
 end
 
-function (modeler::ADNLPModelBackend)(
-    prob::AbstractCTOptimizationProblem, initial_guess
+function (modeler::ADNLPModeler)(
+    prob::AbstractOptimizationProblem, 
+    initial_guess,
 )::ADNLPModels.ADNLPModel
 
     # build the empty backends
@@ -47,13 +48,15 @@ function (modeler::ADNLPModelBackend)(
     end
 
     # build the model
-    return get_adnlp_model_builder(prob)(
+    builder = get_adnlp_model_builder(prob)
+    return builder(
         initial_guess; show_time=modeler.show_time, backend_options..., modeler.kwargs...
     )
 end
 
-function (modeler::ADNLPModelBackend)(
-    prob::AbstractCTOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats
+function (modeler::ADNLPModeler)(
+    prob::AbstractOptimizationProblem, 
+    nlp_solution::SolverCore.AbstractExecutionStats
 )
     helper = get_adnlp_solution_helper(prob)
     return build_solution(nlp_solution, helper)
@@ -62,12 +65,12 @@ end
 # ------------------------------------------------------------------------------
 # ExaModels
 # ------------------------------------------------------------------------------
-struct ExaModelBackend{
+struct ExaModeler{
     BaseType<:AbstractFloat,BackendType<:Union{Nothing,KernelAbstractions.Backend},KW
-} <: AbstractNLPModelBackend
+} <: AbstractOptimizationModeler
     backend::BackendType
     kwargs::KW
-    function ExaModelBackend(;
+    function ExaModeler(;
         base_type::Type{<:AbstractFloat}=__exa_model_base_type(),
         backend::Union{Nothing,KernelAbstractions.Backend}=__exa_model_backend(),
         kwargs...,
@@ -76,16 +79,19 @@ struct ExaModelBackend{
     end
 end
 
-function (modeler::ExaModelBackend{BaseType,BackendType,KW})(
-    prob::AbstractCTOptimizationProblem, initial_guess
+function (modeler::ExaModeler{BaseType,BackendType,KW})(
+    prob::AbstractOptimizationProblem, 
+    initial_guess,
 )::ExaModels.ExaModel{BaseType} where {BaseType<:AbstractFloat,BackendType<:Union{Nothing,KernelAbstractions.Backend},KW}
-    return get_exa_model_builder(prob)(
+    builder = get_exa_model_builder(prob)
+    return builder(
         BaseType, initial_guess; backend=modeler.backend, modeler.kwargs...
     )
 end
 
-function (modeler::ExaModelBackend)(
-    prob::AbstractCTOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats
+function (modeler::ExaModeler)(
+    prob::AbstractOptimizationProblem, 
+    nlp_solution::SolverCore.AbstractExecutionStats,
 )
     helper = get_exa_solution_helper(prob)
     return build_solution(nlp_solution, helper)

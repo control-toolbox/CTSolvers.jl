@@ -1,18 +1,18 @@
-struct DummyProblemAPI <: CTSolvers.AbstractCTOptimizationProblem end
+struct DummyProblemAPI <: CTSolvers.AbstractOptimizationProblem end
 
 struct DummyStatsAPI <: SolverCore.AbstractExecutionStats end
 
 struct DummySolutionAPI end
 
-struct FakeBackendAPI <: CTSolvers.AbstractNLPModelBackend
+struct FakeBackendAPI <: CTSolvers.AbstractOptimizationModeler
     model_calls::Base.RefValue{Int}
     solution_calls::Base.RefValue{Int}
 end
 
-struct DummyHelperAPI <: CTSolvers.AbstractCTSolutionHelper end
+struct DummyHelperAPI <: CTSolvers.AbstractCTHelper end
 
 function (b::FakeBackendAPI)(
-    prob::CTSolvers.AbstractCTOptimizationProblem,
+    prob::CTSolvers.AbstractOptimizationProblem,
     initial_guess,
 )::NLPModels.AbstractNLPModel
     b.model_calls[] += 1
@@ -24,7 +24,7 @@ function (b::FakeBackendAPI)(
 end
 
 function (b::FakeBackendAPI)(
-    prob::CTSolvers.AbstractCTOptimizationProblem,
+    prob::CTSolvers.AbstractOptimizationProblem,
     nlp_solution::SolverCore.AbstractExecutionStats,
 )
     b.solution_calls[] += 1
@@ -84,7 +84,7 @@ function test_ctmodels_model_api()
     # ------------------------------------------------------------------
     # Tests for the generic NotImplemented stub build_solution(stats, helper)
     # ------------------------------------------------------------------
-    # The fallback build_solution(::AbstractExecutionStats, helper::AbstractCTSolutionHelper)
+    # The fallback build_solution(::AbstractExecutionStats, helper::AbstractCTHelper)
     # is expected to throw CTBase.NotImplemented unless a more specific
     # method is defined.
 

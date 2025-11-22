@@ -1,17 +1,46 @@
 # ------------------------------------------------------------------------------
 # Generic solver method
 # ------------------------------------------------------------------------------
-abstract type AbstractNLPSolverBackend end
+abstract type AbstractOptimizationSolver end
 
 function CommonSolve.solve(
-    prob::AbstractCTOptimizationProblem,
-    initial_guess,
-    modeler::AbstractNLPModelBackend,
-    solver::AbstractNLPSolverBackend;
+    problem::AbstractOptimalControlProblem,
+    initial_guess::AbstractOptimalControlInitialGuess,
+    discretizer::AbstractOptimalControlDiscretizer,
+    modeler::AbstractOptimizationModeler,
+    solver::AbstractOptimizationSolver;
     display::Bool=__display(),
-)::SolverCore.AbstractExecutionStats
+)::AbstractOptimalControlSolution
+    discrete_problem = discretize(problem, discretizer)
+    return CommonSolve.solve(discrete_problem, initial_guess, modeler, solver; display=display)
+end
+
+function CommonSolve.solve(
+    prob::AbstractOptimizationProblem,
+    initial_guess,
+    modeler::AbstractOptimizationModeler,
+    solver::AbstractOptimizationSolver;
+    display::Bool=__display(),
+)
     nlp = build_model(prob, initial_guess, modeler)
-    nlp_solution = solver(nlp; display=display)
+    nlp_solution = CommonSolve.solve(nlp, solver; display=display)
     solution = build_solution(prob, nlp_solution, modeler)
     return solution
+end
+
+function CommonSolve.solve(
+    nlp::NLPModels.AbstractNLPModel,
+    solver::AbstractOptimizationSolver;
+    display::Bool=__display(),
+)::SolverCore.AbstractExecutionStats
+    return solver(nlp; display=display)
+end
+
+# to let freedom to the user
+function CommonSolve.solve(
+    nlp,
+    solver::AbstractOptimizationSolver;
+    display::Bool=__display(),
+)
+    return solver(nlp; display=display)
 end

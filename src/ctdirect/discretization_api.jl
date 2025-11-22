@@ -1,13 +1,13 @@
 function discretize(
-    ocp::CTModels.Model,
-    discretizer::AbstractCTDiscretizationMethod,
+    ocp::AbstractOptimalControlProblem,
+    discretizer::AbstractOptimalControlDiscretizer,
 )
     return discretizer(ocp)
 end
 
 function discretize(
-    ocp::CTModels.Model;
-    discretizer::AbstractCTDiscretizationMethod=__discretisation_method(),
+    ocp::AbstractOptimalControlProblem;
+    discretizer::AbstractOptimalControlDiscretizer=__discretizer(),
 )
     return discretize(ocp, discretizer)
 end

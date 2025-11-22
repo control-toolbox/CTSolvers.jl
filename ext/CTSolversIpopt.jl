@@ -22,7 +22,7 @@ function CTSolvers.solve_with_ipopt(
 end
 
 # backend constructor
-function CTSolvers.NLPModelsIpoptBackend(;
+function CTSolvers.IpoptSolver(;
     max_iter::Int=__nlp_models_ipopt_max_iter(),
     tol::Float64=__nlp_models_ipopt_tol(),
     print_level::Int=__nlp_models_ipopt_print_level(),
@@ -31,7 +31,7 @@ function CTSolvers.NLPModelsIpoptBackend(;
     sb::String=__nlp_models_ipopt_sb(),
     kwargs...,
 )
-    return CTSolvers.NLPModelsIpoptBackend((
+    return CTSolvers.IpoptSolver((
         :max_iter => max_iter,
         :tol => tol,
         :print_level => print_level,
@@ -42,7 +42,7 @@ function CTSolvers.NLPModelsIpoptBackend(;
     ))
 end
 
-function (solver::CTSolvers.NLPModelsIpoptBackend)(
+function (solver::CTSolvers.IpoptSolver)(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::SolverCore.GenericExecutionStats
     options = Dict(solver.options)

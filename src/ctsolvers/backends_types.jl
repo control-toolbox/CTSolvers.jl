@@ -3,21 +3,21 @@
 # ------------------------------------------------------------------------------
 
 # NLPModelsIpopt
-struct NLPModelsIpoptBackend{T<:Tuple} <: AbstractNLPSolverBackend
+struct IpoptSolver{T<:Tuple} <: AbstractOptimizationSolver
     options::T
 end
 
 # MadNLP
-struct MadNLPBackend{T<:Tuple} <: AbstractNLPSolverBackend
+struct MadNLPSolver{T<:Tuple} <: AbstractOptimizationSolver
     options::T
 end
 
 # MadNCL
-struct MadNCLBackend{BaseType<:AbstractFloat,T<:Tuple} <: AbstractNLPSolverBackend
+struct MadNCLSolver{BaseType<:AbstractFloat,T<:Tuple} <: AbstractOptimizationSolver
     options::T
 end
 
 # Knitro
-struct KnitroBackend{T<:Tuple} <: AbstractNLPSolverBackend
+struct KnitroSolver{T<:Tuple} <: AbstractOptimizationSolver
     options::T
 end
