@@ -10,7 +10,7 @@ function build_model(
 end
 
 function nlp_model(
-    prob::AbstractOptimizationProblem, 
+    prob::DiscretizedOptimalControlProblem, 
     initial_guess,
     modeler::AbstractOptimizationModeler,
 )::NLPModels.AbstractNLPModel
