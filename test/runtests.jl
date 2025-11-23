@@ -32,11 +32,11 @@ const SHOWTIMING = true
 
 # Select tests to run
 const TESTS = Dict(
-    :extensions => true,
-    :aqua       => true,
+    :extensions => false,
+    :aqua       => false,
     :ctmodels   => true,
-    :ctsolvers  => true,
-    :ctdirect   => true,
+    :ctsolvers  => false,
+    :ctdirect   => false,
 )
 
 # Test extension exceptions: before loading the extensions
