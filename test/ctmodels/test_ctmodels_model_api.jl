@@ -2,7 +2,7 @@ struct DummyProblemAPI <: CTSolvers.AbstractOptimizationProblem end
 
 struct DummyStatsAPI <: SolverCore.AbstractExecutionStats end
 
-struct DummySolutionAPI end
+struct DummySolutionAPI <: CTModels.AbstractSolution end
 
 struct FakeBackendAPI <: CTSolvers.AbstractOptimizationModeler
     model_calls::Base.RefValue{Int}
@@ -29,34 +29,57 @@ function (b::FakeBackendAPI)(
     return DummySolutionAPI()
 end
 
+struct DummyOCPForModelAPI <: CTModels.AbstractModel end
+
+function make_dummy_docp_for_model_api()
+    ocp = DummyOCPForModelAPI()
+    adnlp_builder = CTSolvers.ADNLPModelBuilder((x; kwargs...) -> begin
+        f(z) = sum(z .^ 2)
+        # We deliberately ignore the extra keyword arguments such as
+        # show_time, backend, and AD backend options here. For this
+        # unit test we only need a valid ADNLPModel instance.
+        return ADNLPModels.ADNLPModel(f, x)
+    end)
+    exa_builder = CTSolvers.ExaModelBuilder((T, x; kwargs...) -> :exa_model_dummy)
+    adnlp_solution_builder = CTSolvers.ADNLPSolutionBuilder(s -> s)
+    exa_solution_builder = CTSolvers.ExaSolutionBuilder(s -> s)
+    return CTSolvers.DiscretizedOptimalControlProblem(
+        ocp,
+        adnlp_builder,
+        exa_builder,
+        adnlp_solution_builder,
+        exa_solution_builder,
+    )
+end
+
 function test_ctmodels_model_api()
 
     # ------------------------------------------------------------------
-    # Unit tests for build_model and nlp_model delegation
+    # Unit tests for build_model delegation
     # ------------------------------------------------------------------
-    # We construct a small fake backend that records how many times it is
-    # called and returns a dummy NLP model type. This lets us test that
-    # build_model and nlp_model both delegate correctly without depending
-    # on any particular real backend.
-
-    Test.@testset "ctmodels/model_api: build_model & nlp_model delegation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ctmodels/model_api: build_model delegation" verbose=VERBOSE showtiming=SHOWTIMING begin
         prob = DummyProblemAPI()
         x0 = [1.0, 2.0]
         model_calls = Ref(0)
         solution_calls = Ref(0)
         backend = FakeBackendAPI(model_calls, solution_calls)
 
-        # build_model should call the backend once and return an AbstractNLPModel
-        nlp1 = CTSolvers.build_model(prob, x0, backend)
-        Test.@test nlp1 isa NLPModels.AbstractNLPModel
+        nlp = CTSolvers.build_model(prob, x0, backend)
+        Test.@test nlp isa NLPModels.AbstractNLPModel
         Test.@test model_calls[] == 1
         Test.@test solution_calls[] == 0
+    end
 
-        # nlp_model should delegate to build_model and trigger a second call
-        nlp2 = CTSolvers.nlp_model(prob, x0, backend)
-        Test.@test nlp2 isa NLPModels.AbstractNLPModel
-        Test.@test model_calls[] == 2
-        Test.@test solution_calls[] == 0
+    # ------------------------------------------------------------------
+    # Unit tests for nlp_model(DiscretizedOptimalControlProblem, ...)
+    # ------------------------------------------------------------------
+    Test.@testset "ctmodels/model_api: nlp_model(DiscretizedOptimalControlProblem, ...)" verbose=VERBOSE showtiming=SHOWTIMING begin
+        docp = make_dummy_docp_for_model_api()
+        x0 = [1.0, 2.0]
+        modeler = CTSolvers.ADNLPModeler()
+
+        nlp = CTSolvers.nlp_model(docp, x0, modeler)
+        Test.@test nlp isa NLPModels.AbstractNLPModel
     end
 
     # ------------------------------------------------------------------
@@ -77,6 +100,56 @@ function test_ctmodels_model_api()
         Test.@test sol isa DummySolutionAPI
         Test.@test model_calls[] == 0
         Test.@test solution_calls[] == 1
+    end
+
+    # ------------------------------------------------------------------
+    # Unit tests for ocp_solution(DiscretizedOptimalControlProblem, ...)
+    # ------------------------------------------------------------------
+    Test.@testset "ctmodels/model_api: ocp_solution(DiscretizedOptimalControlProblem, ...)" verbose=VERBOSE showtiming=SHOWTIMING begin
+        docp = make_dummy_docp_for_model_api()
+        stats = DummyStatsAPI()
+        model_calls = Ref(0)
+        solution_calls = Ref(0)
+        backend = FakeBackendAPI(model_calls, solution_calls)
+
+        sol = CTSolvers.ocp_solution(docp, stats, backend)
+        Test.@test sol isa DummySolutionAPI
+        Test.@test model_calls[] == 0
+        Test.@test solution_calls[] == 1
+    end
+
+    # ------------------------------------------------------------------
+    # Integration-style tests for build_model on real problems
+    # ------------------------------------------------------------------
+    Test.@testset "ctmodels/model_api: build_model on Rosenbrock and Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+        Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
+            modeler_ad = CTSolvers.ADNLPModeler(; backend=:manual)
+            nlp_ad = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler_ad)
+            Test.@test nlp_ad isa ADNLPModels.ADNLPModel
+            Test.@test nlp_ad.meta.x0 == rosenbrock_init
+            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) == rosenbrock_objective(rosenbrock_init)
+            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0)[1] == rosenbrock_constraint(rosenbrock_init)
+            Test.@test nlp_ad.meta.minimize == rosenbrock_is_minimize()
+
+            modeler_exa = CTSolvers.ExaModeler()
+            nlp_exa = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler_exa)
+            Test.@test nlp_exa isa ExaModels.ExaModel
+        end
+
+        Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+            modeler_ad = CTSolvers.ADNLPModeler(; backend=:manual)
+            nlp_ad = CTSolvers.build_model(elec_prob, elec_init, modeler_ad)
+            Test.@test nlp_ad isa ADNLPModels.ADNLPModel
+            Test.@test nlp_ad.meta.x0 == vcat(elec_init.x, elec_init.y, elec_init.z)
+            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) == elec_objective(elec_init.x, elec_init.y, elec_init.z)
+            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0) == elec_constraint(elec_init.x, elec_init.y, elec_init.z)
+            Test.@test nlp_ad.meta.minimize == elec_is_minimize()
+
+            BaseType = Float64
+            modeler_exa = CTSolvers.ExaModeler(; base_type=BaseType)
+            nlp_exa = CTSolvers.build_model(elec_prob, elec_init, modeler_exa)
+            Test.@test nlp_exa isa ExaModels.ExaModel{BaseType}
+        end
     end
 
 end
