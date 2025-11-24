@@ -1,9 +1,10 @@
+# Main test runner orchestrating all CTSolvers test suites.
 using Test
 using Aqua
 using CTBase
 using CTModels: CTModels
 using CTParser: CTParser, @def
-using CTSolvers
+using CTSolvers: CTSolvers, @init
 using ADNLPModels
 using ExaModels
 using NLPModels
@@ -27,16 +28,17 @@ include(joinpath("problems", "elec.jl"))
 include(joinpath("problems", "beam.jl"))
 
 # Tests parameters
-const VERBOSE = true
+const VERBOSE = false
 const SHOWTIMING = true
 
 # Select tests to run
 const TESTS = Dict(
     :extensions => true,
-    :aqua       => false,
-    :ctmodels   => false,
-    :ctsolvers  => false,
-    :ctdirect   => false,
+    :aqua       => true,
+    :ctmodels   => true,
+    :ctsolvers  => true,
+    :ctparser   => true,
+    :ctdirect   => true,
 )
 
 # Test extension exceptions: before loading the extensions
@@ -66,8 +68,8 @@ if TESTS[:extensions]
     println("========== CTSolvers extensions tests ==========")
     @testset "CTSolvers extensions" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            # :ctsolvers_extensions_unit,
-            # :ctsolvers_extensions_integration,
+            :ctsolvers_extensions_unit,
+            :ctsolvers_extensions_integration,
             :ctsolvers_extensions_gpu,
         )
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -117,6 +119,23 @@ if TESTS[:ctmodels]
         end
     end
     println("✓ CTModels tests passed\n")
+end
+
+# Parser
+if TESTS[:ctparser]
+    println("========== CTParser tests ==========")
+    @testset "CTParser" verbose=VERBOSE showtiming=SHOWTIMING begin
+        for name in (
+            :ctparser_initial_guess_macro,
+        )
+            @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                test_name = Symbol(:test_, name)
+                include(joinpath("ctparser", "$(test_name).jl"))
+                @eval $test_name()
+            end
+        end
+    end
+    println("✓ CTParser tests passed\n")
 end
 
 # Solver

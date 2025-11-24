@@ -1,3 +1,4 @@
+# Unit tests for CTDirect core types (integrator schemes and Collocation discretizer).
 function test_ctdirect_core_types()
 
     # ========================================================================

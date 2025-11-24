@@ -1,3 +1,4 @@
+# Unit tests for the generic optimization model API (model and solution builders).
 struct DummyProblemAPI <: CTSolvers.AbstractOptimizationProblem end
 
 struct DummyStatsAPI <: SolverCore.AbstractExecutionStats end

@@ -1,3 +1,4 @@
+# Elec benchmark problem definition used by CTSolvers tests.
 using Random
 
 function elec_objective(x, y, z, i, j)

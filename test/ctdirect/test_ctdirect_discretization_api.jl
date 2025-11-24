@@ -1,3 +1,4 @@
+# Unit tests for the discretization API (discretize with custom and default discretizers).
 struct DummyOCPDiscretize <: CTSolvers.AbstractOptimalControlProblem end
 
 struct DummyDiscretizer <: CTSolvers.AbstractOptimalControlDiscretizer

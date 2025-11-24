@@ -1,3 +1,4 @@
+# Unit tests for Collocation discretizer wiring from OCP to discretized OCP and builders.
 struct DummyOCPCollocation <: CTSolvers.AbstractOptimalControlProblem end
 
 function test_ctdirect_collocation_impl()

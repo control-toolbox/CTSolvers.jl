@@ -1,3 +1,4 @@
+# Unit tests for CTSolvers default configuration for supported solver backends.
 function test_ctsolvers_default()
 
     # Common

@@ -1,7 +1,8 @@
+# Integration tests for CTSolvers extensions (Ipopt, MadNLP, MadNCL, Knitro) on benchmark problems and direct OCP pipelines.
 function test_ctsolvers_extensions_integration()
 
     ipopt_options = Dict(
-        :max_iter => 100,
+        :max_iter => 1000,
         :tol => 1e-6,
         :print_level => 0,
         :mu_strategy => "adaptive",
@@ -10,13 +11,13 @@ function test_ctsolvers_extensions_integration()
     )
 
     madnlp_options = Dict(
-        :max_iter => 100,
+        :max_iter => 1000,
         :tol => 1e-6,
         :print_level => MadNLP.ERROR,
     )
 
     f_madncl_options(BaseType) = Dict(
-        :max_iter => 100,
+        :max_iter => 1000,
         :tol => 1e-6,
         :print_level => MadNLP.ERROR,
         :ncl_options => MadNCL.NCLOptions{BaseType}(; verbose=false),
@@ -382,6 +383,21 @@ function test_ctsolvers_extensions_integration()
             end
         end
 
+        Test.@testset "NLP model (Beam DOCP) with @init" verbose=VERBOSE showtiming=SHOWTIMING begin
+            # Build an initial guess for the beam OCP via the @init macro
+            init_macro = CTSolvers.@init ocp begin
+                x := [0.05, 0.1]
+                u := 0.1
+            end
+
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    nlp = CTSolvers.nlp_model(docp, init_macro, modeler)
+                    Test.@test nlp isa NLPModels.AbstractNLPModel
+                end
+            end
+        end
+
         # Explicit ocp_solution tests on the DOCP, using direct solve_with_* calls
         Test.@testset "ocp_solution from DOCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 
@@ -474,6 +490,20 @@ function test_ctsolvers_extensions_integration()
                         Test.@test CTModels.constraints_violation(sol) <= 1e-6
                     end
                 end
+            end
+
+            Test.@testset "OCP level with @init (Ipopt, ADNLPModeler)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                # Use @init to define the initial guess for the beam OCP, then solve end-to-end.
+                init_macro = CTSolvers.@init ocp begin
+                    x := [0.05, 0.1]
+                    u := 0.1
+                end
+                modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+                solver = CTSolvers.IpoptSolver(; ipopt_options...)
+                sol = CommonSolve.solve(ocp, init_macro, discretizer, modeler, solver; display=false)
+                Test.@test sol isa CTModels.Solution
+                Test.@test CTModels.successful(sol)
+                Test.@test isfinite(CTModels.objective(sol))
             end
         end
     end

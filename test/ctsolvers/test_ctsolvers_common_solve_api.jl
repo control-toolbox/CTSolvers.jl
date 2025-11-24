@@ -1,3 +1,4 @@
+# Unit tests for the CommonSolve API across OCP, discretized problems, and NLP models.
 struct DummyOCPCommon <: CTSolvers.AbstractOptimalControlProblem end
 
 struct DummyDiscretizedOCPCommon <: CTSolvers.AbstractOptimizationProblem end

@@ -1,3 +1,4 @@
+# Beam optimal control problem definition used by tests and examples.
 function beam()
 
     t0=0

@@ -1,3 +1,4 @@
+# Unit tests for CTSolvers extension wrappers (default options and constructors for each backend).
 function test_ctsolvers_extensions_unit()
 
     Test.@testset "ctsolvers_ext: Ipopt defaults and constructor" verbose=VERBOSE showtiming=SHOWTIMING begin

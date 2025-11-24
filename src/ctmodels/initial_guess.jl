@@ -1,14 +1,24 @@
 # ------------------------------------------------------------------------------
 # Initial guess
 # ------------------------------------------------------------------------------
-# TODO: improve, check CTModels
-
 abstract type AbstractOptimalControlInitialGuess end
 
-struct OptimalControlInitialGuess{X<:Function, U<:Function, V<:Vector{<:Real}} <: AbstractOptimalControlInitialGuess
+struct OptimalControlInitialGuess{X<:Function, U<:Function, V} <: AbstractOptimalControlInitialGuess
 	state::X
 	control::U
 	variable::V
+end
+
+abstract type AbstractOptimalControlPreInit end
+
+struct OptimalControlPreInit{SX, SU, SV} <: AbstractOptimalControlPreInit
+	state::SX
+	control::SU
+	variable::SV
+end
+
+function pre_initial_guess(; state=nothing, control=nothing, variable=nothing)
+	return OptimalControlPreInit(state, control, variable)
 end
 
 function initial_guess(
@@ -20,44 +30,710 @@ function initial_guess(
 	x = initial_state(ocp, state)
 	u = initial_control(ocp, control)
 	v = initial_variable(ocp, variable)
-	return OptimalControlInitialGuess(x, u, v)
+	init = OptimalControlInitialGuess(x, u, v)
+	return _validate_initial_guess(ocp, init)
 end
 
-# todo: add tests on dimension, etc.
 initial_state(::AbstractOptimalControlProblem, state::Function) = state
-initial_state(::AbstractOptimalControlProblem, state::Real) = (t) -> [state]
-initial_state(::AbstractOptimalControlProblem, state::Vector{<:Real}) = (t) -> state
-initial_state(::AbstractOptimalControlProblem, ::Nothing) = (t) -> [0.1]
+
+function initial_state(ocp::AbstractOptimalControlProblem, state::Real)
+	dim = CTModels.state_dimension(ocp)
+	if dim == 1
+		return t -> state
+	else
+		msg = "Initial state dimension mismatch: got scalar for state dimension $dim"
+		throw(CTBase.IncorrectArgument(msg))
+	end
+end
+
+function _build_block_with_components(
+	ocp::AbstractOptimalControlProblem,
+	role::Symbol,
+	block_data,
+	comp_data::Dict{Int,Any},
+)
+	dim = role === :state ? CTModels.state_dimension(ocp) : CTModels.control_dimension(ocp)
+	base_fun = begin
+		if block_data === nothing
+			role === :state ? initial_state(ocp, nothing) : initial_control(ocp, nothing)
+		elseif block_data isa Tuple && length(block_data) == 2
+			# Per-block time grid: (time, data)
+			T, data = block_data
+			time = _format_time_grid(T)
+			_build_time_dependent_init(ocp, role, data, time)
+		else
+			role === :state ? initial_state(ocp, block_data) : initial_control(ocp, block_data)
+		end
+	end
+
+	if isempty(comp_data)
+		return base_fun
+	end
+
+	comp_funs = Dict{Int,Function}()
+	for (i, data) in comp_data
+		comp_funs[i] = _build_component_function(data)
+	end
+
+	return t -> begin
+		base_val = base_fun(t)
+		vec = if dim == 1
+			if base_val isa AbstractVector
+				copy(base_val)
+			else
+				[base_val]
+			end
+		else
+			if !(base_val isa AbstractVector) || length(base_val) != dim
+				msg = string(
+					"Block-level ", role,
+					" initial guess produced value of incompatible dimension: got ",
+					(base_val isa AbstractVector ? length(base_val) : 1),
+					" instead of ",
+					dim,
+				)
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			collect(base_val)
+		end
+
+		for (i, fi) in comp_funs
+			val = fi(t)
+			val_scalar = if val isa AbstractVector
+				if length(val) != 1
+					msg = string(
+						"Component-level ", role,
+						" initial guess must be scalar or length-1 vector for index ", i, ".",
+					)
+					throw(CTBase.IncorrectArgument(msg))
+				end
+				val[1]
+			else
+				val
+			end
+			if !(1 <= i <= dim)
+				msg = string(
+					"Component index ", i, " out of bounds for ", role,
+					" dimension ", dim, ".",
+				)
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			vec[i] = val_scalar
+		end
+		return dim == 1 ? vec[1] : vec
+	end
+end
+
+function _build_component_function(data)
+	# Support (time, data) tuples for per-component time grids
+	if data isa Tuple && length(data) == 2
+		T, val = data
+		time = _format_time_grid(T)
+		return _build_component_function_with_time(val, time)
+	else
+		return _build_component_function_without_time(data)
+	end
+end
+
+function _build_component_function_without_time(data)
+	if data isa Function
+		return data
+	elseif data isa Real
+		return t -> data
+	elseif data isa AbstractVector{<:Real}
+		if length(data) == 1
+			c = data[1]
+			return t -> c
+		else
+			msg = "Component-level initialization without time must be scalar or length-1 vector."
+			throw(CTBase.IncorrectArgument(msg))
+		end
+	else
+		msg = string(
+			"Unsupported component-level initialization type without time: ",
+			typeof(data),
+		)
+		throw(CTBase.IncorrectArgument(msg))
+	end
+end
+
+function _build_component_function_with_time(data, time::AbstractVector)
+	if data isa Function
+		return data
+	elseif data isa Real
+		return t -> data
+	elseif data isa AbstractVector{<:Real}
+		if length(data) == length(time)
+			itp = CTModels.ctinterpolate(time, data)
+			return t -> itp(t)
+		elseif length(data) == 1
+			c = data[1]
+			return t -> c
+		else
+			msg = string(
+				"Component-level initialization time-grid mismatch: got ",
+				length(data), " samples for ", length(time), "-point time grid.",
+			)
+			throw(CTBase.IncorrectArgument(msg))
+		end
+	else
+		msg = string(
+			"Unsupported component-level initialization type with time grid: ",
+			typeof(data),
+		)
+		throw(CTBase.IncorrectArgument(msg))
+	end
+end
+
+function initial_state(ocp::AbstractOptimalControlProblem, state::Vector{<:Real})
+	dim = CTModels.state_dimension(ocp)
+	if length(state) != dim
+		msg = string(
+			"Initial state dimension mismatch: got ",
+			length(state),
+			" instead of ",
+			dim,
+		)
+		throw(CTBase.IncorrectArgument(msg))
+	end
+	return t -> state
+end
+
+function initial_state(ocp::AbstractOptimalControlProblem, ::Nothing)
+	dim = CTModels.state_dimension(ocp)
+	if dim == 1
+		return t -> 0.1
+	else
+		return t -> fill(0.1, dim)
+	end
+end
 
 initial_control(::AbstractOptimalControlProblem, control::Function) = control
-initial_control(::AbstractOptimalControlProblem, control::Real) = (t) -> [control]
-initial_control(::AbstractOptimalControlProblem, control::Vector{<:Real}) = (t) -> control
-initial_control(::AbstractOptimalControlProblem, ::Nothing) = (t) -> [0.1]
 
-initial_variable(::AbstractOptimalControlProblem, variable::Real) = [variable]
-initial_variable(::AbstractOptimalControlProblem, variable::Vector{<:Real}) = variable
-initial_variable(::AbstractOptimalControlProblem, ::Nothing) = [0.1]
+function initial_control(ocp::AbstractOptimalControlProblem, control::Real)
+	dim = CTModels.control_dimension(ocp)
+	if dim == 1
+		return t -> control
+	else
+		msg = "Initial control dimension mismatch: got scalar for control dimension $dim"
+		throw(CTBase.IncorrectArgument(msg))
+	end
+end
 
-function state(init::OptimalControlInitialGuess{
-    X,
-    <: Function,
-    <: Vector{<:Real},
-})::X where {X <: Function} 
+function initial_control(ocp::AbstractOptimalControlProblem, control::Vector{<:Real})
+	dim = CTModels.control_dimension(ocp)
+	if length(control) != dim
+		msg = string(
+			"Initial control dimension mismatch: got ",
+			length(control),
+			" instead of ",
+			dim,
+		)
+		throw(CTBase.IncorrectArgument(msg))
+	end
+	return t -> control
+end
+
+function initial_control(ocp::AbstractOptimalControlProblem, ::Nothing)
+	dim = CTModels.control_dimension(ocp)
+	if dim == 1
+		return t -> 0.1
+	else
+		return t -> fill(0.1, dim)
+	end
+end
+
+function initial_variable(ocp::AbstractOptimalControlProblem, variable::Real)
+	dim = CTModels.variable_dimension(ocp)
+	if dim == 0
+		msg = "Initial variable dimension mismatch: got scalar for variable dimension 0"
+		throw(CTBase.IncorrectArgument(msg))
+	elseif dim == 1
+		return variable
+	else
+		msg = "Initial variable dimension mismatch: got scalar for variable dimension $dim"
+		throw(CTBase.IncorrectArgument(msg))
+	end
+end
+
+function initial_variable(ocp::AbstractOptimalControlProblem, variable::Vector{<:Real})
+	dim = CTModels.variable_dimension(ocp)
+	if length(variable) != dim
+		msg = string(
+			"Initial variable dimension mismatch: got ",
+			length(variable),
+			" instead of ",
+			dim,
+		)
+		throw(CTBase.IncorrectArgument(msg))
+	end
+	return variable
+end
+
+function initial_variable(ocp::AbstractOptimalControlProblem, ::Nothing)
+	dim = CTModels.variable_dimension(ocp)
+	if dim == 0
+		return Float64[]
+	else
+		if dim == 1
+			return 0.1
+		else
+			return fill(0.1, dim)
+		end
+	end
+end
+
+function state(init::OptimalControlInitialGuess{X,<:Function})::X where {X<:Function}
 	return init.state
 end
 
-function control(init::OptimalControlInitialGuess{
-    <: Function,
-    U,
-    <: Vector{<:Real},
-})::U where {U <: Function} 
+function control(init::OptimalControlInitialGuess{<:Function,U})::U where {U<:Function}
 	return init.control
 end
 
 function variable(init::OptimalControlInitialGuess{
-    <: Function,
-    <: Function,
-    V,
-})::V where {V <: Vector{<:Real}} 
+	    <: Function,
+	    <: Function,
+	    V,
+})::V where {V <: Union{Real,Vector{<:Real}}} 
 	return init.variable
+end
+
+function validate_initial_guess(
+	ocp::AbstractOptimalControlProblem,
+	init::AbstractOptimalControlInitialGuess,
+)
+	if init isa OptimalControlInitialGuess
+		return _validate_initial_guess(ocp, init)
+	else
+		# For now, only OptimalControlInitialGuess is supported.
+		return init
+	end
+end
+
+function _validate_initial_guess(
+	ocp::AbstractOptimalControlProblem,
+	init::OptimalControlInitialGuess,
+)
+	# Dimensions from the OCP
+	xdim = CTModels.state_dimension(ocp)
+	udim = CTModels.control_dimension(ocp)
+	vdim = CTModels.variable_dimension(ocp)
+
+	# Sample evaluation time; for autonomous/non-autonomous problems
+	# the shape of x(t), u(t) is independent of t.
+	v0 = variable(init)
+	tsample = if CTModels.has_fixed_initial_time(ocp)
+		CTModels.initial_time(ocp)
+	else
+		CTModels.initial_time(ocp, v0)
+	end
+
+	# State
+	x0 = state(init)(tsample)
+	if xdim == 1
+		if !(x0 isa Real) && !(x0 isa AbstractVector && length(x0) == 1)
+			msg = "Initial state function must return a scalar or length-1 vector for state dimension 1."
+			throw(CTBase.IncorrectArgument(msg))
+		end
+	else
+		if !(x0 isa AbstractVector) || length(x0) != xdim
+			msg = string(
+				"Initial state function returns value of incompatible dimension: got ",
+				(x0 isa AbstractVector ? length(x0) : 1),
+				" instead of ",
+				xdim,
+			)
+			throw(CTBase.IncorrectArgument(msg))
+		end
+	end
+
+	# Control
+	u0 = control(init)(tsample)
+	if udim == 1
+		if !(u0 isa Real) && !(u0 isa AbstractVector && length(u0) == 1)
+			msg = "Initial control function must return a scalar or length-1 vector for control dimension 1."
+			throw(CTBase.IncorrectArgument(msg))
+		end
+	else
+		if !(u0 isa AbstractVector) || length(u0) != udim
+			msg = string(
+				"Initial control function returns value of incompatible dimension: got ",
+				(u0 isa AbstractVector ? length(u0) : 1),
+				" instead of ",
+				udim,
+			)
+			throw(CTBase.IncorrectArgument(msg))
+		end
+	end
+
+	# Variable
+	if vdim == 0
+		if v0 isa AbstractVector
+			if length(v0) != 0
+				msg = "Initial variable has non-zero length for problem with no variable."
+				throw(CTBase.IncorrectArgument(msg))
+			end
+		elseif v0 isa Real
+			msg = "Initial variable is scalar for problem with no variable."
+			throw(CTBase.IncorrectArgument(msg))
+		end
+	elseif vdim == 1
+		if !(v0 isa Real) && !(v0 isa AbstractVector && length(v0) == 1)
+			msg = "Initial variable must be a scalar or length-1 vector for variable dimension 1."
+			throw(CTBase.IncorrectArgument(msg))
+		end
+	else
+		if !(v0 isa AbstractVector) || length(v0) != vdim
+			msg = string(
+				"Initial variable has incompatible dimension: got ",
+				(v0 isa AbstractVector ? length(v0) : 1),
+				" instead of ",
+				vdim,
+			)
+			throw(CTBase.IncorrectArgument(msg))
+		end
+	end
+
+	return init
+end
+
+function build_initial_guess(
+	ocp::AbstractOptimalControlProblem,
+	init_data,
+)
+	if init_data === nothing || init_data === ()
+		return initial_guess(ocp)
+	elseif init_data isa AbstractOptimalControlInitialGuess
+		return init_data
+	elseif init_data isa AbstractOptimalControlPreInit
+		return _initial_guess_from_preinit(ocp, init_data)
+	elseif init_data isa CTModels.AbstractSolution
+		return _initial_guess_from_solution(ocp, init_data)
+	elseif init_data isa NamedTuple
+		return _initial_guess_from_namedtuple(ocp, init_data)
+	else
+		msg = "Unsupported initial guess type: $(typeof(init_data))"
+		throw(CTBase.IncorrectArgument(msg))
+	end
+end
+
+function _initial_guess_from_solution(
+	ocp::AbstractOptimalControlProblem,
+	sol::CTModels.AbstractSolution,
+)
+	# Basic dimensional consistency checks
+	if CTModels.state_dimension(ocp) != CTModels.state_dimension(sol.model)
+		msg = "Warm start: state dimension mismatch between ocp and solution."
+		throw(CTBase.IncorrectArgument(msg))
+	end
+	if CTModels.control_dimension(ocp) != CTModels.control_dimension(sol.model)
+		msg = "Warm start: control dimension mismatch between ocp and solution."
+		throw(CTBase.IncorrectArgument(msg))
+	end
+	if CTModels.variable_dimension(ocp) != CTModels.variable_dimension(sol.model)
+		msg = "Warm start: variable dimension mismatch between ocp and solution."
+		throw(CTBase.IncorrectArgument(msg))
+	end
+
+	state_fun = CTModels.state(sol)
+	control_fun = CTModels.control(sol)
+	variable_val = CTModels.variable(sol)
+
+	init = OptimalControlInitialGuess(state_fun, control_fun, variable_val)
+	return _validate_initial_guess(ocp, init)
+end
+
+function _initial_guess_from_namedtuple(
+	ocp::AbstractOptimalControlProblem,
+	init_data::NamedTuple,
+)
+	# Names and component maps from the OCP
+	s_name_sym = Symbol(CTModels.state_name(ocp))
+	u_name_sym = Symbol(CTModels.control_name(ocp))
+	v_name_sym = Symbol(CTModels.variable_name(ocp))
+
+	s_comp_syms = Symbol.(CTModels.state_components(ocp))
+	u_comp_syms = Symbol.(CTModels.control_components(ocp))
+	v_comp_syms = Symbol.(CTModels.variable_components(ocp))
+
+	s_comp_index = Dict(sym => i for (i, sym) in enumerate(s_comp_syms))
+	u_comp_index = Dict(sym => i for (i, sym) in enumerate(u_comp_syms))
+	v_comp_index = Dict(sym => i for (i, sym) in enumerate(v_comp_syms))
+
+	# Block-level and component-level specs
+	state_block = nothing
+	control_block = nothing
+	variable_block = nothing
+	state_block_set = false
+	control_block_set = false
+	variable_block_set = false
+	state_comp = Dict{Int,Any}()
+	control_comp = Dict{Int,Any}()
+	variable_comp = Dict{Int,Any}()
+
+	# Parse keys and enforce uniqueness
+	for (k, v) in pairs(init_data)
+		if k == :time
+			msg = "Global :time in initial guess NamedTuple is not supported. Provide time grids per block or component as (time, data) tuples."
+			throw(CTBase.IncorrectArgument(msg))
+		elseif k == :variable || k == v_name_sym
+			if variable_block_set || !isempty(variable_comp)
+				msg = "Variable initial guess specified both at block level and component level, or multiple block-level entries."
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			variable_block = v
+			variable_block_set = true
+		elseif k == :state || k == s_name_sym
+			if state_block_set || !isempty(state_comp)
+				msg = "State initial guess specified both at block level and component level, or multiple block-level entries."
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			state_block = v
+			state_block_set = true
+		elseif k == :control || k == u_name_sym
+			if control_block_set || !isempty(control_comp)
+				msg = "Control initial guess specified both at block level and component level, or multiple block-level entries."
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			control_block = v
+			control_block_set = true
+		elseif haskey(s_comp_index, k)
+			if state_block_set
+				msg = string(
+					"Cannot mix state block (:state or ", s_name_sym,
+					") and state component ", k, " in the same initial guess.",
+				)
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			idx = s_comp_index[k]
+			if haskey(state_comp, idx)
+				msg = string("State component ", k, " specified more than once in initial guess.")
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			state_comp[idx] = v
+		elseif haskey(u_comp_index, k)
+			if control_block_set
+				msg = string(
+					"Cannot mix control block (:control or ", u_name_sym,
+					") and control component ", k, " in the same initial guess.",
+				)
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			idx = u_comp_index[k]
+			if haskey(control_comp, idx)
+				msg = string("Control component ", k, " specified more than once in initial guess.")
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			control_comp[idx] = v
+		elseif haskey(v_comp_index, k)
+			if variable_block_set
+				msg = string(
+					"Cannot mix variable block (:variable or ", v_name_sym,
+					") and variable component ", k, " in the same initial guess.",
+				)
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			idx = v_comp_index[k]
+			if haskey(variable_comp, idx)
+				msg = string("Variable component ", k, " specified more than once in initial guess.")
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			variable_comp[idx] = v
+		else
+			msg = string(
+				"Unknown key ", k,
+				" in initial guess NamedTuple. Allowed keys are: time, state, control, variable, ",
+				s_name_sym, ", ", u_name_sym, ", ", v_name_sym,
+				", and component names of state/control/variable.",
+			)
+			throw(CTBase.IncorrectArgument(msg))
+		end
+	end
+	
+	# Build state/control with possible per-component overrides
+	state_fun = _build_block_with_components(ocp, :state, state_block, state_comp)
+	control_fun = _build_block_with_components(ocp, :control, control_block, control_comp)
+
+	# Build variable (block-level or per-component)
+	variable_val = begin
+		if isempty(variable_comp)
+			initial_variable(ocp, variable_block)
+		else
+			vdim = CTModels.variable_dimension(ocp)
+			if vdim == 0
+				msg = "Variable components specified for problem with no variable."
+				throw(CTBase.IncorrectArgument(msg))
+			else
+				# Start from default variable initialization and override components
+				base = initial_variable(ocp, nothing)
+				if vdim == 1
+					# Single-component variable: override index 1 if provided
+					if haskey(variable_comp, 1)
+						data = variable_comp[1]
+						val = if data isa AbstractVector{<:Real}
+							if length(data) != 1
+								msg = "Variable component initial guess must be scalar or length-1 vector for variable dimension 1."
+								throw(CTBase.IncorrectArgument(msg))
+							end
+							data[1]
+						elseif data isa Real
+							data
+						else
+							msg = string(
+								"Unsupported variable component initialization type without time: ",
+								typeof(data),
+							)
+							throw(CTBase.IncorrectArgument(msg))
+						end
+						val
+					else
+						# No specific component provided: keep default base
+						base
+					end
+				else
+					# vdim > 1: base should be a vector of length vdim
+					vec = if base isa AbstractVector
+						if length(base) != vdim
+							msg = string(
+								"Default variable initialization has incompatible dimension: got ",
+								length(base), " instead of ", vdim, ".",
+							)
+							throw(CTBase.IncorrectArgument(msg))
+						end
+						collect(base)
+					elseif base isa Real
+						fill(base, vdim)
+					else
+						msg = string(
+							"Unsupported default variable initialization type: ",
+							typeof(base),
+						)
+						throw(CTBase.IncorrectArgument(msg))
+					end
+					# Override provided components; missing ones keep default
+					for (i, data) in variable_comp
+						if !(1 <= i <= vdim)
+							msg = string(
+								"Variable component index ", i,
+								" out of bounds for variable dimension ", vdim, ".",
+							)
+							throw(CTBase.IncorrectArgument(msg))
+						end
+						val_scalar = if data isa AbstractVector{<:Real}
+							if length(data) != 1
+								msg = string(
+									"Variable component index ", i,
+									" initial guess must be scalar or length-1 vector.",
+								)
+								throw(CTBase.IncorrectArgument(msg))
+							end
+							data[1]
+						elseif data isa Real
+							data
+						else
+							msg = string(
+								"Unsupported variable component initialization type without time: ",
+								typeof(data),
+							)
+							throw(CTBase.IncorrectArgument(msg))
+						end
+						vec[i] = val_scalar
+					end
+					vec
+				end
+			end
+		end
+	end
+
+	init = OptimalControlInitialGuess(state_fun, control_fun, variable_val)
+	return _validate_initial_guess(ocp, init)
+end
+
+function _initial_guess_from_preinit(
+	ocp::AbstractOptimalControlProblem,
+	preinit::OptimalControlPreInit,
+)
+	nt = (
+		state=preinit.state,
+		control=preinit.control,
+		variable=preinit.variable,
+	)
+	return _initial_guess_from_namedtuple(ocp, nt)
+end
+
+function _format_time_grid(time_data)
+	if time_data === nothing
+		return nothing
+	elseif time_data isa AbstractVector
+		return time_data
+	elseif time_data isa AbstractArray
+		return vec(time_data)
+	else
+		msg = string(
+			"Invalid time grid type for initial guess: ",
+			typeof(time_data),
+			". Expected a vector or array.",
+		)
+		throw(CTBase.IncorrectArgument(msg))
+	end
+end
+
+function _format_init_data_for_grid(data)
+	if data isa AbstractMatrix
+		return CTModels.matrix2vec(data, 1)
+	else
+		return data
+	end
+end
+
+function _build_time_dependent_init(
+	ocp::AbstractOptimalControlProblem,
+	role::Symbol,
+	data,
+	time::AbstractVector,
+)
+	dim = role === :state ? CTModels.state_dimension(ocp) : CTModels.control_dimension(ocp)
+	if data === nothing
+		return role === :state ? initial_state(ocp, nothing) : initial_control(ocp, nothing)
+	end
+	if data isa Function
+		return data
+	end
+	data_fmt = _format_init_data_for_grid(data)
+	if data_fmt isa AbstractVector{<:Real}
+		if length(data_fmt) == length(time)
+			itp = CTModels.ctinterpolate(time, data_fmt)
+			return t -> itp(t)
+		else
+			return role === :state ? initial_state(ocp, data_fmt) : initial_control(ocp, data_fmt)
+		end
+	elseif data_fmt isa AbstractVector && !isempty(data_fmt) && (data_fmt[1] isa AbstractVector)
+		if length(data_fmt) != length(time)
+			msg = string(
+				"Time-grid ", role, " initialization mismatch: got ",
+				length(data_fmt), " samples for ", length(time), "-point time grid.",
+			)
+			throw(CTBase.IncorrectArgument(msg))
+		end
+		itp = CTModels.ctinterpolate(time, data_fmt)
+		sample = itp(first(time))
+		if !(sample isa AbstractVector) || length(sample) != dim
+			msg = string(
+				"Time-grid ", role, " initialization has incompatible dimension: got ",
+				(sample isa AbstractVector ? length(sample) : 1),
+				" instead of ",
+				dim,
+			)
+			throw(CTBase.IncorrectArgument(msg))
+		end
+		return t -> itp(t)
+	else
+		msg = string(
+			"Unsupported ", role,
+			" initialization type for time-grid based initial guess: ",
+			typeof(data),
+		)
+		throw(CTBase.IncorrectArgument(msg))
+	end
 end

@@ -1,3 +1,4 @@
+# Unit tests for NLP backends (ADNLPModels and ExaModels) used by CTModels problems.
 struct DummyBackendStats <: SolverCore.AbstractExecutionStats end
 
 function test_ctmodels_nlp_backends()

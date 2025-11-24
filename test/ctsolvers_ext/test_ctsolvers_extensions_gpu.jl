@@ -1,3 +1,4 @@
+# GPU integration tests for CTSolvers extensions (MadNLP on ExaModels GPU backend).
 function test_ctsolvers_extensions_gpu()
 
     if !is_cuda_on()

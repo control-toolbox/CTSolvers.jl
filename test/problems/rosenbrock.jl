@@ -1,3 +1,4 @@
+# Rosenbrock benchmark problem definition used by CTSolvers tests.
 function rosenbrock_objective(x)
     return (x[1] - 1.0)^2 + 100*(x[2] - x[1]^2)^2
 end

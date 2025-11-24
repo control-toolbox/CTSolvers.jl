@@ -1,3 +1,4 @@
+# Unit tests for CTDirect default discretization parameters (grid size, scheme, discretizer).
 function test_ctdirect_default()
 
     Test.@test CTSolvers.__grid_size() isa Int
