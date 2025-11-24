@@ -1,2 +1,0 @@
-# Common
-__display() = true

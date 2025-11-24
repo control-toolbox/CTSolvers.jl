@@ -14,12 +14,6 @@ abstract type AbstractOptimalControlDiscretizer end
 struct Collocation{T<:AbstractIntegratorScheme} <: AbstractOptimalControlDiscretizer
     grid_size::Int
     scheme::T
-    function Collocation(;
-        grid_size::Int=__grid_size(),
-        scheme::AbstractIntegratorScheme=__scheme(),
-    )
-        return new{typeof(scheme)}(grid_size, scheme)
-    end
 end
 
 function grid_size(discretizer::AbstractOptimalControlDiscretizer)

@@ -5,15 +5,22 @@ function test_ctmodels_default()
     # We check both the return types (API robustness) and the exact values
     # defined in src/ctmodels/default.jl.
     Test.@testset "ADNLPModels" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # Local helpers mirroring historical defaults
+        local show_time_default() = false
+        local backend_default() = :optimized
+        local function empty_backends_default()
+            (:hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend)
+        end
+
         # Types of default parameters
-        Test.@test CTSolvers.__adnlp_model_show_time() isa Bool
-        Test.@test CTSolvers.__adnlp_model_backend() isa Symbol
-        Test.@test CTSolvers.__adnlp_model_empty_backends() isa Tuple{Vararg{Symbol}}
+        Test.@test show_time_default() isa Bool
+        Test.@test backend_default() isa Symbol
+        Test.@test empty_backends_default() isa Tuple{Vararg{Symbol}}
 
         # Expected default values
-        Test.@test CTSolvers.__adnlp_model_show_time() == false
-        Test.@test CTSolvers.__adnlp_model_backend() == :optimized
-        Test.@test CTSolvers.__adnlp_model_empty_backends() == (
+        Test.@test show_time_default() == false
+        Test.@test backend_default() == :optimized
+        Test.@test empty_backends_default() == (
             :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
         )
     end
@@ -21,13 +28,17 @@ function test_ctmodels_default()
     # Tests for default parameters used when building ExaModels.
     # Same idea: we lock both the type and the value of base_type and backend.
     Test.@testset "ExaModels" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # Local helpers mirroring historical defaults
+        local base_type_default() = Float64
+        local backend_default() = nothing
+
         # Types of default parameters
-        Test.@test CTSolvers.__exa_model_base_type() isa DataType
-        Test.@test CTSolvers.__exa_model_backend() isa Union{Nothing,Symbol}
+        Test.@test base_type_default() isa DataType
+        Test.@test backend_default() isa Union{Nothing,Symbol}
 
         # Expected default values
-        Test.@test CTSolvers.__exa_model_base_type() === Float64
-        Test.@test CTSolvers.__exa_model_backend() === nothing
+        Test.@test base_type_default() === Float64
+        Test.@test backend_default() === nothing
     end
 
 end

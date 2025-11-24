@@ -8,7 +8,11 @@ function test_ctsolvers_extensions_gpu()
 
     exa_backend = CUDA.CUDABackend()
     linear_solver = MadNLPGPU.CUDSSSolver
-    modelers = [CTSolvers.ExaModeler(; backend=exa_backend)]
+    BaseType = Float64
+    exa_gpu_opts = (
+        :backend => exa_backend,
+    )
+    modelers = [CTSolvers.ExaModeler{BaseType,typeof(exa_gpu_opts)}(exa_gpu_opts)]
     modelers_names = ["ExaModeler (GPU)"]
 
     madnlp_options = Dict(
@@ -184,7 +188,9 @@ function test_ctsolvers_extensions_gpu()
     end
     Test.@testset "ctsolvers_ext: MadNLP GPU Beam DOCP" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp, init = beam()
-        discretizer = CTSolvers.Collocation()
+        grid_size = 250
+        scheme = CTSolvers.Midpoint()
+        discretizer = CTSolvers.Collocation(grid_size, scheme)
         docp = CTSolvers.discretize(ocp, discretizer)
 
         Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem

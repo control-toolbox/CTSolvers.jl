@@ -20,7 +20,6 @@ const AbstractOptimalControlSolution = CTModels.AbstractSolution
 export @init
 
 # Model
-include(joinpath("ctmodels", "default.jl"))
 include(joinpath("ctmodels", "problem_core.jl"))
 include(joinpath("ctmodels", "nlp_backends.jl"))
 include(joinpath("ctmodels", "discretized_ocp.jl"))
@@ -32,14 +31,16 @@ include(joinpath("ctparser", "initial_guess.jl"))
 
 # Direct
 include(joinpath("ctdirect", "core_types.jl"))
-include(joinpath("ctdirect", "default.jl"))
 include(joinpath("ctdirect", "discretization_api.jl"))
 include(joinpath("ctdirect", "collocation_impl.jl"))
 
 # Solver
-include(joinpath("ctsolvers", "default.jl"))
 include(joinpath("ctsolvers", "extension_stubs.jl"))
 include(joinpath("ctsolvers", "common_solve_api.jl"))
 include(joinpath("ctsolvers", "backends_types.jl"))
+
+# Optimal control
+include(joinpath("optimalcontrol", "default.jl"))
+include(joinpath("optimalcontrol", "solve_api.jl"))
 
 end

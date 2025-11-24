@@ -1,11 +1,6 @@
 # Unit tests for CTSolvers default configuration for supported solver backends.
 function test_ctsolvers_default()
 
-    # Common
-    Test.@testset "Common" verbose=VERBOSE showtiming=SHOWTIMING begin
-        Test.@test CTSolvers.__display() isa Bool
-    end
-
     # NLPModelsIpopt
     Test.@testset "NLPModelsIpopt" verbose=VERBOSE showtiming=SHOWTIMING begin
         Test.@test CTSolversIpopt.__nlp_models_ipopt_max_iter() isa Int

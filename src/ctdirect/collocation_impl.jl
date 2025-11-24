@@ -1,8 +1,18 @@
 function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
 
-    function get_docp(initial_guess::Union{AbstractOptimalControlInitialGuess, Nothing}, modeler::Symbol; kwargs...)
+    function get_docp(
+            initial_guess::Union{AbstractOptimalControlInitialGuess, Nothing},
+            modeler::Symbol;
+            kwargs...,
+        )
         scheme_ctdirect = scheme_symbol(discretizer)
-        init_ctdirect = (initial_guess === nothing) ? nothing : (state = state(initial_guess), control = control(initial_guess), variable = variable(initial_guess))
+        init_ctdirect = (initial_guess === nothing) ? 
+            nothing : 
+            (
+                state = state(initial_guess), 
+                control = control(initial_guess), 
+                variable = variable(initial_guess)
+            )
 
         if modeler == :exa && haskey(kwargs, :backend)
             # Route ExaModeler backend to CTDirect via exa_backend and drop backend from forwarded kwargs.

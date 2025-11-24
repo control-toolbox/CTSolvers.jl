@@ -30,19 +30,5 @@ function test_ctdirect_discretization_api()
         Test.@test calls[] == 1
     end
 
-    # ========================================================================
-    # discretize(ocp; discretizer=__discretizer())
-    # ========================================================================
-
-    Test.@testset "ctdirect/discretization_api: default discretizer" verbose=VERBOSE showtiming=SHOWTIMING begin
-        ocp = DummyOCPDiscretize()
-
-        docp = CTSolvers.discretize(ocp)
-
-        # The default discretizer should produce a DiscretizedOptimalControlProblem
-        Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
-        Test.@test CTSolvers.ocp_model(docp) === ocp
-    end
-
 end
 

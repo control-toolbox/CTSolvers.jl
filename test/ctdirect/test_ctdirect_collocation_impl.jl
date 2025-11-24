@@ -6,8 +6,10 @@ function test_ctdirect_collocation_impl()
     Test.@testset "ctdirect/collocation_impl: Collocation as discretizer" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp = DummyOCPCollocation()
 
-        # Use the default Collocation discretizer to avoid relying on CTDirect
-        discretizer = CTSolvers.__discretizer()
+        # Use the Collocation discretizer
+        grid_size = 250
+        scheme = CTSolvers.Midpoint()
+        discretizer = CTSolvers.Collocation(grid_size, scheme)
         Test.@test discretizer isa CTSolvers.Collocation
 
         docp = discretizer(ocp)

@@ -13,7 +13,15 @@ function test_ctmodels_nlp_backends()
     # objective, constraints, and that the AD backends are configured as
     # expected when using the manual backend path.
     Test.@testset "ctmodels/nlp_backends: ADNLPModels – Rosenbrock (backend=:manual, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
-        modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+        empty_backends = (
+            :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
+        )
+        ad_opts = (
+            :show_time => false,
+            :backend => :manual,
+            :empty_backends => empty_backends,
+        )
+        modeler = CTSolvers.ADNLPModeler(ad_opts)
         nlp_adnlp = modeler(rosenbrock_prob, rosenbrock_init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         Test.@test nlp_adnlp.meta.x0 == rosenbrock_init
@@ -35,7 +43,15 @@ function test_ctmodels_nlp_backends()
     # Same backend=:manual path but on a different CTModels problem (Elec),
     # still calling the backend directly.
     Test.@testset "ctmodels/nlp_backends: ADNLPModels – Elec (backend=:manual, direct call)" begin
-        modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+        empty_backends = (
+            :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
+        )
+        ad_opts = (
+            :show_time => false,
+            :backend => :manual,
+            :empty_backends => empty_backends,
+        )
+        modeler = CTSolvers.ADNLPModeler(ad_opts)
         nlp_adnlp = modeler(elec_prob, elec_init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         Test.@test nlp_adnlp.meta.x0 == vcat(elec_init.x, elec_init.y, elec_init.z)
@@ -48,7 +64,15 @@ function test_ctmodels_nlp_backends()
     # should surface the generic NotImplemented error from get_adnlp_model_builder
     # even when called directly.
     Test.@testset "ctmodels/nlp_backends: ADNLPModels – DummyProblem (NotImplemented, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
-        modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+        empty_backends = (
+            :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
+        )
+        ad_opts = (
+            :show_time => false,
+            :backend => :manual,
+            :empty_backends => empty_backends,
+        )
+        modeler = CTSolvers.ADNLPModeler(ad_opts)
         Test.@test_throws CTBase.NotImplemented modeler(DummyProblem(), rosenbrock_init)
     end
 
@@ -60,7 +84,10 @@ function test_ctmodels_nlp_backends()
     # directly, using a concrete BaseType (Float32).
     Test.@testset "ctmodels/nlp_backends: ExaModels (CPU) – Rosenbrock (BaseType=Float32, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
-        modeler = CTSolvers.ExaModeler(; base_type=BaseType)
+        exa_opts = (
+            :backend => nothing,
+        )
+        modeler = CTSolvers.ExaModeler{BaseType,typeof(exa_opts)}(exa_opts)
         nlp_exa_cpu = modeler(rosenbrock_prob, rosenbrock_init)
         Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
         Test.@test nlp_exa_cpu.meta.x0 == BaseType.(rosenbrock_init)
@@ -73,7 +100,10 @@ function test_ctmodels_nlp_backends()
     # Same ExaModels backend but on the Elec problem, with direct backend call.
     Test.@testset "ctmodels/nlp_backends: ExaModels (CPU) – Elec (BaseType=Float32, direct call)" begin
         BaseType = Float32
-        modeler = CTSolvers.ExaModeler(; base_type=BaseType)
+        exa_opts = (
+            :backend => nothing,
+        )
+        modeler = CTSolvers.ExaModeler{BaseType,typeof(exa_opts)}(exa_opts)
         nlp_exa_cpu = modeler(elec_prob, elec_init)
         Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
         Test.@test nlp_exa_cpu.meta.x0 == BaseType.(vcat(elec_init.x, elec_init.y, elec_init.z))
@@ -87,7 +117,10 @@ function test_ctmodels_nlp_backends()
     # should surface the generic NotImplemented error from get_exa_model_builder
     # even when called directly.
     Test.@testset "ctmodels/nlp_backends: ExaModels (CPU) – DummyProblem (NotImplemented, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
-        modeler = CTSolvers.ExaModeler()
+        exa_opts = (
+            :backend => nothing,
+        )
+        modeler = CTSolvers.ExaModeler{Float64,typeof(exa_opts)}(exa_opts)
         Test.@test_throws CTBase.NotImplemented modeler(DummyProblem(), rosenbrock_init)
     end
 
@@ -98,29 +131,52 @@ function test_ctmodels_nlp_backends()
     # defaults and keyword arguments are wired correctly.
 
     Test.@testset "ctmodels/nlp_backends: ADNLPModeler constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
-        # Default constructor should use the values from ctmodels/default.jl
-        backend_default = CTSolvers.ADNLPModeler()
-        Test.@test backend_default.show_time == CTSolvers.__adnlp_model_show_time()
-        Test.@test backend_default.backend    == CTSolvers.__adnlp_model_backend()
-        Test.@test backend_default.empty_backends == CTSolvers.__adnlp_model_empty_backends()
-        Test.@test length(keys(backend_default.kwargs)) == 0
+        # Explicit constructor should store provided values as-is
+        empty_backends = (:hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend)
+        backend_default_tuple = (
+            :show_time => false,
+            :backend => :optimized,
+            :empty_backends => empty_backends,
+        )
+        backend_default = CTSolvers.ADNLPModeler(backend_default_tuple)
+        backend_default_opts = Dict(backend_default.options)
+        Test.@test backend_default_opts[:show_time] == false
+        Test.@test backend_default_opts[:backend]    == :optimized
+        Test.@test backend_default_opts[:empty_backends] == empty_backends
 
         # Custom backend and extra kwargs should be stored as-is
-        backend_manual = CTSolvers.ADNLPModeler(; backend=:manual, foo=1)
-        Test.@test backend_manual.backend == :manual
-        Test.@test backend_manual.kwargs[:foo] == 1
+        backend_manual_tuple = (
+            :show_time => false,
+            :backend => :manual,
+            :empty_backends => empty_backends,
+            :foo => 1,
+        )
+        backend_manual = CTSolvers.ADNLPModeler(backend_manual_tuple)
+        backend_manual_opts = Dict(backend_manual.options)
+        Test.@test backend_manual_opts[:backend] == :manual
+        Test.@test backend_manual_opts[:foo] == 1
     end
 
     Test.@testset "ctmodels/nlp_backends: ExaModeler constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
-        # Default constructor should use base_type and backend from ctmodels/default.jl
-        exa_default = CTSolvers.ExaModeler()
-        Test.@test exa_default.backend === CTSolvers.__exa_model_backend()
-        Test.@test length(keys(exa_default.kwargs)) == 0
+        # Explicit constructor should store provided values correctly
+        exa_default_tuple = (
+            :backend => nothing,
+        )
+        exa_default = CTSolvers.ExaModeler{Float64,typeof(exa_default_tuple)}(exa_default_tuple)
+        Test.@test exa_default isa CTSolvers.ExaModeler{Float64}
+        exa_default_opts = Dict(exa_default.options)
+        Test.@test exa_default_opts[:backend] === nothing
 
         # Custom base_type and kwargs should be stored correctly
-        exa_custom = CTSolvers.ExaModeler(; base_type=Float32, foo=2)
-        Test.@test exa_custom.backend === CTSolvers.__exa_model_backend()
-        Test.@test exa_custom.kwargs[:foo] == 2
+        exa_custom_tuple = (
+            :backend => nothing,
+            :foo => 2,
+        )
+        exa_custom = CTSolvers.ExaModeler{Float32,typeof(exa_custom_tuple)}(exa_custom_tuple)
+        Test.@test exa_custom isa CTSolvers.ExaModeler{Float32}
+        exa_custom_opts = Dict(exa_custom.options)
+        Test.@test exa_custom_opts[:backend] === nothing
+        Test.@test exa_custom_opts[:foo] == 2
     end
 
     # ------------------------------------------------------------------
@@ -147,7 +203,14 @@ function test_ctmodels_nlp_backends()
         )
 
         stats = DummyBackendStats()
-        modeler = CTSolvers.ADNLPModeler()
+        ad_opts = (
+            :show_time => false,
+            :backend => :optimized,
+            :empty_backends => (
+                :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
+            ),
+        )
+        modeler = CTSolvers.ADNLPModeler(ad_opts)
         # Should call get_adnlp_solution_builder(prob) and then
         # builder(stats), which is implemented in problems_definition.jl
         # to return stats unchanged.
@@ -169,7 +232,10 @@ function test_ctmodels_nlp_backends()
         )
 
         stats = DummyBackendStats()
-        modeler = CTSolvers.ExaModeler()
+        exa_opts = (
+            :backend => nothing,
+        )
+        modeler = CTSolvers.ExaModeler{Float64,typeof(exa_opts)}(exa_opts)
         # Should call get_exa_solution_builder(prob) and then
         # builder(stats), which returns stats.
         result = modeler(prob, stats)
