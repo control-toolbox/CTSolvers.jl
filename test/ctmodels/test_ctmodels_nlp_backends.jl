@@ -18,7 +18,7 @@ function test_ctmodels_nlp_backends()
         )
         ad_opts = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
         )
         modeler = CTSolvers.ADNLPModeler(ad_opts)
@@ -48,7 +48,7 @@ function test_ctmodels_nlp_backends()
         )
         ad_opts = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
         )
         modeler = CTSolvers.ADNLPModeler(ad_opts)
@@ -69,7 +69,7 @@ function test_ctmodels_nlp_backends()
         )
         ad_opts = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
         )
         modeler = CTSolvers.ADNLPModeler(ad_opts)
@@ -147,7 +147,7 @@ function test_ctmodels_nlp_backends()
         # Custom backend and extra kwargs should be stored as-is
         backend_manual_tuple = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
             :foo => 1,
         )

@@ -30,7 +30,7 @@ function test_ctsolvers_extensions_integration()
     Test.@testset "ctsolvers_ext: Solve with Ipopt (specific)" verbose=VERBOSE showtiming=SHOWTIMING begin
         ad_manual_opts = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
         )
         exa_cpu_opts = (
@@ -106,7 +106,7 @@ function test_ctsolvers_extensions_integration()
     Test.@testset "ctsolvers_ext: initial_guess with Ipopt" verbose=VERBOSE showtiming=SHOWTIMING begin
         ad_manual_opts = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
         )
         exa_cpu_opts = (
@@ -161,7 +161,7 @@ function test_ctsolvers_extensions_integration()
         BaseType = Float32
         ad_manual_opts = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
         )
         exa_cpu_opts = (
@@ -222,7 +222,7 @@ function test_ctsolvers_extensions_integration()
         BaseType = Float32
         ad_manual_opts = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
         )
         exa_cpu_opts = (
@@ -271,7 +271,7 @@ function test_ctsolvers_extensions_integration()
         BaseType = Float64
         ad_manual_opts = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
         )
         exa_cpu_opts = (
@@ -304,7 +304,7 @@ function test_ctsolvers_extensions_integration()
     Test.@testset "ctsolvers_ext: CommonSolve.solve with Ipopt" verbose=VERBOSE showtiming=SHOWTIMING begin
         ad_manual_opts = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
         )
         exa_cpu_opts = (
@@ -353,7 +353,7 @@ function test_ctsolvers_extensions_integration()
         BaseType = Float32
         ad_manual_opts = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
         )
         exa_cpu_opts = (
@@ -408,7 +408,7 @@ function test_ctsolvers_extensions_integration()
         BaseType = Float64
         ad_manual_opts = (
             :show_time => false,
-            :backend => :manual,
+            :backend => :optimized,
             :empty_backends => empty_backends,
         )
         exa_cpu_opts = (

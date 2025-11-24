@@ -134,7 +134,7 @@ function test_ctmodels_model_api()
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
             ad_opts_rosen = (
                 :show_time => false,
-                :backend => :manual,
+                :backend => :optimized,
                 :empty_backends => (
                     :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
                 ),
@@ -158,7 +158,7 @@ function test_ctmodels_model_api()
         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
             ad_opts_elec = (
                 :show_time => false,
-                :backend => :manual,
+                :backend => :optimized,
                 :empty_backends => (
                     :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
                 ),
