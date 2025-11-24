@@ -21,7 +21,7 @@ function test_ctsolvers_extensions_gpu()
     # ------------------------------------------------------------------
 
     if VERBOSE
-        println("[GPU] ctsonlvers_ext: MadNLP GPU (solve_with_madnlp)")
+        println("[GPU] ctsolvers_ext: MadNLP GPU (solve_with_madnlp)")
     end
     Test.@testset "ctsolvers_ext: MadNLP GPU (solve_with_madnlp)" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver = CTSolvers.MadNLPSolver(; linear_solver=linear_solver)
