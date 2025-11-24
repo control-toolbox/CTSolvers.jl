@@ -27,7 +27,7 @@ include(joinpath("problems", "elec.jl"))
 include(joinpath("problems", "beam.jl"))
 
 # Tests parameters
-const VERBOSE = false
+const VERBOSE = true
 const SHOWTIMING = true
 
 # Select tests to run
