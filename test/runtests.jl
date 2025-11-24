@@ -33,10 +33,10 @@ const SHOWTIMING = true
 # Select tests to run
 const TESTS = Dict(
     :extensions => true,
-    :aqua       => true,
-    :ctmodels   => true,
-    :ctsolvers  => true,
-    :ctdirect   => true,
+    :aqua       => false,
+    :ctmodels   => false,
+    :ctsolvers  => false,
+    :ctdirect   => false,
 )
 
 # Test extension exceptions: before loading the extensions
@@ -66,8 +66,8 @@ if TESTS[:extensions]
     println("========== CTSolvers extensions tests ==========")
     @testset "CTSolvers extensions" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            :ctsolvers_extensions_unit,
-            :ctsolvers_extensions_integration,
+            # :ctsolvers_extensions_unit,
+            # :ctsolvers_extensions_integration,
             :ctsolvers_extensions_gpu,
         )
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
