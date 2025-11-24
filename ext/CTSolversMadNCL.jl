@@ -30,7 +30,7 @@ function CTSolvers.solve_with_madncl(
 end
 
 # backend constructor
-function CTSolvers.MadNCLBackend(;
+function CTSolvers.MadNCLSolver(;
     max_iter::Int=__mad_ncl_max_iter(),
     print_level::MadNLP.LogLevels=__mad_ncl_print_level(),
     linear_solver::Type{<:MadNLP.AbstractLinearSolver}=__mad_ncl_linear_solver(),
@@ -44,10 +44,10 @@ function CTSolvers.MadNCLBackend(;
         :ncl_options => ncl_options,
         kwargs...,
     )
-    return CTSolvers.MadNCLBackend{BaseType,typeof(options)}(options)
+    return CTSolvers.MadNCLSolver{BaseType,typeof(options)}(options)
 end
 
-function (solver::CTSolvers.MadNCLBackend{BaseType})(
+function (solver::CTSolvers.MadNCLSolver{BaseType})(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::MadNCL.NCLStats where {BaseType<:AbstractFloat}
     # options control

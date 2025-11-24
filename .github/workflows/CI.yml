@@ -22,6 +22,6 @@ jobs:
     uses: control-toolbox/CTActions/.github/workflows/ci.yml@main
     with:
       versions: '["1"]'
-      runs_on: '[["self-hosted", "Linux", "gpu", "cuda", "cuda12"]]'
+      runs_on: '[["moonshot"]]'
       archs: '["x64"]'
       runner_type: 'self-hosted'

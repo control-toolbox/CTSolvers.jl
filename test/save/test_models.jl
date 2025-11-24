@@ -39,7 +39,7 @@ function test_models()
                 nlp_adnlp = CTSolvers.nlp_model(
                     rosenbrock_prob,
                     rosenbrock_init,
-                    CTSolvers.ADNLPModelBackend(; backend=:manual),
+                    CTSolvers.ADNLPModeler(; backend=:manual),
                 )
                 Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
                 Test.@test nlp_adnlp.meta.x0 == rosenbrock_init
@@ -61,7 +61,7 @@ function test_models()
             end
             Test.@testset "Elec" begin
                 nlp_adnlp = CTSolvers.nlp_model(
-                    elec_prob, elec_init, CTSolvers.ADNLPModelBackend(; backend=:manual)
+                    elec_prob, elec_init, CTSolvers.ADNLPModeler(; backend=:manual)
                 )
                 Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
                 Test.@test nlp_adnlp.meta.x0 == vcat(elec_init.x, elec_init.y, elec_init.z)
@@ -75,7 +75,7 @@ function test_models()
                 Test.@test_throws CTBase.NotImplemented CTSolvers.nlp_model(
                     DummyProblem(),
                     rosenbrock_init,
-                    CTSolvers.ADNLPModelBackend(; backend=:manual),
+                    CTSolvers.ADNLPModeler(; backend=:manual),
                 )
             end
         end
@@ -85,7 +85,7 @@ function test_models()
                 nlp_exa_cpu = CTSolvers.nlp_model(
                     rosenbrock_prob,
                     rosenbrock_init,
-                    CTSolvers.ExaModelBackend(; base_type=BaseType),
+                    CTSolvers.ExaModeler(; base_type=BaseType),
                 )
                 Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
                 Test.@test nlp_exa_cpu.meta.x0 == BaseType.(rosenbrock_init)
@@ -99,7 +99,7 @@ function test_models()
             Test.@testset "Elec" begin
                 BaseType = Float32
                 nlp_exa_cpu = CTSolvers.nlp_model(
-                    elec_prob, elec_init, CTSolvers.ExaModelBackend(; base_type=BaseType)
+                    elec_prob, elec_init, CTSolvers.ExaModeler(; base_type=BaseType)
                 )
                 Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
                 Test.@test nlp_exa_cpu.meta.x0 ==
@@ -117,7 +117,7 @@ function test_models()
             end
             Test.@testset "Dummy" verbose=VERBOSE showtiming=SHOWTIMING begin
                 Test.@test_throws CTBase.NotImplemented CTSolvers.nlp_model(
-                    DummyProblem(), rosenbrock_init, CTSolvers.ExaModelBackend()
+                    DummyProblem(), rosenbrock_init, CTSolvers.ExaModeler()
                 )
             end
         end
