@@ -3,15 +3,33 @@ function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
     function get_docp(initial_guess::Union{AbstractOptimalControlInitialGuess, Nothing}, modeler::Symbol; kwargs...)
         scheme_ctdirect = scheme_symbol(discretizer)
         init_ctdirect = (initial_guess === nothing) ? nothing : (state = state(initial_guess), control = control(initial_guess), variable = variable(initial_guess))
-        docp = CTDirect.direct_transcription(
-            ocp,
-            modeler;
-            grid_size=CTSolvers.grid_size(discretizer),
-            scheme=scheme_ctdirect,
-            init=init_ctdirect,
-            lagrange_to_mayer=false,
-            kwargs...,
-        )
+
+        if modeler == :exa && haskey(kwargs, :backend)
+            # Route ExaModeler backend to CTDirect via exa_backend and drop backend from forwarded kwargs.
+            exa_backend = kwargs[:backend]
+            filtered_kwargs = (; (k => v for (k, v) in pairs(kwargs) if k != :backend)...)
+            docp = CTDirect.direct_transcription(
+                ocp,
+                modeler;
+                grid_size=CTSolvers.grid_size(discretizer),
+                scheme=scheme_ctdirect,
+                init=init_ctdirect,
+                lagrange_to_mayer=false,
+                exa_backend=exa_backend,
+                filtered_kwargs...,
+            )
+        else
+            docp = CTDirect.direct_transcription(
+                ocp,
+                modeler;
+                grid_size=CTSolvers.grid_size(discretizer),
+                scheme=scheme_ctdirect,
+                init=init_ctdirect,
+                lagrange_to_mayer=false,
+                kwargs...,
+            )
+        end
+
         return docp
     end
 
