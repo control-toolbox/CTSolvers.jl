@@ -109,7 +109,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.validate_initial_guess(ocp1, init_bad_ctrl)
 	end
 
-	Test.@testset "ctmodels/initial_guess: variable dimension handling" verbose=VERBOSE showtimING=SHOWTIMING begin
+	Test.@testset "ctmodels/initial_guess: variable dimension handling" verbose=VERBOSE showtiming=SHOWTIMING begin
 		# Dummy problem with scalar variable (dim(x)=dim(u)=dim(v)=1)
 		ocp2 = DummyOCP1DVar()
 
@@ -126,7 +126,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.initial_guess(ocp3; variable=1.0)
 	end
 
-	Test.@testset "ctmodels/initial_guess: 2D variable block and components" verbose=VERBOSE showtimING=SHOWTIMING begin
+	Test.@testset "ctmodels/initial_guess: 2D variable block and components" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP1D2Var()
 
 		# Full block specification for variable w

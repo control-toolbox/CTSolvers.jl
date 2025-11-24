@@ -32,11 +32,12 @@ const SHOWTIMING = true
 
 # Select tests to run
 const TESTS = Dict(
-    :extensions => false,
-    :aqua       => false,
+    :extensions => true,
+    :aqua       => true,
     :ctmodels   => true,
-    :ctsolvers  => false,
-    :ctdirect   => false,
+    :ctsolvers  => true,
+    :ctparser   => true,
+    :ctdirect   => true,
 )
 
 # Test extension exceptions: before loading the extensions
@@ -102,13 +103,12 @@ if TESTS[:ctmodels]
     println("========== CTModels tests ==========")
     @testset "CTModels" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            # :ctmodels_default,
-            # :ctmodels_problem_core,
-            # :ctmodels_nlp_backends,
-            # :ctmodels_discretized_ocp,
-            # :ctmodels_model_api,
-            # :ctmodels_initial_guess,
-            :ctmodels_initial_guess_macro,
+            :ctmodels_default,
+            :ctmodels_problem_core,
+            :ctmodels_nlp_backends,
+            :ctmodels_discretized_ocp,
+            :ctmodels_model_api,
+            :ctmodels_initial_guess,
         )
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                 test_name = Symbol(:test_, name)
@@ -118,6 +118,23 @@ if TESTS[:ctmodels]
         end
     end
     println("✓ CTModels tests passed\n")
+end
+
+# Parser
+if TESTS[:ctparser]
+    println("========== CTParser tests ==========")
+    @testset "CTParser" verbose=VERBOSE showtiming=SHOWTIMING begin
+        for name in (
+            :ctparser_initial_guess_macro,
+        )
+            @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                test_name = Symbol(:test_, name)
+                include(joinpath("ctparser", "$(test_name).jl"))
+                @eval $test_name()
+            end
+        end
+    end
+    println("✓ CTParser tests passed\n")
 end
 
 # Solver
