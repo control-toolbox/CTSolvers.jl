@@ -11,7 +11,7 @@ function test_ctsolvers_extensions_gpu()
     modelers_names = ["ExaModeler (GPU)"]
 
     madnlp_options = Dict(
-        :max_iter => 100,
+        :max_iter => 1000,
         :tol => 1e-6,
         :print_level => MadNLP.ERROR,
     )
