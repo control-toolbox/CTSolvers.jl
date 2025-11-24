@@ -10,6 +10,94 @@ function test_ctsolvers_extensions_gpu()
     modelers = [CTSolvers.ExaModeler(; backend=exa_backend)]
     modelers_names = ["ExaModeler (GPU)"]
 
+    # ------------------------------------------------------------------
+    # MadNLP GPU: solve_with_madnlp on Rosenbrock and Elec
+    # ------------------------------------------------------------------
+
+    Test.@testset "ctsolvers_ext: MadNLP GPU (solve_with_madnlp)" verbose=VERBOSE showtiming=SHOWTIMING begin
+        solver = CTSolvers.MadNLPSolver(; linear_solver=linear_solver)
+
+        # Rosenbrock
+        Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    nlp = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler)
+                    stats = CTSolvers.solve_with_madnlp(nlp; madnlp_options..., linear_solver=linear_solver)
+                    Test.@test stats isa MadNLP.MadNLPExecutionStats
+                    Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test isfinite(stats.objective)
+                    Test.@test stats.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
+                    Test.@test stats.solution isa CuArray{Float64,1}
+                    Test.@test length(stats.solution) == length(rosenbrock_init)
+                end
+            end
+        end
+
+        # Elec
+        Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    nlp = CTSolvers.build_model(elec_prob, elec_init, modeler)
+                    stats = CTSolvers.solve_with_madnlp(nlp; madnlp_options..., linear_solver=linear_solver)
+                    Test.@test stats isa MadNLP.MadNLPExecutionStats
+                    Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test isfinite(stats.objective)
+                    Test.@test stats.solution isa CuArray{Float64,1}
+                    Test.@test length(stats.solution) == length(vcat(elec_init.x, elec_init.y, elec_init.z))
+                end
+            end
+        end
+    end
+
+    # ------------------------------------------------------------------
+    # MadNLP GPU: initial_guess (max_iter = 0) for Rosenbrock and Elec
+    # ------------------------------------------------------------------
+
+    Test.@testset "ctsolvers_ext: MadNLP GPU initial_guess" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # Rosenbrock: start at the known solution and enforce max_iter=0
+        Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    local opts = copy(madnlp_options)
+                    opts[:max_iter] = 0
+                    stats = CommonSolve.solve(
+                        rosenbrock_prob,
+                        rosenbrock_solu,
+                        modeler,
+                        CTSolvers.MadNLPSolver(; opts..., linear_solver=linear_solver);
+                        display=false,
+                    )
+                    Test.@test stats isa MadNLP.MadNLPExecutionStats
+                    Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test stats.solution isa CuArray{Float64,1}
+                    Test.@test length(stats.solution) == length(rosenbrock_solu)
+                    Test.@test Array(stats.solution) ≈ rosenbrock_solu atol=1e-6
+                end
+            end
+        end
+
+        # Elec: expect solution to remain equal to the initial guess vector
+        Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    local opts = copy(madnlp_options)
+                    opts[:max_iter] = 0
+                    stats = CommonSolve.solve(
+                        elec_prob,
+                        elec_init,
+                        modeler,
+                        CTSolvers.MadNLPSolver(; opts..., linear_solver=linear_solver);
+                        display=false,
+                    )
+                    Test.@test stats isa MadNLP.MadNLPExecutionStats
+                    Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test stats.solution isa CuArray{Float64,1}
+                    Test.@test length(stats.solution) == length(vcat(elec_init.x, elec_init.y, elec_init.z))
+                    Test.@test Array(stats.solution) ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
+                end
+            end
+        end
+    end
     # MadNLP on Rosenbrock and Elec (GPU execution stats)
     Test.@testset "ctsolvers_ext: MadNLP GPU" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver = CTSolvers.MadNLPSolver(; linear_solver=linear_solver)
