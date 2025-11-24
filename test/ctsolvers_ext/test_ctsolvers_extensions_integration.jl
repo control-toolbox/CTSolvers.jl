@@ -75,6 +75,7 @@ function test_ctsolvers_extensions_integration()
                             modeler,
                             CTSolvers.MadNCLSolver(; opts..., linear_solver=linear_solver),
                         )
+                        Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                         Test.@test sol.solution ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
                     end
                 end
@@ -105,6 +106,7 @@ function test_ctsolvers_extensions_integration()
                         modeler,
                         CTSolvers.IpoptSolver(; opts...),
                     )
+                    Test.@test sol.status == :max_iter
                     Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
                 end
             end
@@ -122,6 +124,7 @@ function test_ctsolvers_extensions_integration()
                         modeler,
                         CTSolvers.IpoptSolver(; opts...),
                     )
+                    Test.@test sol.status == :max_iter
                     Test.@test sol.solution ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
                 end
             end
@@ -151,6 +154,7 @@ function test_ctsolvers_extensions_integration()
                             modeler,
                             CTSolvers.MadNLPSolver(; opts..., linear_solver=linear_solver),
                         )
+                        Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                         Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
                     end
                 end
@@ -170,6 +174,7 @@ function test_ctsolvers_extensions_integration()
                             modeler,
                             CTSolvers.MadNLPSolver(; opts..., linear_solver=linear_solver),
                         )
+                        Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                         Test.@test sol.solution ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
                     end
                 end

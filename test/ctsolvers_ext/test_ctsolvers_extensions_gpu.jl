@@ -80,7 +80,7 @@ function test_ctsolvers_extensions_gpu()
                         display=false,
                     )
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
-                    Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test stats.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                     Test.@test stats.solution isa CuArray{Float64,1}
                     Test.@test length(stats.solution) == length(rosenbrock_solu)
                     Test.@test Array(stats.solution) ≈ rosenbrock_solu atol=1e-6
@@ -102,7 +102,7 @@ function test_ctsolvers_extensions_gpu()
                         display=false,
                     )
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
-                    Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test stats.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                     Test.@test stats.solution isa CuArray{Float64,1}
                     Test.@test length(stats.solution) == length(vcat(elec_init.x, elec_init.y, elec_init.z))
                     Test.@test Array(stats.solution) ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
