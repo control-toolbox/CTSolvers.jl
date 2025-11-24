@@ -309,6 +309,31 @@ function test_ctmodels_initial_guess_macro()
 		CTSolvers.validate_initial_guess(ocp_var, ig)
 	end
 
+	Test.@testset "ctmodels/initial_guess_macro: logging option does not change semantics" verbose=VERBOSE showtiming=SHOWTIMING begin
+		# Reference without logging
+		ig_plain = @init ocp_fixed begin
+			u(t) := t
+		end
+		Test.@test ig_plain isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp_fixed, ig_plain)
+
+		# Same DSL but with log = true, while redirecting stdout to avoid polluting test logs
+		ig_log = Base.redirect_stdout(Base.devnull) do
+			@init ocp_fixed begin
+				u(t) := t
+			end log=true
+		end
+		Test.@test ig_log isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp_fixed, ig_log)
+
+		# Compare behaviour at a few sample points
+		ufun_plain = CTSolvers.control(ig_plain)
+		ufun_log = CTSolvers.control(ig_log)
+		for τ in (0.0, 0.5, 1.0)
+			Test.@test ufun_plain(τ) ≈ ufun_log(τ)
+		end
+	end
+
 	Test.@testset "ctmodels/initial_guess_macro: per-component functions on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ig = @init ocp_var begin
 			tf := 1.0
@@ -413,8 +438,10 @@ function test_ctmodels_initial_guess_macro()
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: invalid component vector without time (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
-		Test.@test_throws CTBase.IncorrectArgument @init ocp_fixed begin
-			q := [0.0, 1.0]
+		Test.@test_throws CTBase.IncorrectArgument Base.redirect_stdout(Base.devnull) do
+			@init ocp_fixed begin
+				q := [0.0, 1.0]
+			end
 		end
 	end
 	
@@ -422,27 +449,35 @@ function test_ctmodels_initial_guess_macro()
 		T = [0.0, 0.5, 1.0]
 		Dq_bad = [-1.0, 0.0]
 	
-		Test.@test_throws CTBase.IncorrectArgument @init ocp_fixed begin
-			q(T) := Dq_bad
+		Test.@test_throws CTBase.IncorrectArgument Base.redirect_stdout(Base.devnull) do
+			@init ocp_fixed begin
+				q(T) := Dq_bad
+			end
 		end
 	end
 	
 	Test.@testset "ctmodels/initial_guess_macro: mixing state block and component (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
-		Test.@test_throws CTBase.IncorrectArgument @init ocp_fixed begin
-			x(t) := [sin(t), 1.0]
-			q(t) := 0.0
+		Test.@test_throws CTBase.IncorrectArgument Base.redirect_stdout(Base.devnull) do
+			@init ocp_fixed begin
+				x(t) := [sin(t), 1.0]
+				q(t) := 0.0
+			end
 		end
 	end
 	
 	Test.@testset "ctmodels/initial_guess_macro: unknown component name (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
-		Test.@test_throws CTBase.IncorrectArgument @init ocp_fixed begin
-			z(t) := 1.0
+		Test.@test_throws CTBase.IncorrectArgument Base.redirect_stdout(Base.devnull) do
+			@init ocp_fixed begin
+				z(t) := 1.0
+			end
 		end
 	end
 	
 	Test.@testset "ctmodels/initial_guess_macro: invalid variable dimension (variable horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
-		Test.@test_throws CTBase.IncorrectArgument @init ocp_var begin
-			tf := [1.0, 2.0]
+		Test.@test_throws CTBase.IncorrectArgument Base.redirect_stdout(Base.devnull) do
+			@init ocp_var begin
+				tf := [1.0, 2.0]
+			end
 		end
 	end
 	
@@ -450,9 +485,27 @@ function test_ctmodels_initial_guess_macro()
 		Tq = [0.0, 0.5, 1.0]
 		Dq_bad = [-1.0, 0.0]
 	
-		Test.@test_throws CTBase.IncorrectArgument @init ocp_var begin
-			tf := 1.0
-			q(Tq) := Dq_bad
+		Test.@test_throws CTBase.IncorrectArgument Base.redirect_stdout(Base.devnull) do
+			@init ocp_var begin
+				tf := 1.0
+				q(Tq) := Dq_bad
+			end
+		end
+	end
+	
+	Test.@testset "ctmodels/initial_guess_macro: invalid DSL left-hand side" verbose=VERBOSE showtiming=SHOWTIMING begin
+		# Non-symbol lhs in constant form should be rejected at macro level
+		Test.@test_throws CTBase.ParsingError Base.redirect_stdout(Base.devnull) do
+			@init ocp_fixed begin
+				(q + v) := 1.0
+			end
+		end
+
+		# Non-symbol lhs in time-dependent form should also be rejected
+		Test.@test_throws CTBase.ParsingError Base.redirect_stdout(Base.devnull) do
+			@init ocp_fixed begin
+				(q + v)(t) := 1.0
+			end
 		end
 	end
 
