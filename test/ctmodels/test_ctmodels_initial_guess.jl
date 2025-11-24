@@ -90,46 +90,46 @@ CTModels.variable(sol::DummySolution1DVar) = sol.v
 function test_ctmodels_initial_guess()
 
 	Test.@testset "ctmodels/initial_guess: basic construction and validation" verbose=VERBOSE showtiming=SHOWTIMING begin
-		# Simple 1D dummy problem: x,u scalaires, pas de variable (dim(x)=dim(u)=1, dim(v)=0)
+		# Simple 1D dummy problem: scalar x,u, no variable (dim(x)=dim(u)=1, dim(v)=0)
 		ocp1 = DummyOCP1DNoVar()
 
-		# init scalaire cohérente en dim 1
+		# Scalar initial guess consistent with dimension 1
 		init1 = CTSolvers.initial_guess(ocp1; state=0.2, control=-0.1)
 		Test.@test init1 isa CTSolvers.AbstractOptimalControlInitialGuess
-		# validate_initial_guess ne doit pas lever
+		# validate_initial_guess should not throw
 		CTSolvers.validate_initial_guess(ocp1, init1)
 
-		# init vecteur incorrecte pour state (dim 1 mais longueur 2)
+		# Incorrect vector initial guess for state (dim 1 but length 2)
 		bad_state = [0.1, 0.2]
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.initial_guess(ocp1; state=bad_state)
 
-		# init contrôle scalaire OK, mais fonction retournant un vecteur de longueur 2 doit être refusée
+		# Scalar control init is OK, but a function returning a length-2 vector must be rejected
 		bad_control_fun = t -> [t, 2t]
 		init_bad_ctrl = CTSolvers.OptimalControlInitialGuess(CTSolvers.state(init1), bad_control_fun, Float64[])
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.validate_initial_guess(ocp1, init_bad_ctrl)
 	end
 
 	Test.@testset "ctmodels/initial_guess: variable dimension handling" verbose=VERBOSE showtimING=SHOWTIMING begin
-		# Dummy problème avec variable scalaire (dim(x)=dim(u)=dim(v)=1)
+		# Dummy problem with scalar variable (dim(x)=dim(u)=dim(v)=1)
 		ocp2 = DummyOCP1DVar()
 
-		# variable scalaire cohérente
+		# Scalar variable consistent with dimension 1
 		init2 = CTSolvers.initial_guess(ocp2; variable=0.5)
 		CTSolvers.validate_initial_guess(ocp2, init2)
 
-		# variable vecteur de longueur 2 pour dim 1 doit lever
+		# Variable as a length-2 vector for dimension 1 must throw
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.initial_guess(ocp2; variable=[0.1, 0.2])
 
-		# problème sans variable: dim(v) == 0
-		ocp3, _ = beam()  # beam n'a pas de variable
-		# fournir une variable scalaire doit lever
+		# Problem without variable: dim(v) == 0
+		ocp3, _ = beam()  # beam has no variable
+		# Providing a scalar variable must throw
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.initial_guess(ocp3; variable=1.0)
 	end
 
 	Test.@testset "ctmodels/initial_guess: 2D variable block and components" verbose=VERBOSE showtimING=SHOWTIMING begin
 		ocp = DummyOCP1D2Var()
 
-		# Bloc complet pour la variable w
+		# Full block specification for variable w
 		init_block = (w=[1.0, 2.0],)
 		ig_block = CTSolvers.build_initial_guess(ocp, init_block)
 		Test.@test ig_block isa CTSolvers.AbstractOptimalControlInitialGuess
@@ -139,7 +139,7 @@ function test_ctmodels_initial_guess()
 		Test.@test v_block[1] ≈ 1.0
 		Test.@test v_block[2] ≈ 2.0
 
-		# Uniquement la composante tf (première composante)
+		# Only the tf component (first component)
 		init_tf = (tf=1.0,)
 		ig_tf = CTSolvers.build_initial_guess(ocp, init_tf)
 		Test.@test ig_tf isa CTSolvers.AbstractOptimalControlInitialGuess
@@ -147,9 +147,9 @@ function test_ctmodels_initial_guess()
 		v_tf = CTSolvers.variable(ig_tf)
 		Test.@test length(v_tf) == 2
 		Test.@test v_tf[1] ≈ 1.0
-		Test.@test v_tf[2] ≈ 0.1  # valeur par défaut issue de initial_variable(ocp, nothing)
+		Test.@test v_tf[2] ≈ 0.1  # default value coming from initial_variable(ocp, nothing)
 
-		# Uniquement la composante a (seconde composante)
+		# Only the a component (second component)
 		init_a = (a=0.5,)
 		ig_a = CTSolvers.build_initial_guess(ocp, init_a)
 		Test.@test ig_a isa CTSolvers.AbstractOptimalControlInitialGuess
@@ -159,7 +159,7 @@ function test_ctmodels_initial_guess()
 		Test.@test v_a[1] ≈ 0.1
 		Test.@test v_a[2] ≈ 0.5
 
-		# Deux composantes spécifiées
+		# Both components specified
 		init_both = (tf=1.0, a=0.5)
 		ig_both = CTSolvers.build_initial_guess(ocp, init_both)
 		Test.@test ig_both isa CTSolvers.AbstractOptimalControlInitialGuess
@@ -173,13 +173,13 @@ function test_ctmodels_initial_guess()
 	Test.@testset "ctmodels/initial_guess: build_initial_guess from NamedTuple" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp, _ = beam()
 
-		# NamedTuple cohérente
+		# Consistent NamedTuple
 		init_named = (state=[0.05, 0.1], control=0.1, variable=Float64[])
 		ig = CTSolvers.build_initial_guess(ocp, init_named)
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp, ig)
 
-		# NamedTuple avec mauvaise dimension d'état doit lever
+		# NamedTuple with incorrect state dimension must throw
 		bad_named = (state=[0.1, 0.2, 0.3], control=0.1, variable=Float64[])
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp, bad_named)
 	end
@@ -317,7 +317,7 @@ function test_ctmodels_initial_guess()
 	Test.@testset "ctmodels/initial_guess: per-component state init without time" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP2DNoVar()
 
-		# Init uniquement par composantes x1, x2
+		# Init only via components x1, x2
 		init_nt = (x1=0.0, x2=1.0)
 		ig = CTSolvers.build_initial_guess(ocp, init_nt)
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess

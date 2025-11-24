@@ -97,5 +97,9 @@ end
 
 macro init(ocp, e)
     code = init_fun(ocp, e)
-    return esc(code)
+    src = __source__
+    lnum = src.line
+    line_str = sprint(show, e)
+    wrapped = CTParser.__wrap(code, lnum, line_str)
+    return esc(wrapped)
 end
