@@ -2,5 +2,8 @@
 CTSolvers = "d3e8d392-8e4b-4d9b-8e92-d7d4e3650ef6"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 
+[sources]
+CTSolvers = {path = "/home/runner/work/CTSolvers.jl/CTSolvers.jl"}
+
 [compat]
 Documenter = "1"
