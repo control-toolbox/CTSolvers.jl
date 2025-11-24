@@ -28,17 +28,9 @@ function test_ctsolvers_extensions_integration()
     )
 
     Test.@testset "ctsolvers_ext: Solve with Ipopt (specific)" verbose=VERBOSE showtiming=SHOWTIMING begin
-        ad_manual_opts = (
-            :show_time => false,
-            :backend => :optimized,
-            :empty_backends => empty_backends,
-        )
-        exa_cpu_opts = (
-            :backend => nothing,
-        )
         modelers = [
-            CTSolvers.ADNLPModeler(ad_manual_opts),
-            CTSolvers.ExaModeler{Float64,typeof(exa_cpu_opts)}(exa_cpu_opts),
+            CTSolvers.ADNLPModeler(()),
+            CTSolvers.ExaModeler{Float64}(())
         ]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
 
@@ -104,17 +96,9 @@ function test_ctsolvers_extensions_integration()
     # ------------------------------------------------------------------
 
     Test.@testset "ctsolvers_ext: initial_guess with Ipopt" verbose=VERBOSE showtiming=SHOWTIMING begin
-        ad_manual_opts = (
-            :show_time => false,
-            :backend => :optimized,
-            :empty_backends => empty_backends,
-        )
-        exa_cpu_opts = (
-            :backend => nothing,
-        )
         modelers = [
-            CTSolvers.ADNLPModeler(ad_manual_opts),
-            CTSolvers.ExaModeler{Float64,typeof(exa_cpu_opts)}(exa_cpu_opts),
+            CTSolvers.ADNLPModeler(()),
+            CTSolvers.ExaModeler{Float64}(())
         ]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
 
@@ -159,17 +143,9 @@ function test_ctsolvers_extensions_integration()
 
     Test.@testset "ctsolvers_ext: initial_guess with MadNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
-        ad_manual_opts = (
-            :show_time => false,
-            :backend => :optimized,
-            :empty_backends => empty_backends,
-        )
-        exa_cpu_opts = (
-            :backend => nothing,
-        )
         modelers = [
-            CTSolvers.ADNLPModeler(ad_manual_opts),
-            CTSolvers.ExaModeler{BaseType,typeof(exa_cpu_opts)}(exa_cpu_opts),
+            CTSolvers.ADNLPModeler(()),
+            CTSolvers.ExaModeler{BaseType}(())
         ]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
@@ -220,17 +196,9 @@ function test_ctsolvers_extensions_integration()
 
     Test.@testset "ctsolvers_ext: Solve with MadNLP (specific)" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
-        ad_manual_opts = (
-            :show_time => false,
-            :backend => :optimized,
-            :empty_backends => empty_backends,
-        )
-        exa_cpu_opts = (
-            :backend => nothing,
-        )
         modelers = [
-            CTSolvers.ADNLPModeler(ad_manual_opts),
-            CTSolvers.ExaModeler{BaseType,typeof(exa_cpu_opts)}(exa_cpu_opts),
+            CTSolvers.ADNLPModeler(()),
+            CTSolvers.ExaModeler{BaseType}(())
         ]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
@@ -269,17 +237,9 @@ function test_ctsolvers_extensions_integration()
 
     Test.@testset "ctsolvers_ext: Solve with MadNCL (specific)" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float64
-        ad_manual_opts = (
-            :show_time => false,
-            :backend => :optimized,
-            :empty_backends => empty_backends,
-        )
-        exa_cpu_opts = (
-            :backend => nothing,
-        )
         modelers = [
-            CTSolvers.ADNLPModeler(ad_manual_opts),
-            CTSolvers.ExaModeler{BaseType,typeof(exa_cpu_opts)}(exa_cpu_opts),
+            CTSolvers.ADNLPModeler(()),
+            CTSolvers.ExaModeler{BaseType}(())
         ]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
         linear_solvers = [MadNLPMumps.MumpsSolver]
@@ -302,17 +262,9 @@ function test_ctsolvers_extensions_integration()
     end
 
     Test.@testset "ctsolvers_ext: CommonSolve.solve with Ipopt" verbose=VERBOSE showtiming=SHOWTIMING begin
-        ad_manual_opts = (
-            :show_time => false,
-            :backend => :optimized,
-            :empty_backends => empty_backends,
-        )
-        exa_cpu_opts = (
-            :backend => nothing,
-        )
         modelers = [
-            CTSolvers.ADNLPModeler(ad_manual_opts),
-            CTSolvers.ExaModeler{Float64,typeof(exa_cpu_opts)}(exa_cpu_opts),
+            CTSolvers.ADNLPModeler(()),
+            CTSolvers.ExaModeler{Float64}(())
         ]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
 
@@ -351,17 +303,9 @@ function test_ctsolvers_extensions_integration()
 
     Test.@testset "ctsolvers_ext: CommonSolve.solve with MadNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
-        ad_manual_opts = (
-            :show_time => false,
-            :backend => :optimized,
-            :empty_backends => empty_backends,
-        )
-        exa_cpu_opts = (
-            :backend => nothing,
-        )
         modelers = [
-            CTSolvers.ADNLPModeler(ad_manual_opts),
-            CTSolvers.ExaModeler{BaseType,typeof(exa_cpu_opts)}(exa_cpu_opts),
+            CTSolvers.ADNLPModeler(()),
+            CTSolvers.ExaModeler{BaseType}(())
         ]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
@@ -406,17 +350,9 @@ function test_ctsolvers_extensions_integration()
 
     Test.@testset "ctsolvers_ext: CommonSolve.solve with MadNCL" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float64
-        ad_manual_opts = (
-            :show_time => false,
-            :backend => :optimized,
-            :empty_backends => empty_backends,
-        )
-        exa_cpu_opts = (
-            :backend => nothing,
-        )
         modelers = [
-            CTSolvers.ADNLPModeler(ad_manual_opts),
-            CTSolvers.ExaModeler{BaseType,typeof(exa_cpu_opts)}(exa_cpu_opts),
+            CTSolvers.ADNLPModeler(()),
+            CTSolvers.ExaModeler{BaseType}(())
         ]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
@@ -451,12 +387,8 @@ function test_ctsolvers_extensions_integration()
         Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
 
         modelers = [
-            CTSolvers.ADNLPModeler(
-                ; show_time=false,
-                  backend=:manual,
-                  empty_backends=empty_backends,
-            ),
-            CTSolvers.ExaModeler(; base_type=Float64, backend=nothing),
+            CTSolvers.ADNLPModeler(()),
+            CTSolvers.ExaModeler{Float64}(())
         ]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
 

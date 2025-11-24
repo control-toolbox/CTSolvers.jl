@@ -77,15 +77,7 @@ function test_ctmodels_model_api()
     Test.@testset "ctmodels/model_api: nlp_model(DiscretizedOptimalControlProblem, ...)" verbose=VERBOSE showtiming=SHOWTIMING begin
         docp = make_dummy_docp_for_model_api()
         x0 = [1.0, 2.0]
-        empty_backends = (
-            :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
-        )
-        ad_opts = (
-            :show_time => false,
-            :backend => :optimized,
-            :empty_backends => empty_backends,
-        )
-        modeler = CTSolvers.ADNLPModeler(ad_opts)
+        modeler = CTSolvers.ADNLPModeler(())
 
         nlp = CTSolvers.nlp_model(docp, x0, modeler)
         Test.@test nlp isa NLPModels.AbstractNLPModel
@@ -132,14 +124,7 @@ function test_ctmodels_model_api()
     # ------------------------------------------------------------------
     Test.@testset "ctmodels/model_api: build_model on Rosenbrock and Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
-            ad_opts_rosen = (
-                :show_time => false,
-                :backend => :optimized,
-                :empty_backends => (
-                    :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
-                ),
-            )
-            modeler_ad = CTSolvers.ADNLPModeler(ad_opts_rosen)
+            modeler_ad = CTSolvers.ADNLPModeler(())
             nlp_ad = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler_ad)
             Test.@test nlp_ad isa ADNLPModels.ADNLPModel
             Test.@test nlp_ad.meta.x0 == rosenbrock_init
@@ -147,23 +132,13 @@ function test_ctmodels_model_api()
             Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0)[1] == rosenbrock_constraint(rosenbrock_init)
             Test.@test nlp_ad.meta.minimize == rosenbrock_is_minimize()
 
-            exa_opts_rosen = (
-                :backend => nothing,
-            )
-            modeler_exa = CTSolvers.ExaModeler{Float64,typeof(exa_opts_rosen)}(exa_opts_rosen)
+            modeler_exa = CTSolvers.ExaModeler{Float64}(())
             nlp_exa = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler_exa)
             Test.@test nlp_exa isa ExaModels.ExaModel
         end
 
         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-            ad_opts_elec = (
-                :show_time => false,
-                :backend => :optimized,
-                :empty_backends => (
-                    :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
-                ),
-            )
-            modeler_ad = CTSolvers.ADNLPModeler(ad_opts_elec)
+            modeler_ad = CTSolvers.ADNLPModeler(())
             nlp_ad = CTSolvers.build_model(elec_prob, elec_init, modeler_ad)
             Test.@test nlp_ad isa ADNLPModels.ADNLPModel
             Test.@test nlp_ad.meta.x0 == vcat(elec_init.x, elec_init.y, elec_init.z)
@@ -172,10 +147,7 @@ function test_ctmodels_model_api()
             Test.@test nlp_ad.meta.minimize == elec_is_minimize()
 
             BaseType = Float64
-            exa_opts_elec = (
-                :backend => nothing,
-            )
-            modeler_exa = CTSolvers.ExaModeler{BaseType,typeof(exa_opts_elec)}(exa_opts_elec)
+            modeler_exa = CTSolvers.ExaModeler{BaseType}(())
             nlp_exa = CTSolvers.build_model(elec_prob, elec_init, modeler_exa)
             Test.@test nlp_exa isa ExaModels.ExaModel{BaseType}
         end

@@ -1,5 +1,7 @@
-# builders of NLP models
+# builders
 abstract type AbstractBuilder end
+
+# builders of NLP models
 abstract type AbstractModelBuilder <: AbstractBuilder end
 
 struct ADNLPModelBuilder{T<:Function} <: AbstractModelBuilder
@@ -23,10 +25,10 @@ function (builder::ExaModelBuilder)(
     return builder.f(BaseType, initial_guess; kwargs...)
 end
 
-# helpers to build solutions
+# builders of solutions
 abstract type AbstractSolutionBuilder <: AbstractBuilder end
 
-# problem
+# problems
 abstract type AbstractOptimizationProblem end
 
 function get_exa_model_builder(prob::AbstractOptimizationProblem)

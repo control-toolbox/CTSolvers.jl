@@ -34,6 +34,9 @@ struct ExaModeler{BaseType<:AbstractFloat,T<:Tuple} <: AbstractOptimizationModel
     options::T
 end
 
+ExaModeler{BaseType}(options::T) where {BaseType<:AbstractFloat,T<:Tuple} =
+    ExaModeler{BaseType,T}(options)
+
 function (modeler::ExaModeler{BaseType,T})(
     prob::AbstractOptimizationProblem, 
     initial_guess,
