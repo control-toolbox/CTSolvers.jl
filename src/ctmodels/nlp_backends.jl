@@ -36,6 +36,9 @@ function (modeler::ADNLPModeler)(
     end
 
     # build the backend options
+    # TODO: add sparsity pattern for ADNLPModels
+    # See https://github.com/control-toolbox/CTDirect.jl/blob/89da28d139fd5d3eecf815ceff57c3a68fda32f2/ext/CTDirectExtADNLP.jl#L38-L61
+    # Maybe, this must be set in the builder
     backend_options = if modeler.backend==:manual # we define the AD backend manually with sparsity pattern (OCP)
         (
             gradient_backend=ADNLPModels.ReverseDiffADGradient,
