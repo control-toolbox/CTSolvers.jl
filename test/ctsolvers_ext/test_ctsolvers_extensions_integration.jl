@@ -2,7 +2,7 @@
 function test_ctsolvers_extensions_integration()
 
     ipopt_options = Dict(
-        :max_iter => 100,
+        :max_iter => 1000,
         :tol => 1e-6,
         :print_level => 0,
         :mu_strategy => "adaptive",
@@ -11,13 +11,13 @@ function test_ctsolvers_extensions_integration()
     )
 
     madnlp_options = Dict(
-        :max_iter => 100,
+        :max_iter => 1000,
         :tol => 1e-6,
         :print_level => MadNLP.ERROR,
     )
 
     f_madncl_options(BaseType) = Dict(
-        :max_iter => 100,
+        :max_iter => 1000,
         :tol => 1e-6,
         :print_level => MadNLP.ERROR,
         :ncl_options => MadNCL.NCLOptions{BaseType}(; verbose=false),
