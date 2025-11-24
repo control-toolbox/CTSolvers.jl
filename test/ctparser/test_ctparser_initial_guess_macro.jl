@@ -77,7 +77,7 @@ function test_ctparser_initial_guess_macro()
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: 2D variable block and components" verbose=VERBOSE showtiming=SHOWTIMING begin
-		# Bloc complet
+		# Full variable block
 		ig_block = @init ocp_var2 begin
 			w := [1.0, 2.0]
 		end
@@ -88,7 +88,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test v_block[1] ≈ 1.0
 		Test.@test v_block[2] ≈ 2.0
 
-		# Uniquement la composante tf
+		# Only the tf component
 		ig_tf = @init ocp_var2 begin
 			tf := 1.0
 		end
@@ -99,7 +99,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test v_tf[1] ≈ 1.0
 		Test.@test v_tf[2] ≈ 0.1
 
-		# Uniquement la composante a
+		# Only the a component
 		ig_a = @init ocp_var2 begin
 			a := 0.5
 		end
@@ -110,7 +110,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test v_a[1] ≈ 0.1
 		Test.@test v_a[2] ≈ 0.5
 
-		# Deux composantes
+		# Both components
 		ig_both = @init ocp_var2 begin
 			tf := 1.0
 			a  := 0.5
