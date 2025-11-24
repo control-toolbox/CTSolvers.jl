@@ -26,3 +26,5 @@ function CommonSolve.solve(
 )::AbstractOptimalControlSolution
     return CommonSolve.solve(ocp, initial_guess, discretizer, modeler, solver; display=display)
 end
+
+# solve method with description
