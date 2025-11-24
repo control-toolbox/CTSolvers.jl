@@ -13,7 +13,7 @@ function test_ctsolvers_extensions_gpu()
     madnlp_options = Dict(
         :max_iter => 1000,
         :tol => 1e-6,
-        :print_level => MadNLP.INFO,
+        :print_level => MadNLP.ERROR,
     )
 
     # ------------------------------------------------------------------
