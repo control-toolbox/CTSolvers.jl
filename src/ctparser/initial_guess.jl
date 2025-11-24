@@ -3,8 +3,7 @@
         ...
     end
 
-Macro pour construire des données d'initialisation (NamedTuple) à partir d'un
-DSL de type
+Macro to build initialization data (NamedTuple) from a small DSL of the form
 
     q(t) := sin(t)
     x(T) := X
@@ -12,15 +11,15 @@ DSL de type
     a = 1.0
     v(t) := a
 
-La macro ne fait que transformer la syntaxe en `NamedTuple`; toute la
-validation dimensionnelle et la gestion fine des alias d'OCP est assurée par
+The macro only transforms this syntax into a `NamedTuple`; all dimensional
+validation and detailed handling of OCP aliases is performed by
 `build_initial_guess` / `_initial_guess_from_namedtuple`.
 """
 
 function _collect_init_specs(ex)
-    alias_stmts = Expr[]           # lignes de la forme a = ... ou autres statements Julia
-    keys = Symbol[]                # clés du NamedTuple (q, v, x, u, tf, ...)
-    vals = Any[]                   # expressions des valeurs associées
+    alias_stmts = Expr[]           # statements of the form a = ... or other Julia statements
+    keys = Symbol[]                # keys of the NamedTuple (q, v, x, u, tf, ...)
+    vals = Any[]                   # expressions for the associated values
 
     stmts = if ex isa Expr && ex.head == :block
         ex.args
@@ -32,33 +31,33 @@ function _collect_init_specs(ex)
         st isa LineNumberNode && continue
 
         @match st begin
-            # Alias / affectations Julia ordinaires laissées telles quelles
+            # Alias / ordinary Julia assignments left as-is
             :($lhs = $rhs) => begin
                 push!(alias_stmts, st)
             end
 
-            # Formes q(t) := rhs (fonction du temps) ou q(T) := rhs (grille de temps)
+            # Forms q(t) := rhs (time-dependent function) or q(T) := rhs (time grid)
             :($lhs($arg) := $rhs) => begin
                 lhs isa Symbol || error("Unsupported left-hand side in @init: $lhs")
                 if arg == :t
-                    # q(t) := rhs  → fonction du temps
+                    # q(t) := rhs  → time-dependent function
                     push!(keys, lhs)
                     push!(vals, :($arg -> $rhs))
                 else
-                    # q(T) := rhs  → (T, rhs) pour build_initial_guess
+                    # q(T) := rhs  → (T, rhs) for build_initial_guess
                     push!(keys, lhs)
                     push!(vals, :(($arg, $rhs)))
                 end
             end
 
-            # Forme constante / variable : lhs := rhs
+            # Constant / variable form: lhs := rhs
             :($lhs := $rhs) => begin
                 lhs isa Symbol || error("Unsupported left-hand side in @init: $lhs")
                 push!(keys, lhs)
                 push!(vals, rhs)
             end
 
-            # Fallback : toute autre ligne est traitée comme statement Julia ordinaire
+            # Fallback: any other line is treated as an ordinary Julia statement
             _ => begin
                 push!(alias_stmts, st)
             end
@@ -71,18 +70,18 @@ end
 function init_fun(ocp, e)
     alias_stmts, keys, vals = _collect_init_specs(e)
 
-    # Si aucune spécification d'init, on retourne juste un NamedTuple vide
+    # If there is no init specification, delegate to build_initial_guess/validate_initial_guess
     if isempty(keys)
         body_stmts = Any[]
         append!(body_stmts, alias_stmts)
-        # Par défaut, on délègue à build_initial_guess/validate_initial_guess
+        # By default, we delegate to build_initial_guess/validate_initial_guess
         build_call = :(CTSolvers.build_initial_guess($ocp, ()))
         validate_call = :(CTSolvers.validate_initial_guess($ocp, $build_call))
         push!(body_stmts, validate_call)
         return Expr(:block, body_stmts...)
     end
 
-    # Construction du type de NamedTuple et de ses valeurs
+    # Build the NamedTuple type and its values
     key_nodes = [QuoteNode(k) for k in keys]
     keys_tuple = Expr(:tuple, key_nodes...)
     vals_tuple = Expr(:tuple, vals...)
