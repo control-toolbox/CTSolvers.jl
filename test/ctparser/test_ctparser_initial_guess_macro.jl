@@ -509,4 +509,12 @@ function test_ctparser_initial_guess_macro()
 		end
 	end
 
+	Test.@testset "ctparser/init_prefix: getter and setter" verbose=VERBOSE showtiming=SHOWTIMING begin
+		old_pref = CTSolvers.init_prefix()
+		CTSolvers.init_prefix!(:MyBackend)
+		Test.@test CTSolvers.init_prefix() == :MyBackend
+		CTSolvers.init_prefix!(old_pref)
+		Test.@test CTSolvers.init_prefix() == old_pref
+	end
+
 end

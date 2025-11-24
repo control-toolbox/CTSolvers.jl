@@ -16,6 +16,19 @@ validation and detailed handling of OCP aliases is performed by
 `build_initial_guess` / `_initial_guess_from_namedtuple`.
 """
 
+# Prefix for the backend module providing `build_initial_guess` and
+# `validate_initial_guess`. By default this is `:CTSolvers`, but it can be
+# changed using `init_prefix!` to point to another module exposing the same API.
+__default_init_prefix() = :CTSolvers
+const INIT_PREFIX = Ref(__default_init_prefix())
+
+init_prefix() = INIT_PREFIX[]
+
+function init_prefix!(p)
+	INIT_PREFIX[] = p
+	return nothing
+end
+
 function _collect_init_specs(ex)
     alias_stmts = Expr[]           # statements of the form a = ... or other Julia statements
     keys = Symbol[]                # keys of the NamedTuple (q, v, x, u, tf, ...)
@@ -68,31 +81,32 @@ function _collect_init_specs(ex)
 end
 
 function init_fun(ocp, e)
-    alias_stmts, keys, vals = _collect_init_specs(e)
+	alias_stmts, keys, vals = _collect_init_specs(e)
+	pref = init_prefix()
 
-    # If there is no init specification, delegate to build_initial_guess/validate_initial_guess
-    if isempty(keys)
-        body_stmts = Any[]
-        append!(body_stmts, alias_stmts)
-        # By default, we delegate to build_initial_guess/validate_initial_guess
-        build_call = :(CTSolvers.build_initial_guess($ocp, ()))
-        validate_call = :(CTSolvers.validate_initial_guess($ocp, $build_call))
+	# If there is no init specification, delegate to build_initial_guess/validate_initial_guess
+	if isempty(keys)
+		body_stmts = Any[]
+		append!(body_stmts, alias_stmts)
+		# By default, we delegate to build_initial_guess/validate_initial_guess
+		build_call = :($pref.build_initial_guess($ocp, ()))
+		validate_call = :($pref.validate_initial_guess($ocp, $build_call))
         push!(body_stmts, validate_call)
         code_expr = Expr(:block, body_stmts...)
         log_str = "()"
         return log_str, code_expr
     end
 
-    # Build the NamedTuple type and its values for execution
-    key_nodes = [QuoteNode(k) for k in keys]
-    keys_tuple = Expr(:tuple, key_nodes...)
-    vals_tuple = Expr(:tuple, vals...)
-    nt_expr = :(NamedTuple{$keys_tuple}($vals_tuple))
+    	# Build the NamedTuple type and its values for execution
+	key_nodes = [QuoteNode(k) for k in keys]
+	keys_tuple = Expr(:tuple, key_nodes...)
+	vals_tuple = Expr(:tuple, vals...)
+	nt_expr = :(NamedTuple{$keys_tuple}($vals_tuple))
 
-    body_stmts = Any[]
-    append!(body_stmts, alias_stmts)
-    build_call = :(CTSolvers.build_initial_guess($ocp, $nt_expr))
-    validate_call = :(CTSolvers.validate_initial_guess($ocp, $build_call))
+    	body_stmts = Any[]
+	append!(body_stmts, alias_stmts)
+	build_call = :($pref.build_initial_guess($ocp, $nt_expr))
+	validate_call = :($pref.validate_initial_guess($ocp, $build_call))
     push!(body_stmts, validate_call)
     code_expr = Expr(:block, body_stmts...)
 
