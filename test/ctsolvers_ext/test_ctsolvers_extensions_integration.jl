@@ -25,10 +25,10 @@ function test_ctsolvers_extensions_integration()
 
     Test.@testset "ctsolvers_ext: Solve with Ipopt (specific)" verbose=VERBOSE showtiming=SHOWTIMING begin
         modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
+            CTSolvers.ADNLPModeler(),
             CTSolvers.ExaModeler(),
         ]
-        modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
+        modelers_names = ["ADNLPModeler", "ExaModeler"]
 
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers, modelers_names)
@@ -56,10 +56,10 @@ function test_ctsolvers_extensions_integration()
     Test.@testset "ctsolvers_ext: initial_guess with MadNCL" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float64
         modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
+            CTSolvers.ADNLPModeler(),
             CTSolvers.ExaModeler(; base_type=BaseType),
         ]
-        modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
+        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
         madncl_options = f_madncl_options(BaseType)
@@ -90,10 +90,10 @@ function test_ctsolvers_extensions_integration()
 
     Test.@testset "ctsolvers_ext: initial_guess with Ipopt" verbose=VERBOSE showtiming=SHOWTIMING begin
         modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
+            CTSolvers.ADNLPModeler(),
             CTSolvers.ExaModeler(),
         ]
-        modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
+        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
 
         # Rosenbrock: start at the known solution and enforce max_iter=0
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -135,10 +135,10 @@ function test_ctsolvers_extensions_integration()
     Test.@testset "ctsolvers_ext: initial_guess with MadNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
         modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
+            CTSolvers.ADNLPModeler(),
             CTSolvers.ExaModeler(; base_type=BaseType),
         ]
-        modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
+        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
 
@@ -186,10 +186,10 @@ function test_ctsolvers_extensions_integration()
     Test.@testset "ctsolvers_ext: Solve with MadNLP (specific)" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
         modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
+            CTSolvers.ADNLPModeler(),
             CTSolvers.ExaModeler(; base_type=BaseType),
         ]
-        modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
+        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
 
@@ -227,10 +227,10 @@ function test_ctsolvers_extensions_integration()
     Test.@testset "ctsolvers_ext: Solve with MadNCL (specific)" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float64
         modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
+            CTSolvers.ADNLPModeler(),
             CTSolvers.ExaModeler(; base_type=BaseType),
         ]
-        modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
+        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Mumps"]
         madncl_options = f_madncl_options(BaseType)
@@ -252,10 +252,10 @@ function test_ctsolvers_extensions_integration()
 
     Test.@testset "ctsolvers_ext: CommonSolve.solve with Ipopt" verbose=VERBOSE showtiming=SHOWTIMING begin
         modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
+            CTSolvers.ADNLPModeler(),
             CTSolvers.ExaModeler(),
         ]
-        modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
+        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
 
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers, modelers_names)
@@ -291,10 +291,10 @@ function test_ctsolvers_extensions_integration()
     Test.@testset "ctsolvers_ext: CommonSolve.solve with MadNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
         modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
+            CTSolvers.ADNLPModeler(),
             CTSolvers.ExaModeler(; base_type=BaseType),
         ]
-        modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
+        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
 
@@ -336,10 +336,10 @@ function test_ctsolvers_extensions_integration()
     Test.@testset "ctsolvers_ext: CommonSolve.solve with MadNCL" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float64
         modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
+            CTSolvers.ADNLPModeler(),
             CTSolvers.ExaModeler(; base_type=BaseType),
         ]
-        modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
+        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
         madncl_options = f_madncl_options(BaseType)
@@ -369,10 +369,10 @@ function test_ctsolvers_extensions_integration()
         Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
 
         modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
+            CTSolvers.ADNLPModeler(),
             CTSolvers.ExaModeler(),
         ]
-        modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
+        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
 
         Test.@testset "NLP model (Beam DOCP)" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers, modelers_names)
@@ -462,49 +462,5 @@ function test_ctsolvers_extensions_integration()
             end
         end
 
-        # OCP level: CommonSolve.solve(ocp, init, discretizer, modeler, solver)
-        Test.@testset "OCP level" verbose=VERBOSE showtiming=SHOWTIMING begin
-            Test.@testset "Ipopt" verbose=VERBOSE showtiming=SHOWTIMING begin
-                for (modeler, modeler_name) in zip(modelers, modelers_names)
-                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        solver = CTSolvers.IpoptSolver(; ipopt_options...)
-                        sol = CommonSolve.solve(ocp, init, discretizer, modeler, solver; display=false)
-                        Test.@test sol isa CTModels.Solution
-                        Test.@test CTModels.successful(sol)
-                        Test.@test isfinite(CTModels.objective(sol))
-                        Test.@test CTModels.iterations(sol) <= ipopt_options[:max_iter]
-                        Test.@test CTModels.constraints_violation(sol) <= 1e-6
-                    end
-                end
-            end
-
-            Test.@testset "MadNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
-                for (modeler, modeler_name) in zip(modelers, modelers_names)
-                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        solver = CTSolvers.MadNLPSolver(; madnlp_options...)
-                        sol = CommonSolve.solve(ocp, init, discretizer, modeler, solver; display=false)
-                        Test.@test sol isa CTModels.Solution
-                        Test.@test CTModels.successful(sol)
-                        Test.@test isfinite(CTModels.objective(sol))
-                        Test.@test CTModels.iterations(sol) <= madnlp_options[:max_iter]
-                        Test.@test CTModels.constraints_violation(sol) <= 1e-6
-                    end
-                end
-            end
-
-            Test.@testset "OCP level with @init (Ipopt, ADNLPModeler)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                # Use @init to define the initial guess for the beam OCP, then solve end-to-end.
-                init_macro = CTSolvers.@init ocp begin
-                    x := [0.05, 0.1]
-                    u := 0.1
-                end
-                modeler = CTSolvers.ADNLPModeler(; backend=:manual)
-                solver = CTSolvers.IpoptSolver(; ipopt_options...)
-                sol = CommonSolve.solve(ocp, init_macro, discretizer, modeler, solver; display=false)
-                Test.@test sol isa CTModels.Solution
-                Test.@test CTModels.successful(sol)
-                Test.@test isfinite(CTModels.objective(sol))
-            end
-        end
     end
 end

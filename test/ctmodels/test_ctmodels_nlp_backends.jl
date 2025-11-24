@@ -12,30 +12,20 @@ function test_ctmodels_nlp_backends()
     # that the resulting ADNLPModel has the correct initial point,
     # objective, constraints, and that the AD backends are configured as
     # expected when using the manual backend path.
-    Test.@testset "ctmodels/nlp_backends: ADNLPModels – Rosenbrock (backend=:manual, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
-        modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+    Test.@testset "ctmodels/nlp_backends: ADNLPModels – Rosenbrock (direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
+        modeler = CTSolvers.ADNLPModeler()
         nlp_adnlp = modeler(rosenbrock_prob, rosenbrock_init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         Test.@test nlp_adnlp.meta.x0 == rosenbrock_init
         Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == rosenbrock_objective(rosenbrock_init)
         Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] == rosenbrock_constraint(rosenbrock_init)
         Test.@test nlp_adnlp.meta.minimize == rosenbrock_is_minimize()
-
-        # Automatic Differentiation backends configured by backend_options
-        ad_backends = ADNLPModels.get_adbackend(nlp_adnlp)
-        Test.@test ad_backends.gradient_backend isa ADNLPModels.ReverseDiffADGradient
-        Test.@test ad_backends.jacobian_backend isa ADNLPModels.SparseADJacobian
-        Test.@test ad_backends.hessian_backend isa ADNLPModels.SparseReverseADHessian
-        Test.@test ad_backends.jtprod_backend isa ADNLPModels.EmptyADbackend
-        Test.@test ad_backends.jprod_backend isa ADNLPModels.EmptyADbackend
-        Test.@test ad_backends.ghjvprod_backend isa ADNLPModels.EmptyADbackend
-        Test.@test ad_backends.hprod_backend isa ADNLPModels.EmptyADbackend
     end
 
-    # Same backend=:manual path but on a different CTModels problem (Elec),
+    # Different CTModels problem (Elec),
     # still calling the backend directly.
-    Test.@testset "ctmodels/nlp_backends: ADNLPModels – Elec (backend=:manual, direct call)" begin
-        modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+    Test.@testset "ctmodels/nlp_backends: ADNLPModels – Elec (direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
+        modeler = CTSolvers.ADNLPModeler()
         nlp_adnlp = modeler(elec_prob, elec_init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         Test.@test nlp_adnlp.meta.x0 == vcat(elec_init.x, elec_init.y, elec_init.z)
@@ -48,7 +38,7 @@ function test_ctmodels_nlp_backends()
     # should surface the generic NotImplemented error from get_adnlp_model_builder
     # even when called directly.
     Test.@testset "ctmodels/nlp_backends: ADNLPModels – DummyProblem (NotImplemented, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
-        modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+        modeler = CTSolvers.ADNLPModeler()
         Test.@test_throws CTBase.NotImplemented modeler(DummyProblem(), rosenbrock_init)
     end
 
@@ -102,12 +92,11 @@ function test_ctmodels_nlp_backends()
         backend_default = CTSolvers.ADNLPModeler()
         Test.@test backend_default.show_time == CTSolvers.__adnlp_model_show_time()
         Test.@test backend_default.backend    == CTSolvers.__adnlp_model_backend()
-        Test.@test backend_default.empty_backends == CTSolvers.__adnlp_model_empty_backends()
         Test.@test length(keys(backend_default.kwargs)) == 0
 
         # Custom backend and extra kwargs should be stored as-is
-        backend_manual = CTSolvers.ADNLPModeler(; backend=:manual, foo=1)
-        Test.@test backend_manual.backend == :manual
+        backend_manual = CTSolvers.ADNLPModeler(; backend=:toto, foo=1)
+        Test.@test backend_manual.backend == :toto
         Test.@test backend_manual.kwargs[:foo] == 1
     end
 

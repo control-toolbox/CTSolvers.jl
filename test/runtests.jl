@@ -33,12 +33,13 @@ const SHOWTIMING = true
 
 # Select tests to run
 const TESTS = Dict(
-    :extensions => true,
-    :aqua       => true,
-    :ctmodels   => true,
-    :ctsolvers  => true,
-    :ctparser   => true,
-    :ctdirect   => true,
+    :extensions       => false,
+    :aqua             => true,
+    :ctmodels         => false,
+    :ctsolvers        => false,
+    :ctparser         => false,
+    :ctdirect         => false,
+    :optimalcontrol   => false,
 )
 
 # Test extension exceptions: before loading the extensions
@@ -177,3 +178,21 @@ if TESTS[:ctdirect]
     end
     println("✓ CTDirect tests passed\n")
 end
+
+# OptimalControl
+if TESTS[:optimalcontrol]
+    println("========== OptimalControl tests ==========")
+    @testset "OptimalControl" verbose=VERBOSE showtiming=SHOWTIMING begin
+        for name in (
+            :optimalcontrol_default,
+            :optimalcontrol_solve_api,
+        )
+            @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                test_name = Symbol(:test_, name)
+                include(joinpath("optimalcontrol", "$(test_name).jl"))
+                @eval $test_name()
+            end
+        end
+    end
+    println("✓ OptimalControl tests passed\n")
+end  

@@ -124,7 +124,7 @@ function test_ctmodels_model_api()
     # ------------------------------------------------------------------
     Test.@testset "ctmodels/model_api: build_model on Rosenbrock and Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
-            modeler_ad = CTSolvers.ADNLPModeler(; backend=:manual)
+            modeler_ad = CTSolvers.ADNLPModeler()
             nlp_ad = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler_ad)
             Test.@test nlp_ad isa ADNLPModels.ADNLPModel
             Test.@test nlp_ad.meta.x0 == rosenbrock_init
@@ -138,7 +138,7 @@ function test_ctmodels_model_api()
         end
 
         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-            modeler_ad = CTSolvers.ADNLPModeler(; backend=:manual)
+            modeler_ad = CTSolvers.ADNLPModeler()
             nlp_ad = CTSolvers.build_model(elec_prob, elec_init, modeler_ad)
             Test.@test nlp_ad isa ADNLPModels.ADNLPModel
             Test.@test nlp_ad.meta.x0 == vcat(elec_init.x, elec_init.y, elec_init.z)

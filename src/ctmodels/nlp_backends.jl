@@ -6,21 +6,19 @@ abstract type AbstractOptimizationModeler end
 # ------------------------------------------------------------------------------
 # ADNLPModels
 # ------------------------------------------------------------------------------
-struct ADNLPModeler{EmptyBackends<:Tuple{Vararg{Symbol}},KW} <: AbstractOptimizationModeler
+struct ADNLPModeler{KW} <: AbstractOptimizationModeler
     # attributes
     show_time::Bool
     backend::Symbol
-    empty_backends::EmptyBackends
     kwargs::KW
 
     # constructor
     function ADNLPModeler(;
         show_time::Bool=__adnlp_model_show_time(),
         backend::Symbol=__adnlp_model_backend(),
-        empty_backends::EmptyBackends=__adnlp_model_empty_backends(),
         kwargs...,
-    ) where {EmptyBackends<:Tuple{Vararg{Symbol}}}
-        return new{EmptyBackends,typeof(kwargs)}(show_time, backend, empty_backends, kwargs)
+    )
+        return new{typeof(kwargs)}(show_time, backend, kwargs)
     end
 end
 
@@ -28,32 +26,9 @@ function (modeler::ADNLPModeler)(
     prob::AbstractOptimizationProblem, 
     initial_guess,
 )::ADNLPModels.ADNLPModel
-
-    # build the empty backends
-    empty_backends = Dict{Symbol,Type{ADNLPModels.EmptyADbackend}}()
-    for backend in modeler.empty_backends
-        empty_backends[backend] = ADNLPModels.EmptyADbackend
-    end
-
-    # build the backend options
-    # TODO: add sparsity pattern for ADNLPModels
-    # See https://github.com/control-toolbox/CTDirect.jl/blob/89da28d139fd5d3eecf815ceff57c3a68fda32f2/ext/CTDirectExtADNLP.jl#L38-L61
-    # Maybe, this must be set in the builder
-    backend_options = if modeler.backend==:manual # we define the AD backend manually with sparsity pattern (OCP)
-        (
-            gradient_backend=ADNLPModels.ReverseDiffADGradient,
-            jacobian_backend=ADNLPModels.SparseADJacobian,
-            hessian_backend=ADNLPModels.SparseReverseADHessian,
-            empty_backends...,
-        )
-    else
-        (backend=modeler.backend, empty_backends...)
-    end
-
-    # build the model
     builder = get_adnlp_model_builder(prob)
     return builder(
-        initial_guess; show_time=modeler.show_time, backend_options..., modeler.kwargs...
+        initial_guess; show_time=modeler.show_time, backend=modeler.backend, modeler.kwargs...
     )
 end
 

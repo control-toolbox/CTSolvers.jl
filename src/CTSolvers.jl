@@ -42,4 +42,8 @@ include(joinpath("ctsolvers", "extension_stubs.jl"))
 include(joinpath("ctsolvers", "common_solve_api.jl"))
 include(joinpath("ctsolvers", "backends_types.jl"))
 
+# OptimalControl
+include(joinpath("optimalcontrol", "default.jl"))
+include(joinpath("optimalcontrol", "solve_api.jl"))
+
 end

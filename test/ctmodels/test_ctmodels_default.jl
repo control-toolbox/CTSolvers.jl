@@ -8,14 +8,10 @@ function test_ctmodels_default()
         # Types of default parameters
         Test.@test CTSolvers.__adnlp_model_show_time() isa Bool
         Test.@test CTSolvers.__adnlp_model_backend() isa Symbol
-        Test.@test CTSolvers.__adnlp_model_empty_backends() isa Tuple{Vararg{Symbol}}
 
         # Expected default values
         Test.@test CTSolvers.__adnlp_model_show_time() == false
         Test.@test CTSolvers.__adnlp_model_backend() == :optimized
-        Test.@test CTSolvers.__adnlp_model_empty_backends() == (
-            :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
-        )
     end
 
     # Tests for default parameters used when building ExaModels.
