@@ -1,5 +1,6 @@
 struct DummyOCP1DNoVar <: CTModels.AbstractModel end
 struct DummyOCP1DVar   <: CTModels.AbstractModel end
+struct DummyOCP1D2Var  <: CTModels.AbstractModel end
 
 CTModels.state_dimension(::DummyOCP1DNoVar) = 1
 CTModels.control_dimension(::DummyOCP1DNoVar) = 1
@@ -28,6 +29,20 @@ CTModels.control_name(::DummyOCP1DVar) = "u"
 CTModels.control_components(::DummyOCP1DVar) = ["u"]
 CTModels.variable_name(::DummyOCP1DVar) = "v"
 CTModels.variable_components(::DummyOCP1DVar) = ["v"]
+
+CTModels.state_dimension(::DummyOCP1D2Var) = 1
+CTModels.control_dimension(::DummyOCP1D2Var) = 1
+CTModels.variable_dimension(::DummyOCP1D2Var) = 2
+
+CTModels.has_fixed_initial_time(::DummyOCP1D2Var) = true
+CTModels.initial_time(::DummyOCP1D2Var) = 0.0
+
+CTModels.state_name(::DummyOCP1D2Var) = "x"
+CTModels.state_components(::DummyOCP1D2Var) = ["x"]
+CTModels.control_name(::DummyOCP1D2Var) = "u"
+CTModels.control_components(::DummyOCP1D2Var) = ["u"]
+CTModels.variable_name(::DummyOCP1D2Var) = "w"
+CTModels.variable_components(::DummyOCP1D2Var) = ["tf", "a"]
 
 struct DummyOCP2DNoVar <: CTModels.AbstractModel end
 
@@ -94,7 +109,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.validate_initial_guess(ocp1, init_bad_ctrl)
 	end
 
-	Test.@testset "ctmodels/initial_guess: variable dimension handling" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "ctmodels/initial_guess: variable dimension handling" verbose=VERBOSE showtimING=SHOWTIMING begin
 		# Dummy problème avec variable scalaire (dim(x)=dim(u)=dim(v)=1)
 		ocp2 = DummyOCP1DVar()
 
@@ -109,6 +124,50 @@ function test_ctmodels_initial_guess()
 		ocp3, _ = beam()  # beam n'a pas de variable
 		# fournir une variable scalaire doit lever
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.initial_guess(ocp3; variable=1.0)
+	end
+
+	Test.@testset "ctmodels/initial_guess: 2D variable block and components" verbose=VERBOSE showtimING=SHOWTIMING begin
+		ocp = DummyOCP1D2Var()
+
+		# Bloc complet pour la variable w
+		init_block = (w=[1.0, 2.0],)
+		ig_block = CTSolvers.build_initial_guess(ocp, init_block)
+		Test.@test ig_block isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp, ig_block)
+		v_block = CTSolvers.variable(ig_block)
+		Test.@test length(v_block) == 2
+		Test.@test v_block[1] ≈ 1.0
+		Test.@test v_block[2] ≈ 2.0
+
+		# Uniquement la composante tf (première composante)
+		init_tf = (tf=1.0,)
+		ig_tf = CTSolvers.build_initial_guess(ocp, init_tf)
+		Test.@test ig_tf isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp, ig_tf)
+		v_tf = CTSolvers.variable(ig_tf)
+		Test.@test length(v_tf) == 2
+		Test.@test v_tf[1] ≈ 1.0
+		Test.@test v_tf[2] ≈ 0.1  # valeur par défaut issue de initial_variable(ocp, nothing)
+
+		# Uniquement la composante a (seconde composante)
+		init_a = (a=0.5,)
+		ig_a = CTSolvers.build_initial_guess(ocp, init_a)
+		Test.@test ig_a isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp, ig_a)
+		v_a = CTSolvers.variable(ig_a)
+		Test.@test length(v_a) == 2
+		Test.@test v_a[1] ≈ 0.1
+		Test.@test v_a[2] ≈ 0.5
+
+		# Deux composantes spécifiées
+		init_both = (tf=1.0, a=0.5)
+		ig_both = CTSolvers.build_initial_guess(ocp, init_both)
+		Test.@test ig_both isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp, ig_both)
+		v_both = CTSolvers.variable(ig_both)
+		Test.@test length(v_both) == 2
+		Test.@test v_both[1] ≈ 1.0
+		Test.@test v_both[2] ≈ 0.5
 	end
 
 	Test.@testset "ctmodels/initial_guess: build_initial_guess from NamedTuple" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -189,9 +248,52 @@ function test_ctmodels_initial_guess()
 		Test.@test isapprox(u0_val, 0.0; atol=1e-12)
 		Test.@test isapprox(u1_val, 1.0; atol=1e-12)
 
+		# Same test but using a matrix for the state samples (time-grid + matrix2vec path)
+		state_matrix = [0.0; 0.5; 1.0]
+		init_nt_mat = (state=(time, state_matrix), control=(time, control_samples), variable=Float64[])
+		ig_mat = CTSolvers.build_initial_guess(ocp, init_nt_mat)
+		Test.@test ig_mat isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp, ig_mat)
+
+		# Edge case: (time, nothing) for state should fall back to default initial_state
+		init_nt_state_nothing = (state=(time, nothing), control=(time, control_samples), variable=Float64[])
+		ig_state_nothing = CTSolvers.build_initial_guess(ocp, init_nt_state_nothing)
+		Test.@test ig_state_nothing isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp, ig_state_nothing)
+
+		# Edge case: (time, nothing) for control should fall back to default initial_control
+		init_nt_control_nothing = (state=(time, state_samples), control=(time, nothing), variable=Float64[])
+		ig_control_nothing = CTSolvers.build_initial_guess(ocp, init_nt_control_nothing)
+		Test.@test ig_control_nothing isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp, ig_control_nothing)
+
 		bad_state_samples = [[0.0], [1.0]]
 		bad_nt = (state=(time, bad_state_samples), control=(time, control_samples), variable=Float64[])
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp, bad_nt)
+	end
+
+	Test.@testset "ctmodels/initial_guess: time-grid NamedTuple with 2D state matrix" verbose=VERBOSE showtiming=SHOWTIMING begin
+		ocp = DummyOCP2DNoVar()
+
+		time = [0.0, 0.5, 1.0]
+		# Each row corresponds to a time sample, columns to state components (x1, x2)
+		state_matrix = [0.0 1.0;
+					   0.5 1.5;
+					   1.0 2.0]
+
+		init_nt = (state=(time, state_matrix),)
+		ig = CTSolvers.build_initial_guess(ocp, init_nt)
+		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp, ig)
+
+		xfun = CTSolvers.state(ig)
+		x0 = xfun(0.0)
+		x1 = xfun(1.0)
+
+		Test.@test x0[1] ≈ 0.0
+		Test.@test x0[2] ≈ 1.0
+		Test.@test x1[1] ≈ 1.0
+		Test.@test x1[2] ≈ 2.0
 	end
 
 	Test.@testset "ctmodels/initial_guess: time-grid PreInit via tuples" verbose=VERBOSE showtiming=SHOWTIMING begin

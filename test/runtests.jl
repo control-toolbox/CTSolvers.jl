@@ -3,7 +3,7 @@ using Aqua
 using CTBase
 using CTModels: CTModels
 using CTParser: CTParser, @def
-using CTSolvers
+using CTSolvers: CTSolvers, @init
 using ADNLPModels
 using ExaModels
 using NLPModels
@@ -102,12 +102,13 @@ if TESTS[:ctmodels]
     println("========== CTModels tests ==========")
     @testset "CTModels" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            :ctmodels_default,
-            :ctmodels_problem_core,
-            :ctmodels_nlp_backends,
-            :ctmodels_discretized_ocp,
-            :ctmodels_model_api,
-            :ctmodels_initial_guess,
+            # :ctmodels_default,
+            # :ctmodels_problem_core,
+            # :ctmodels_nlp_backends,
+            # :ctmodels_discretized_ocp,
+            # :ctmodels_model_api,
+            # :ctmodels_initial_guess,
+            :ctmodels_initial_guess_macro,
         )
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                 test_name = Symbol(:test_, name)

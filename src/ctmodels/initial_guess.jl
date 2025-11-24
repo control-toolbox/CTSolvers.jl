@@ -1,8 +1,6 @@
 # ------------------------------------------------------------------------------
 # Initial guess
 # ------------------------------------------------------------------------------
-# TODO: improve, check CTModels
-
 abstract type AbstractOptimalControlInitialGuess end
 
 struct OptimalControlInitialGuess{X<:Function, U<:Function, V} <: AbstractOptimalControlInitialGuess
@@ -453,30 +451,39 @@ function _initial_guess_from_namedtuple(
 	# Names and component maps from the OCP
 	s_name_sym = Symbol(CTModels.state_name(ocp))
 	u_name_sym = Symbol(CTModels.control_name(ocp))
+	v_name_sym = Symbol(CTModels.variable_name(ocp))
 
 	s_comp_syms = Symbol.(CTModels.state_components(ocp))
 	u_comp_syms = Symbol.(CTModels.control_components(ocp))
+	v_comp_syms = Symbol.(CTModels.variable_components(ocp))
 
 	s_comp_index = Dict(sym => i for (i, sym) in enumerate(s_comp_syms))
 	u_comp_index = Dict(sym => i for (i, sym) in enumerate(u_comp_syms))
+	v_comp_index = Dict(sym => i for (i, sym) in enumerate(v_comp_syms))
 
 	# Block-level and component-level specs
 	state_block = nothing
 	control_block = nothing
-	variable_block = haskey(init_data, :variable) ? init_data.variable : nothing
+	variable_block = nothing
 	state_block_set = false
 	control_block_set = false
-	variable_block_set = haskey(init_data, :variable)
+	variable_block_set = false
 	state_comp = Dict{Int,Any}()
 	control_comp = Dict{Int,Any}()
+	variable_comp = Dict{Int,Any}()
 
 	# Parse keys and enforce uniqueness
 	for (k, v) in pairs(init_data)
 		if k == :time
 			msg = "Global :time in initial guess NamedTuple is not supported. Provide time grids per block or component as (time, data) tuples."
 			throw(CTBase.IncorrectArgument(msg))
-		elseif k == :variable
-			continue
+		elseif k == :variable || k == v_name_sym
+			if variable_block_set || !isempty(variable_comp)
+				msg = "Variable initial guess specified both at block level and component level, or multiple block-level entries."
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			variable_block = v
+			variable_block_set = true
 		elseif k == :state || k == s_name_sym
 			if state_block_set || !isempty(state_comp)
 				msg = "State initial guess specified both at block level and component level, or multiple block-level entries."
@@ -519,21 +526,125 @@ function _initial_guess_from_namedtuple(
 				throw(CTBase.IncorrectArgument(msg))
 			end
 			control_comp[idx] = v
+		elseif haskey(v_comp_index, k)
+			if variable_block_set
+				msg = string(
+					"Cannot mix variable block (:variable or ", v_name_sym,
+					") and variable component ", k, " in the same initial guess.",
+				)
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			idx = v_comp_index[k]
+			if haskey(variable_comp, idx)
+				msg = string("Variable component ", k, " specified more than once in initial guess.")
+				throw(CTBase.IncorrectArgument(msg))
+			end
+			variable_comp[idx] = v
 		else
 			msg = string(
 				"Unknown key ", k,
 				" in initial guess NamedTuple. Allowed keys are: time, state, control, variable, ",
-				s_name_sym, ", ", u_name_sym,
-				", and component names of state/control.",
+				s_name_sym, ", ", u_name_sym, ", ", v_name_sym,
+				", and component names of state/control/variable.",
 			)
 			throw(CTBase.IncorrectArgument(msg))
 		end
 	end
-
+	
 	# Build state/control with possible per-component overrides
 	state_fun = _build_block_with_components(ocp, :state, state_block, state_comp)
 	control_fun = _build_block_with_components(ocp, :control, control_block, control_comp)
-	variable_val = initial_variable(ocp, variable_block)
+
+	# Build variable (block-level or per-component)
+	variable_val = begin
+		if isempty(variable_comp)
+			initial_variable(ocp, variable_block)
+		else
+			vdim = CTModels.variable_dimension(ocp)
+			if vdim == 0
+				msg = "Variable components specified for problem with no variable."
+				throw(CTBase.IncorrectArgument(msg))
+			else
+				# Start from default variable initialization and override components
+				base = initial_variable(ocp, nothing)
+				if vdim == 1
+					# Single-component variable: override index 1 if provided
+					if haskey(variable_comp, 1)
+						data = variable_comp[1]
+						val = if data isa AbstractVector{<:Real}
+							if length(data) != 1
+								msg = "Variable component initial guess must be scalar or length-1 vector for variable dimension 1."
+								throw(CTBase.IncorrectArgument(msg))
+							end
+							data[1]
+						elseif data isa Real
+							data
+						else
+							msg = string(
+								"Unsupported variable component initialization type without time: ",
+								typeof(data),
+							)
+							throw(CTBase.IncorrectArgument(msg))
+						end
+						val
+					else
+						# No specific component provided: keep default base
+						base
+					end
+				else
+					# vdim > 1: base should be a vector of length vdim
+					vec = if base isa AbstractVector
+						if length(base) != vdim
+							msg = string(
+								"Default variable initialization has incompatible dimension: got ",
+								length(base), " instead of ", vdim, ".",
+							)
+							throw(CTBase.IncorrectArgument(msg))
+						end
+						collect(base)
+					elseif base isa Real
+						fill(base, vdim)
+					else
+						msg = string(
+							"Unsupported default variable initialization type: ",
+							typeof(base),
+						)
+						throw(CTBase.IncorrectArgument(msg))
+					end
+					# Override provided components; missing ones keep default
+					for (i, data) in variable_comp
+						if !(1 <= i <= vdim)
+							msg = string(
+								"Variable component index ", i,
+								" out of bounds for variable dimension ", vdim, ".",
+							)
+							throw(CTBase.IncorrectArgument(msg))
+						end
+						val_scalar = if data isa AbstractVector{<:Real}
+							if length(data) != 1
+								msg = string(
+									"Variable component index ", i,
+									" initial guess must be scalar or length-1 vector.",
+								)
+								throw(CTBase.IncorrectArgument(msg))
+							end
+							data[1]
+						elseif data isa Real
+							data
+						else
+							msg = string(
+								"Unsupported variable component initialization type without time: ",
+								typeof(data),
+							)
+							throw(CTBase.IncorrectArgument(msg))
+						end
+						vec[i] = val_scalar
+					end
+					vec
+				end
+			end
+		end
+	end
 
 	init = OptimalControlInitialGuess(state_fun, control_fun, variable_val)
 	return _validate_initial_guess(ocp, init)
