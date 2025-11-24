@@ -1,3 +1,4 @@
+# Unit tests for CTModels problem-specific core builders (e.g. Rosenbrock).
 function test_ctmodels_problem_core()
 
     # Tests for problem-specific model builders provided by CTModels problems

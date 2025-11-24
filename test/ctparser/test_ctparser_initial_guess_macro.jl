@@ -1,3 +1,4 @@
+ # Unit tests for the @init macro DSL and initial guess handling.
 function test_ctparser_initial_guess_macro()
 
 	ocp_fixed = @def begin

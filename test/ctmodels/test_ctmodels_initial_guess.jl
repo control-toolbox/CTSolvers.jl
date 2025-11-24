@@ -1,3 +1,4 @@
+# Unit tests for CTModels initial guess construction and validation.
 struct DummyOCP1DNoVar <: CTModels.AbstractModel end
 struct DummyOCP1DVar   <: CTModels.AbstractModel end
 struct DummyOCP1D2Var  <: CTModels.AbstractModel end

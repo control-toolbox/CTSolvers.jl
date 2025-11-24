@@ -1,3 +1,4 @@
+# Integration tests for CTSolvers extensions (Ipopt, MadNLP, MadNCL, Knitro) on benchmark problems and direct OCP pipelines.
 function test_ctsolvers_extensions_integration()
 
     ipopt_options = Dict(

@@ -1,3 +1,4 @@
+# Helper optimization problem and solution-builder types used by benchmark test problems.
 # Helper types
 abstract type AbstractNLPSolutionBuilder <: CTSolvers.AbstractSolutionBuilder end
 struct ADNLPSolutionBuilder <: AbstractNLPSolutionBuilder end

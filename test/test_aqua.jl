@@ -1,3 +1,4 @@
+# Unit tests for package-wide quality checks using Aqua.jl (API, dependencies, ambiguities).
 function test_aqua()
     @testset "Aqua.jl" begin
         Aqua.test_all(

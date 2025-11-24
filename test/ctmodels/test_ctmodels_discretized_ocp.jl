@@ -1,3 +1,4 @@
+# Unit tests for CTModels discretized optimal control problems and solution builders.
 # ============================================================================
 # TEST HELPER TYPES
 # ============================================================================

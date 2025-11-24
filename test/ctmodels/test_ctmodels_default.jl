@@ -1,3 +1,4 @@
+# Unit tests for CTModels default parameters used when building models.
 function test_ctmodels_default()
 
     # Tests for default parameters used when building ADNLPModels.

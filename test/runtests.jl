@@ -1,3 +1,4 @@
+# Main test runner orchestrating all CTSolvers test suites.
 using Test
 using Aqua
 using CTBase
@@ -27,7 +28,7 @@ include(joinpath("problems", "elec.jl"))
 include(joinpath("problems", "beam.jl"))
 
 # Tests parameters
-const VERBOSE = true
+const VERBOSE = false
 const SHOWTIMING = true
 
 # Select tests to run
@@ -67,8 +68,8 @@ if TESTS[:extensions]
     println("========== CTSolvers extensions tests ==========")
     @testset "CTSolvers extensions" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            # :ctsolvers_extensions_unit,
-            # :ctsolvers_extensions_integration,
+            :ctsolvers_extensions_unit,
+            :ctsolvers_extensions_integration,
             :ctsolvers_extensions_gpu,
         )
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin

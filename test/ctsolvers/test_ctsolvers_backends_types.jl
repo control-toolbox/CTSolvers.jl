@@ -1,3 +1,4 @@
+# Unit tests for CTSolvers backend type hierarchy and solver option storage.
 function test_ctsolvers_backends_types()
 
     # ========================================================================
