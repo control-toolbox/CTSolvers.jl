@@ -34,11 +34,10 @@ function test_ctmodels_initial_guess_macro()
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: minimal control function on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_fixed begin
+		ig = @init ocp_fixed begin
 			u(t) := t
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_fixed, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 
@@ -51,12 +50,11 @@ function test_ctmodels_initial_guess_macro()
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: simple alias constant on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_fixed begin
+		ig = @init ocp_fixed begin
 			a = 1.0
 			v(t) := a
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_fixed, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 
@@ -69,22 +67,20 @@ function test_ctmodels_initial_guess_macro()
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: simple alias for variable on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_var begin
+		ig = @init ocp_var begin
 			a = 1.0
 			tf := a
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_var, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_var, ig)
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: 2D variable block and components" verbose=VERBOSE showtiming=SHOWTIMING begin
 		# Bloc complet
-		init_block = @init ocp_var2 begin
+		ig_block = @init ocp_var2 begin
 			w := [1.0, 2.0]
 		end
-		ig_block = CTSolvers.build_initial_guess(ocp_var2, init_block)
 		Test.@test ig_block isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_var2, ig_block)
 		v_block = CTSolvers.variable(ig_block)
@@ -93,10 +89,9 @@ function test_ctmodels_initial_guess_macro()
 		Test.@test v_block[2] ≈ 2.0
 
 		# Uniquement la composante tf
-		init_tf = @init ocp_var2 begin
+		ig_tf = @init ocp_var2 begin
 			tf := 1.0
 		end
-		ig_tf = CTSolvers.build_initial_guess(ocp_var2, init_tf)
 		Test.@test ig_tf isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_var2, ig_tf)
 		v_tf = CTSolvers.variable(ig_tf)
@@ -105,10 +100,9 @@ function test_ctmodels_initial_guess_macro()
 		Test.@test v_tf[2] ≈ 0.1
 
 		# Uniquement la composante a
-		init_a = @init ocp_var2 begin
+		ig_a = @init ocp_var2 begin
 			a := 0.5
 		end
-		ig_a = CTSolvers.build_initial_guess(ocp_var2, init_a)
 		Test.@test ig_a isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_var2, ig_a)
 		v_a = CTSolvers.variable(ig_a)
@@ -117,11 +111,10 @@ function test_ctmodels_initial_guess_macro()
 		Test.@test v_a[2] ≈ 0.5
 
 		# Deux composantes
-		init_both = @init ocp_var2 begin
+		ig_both = @init ocp_var2 begin
 			tf := 1.0
 			a  := 0.5
 		end
-		ig_both = CTSolvers.build_initial_guess(ocp_var2, init_both)
 		Test.@test ig_both isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_var2, ig_both)
 		v_both = CTSolvers.variable(ig_both)
@@ -131,13 +124,12 @@ function test_ctmodels_initial_guess_macro()
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: per-component functions on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_fixed begin
+		ig = @init ocp_fixed begin
 			q(t) := sin(t)
 			v(t) := 1.0
 			u(t) := t
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_fixed, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 
@@ -158,12 +150,11 @@ function test_ctmodels_initial_guess_macro()
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: state block function on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_fixed begin
+		ig = @init ocp_fixed begin
 			x(t) := [sin(t), 1.0]
 			u(t) := t
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_fixed, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 
@@ -188,12 +179,11 @@ function test_ctmodels_initial_guess_macro()
 		X = [[-1.0, 0.0], [0.0, 0.5], [0.0, 0.0]]
 		U = [0.0, 0.0, 1.0]
 
-		init_data = @init ocp_fixed begin
+		ig = @init ocp_fixed begin
 			x(T) := X
 			u(T) := U
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_fixed, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 
@@ -220,12 +210,11 @@ function test_ctmodels_initial_guess_macro()
 		        0.0 0.0]
 		U = [0.0, 0.0, 1.0]
 
-		init_data = @init ocp_fixed begin
+		ig = @init ocp_fixed begin
 			x(T) := Xmat
 			u(T) := U
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_fixed, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 
@@ -248,12 +237,11 @@ function test_ctmodels_initial_guess_macro()
 	Test.@testset "ctmodels/initial_guess_macro: block (T, nothing) init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		T = [0.0, 0.5, 1.0]
 
-		init_data = @init ocp_fixed begin
+		ig = @init ocp_fixed begin
 			x(T) := nothing
 			u(T) := nothing
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_fixed, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 	end
@@ -266,13 +254,12 @@ function test_ctmodels_initial_guess_macro()
 		Tu = [0.0, 1.0]
 		Du = [0.0, 1.0]
 
-		init_data = @init ocp_fixed begin
+		ig = @init ocp_fixed begin
 			q(Tq) := Dq
 			v(Tv) := Dv
 			u(Tu) := Du
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_fixed, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 
@@ -293,47 +280,43 @@ function test_ctmodels_initial_guess_macro()
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: partial init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_fixed begin
+		ig = @init ocp_fixed begin
 			q(t) := sin(t)
 			v(t) := 1.0
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_fixed, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: constant init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_fixed begin
+		ig = @init ocp_fixed begin
 			q := -1.0
 			v := 0.0
 			u := 0.1
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_fixed, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: variable-only init on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_var begin
+		ig = @init ocp_var begin
 			tf := 1.0
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_var, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_var, ig)
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: per-component functions on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_var begin
+		ig = @init ocp_var begin
 			tf := 1.0
 			q(t) := sin(t)
 			v(t) := 1.0
 			u(t) := t
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_var, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_var, ig)
 
@@ -352,29 +335,15 @@ function test_ctmodels_initial_guess_macro()
 		Test.@test u1 ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: (T, nothing) init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
-		T = [0.0, 0.5, 1.0]
-
-		init_data = @init ocp_fixed begin
-			x(T) := nothing
-			u(T) := nothing
-		end
-
-		ig = CTSolvers.build_initial_guess(ocp_fixed, init_data)
-		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
-		CTSolvers.validate_initial_guess(ocp_fixed, ig)
-	end
-
 	Test.@testset "ctmodels/initial_guess_macro: (T, nothing) init on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		T = [0.0, 0.5, 1.0]
 
-		init_data = @init ocp_var begin
+		ig = @init ocp_var begin
 			tf := 1.0
 			x(T) := nothing
 			u(T) := nothing
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_var, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_var, ig)
 	end
@@ -384,13 +353,12 @@ function test_ctmodels_initial_guess_macro()
 		X = [[-1.0, 0.0], [0.0, 0.5], [0.0, 0.0]]
 		U = [0.0, 0.0, 1.0]
 
-		init_data = @init ocp_var begin
+		ig = @init ocp_var begin
 			tf := 1.0
 			x(T) := X
 			u(T) := U
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_var, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_var, ig)
 
@@ -418,14 +386,13 @@ function test_ctmodels_initial_guess_macro()
 		Tu = [0.0, 1.0]
 		Du = [0.0, 1.0]
 
-		init_data = @init ocp_var begin
+		ig = @init ocp_var begin
 			tf := 1.0
 			q(Tq) := Dq
 			v(Tv) := Dv
 			u(Tu) := Du
 		end
-
-		ig = CTSolvers.build_initial_guess(ocp_var, init_data)
+	
 		Test.@test ig isa CTSolvers.AbstractOptimalControlInitialGuess
 		CTSolvers.validate_initial_guess(ocp_var, ig)
 
@@ -446,59 +413,47 @@ function test_ctmodels_initial_guess_macro()
 	end
 
 	Test.@testset "ctmodels/initial_guess_macro: invalid component vector without time (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_fixed begin
+		Test.@test_throws CTBase.IncorrectArgument @init ocp_fixed begin
 			q := [0.0, 1.0]
 		end
-
-		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp_fixed, init_data)
 	end
-
+	
 	Test.@testset "ctmodels/initial_guess_macro: time-grid length mismatch on component (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
 		T = [0.0, 0.5, 1.0]
 		Dq_bad = [-1.0, 0.0]
-
-		init_data = @init ocp_fixed begin
+	
+		Test.@test_throws CTBase.IncorrectArgument @init ocp_fixed begin
 			q(T) := Dq_bad
 		end
-
-		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp_fixed, init_data)
 	end
-
+	
 	Test.@testset "ctmodels/initial_guess_macro: mixing state block and component (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_fixed begin
+		Test.@test_throws CTBase.IncorrectArgument @init ocp_fixed begin
 			x(t) := [sin(t), 1.0]
 			q(t) := 0.0
 		end
-
-		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp_fixed, init_data)
 	end
-
+	
 	Test.@testset "ctmodels/initial_guess_macro: unknown component name (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_fixed begin
+		Test.@test_throws CTBase.IncorrectArgument @init ocp_fixed begin
 			z(t) := 1.0
 		end
-
-		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp_fixed, init_data)
 	end
-
+	
 	Test.@testset "ctmodels/initial_guess_macro: invalid variable dimension (variable horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
-		init_data = @init ocp_var begin
+		Test.@test_throws CTBase.IncorrectArgument @init ocp_var begin
 			tf := [1.0, 2.0]
 		end
-
-		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp_var, init_data)
 	end
-
+	
 	Test.@testset "ctmodels/initial_guess_macro: time-grid length mismatch on component (variable horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
 		Tq = [0.0, 0.5, 1.0]
 		Dq_bad = [-1.0, 0.0]
-
-		init_data = @init ocp_var begin
+	
+		Test.@test_throws CTBase.IncorrectArgument @init ocp_var begin
 			tf := 1.0
 			q(Tq) := Dq_bad
 		end
-
-		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp_var, init_data)
 	end
 
 end

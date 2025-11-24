@@ -75,7 +75,10 @@ function init_fun(ocp, e)
     if isempty(keys)
         body_stmts = Any[]
         append!(body_stmts, alias_stmts)
-        push!(body_stmts, :(()))
+        # Par défaut, on délègue à build_initial_guess/validate_initial_guess
+        build_call = :(CTSolvers.build_initial_guess($ocp, ()))
+        validate_call = :(CTSolvers.validate_initial_guess($ocp, $build_call))
+        push!(body_stmts, validate_call)
         return Expr(:block, body_stmts...)
     end
 
@@ -87,7 +90,9 @@ function init_fun(ocp, e)
 
     body_stmts = Any[]
     append!(body_stmts, alias_stmts)
-    push!(body_stmts, nt_expr)
+    build_call = :(CTSolvers.build_initial_guess($ocp, $nt_expr))
+    validate_call = :(CTSolvers.validate_initial_guess($ocp, $build_call))
+    push!(body_stmts, validate_call)
     return Expr(:block, body_stmts...)
 end
 
