@@ -139,26 +139,33 @@ function test_ctmodels_discretized_ocp()
         adnlp_solution_builder = CTSolvers.ADNLPSolutionBuilder(s -> s)
         exa_solution_builder = CTSolvers.ExaSolutionBuilder(s -> s)
         
-        # Build using tuple constructor
-        model_builders = (:adnlp => adnlp_model_builder, :exa => exa_model_builder)
-        solution_builders = (:adnlp => adnlp_solution_builder, :exa => exa_solution_builder)
+        # Build using tuple constructor with backend builder bundles
+        backend_builders = (
+            :adnlp => CTSolvers.OCPBackendBuilders(adnlp_model_builder, adnlp_solution_builder),
+            :exa   => CTSolvers.OCPBackendBuilders(exa_model_builder,   exa_solution_builder),
+        )
         
         docp = CTSolvers.DiscretizedOptimalControlProblem(
             ocp,
-            model_builders,
-            solution_builders,
+            backend_builders,
         )
         
         # Verify the problem was constructed correctly
         Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
         Test.@test docp.optimal_control_problem === ocp
 
-        # The Tuple-of-Pairs inputs should have been converted to NamedTuples
-        expected_model_builders = (; adnlp = adnlp_model_builder, exa = exa_model_builder)
-        expected_solution_builders = (; adnlp = adnlp_solution_builder, exa = exa_solution_builder)
+        # The Tuple-of-Pairs inputs should have been converted to a NamedTuple of OCPBackendBuilders
+        expected_backend_builders = (
+            ;
+            adnlp = CTSolvers.OCPBackendBuilders(adnlp_model_builder, adnlp_solution_builder),
+            exa   = CTSolvers.OCPBackendBuilders(exa_model_builder,   exa_solution_builder),
+        )
 
-        Test.@test docp.model_builders == expected_model_builders
-        Test.@test docp.solution_builders == expected_solution_builders
+        Test.@test docp.backend_builders == expected_backend_builders
+        Test.@test docp.backend_builders.adnlp.model === adnlp_model_builder
+        Test.@test docp.backend_builders.adnlp.solution === adnlp_solution_builder
+        Test.@test docp.backend_builders.exa.model === exa_model_builder
+        Test.@test docp.backend_builders.exa.solution === exa_solution_builder
     end
     
     Test.@testset "ctmodels/discretized_ocp: DiscretizedOptimalControlProblem - individual args constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -184,12 +191,18 @@ function test_ctmodels_discretized_ocp()
         Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
         Test.@test docp.optimal_control_problem === ocp
 
-        # Verify the builders were converted to the expected NamedTuple representation
-        expected_model_builders = (; adnlp = adnlp_model_builder, exa = exa_model_builder)
-        expected_solution_builders = (; adnlp = adnlp_solution_builder, exa = exa_solution_builder)
+        # Verify the builders were converted to the expected backend_builders representation
+        expected_backend_builders = (
+            ;
+            adnlp = CTSolvers.OCPBackendBuilders(adnlp_model_builder, adnlp_solution_builder),
+            exa   = CTSolvers.OCPBackendBuilders(exa_model_builder,   exa_solution_builder),
+        )
 
-        Test.@test docp.model_builders == expected_model_builders
-        Test.@test docp.solution_builders == expected_solution_builders
+        Test.@test docp.backend_builders == expected_backend_builders
+        Test.@test docp.backend_builders.adnlp.model === adnlp_model_builder
+        Test.@test docp.backend_builders.adnlp.solution === adnlp_solution_builder
+        Test.@test docp.backend_builders.exa.model === exa_model_builder
+        Test.@test docp.backend_builders.exa.solution === exa_solution_builder
     end
 
     # ============================================================================

@@ -9,17 +9,18 @@ const SchemeSymbol = Dict(
     Trapeze => :trapeze,
 )
 
-abstract type AbstractOptimalControlDiscretizer end
+abstract type AbstractOptimalControlDiscretizer <: AbstractOCPTool end
 
-function _options(discretizer::AbstractOptimalControlDiscretizer)
-    throw(
-        CTBase.NotImplemented("_options not implemented for $(typeof(discretizer))"),
-    )
-end
-
-function _option_sources(discretizer::AbstractOptimalControlDiscretizer)
-    throw(
-        CTBase.NotImplemented("_option_sources not implemented for $(typeof(discretizer))"),
+function _option_specs(::Type{Collocation})
+    return (
+        grid_size = OptionSpec(
+            Int,
+            "Number of time steps used in the collocation grid.",
+        ),
+        scheme = OptionSpec(
+            AbstractIntegratorScheme,
+            "Time integration scheme used by the collocation discretizer.",
+        ),
     )
 end
 

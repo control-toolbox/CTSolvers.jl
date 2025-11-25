@@ -23,6 +23,27 @@ end
 
 base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseType
 
+function CTSolvers._option_specs(::Type{CTSolvers.MadNCLSolver})
+    return (
+        max_iter = CTSolvers.OptionSpec(
+            Integer,
+            "Maximum number of augmented Lagrangian iterations.",
+        ),
+        print_level = CTSolvers.OptionSpec(
+            MadNLP.LogLevels,
+            "MadNCL/MadNLP logging level.",
+        ),
+        linear_solver = CTSolvers.OptionSpec(
+            Type{<:MadNLP.AbstractLinearSolver},
+            "Linear solver implementation used inside MadNCL.",
+        ),
+        ncl_options = CTSolvers.OptionSpec(
+            MadNCL.NCLOptions,
+            "Low-level NCLOptions structure controlling the augmented Lagrangian algorithm.",
+        ),
+    )
+end
+
 function CTSolvers.solve_with_madncl(
     nlp::NLPModels.AbstractNLPModel; ncl_options::MadNCL.NCLOptions, kwargs...
 )::MadNCL.NCLStats
@@ -40,6 +61,7 @@ function CTSolvers.MadNCLSolver(; kwargs...)
     )
 
     user_nt = kwargs
+    CTSolvers._validate_option_kwargs(user_nt, CTSolvers.MadNCLSolver; strict_keys=true)
     values = merge(defaults, user_nt)
 
     src_pairs = Pair{Symbol,Symbol}[]

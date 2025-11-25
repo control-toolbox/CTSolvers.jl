@@ -20,6 +20,7 @@ const AbstractOptimalControlSolution = CTModels.AbstractSolution
 export @init
 
 # Model
+include(joinpath("ctmodels", "options_schema.jl"))
 include(joinpath("ctmodels", "default.jl"))
 include(joinpath("ctmodels", "problem_core.jl"))
 include(joinpath("ctmodels", "nlp_backends.jl"))

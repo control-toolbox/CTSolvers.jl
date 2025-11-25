@@ -11,6 +11,27 @@ __nlp_models_knitro_feastol_abs() = 1e-8
 __nlp_models_knitro_opttol_abs() = 1e-8
 __nlp_models_knitro_print_level() = 3
 
+function CTSolvers._option_specs(::Type{CTSolvers.KnitroSolver})
+    return (
+        maxit = CTSolvers.OptionSpec(
+            Integer,
+            "Maximum number of iterations.",
+        ),
+        feastol_abs = CTSolvers.OptionSpec(
+            Real,
+            "Absolute feasibility tolerance.",
+        ),
+        opttol_abs = CTSolvers.OptionSpec(
+            Real,
+            "Absolute optimality tolerance.",
+        ),
+        print_level = CTSolvers.OptionSpec(
+            Integer,
+            "Knitro print level.",
+        ),
+    )
+end
+
 function CTSolvers.solve_with_knitro(
     nlp::NLPModels.AbstractNLPModel; kwargs...
 )::SolverCore.GenericExecutionStats
@@ -28,6 +49,7 @@ function CTSolvers.KnitroSolver(; kwargs...)
     )
 
     user_nt = kwargs
+    CTSolvers._validate_option_kwargs(user_nt, CTSolvers.KnitroSolver; strict_keys=true)
     values = merge(defaults, user_nt)
 
     src_pairs = Pair{Symbol,Symbol}[]

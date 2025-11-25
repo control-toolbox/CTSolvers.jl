@@ -11,6 +11,27 @@ __mad_nlp_tol() = 1e-8
 __mad_nlp_print_level() = MadNLP.INFO
 __mad_nlp_linear_solver() = MadNLPMumps.MumpsSolver
 
+function CTSolvers._option_specs(::Type{CTSolvers.MadNLPSolver})
+    return (
+        max_iter = CTSolvers.OptionSpec(
+            Integer,
+            "Maximum number of iterations.",
+        ),
+        tol = CTSolvers.OptionSpec(
+            Real,
+            "Optimality tolerance.",
+        ),
+        print_level = CTSolvers.OptionSpec(
+            MadNLP.LogLevels,
+            "MadNLP logging level.",
+        ),
+        linear_solver = CTSolvers.OptionSpec(
+            Type{<:MadNLP.AbstractLinearSolver},
+            "Linear solver implementation used by MadNLP.",
+        ),
+    )
+end
+
 # solver interface
 function CTSolvers.solve_with_madnlp(
     nlp::NLPModels.AbstractNLPModel; kwargs...
@@ -29,6 +50,7 @@ function CTSolvers.MadNLPSolver(; kwargs...)
     )
 
     user_nt = kwargs
+    CTSolvers._validate_option_kwargs(user_nt, CTSolvers.MadNLPSolver; strict_keys=true)
     values = merge(defaults, user_nt)
 
     src_pairs = Pair{Symbol,Symbol}[]

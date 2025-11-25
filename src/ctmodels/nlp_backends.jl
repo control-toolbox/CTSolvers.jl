@@ -1,17 +1,22 @@
 # ------------------------------------------------------------------------------
 # Model backends
 # ------------------------------------------------------------------------------
-abstract type AbstractOptimizationModeler end
+abstract type AbstractOptimizationModeler <: AbstractOCPTool end
 
-function _options(modeler::AbstractOptimizationModeler)
-    throw(
-        CTBase.NotImplemented("_options not implemented for $(typeof(modeler))"),
-    )
-end
-
-function _option_sources(modeler::AbstractOptimizationModeler)
-    throw(
-        CTBase.NotImplemented("_option_sources not implemented for $(typeof(modeler))"),
+function _option_specs(::Type{ExaModeler})
+    return (
+        base_type = OptionSpec(
+            Type{<:AbstractFloat},
+            "Base floating-point type used by ExaModels.",
+        ),
+        minimize = OptionSpec(
+            Bool,
+            "Whether to minimize (true) or maximize (false) the objective.",
+        ),
+        backend = OptionSpec(
+            Union{Nothing,KernelAbstractions.Backend},
+            "Execution backend for ExaModels (CPU, GPU, etc.).",
+        ),
     )
 end
 
@@ -23,12 +28,26 @@ struct ADNLPModeler{Vals,Srcs} <: AbstractOptimizationModeler
     options_sources::Srcs
 end
 
+function _option_specs(::Type{ADNLPModeler})
+    return (
+        show_time = OptionSpec(
+            Bool,
+            "Whether to show timing information while building the ADNLP model.",
+        ),
+        backend = OptionSpec(
+            Symbol,
+            "Automatic differentiation backend used by ADNLPModels.",
+        ),
+    )
+end
+
 function ADNLPModeler(; kwargs...)
     defaults = (
         show_time=__adnlp_model_show_time(),
         backend=__adnlp_model_backend(),
     )
     user_nt = NamedTuple(kwargs)
+    _validate_option_kwargs(user_nt, ADNLPModeler; strict_keys=false)
     values = merge(defaults, user_nt)
 
     src_pairs = Pair{Symbol,Symbol}[]
@@ -82,6 +101,7 @@ function ExaModeler(; kwargs...)
         backend=__exa_model_backend(),
     )
     user_nt = NamedTuple(kwargs)
+    _validate_option_kwargs(user_nt, ExaModeler; strict_keys=false)
     values = merge(defaults, user_nt)
 
     src_pairs = Pair{Symbol,Symbol}[]

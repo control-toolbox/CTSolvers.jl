@@ -131,6 +131,39 @@ function test_ctmodels_nlp_backends()
     end
 
     # ------------------------------------------------------------------
+    # Options metadata and validation helpers for ADNLPModeler/ExaModeler
+    # ------------------------------------------------------------------
+
+    Test.@testset "ctmodels/nlp_backends: ADNLPModeler options metadata and validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+        keys_ad = CTSolvers.options_keys(CTSolvers.ADNLPModeler)
+        Test.@test :show_time in keys_ad
+        Test.@test :backend   in keys_ad
+
+        Test.@test CTSolvers.option_type(:show_time, CTSolvers.ADNLPModeler) == Bool
+        Test.@test CTSolvers.option_type(:backend,   CTSolvers.ADNLPModeler) == Symbol
+
+        desc_backend = CTSolvers.option_description(:backend, CTSolvers.ADNLPModeler)
+        Test.@test desc_backend isa AbstractString
+        Test.@test !isempty(desc_backend)
+
+        # Invalid type for a known option should trigger a CTBase.IncorrectArgument
+        Test.@test_throws CTBase.IncorrectArgument CTSolvers.ADNLPModeler(; show_time="yes")
+    end
+
+    Test.@testset "ctmodels/nlp_backends: ExaModeler options metadata and validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+        keys_exa = CTSolvers.options_keys(CTSolvers.ExaModeler)
+        Test.@test :base_type in keys_exa
+        Test.@test :backend   in keys_exa
+        Test.@test :minimize  in keys_exa
+
+        Test.@test CTSolvers.option_type(:base_type, CTSolvers.ExaModeler) <: Type{<:AbstractFloat}
+        Test.@test CTSolvers.option_type(:minimize,  CTSolvers.ExaModeler) == Bool
+
+        # Invalid type for a known option should trigger a CTBase.IncorrectArgument
+        Test.@test_throws CTBase.IncorrectArgument CTSolvers.ExaModeler(; minimize=1)
+    end
+
+    # ------------------------------------------------------------------
     # Solution-building via ADNLPModeler/ExaModeler(prob, nlp_solution)
     # ------------------------------------------------------------------
     # For OptimizationProblem (defined in test/problems/problems_definition.jl),

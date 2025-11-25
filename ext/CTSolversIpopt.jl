@@ -13,6 +13,35 @@ __nlp_models_ipopt_mu_strategy() = "adaptive"
 __nlp_models_ipopt_linear_solver() = "Mumps"
 __nlp_models_ipopt_sb() = "yes"
 
+function CTSolvers._option_specs(::Type{CTSolvers.IpoptSolver})
+    return (
+        max_iter = CTSolvers.OptionSpec(
+            Integer,
+            "Maximum number of iterations.",
+        ),
+        tol = CTSolvers.OptionSpec(
+            Real,
+            "Optimality tolerance.",
+        ),
+        print_level = CTSolvers.OptionSpec(
+            Integer,
+            "Ipopt print level.",
+        ),
+        mu_strategy = CTSolvers.OptionSpec(
+            String,
+            "Strategy used to update the barrier parameter.",
+        ),
+        linear_solver = CTSolvers.OptionSpec(
+            String,
+            "Linear solver used by Ipopt.",
+        ),
+        sb = CTSolvers.OptionSpec(
+            String,
+            "Ipopt 'sb' (screen output) option, typically 'yes' or 'no'.",
+        ),
+    )
+end
+
 # solver interface
 function CTSolvers.solve_with_ipopt(
     nlp::NLPModels.AbstractNLPModel; kwargs...
@@ -33,6 +62,7 @@ function CTSolvers.IpoptSolver(; kwargs...)
     )
 
     user_nt = kwargs
+    CTSolvers._validate_option_kwargs(user_nt, CTSolvers.IpoptSolver; strict_keys=true)
     values = merge(defaults, user_nt)
 
     src_pairs = Pair{Symbol,Symbol}[]
