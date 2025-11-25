@@ -34,11 +34,11 @@ const SHOWTIMING = true
 # Select tests to run
 const TESTS = Dict(
     :extensions => true,
-    :aqua       => true,
-    :ctmodels   => true,
-    :ctsolvers  => true,
-    :ctparser   => true,
-    :ctdirect   => true,
+    :aqua => true,
+    :ctmodels => true,
+    :ctsolvers => true,
+    :ctparser => true,
+    :ctdirect => true,
 )
 
 # Test extension exceptions: before loading the extensions
@@ -86,9 +86,7 @@ end
 if TESTS[:aqua]
     println("========== Aqua tests ==========")
     @testset "Aqua" verbose=VERBOSE showtiming=SHOWTIMING begin
-        for name in (
-            :aqua,
-        )
+        for name in (:aqua,)
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                 test_name = Symbol(:test_, name)
                 include("$(test_name).jl")
@@ -125,9 +123,7 @@ end
 if TESTS[:ctparser]
     println("========== CTParser tests ==========")
     @testset "CTParser" verbose=VERBOSE showtiming=SHOWTIMING begin
-        for name in (
-            :ctparser_initial_guess_macro,
-        )
+        for name in (:ctparser_initial_guess_macro,)
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                 test_name = Symbol(:test_, name)
                 include(joinpath("ctparser", "$(test_name).jl"))

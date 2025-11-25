@@ -1,9 +1,8 @@
 # GPU integration tests for CTSolvers extensions (MadNLP on ExaModels GPU backend).
 function test_ctsolvers_extensions_gpu()
-
     if !is_cuda_on()
         @info "CUDA not functional, skipping CTSolvers GPU extension tests"
-        return
+        return nothing
     end
 
     exa_backend = CUDA.CUDABackend()
@@ -11,11 +10,7 @@ function test_ctsolvers_extensions_gpu()
     modelers = [CTSolvers.ExaModeler(; backend=exa_backend)]
     modelers_names = ["ExaModeler (GPU)"]
 
-    madnlp_options = Dict(
-        :max_iter => 1000,
-        :tol => 1e-6,
-        :print_level => MadNLP.ERROR,
-    )
+    madnlp_options = Dict(:max_iter => 1000, :tol => 1e-6, :print_level => MadNLP.ERROR)
 
     # ------------------------------------------------------------------
     # MadNLP GPU: solve_with_madnlp on Rosenbrock and Elec
@@ -32,7 +27,9 @@ function test_ctsolvers_extensions_gpu()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     nlp = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler)
-                    stats = CTSolvers.solve_with_madnlp(nlp; madnlp_options..., linear_solver=linear_solver)
+                    stats = CTSolvers.solve_with_madnlp(
+                        nlp; madnlp_options..., linear_solver=linear_solver
+                    )
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
                     Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test isfinite(stats.objective)
@@ -48,12 +45,15 @@ function test_ctsolvers_extensions_gpu()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     nlp = CTSolvers.build_model(elec_prob, elec_init, modeler)
-                    stats = CTSolvers.solve_with_madnlp(nlp; madnlp_options..., linear_solver=linear_solver)
+                    stats = CTSolvers.solve_with_madnlp(
+                        nlp; madnlp_options..., linear_solver=linear_solver
+                    )
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
                     Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test isfinite(stats.objective)
                     Test.@test stats.solution isa CuArray{Float64,1}
-                    Test.@test length(stats.solution) == length(vcat(elec_init.x, elec_init.y, elec_init.z))
+                    Test.@test length(stats.solution) ==
+                        length(vcat(elec_init.x, elec_init.y, elec_init.z))
                 end
             end
         end
@@ -105,8 +105,10 @@ function test_ctsolvers_extensions_gpu()
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
                     Test.@test stats.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                     Test.@test stats.solution isa CuArray{Float64,1}
-                    Test.@test length(stats.solution) == length(vcat(elec_init.x, elec_init.y, elec_init.z))
-                    Test.@test Array(stats.solution) ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
+                    Test.@test length(stats.solution) ==
+                        length(vcat(elec_init.x, elec_init.y, elec_init.z))
+                    Test.@test Array(stats.solution) ≈
+                        vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
                 end
             end
         end
@@ -123,11 +125,7 @@ function test_ctsolvers_extensions_gpu()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     stats = CommonSolve.solve(
-                        rosenbrock_prob,
-                        rosenbrock_init,
-                        modeler,
-                        solver;
-                        display=false,
+                        rosenbrock_prob, rosenbrock_init, modeler, solver; display=false
                     )
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
                     Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
@@ -144,17 +142,14 @@ function test_ctsolvers_extensions_gpu()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     stats = CommonSolve.solve(
-                        elec_prob,
-                        elec_init,
-                        modeler,
-                        solver;
-                        display=false,
+                        elec_prob, elec_init, modeler, solver; display=false
                     )
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
                     Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test isfinite(stats.objective)
                     Test.@test stats.solution isa CuArray{Float64,1}
-                    Test.@test length(stats.solution) == length(vcat(elec_init.x, elec_init.y, elec_init.z))
+                    Test.@test length(stats.solution) ==
+                        length(vcat(elec_init.x, elec_init.y, elec_init.z))
                 end
             end
         end
@@ -168,7 +163,9 @@ function test_ctsolvers_extensions_gpu()
         solver = CTSolvers.MadNCLSolver(; linear_solver=linear_solver)
         for (modeler, modeler_name) in zip(modelers, modelers_names)
             Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                stats = CommonSolve.solve(elec_prob, elec_init, modeler, solver; display=false)
+                stats = CommonSolve.solve(
+                    elec_prob, elec_init, modeler, solver; display=false
+                )
                 Test.@test stats isa MadNCL.NCLStats
                 Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
             end
@@ -191,7 +188,9 @@ function test_ctsolvers_extensions_gpu()
 
         for (modeler, modeler_name) in zip(modelers, modelers_names)
             Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                solver = CTSolvers.MadNLPSolver(; madnlp_options..., linear_solver=linear_solver)
+                solver = CTSolvers.MadNLPSolver(;
+                    madnlp_options..., linear_solver=linear_solver
+                )
                 sol = CommonSolve.solve(docp, init, modeler, solver; display=false)
                 Test.@test sol isa CTModels.Solution
                 Test.@test CTModels.successful(sol)
@@ -199,5 +198,4 @@ function test_ctsolvers_extensions_gpu()
             end
         end
     end
-
 end

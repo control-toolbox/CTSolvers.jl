@@ -13,9 +13,8 @@ function test_ctmodels_default()
         # Expected default values
         Test.@test CTSolvers.__adnlp_model_show_time() == false
         Test.@test CTSolvers.__adnlp_model_backend() == :optimized
-        Test.@test CTSolvers.__adnlp_model_empty_backends() == (
-            :hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend
-        )
+        Test.@test CTSolvers.__adnlp_model_empty_backends() ==
+            (:hprod_backend, :jtprod_backend, :jprod_backend, :ghjvprod_backend)
     end
 
     # Tests for default parameters used when building ExaModels.
@@ -29,5 +28,4 @@ function test_ctmodels_default()
         Test.@test CTSolvers.__exa_model_base_type() === Float64
         Test.@test CTSolvers.__exa_model_backend() === nothing
     end
-
 end

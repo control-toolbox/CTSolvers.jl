@@ -1,8 +1,19 @@
 function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
-
-    function get_docp(initial_guess::Union{AbstractOptimalControlInitialGuess, Nothing}, modeler::Symbol; kwargs...)
+    function get_docp(
+        initial_guess::Union{AbstractOptimalControlInitialGuess,Nothing},
+        modeler::Symbol;
+        kwargs...,
+    )
         scheme_ctdirect = scheme_symbol(discretizer)
-        init_ctdirect = (initial_guess === nothing) ? nothing : (state = state(initial_guess), control = control(initial_guess), variable = variable(initial_guess))
+        init_ctdirect = if (initial_guess === nothing)
+            nothing
+        else
+            (
+            state=state(initial_guess),
+            control=control(initial_guess),
+            variable=variable(initial_guess),
+        )
+        end
 
         if modeler == :exa && haskey(kwargs, :backend)
             # Route ExaModeler backend to CTDirect via exa_backend and drop backend from forwarded kwargs.
@@ -33,7 +44,9 @@ function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
         return docp
     end
 
-    function build_adnlp_model(initial_guess::AbstractOptimalControlInitialGuess; kwargs...)::ADNLPModels.ADNLPModel
+    function build_adnlp_model(
+        initial_guess::AbstractOptimalControlInitialGuess; kwargs...
+    )::ADNLPModels.ADNLPModel
         docp = get_docp(initial_guess, :adnlp; kwargs...)
         return CTDirect.nlp_model(docp)
     end
@@ -44,7 +57,8 @@ function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
         return solu
     end
 
-    function build_exa_model(::Type{BaseType}, initial_guess::AbstractOptimalControlInitialGuess; kwargs...
+    function build_exa_model(
+        ::Type{BaseType}, initial_guess::AbstractOptimalControlInitialGuess; kwargs...
     )::ExaModels.ExaModel where {BaseType<:AbstractFloat}
         docp = get_docp(initial_guess, :exa; kwargs...)
         return CTDirect.nlp_model(docp)

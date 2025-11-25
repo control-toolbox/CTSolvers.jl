@@ -1,6 +1,5 @@
 # Beam optimal control problem definition used by tests and examples.
 function beam()
-
     t0=0
     tf=1
     x₁_l=0
@@ -25,5 +24,6 @@ function beam()
         ∫(u(t)^2) → min
     end
 
-    return ocp, CTSolvers.initial_guess(ocp; state=[0.05, 0.1], control=0.1, variable=Float64[])
+    return ocp,
+    CTSolvers.initial_guess(ocp; state=[0.05, 0.1], control=0.1, variable=Float64[])
 end

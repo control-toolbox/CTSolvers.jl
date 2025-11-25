@@ -18,7 +18,9 @@ function CommonSolve.solve(
     validate_initial_guess(ocp, normalized_init)
 
     discrete_problem = discretize(ocp, discretizer)
-    return CommonSolve.solve(discrete_problem, normalized_init, modeler, solver; display=display)
+    return CommonSolve.solve(
+        discrete_problem, normalized_init, modeler, solver; display=display
+    )
 end
 
 function CommonSolve.solve(
@@ -44,9 +46,7 @@ end
 
 # to let freedom to the user
 function CommonSolve.solve(
-    nlp,
-    solver::AbstractOptimizationSolver;
-    display::Bool=__display(),
+    nlp, solver::AbstractOptimizationSolver; display::Bool=__display()
 )
     return solver(nlp; display=display)
 end

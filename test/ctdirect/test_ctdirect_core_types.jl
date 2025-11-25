@@ -10,7 +10,7 @@ function test_ctdirect_core_types()
         Test.@test isabstracttype(CTSolvers.AbstractIntegratorScheme)
 
         # Concrete schemes should be subtypes
-        Test.@test CTSolvers.Midpoint    <: CTSolvers.AbstractIntegratorScheme
+        Test.@test CTSolvers.Midpoint <: CTSolvers.AbstractIntegratorScheme
         Test.@test CTSolvers.Trapezoidal <: CTSolvers.AbstractIntegratorScheme
 
         # Trapeze is an alias to Trapezoidal
@@ -52,13 +52,15 @@ function test_ctdirect_core_types()
         Test.@test sym in (:midpoint, :trapeze)
 
         # For Midpoint, scheme_symbol should be :midpoint
-        colloc_mid = CTSolvers.Collocation(; grid_size=default_grid, scheme=CTSolvers.Midpoint())
+        colloc_mid = CTSolvers.Collocation(;
+            grid_size=default_grid, scheme=CTSolvers.Midpoint()
+        )
         Test.@test CTSolvers.scheme_symbol(colloc_mid) == :midpoint
 
         # For Trapezoidal, scheme_symbol should be :trapeze
-        colloc_trap = CTSolvers.Collocation(; grid_size=default_grid, scheme=CTSolvers.Trapezoidal())
+        colloc_trap = CTSolvers.Collocation(;
+            grid_size=default_grid, scheme=CTSolvers.Trapezoidal()
+        )
         Test.@test CTSolvers.scheme_symbol(colloc_trap) == :trapeze
     end
-
 end
-

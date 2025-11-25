@@ -1,6 +1,5 @@
 # Unit tests for CTSolvers extension wrappers (default options and constructors for each backend).
 function test_ctsolvers_extensions_unit()
-
     Test.@testset "ctsolvers_ext: Ipopt defaults and constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
         Test.@test CTSolversIpopt.__nlp_models_ipopt_max_iter() == 1000
         Test.@test CTSolversIpopt.__nlp_models_ipopt_tol() == 1e-8
