@@ -22,30 +22,33 @@ function CTSolvers.solve_with_ipopt(
 end
 
 # backend constructor
-function CTSolvers.IpoptSolver(;
-    max_iter::Int=__nlp_models_ipopt_max_iter(),
-    tol::Float64=__nlp_models_ipopt_tol(),
-    print_level::Int=__nlp_models_ipopt_print_level(),
-    mu_strategy::String=__nlp_models_ipopt_mu_strategy(),
-    linear_solver::String=__nlp_models_ipopt_linear_solver(),
-    sb::String=__nlp_models_ipopt_sb(),
-    kwargs...,
-)
-    return CTSolvers.IpoptSolver((
-        :max_iter => max_iter,
-        :tol => tol,
-        :print_level => print_level,
-        :mu_strategy => mu_strategy,
-        :linear_solver => linear_solver,
-        :sb => sb,
-        kwargs...,
-    ))
+function CTSolvers.IpoptSolver(; kwargs...)
+    defaults = (
+        max_iter=__nlp_models_ipopt_max_iter(),
+        tol=__nlp_models_ipopt_tol(),
+        print_level=__nlp_models_ipopt_print_level(),
+        mu_strategy=__nlp_models_ipopt_mu_strategy(),
+        linear_solver=__nlp_models_ipopt_linear_solver(),
+        sb=__nlp_models_ipopt_sb(),
+    )
+
+    user_nt = kwargs
+    values = merge(defaults, user_nt)
+
+    src_pairs = Pair{Symbol,Symbol}[]
+    for name in keys(values)
+        src = haskey(user_nt, name) ? :user : :ct_default
+        push!(src_pairs, name => src)
+    end
+    sources = (; src_pairs...)
+
+    return CTSolvers.IpoptSolver(values, sources)
 end
 
 function (solver::CTSolvers.IpoptSolver)(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::SolverCore.GenericExecutionStats
-    options = Dict(solver.options)
+    options = Dict(CTSolvers._options(solver))
     options[:print_level] = display ? options[:print_level] : 0
     return CTSolvers.solve_with_ipopt(nlp; options...)
 end

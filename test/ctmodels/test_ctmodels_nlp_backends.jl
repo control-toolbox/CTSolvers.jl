@@ -84,32 +84,50 @@ function test_ctmodels_nlp_backends()
     # ------------------------------------------------------------------
     # Constructor-level tests for ADNLPModeler and ExaModeler
     # ------------------------------------------------------------------
-    # These tests focus on the fields set by the constructors, ensuring
-    # defaults and keyword arguments are wired correctly.
+    # These tests now focus on the options_values / options_sources
+    # NamedTuples exposed via _options / _option_sources.
 
     Test.@testset "ctmodels/nlp_backends: ADNLPModeler constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Default constructor should use the values from ctmodels/default.jl
         backend_default = CTSolvers.ADNLPModeler()
-        Test.@test backend_default.show_time == CTSolvers.__adnlp_model_show_time()
-        Test.@test backend_default.backend    == CTSolvers.__adnlp_model_backend()
-        Test.@test length(keys(backend_default.kwargs)) == 0
+        vals_default = CTSolvers._options(backend_default)
+        srcs_default = CTSolvers._option_sources(backend_default)
 
-        # Custom backend and extra kwargs should be stored as-is
+        Test.@test vals_default.show_time == CTSolvers.__adnlp_model_show_time()
+        Test.@test vals_default.backend    == CTSolvers.__adnlp_model_backend()
+        Test.@test all(srcs_default[k] == :ct_default for k in propertynames(srcs_default))
+
+        # Custom backend and extra kwargs should be stored with provenance
         backend_manual = CTSolvers.ADNLPModeler(; backend=:toto, foo=1)
-        Test.@test backend_manual.backend == :toto
-        Test.@test backend_manual.kwargs[:foo] == 1
+        vals_manual = CTSolvers._options(backend_manual)
+        srcs_manual = CTSolvers._option_sources(backend_manual)
+
+        Test.@test vals_manual.backend == :toto
+        Test.@test srcs_manual.backend == :user
+        Test.@test vals_manual.foo == 1
+        Test.@test srcs_manual.foo == :user
     end
 
     Test.@testset "ctmodels/nlp_backends: ExaModeler constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Default constructor should use base_type and backend from ctmodels/default.jl
         exa_default = CTSolvers.ExaModeler()
-        Test.@test exa_default.backend === CTSolvers.__exa_model_backend()
-        Test.@test length(keys(exa_default.kwargs)) == 0
+        vals_default = CTSolvers._options(exa_default)
+        srcs_default = CTSolvers._option_sources(exa_default)
 
-        # Custom base_type and kwargs should be stored correctly
+        Test.@test vals_default.backend === CTSolvers.__exa_model_backend()
+        Test.@test srcs_default.backend == :ct_default
+
+        # Custom base_type and kwargs should be stored correctly with provenance
         exa_custom = CTSolvers.ExaModeler(; base_type=Float32, foo=2)
-        Test.@test exa_custom.backend === CTSolvers.__exa_model_backend()
-        Test.@test exa_custom.kwargs[:foo] == 2
+        vals_custom = CTSolvers._options(exa_custom)
+        srcs_custom = CTSolvers._option_sources(exa_custom)
+
+        Test.@test vals_custom.base_type === Float32
+        Test.@test srcs_custom.base_type == :user
+        Test.@test vals_custom.backend === CTSolvers.__exa_model_backend()
+        Test.@test srcs_custom.backend == :ct_default
+        Test.@test vals_custom.foo == 2
+        Test.@test srcs_custom.foo == :user
     end
 
     # ------------------------------------------------------------------

@@ -3,6 +3,18 @@
 # ------------------------------------------------------------------------------
 abstract type AbstractOptimizationSolver end
 
+function _options(solver::AbstractOptimizationSolver)
+    throw(
+        CTBase.NotImplemented("_options not implemented for $(typeof(solver))"),
+    )
+end
+
+function _option_sources(solver::AbstractOptimizationSolver)
+    throw(
+        CTBase.NotImplemented("_option_sources not implemented for $(typeof(solver))"),
+    )
+end
+
 function CommonSolve.solve(
     problem::AbstractOptimizationProblem,
     initial_guess,

@@ -20,26 +20,31 @@ function CTSolvers.solve_with_madnlp(
 end
 
 # backend constructor
-function CTSolvers.MadNLPSolver(;
-    max_iter::Int=__mad_nlp_max_iter(),
-    tol::Float64=__mad_nlp_tol(),
-    print_level::MadNLP.LogLevels=__mad_nlp_print_level(),
-    linear_solver::Type{<:MadNLP.AbstractLinearSolver}=__mad_nlp_linear_solver(),
-    kwargs...,
-)
-    return CTSolvers.MadNLPSolver((
-        :max_iter => max_iter,
-        :tol => tol,
-        :print_level => print_level,
-        :linear_solver => linear_solver,
-        kwargs...,
-    ))
+function CTSolvers.MadNLPSolver(; kwargs...)
+    defaults = (
+        max_iter=__mad_nlp_max_iter(),
+        tol=__mad_nlp_tol(),
+        print_level=__mad_nlp_print_level(),
+        linear_solver=__mad_nlp_linear_solver(),
+    )
+
+    user_nt = kwargs
+    values = merge(defaults, user_nt)
+
+    src_pairs = Pair{Symbol,Symbol}[]
+    for name in keys(values)
+        src = haskey(user_nt, name) ? :user : :ct_default
+        push!(src_pairs, name => src)
+    end
+    sources = (; src_pairs...)
+
+    return CTSolvers.MadNLPSolver(values, sources)
 end
 
 function (solver::CTSolvers.MadNLPSolver)(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::MadNLP.MadNLPExecutionStats
-    options = Dict(solver.options)
+    options = Dict(CTSolvers._options(solver))
     options[:print_level] = display ? options[:print_level] : MadNLP.ERROR
     return CTSolvers.solve_with_madnlp(nlp; options...)
 end

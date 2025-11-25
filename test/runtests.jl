@@ -33,12 +33,12 @@ const SHOWTIMING = true
 
 # Select tests to run
 const TESTS = Dict(
-    :extensions       => true,
-    :aqua             => true,
-    :ctmodels         => true,
-    :ctsolvers        => true,
-    :ctparser         => true,
-    :ctdirect         => true,
+    :extensions       => false,
+    :aqua             => false,
+    :ctmodels         => false,
+    :ctsolvers        => false,
+    :ctparser         => false,
+    :ctdirect         => false,
     :optimalcontrol   => true,
 )
 

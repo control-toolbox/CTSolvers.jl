@@ -21,7 +21,8 @@ function __mad_ncl_ncl_options()
     )
 end
 
-# solver interface
+base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseType
+
 function CTSolvers.solve_with_madncl(
     nlp::NLPModels.AbstractNLPModel; ncl_options::MadNCL.NCLOptions, kwargs...
 )::MadNCL.NCLStats
@@ -30,28 +31,33 @@ function CTSolvers.solve_with_madncl(
 end
 
 # backend constructor
-function CTSolvers.MadNCLSolver(;
-    max_iter::Int=__mad_ncl_max_iter(),
-    print_level::MadNLP.LogLevels=__mad_ncl_print_level(),
-    linear_solver::Type{<:MadNLP.AbstractLinearSolver}=__mad_ncl_linear_solver(),
-    ncl_options::MadNCL.NCLOptions{BaseType}=__mad_ncl_ncl_options(),
-    kwargs...,
-) where {BaseType<:AbstractFloat}
-    options = (
-        :max_iter => max_iter,
-        :print_level => print_level,
-        :linear_solver => linear_solver,
-        :ncl_options => ncl_options,
-        kwargs...,
+function CTSolvers.MadNCLSolver(; kwargs...)
+    defaults = (
+        max_iter=__mad_ncl_max_iter(),
+        print_level=__mad_ncl_print_level(),
+        linear_solver=__mad_ncl_linear_solver(),
+        ncl_options=__mad_ncl_ncl_options(),
     )
-    return CTSolvers.MadNCLSolver{BaseType,typeof(options)}(options)
+
+    user_nt = kwargs
+    values = merge(defaults, user_nt)
+
+    src_pairs = Pair{Symbol,Symbol}[]
+    for name in keys(values)
+        src = haskey(user_nt, name) ? :user : :ct_default
+        push!(src_pairs, name => src)
+    end
+    sources = (; src_pairs...)
+
+    BaseType = base_type(values.ncl_options)
+    return CTSolvers.MadNCLSolver{BaseType,typeof(values),typeof(sources)}(values, sources)
 end
 
 function (solver::CTSolvers.MadNCLSolver{BaseType})(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::MadNCL.NCLStats where {BaseType<:AbstractFloat}
     # options control
-    options = Dict(solver.options)
+    options = Dict(CTSolvers._options(solver))
     if !display
         options[:print_level] = MadNLP.ERROR
         ncl_options_dict = Dict()

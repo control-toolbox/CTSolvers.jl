@@ -10,7 +10,7 @@ function test_ctsolvers_extensions_unit()
         Test.@test CTSolversIpopt.__nlp_models_ipopt_sb() == "yes"
 
         solver = CTSolvers.IpoptSolver()
-        opts = Dict(solver.options)
+        opts = Dict(CTSolvers._options(solver))
 
         Test.@test opts[:max_iter] == CTSolversIpopt.__nlp_models_ipopt_max_iter()
         Test.@test opts[:tol] == CTSolversIpopt.__nlp_models_ipopt_tol()
@@ -27,7 +27,7 @@ function test_ctsolvers_extensions_unit()
         Test.@test CTSolversKnitro.__nlp_models_knitro_print_level() == 3
 
         solver = CTSolvers.KnitroSolver()
-        opts = Dict(solver.options)
+        opts = Dict(CTSolvers._options(solver))
 
         Test.@test opts[:maxit] == CTSolversKnitro.__nlp_models_knitro_max_iter()
         Test.@test opts[:feastol_abs] == CTSolversKnitro.__nlp_models_knitro_feastol_abs()
@@ -42,7 +42,7 @@ function test_ctsolvers_extensions_unit()
         Test.@test CTSolversMadNLP.__mad_nlp_linear_solver() == MadNLPMumps.MumpsSolver
 
         solver = CTSolvers.MadNLPSolver()
-        opts = Dict(solver.options)
+        opts = Dict(CTSolvers._options(solver))
 
         Test.@test opts[:max_iter] == CTSolversMadNLP.__mad_nlp_max_iter()
         Test.@test opts[:tol] == CTSolversMadNLP.__mad_nlp_tol()
@@ -58,7 +58,7 @@ function test_ctsolvers_extensions_unit()
         ref_opts = CTSolversMadNCL.__mad_ncl_ncl_options()
 
         solver = CTSolvers.MadNCLSolver()
-        opts = Dict(solver.options)
+        opts = Dict(CTSolvers._options(solver))
 
         Test.@test opts[:max_iter] == CTSolversMadNCL.__mad_ncl_max_iter()
         Test.@test opts[:print_level] == CTSolversMadNCL.__mad_ncl_print_level()

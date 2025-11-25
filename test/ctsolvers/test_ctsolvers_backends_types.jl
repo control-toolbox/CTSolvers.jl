@@ -14,70 +14,69 @@ function test_ctsolvers_backends_types()
     end
 
     # ========================================================================
-    # IPopt SOLVER
+    # IPopt SOLVER options
     # ========================================================================
 
     Test.@testset "ctsolvers/backends_types: IpoptSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
-        # Minimal options tuple of pairs
-        opts = (
-            :max_iter => 100,
-            :tol => 1e-8,
-        )
+        # Default constructor: all options should come from ct_default
+        solver_default = CTSolvers.IpoptSolver()
+        vals_default = CTSolvers._options(solver_default)
+        srcs_default = CTSolvers._option_sources(solver_default)
 
-        solver = CTSolvers.IpoptSolver(opts)
+        Test.@test all(srcs_default[k] == :ct_default for k in propertynames(srcs_default))
 
-        # The struct should store the tuple unchanged and parameterize on its type
-        Test.@test solver isa CTSolvers.IpoptSolver{typeof(opts)}
-        Test.@test solver.options === opts
+        # User overrides should be visible in both values and sources
+        solver_user = CTSolvers.IpoptSolver(; max_iter=100, tol=1e-8)
+        vals_user = CTSolvers._options(solver_user)
+        srcs_user = CTSolvers._option_sources(solver_user)
+
+        Test.@test vals_user.max_iter == 100
+        Test.@test srcs_user.max_iter == :user
+        Test.@test vals_user.tol == 1e-8
+        Test.@test srcs_user.tol == :user
     end
 
     # ========================================================================
-    # MadNLP SOLVER
+    # MadNLP SOLVER options
     # ========================================================================
 
     Test.@testset "ctsolvers/backends_types: MadNLPSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
-        opts = (
-            :max_iter => 500,
-            :tol => 1e-6,
-        )
+        solver_user = CTSolvers.MadNLPSolver(; max_iter=500, tol=1e-6)
+        vals_user = CTSolvers._options(solver_user)
+        srcs_user = CTSolvers._option_sources(solver_user)
 
-        solver = CTSolvers.MadNLPSolver(opts)
-
-        Test.@test solver isa CTSolvers.MadNLPSolver{typeof(opts)}
-        Test.@test solver.options === opts
+        Test.@test vals_user.max_iter == 500
+        Test.@test srcs_user.max_iter == :user
+        Test.@test vals_user.tol == 1e-6
+        Test.@test srcs_user.tol == :user
     end
 
     # ========================================================================
-    # MadNCL SOLVER
+    # MadNCL SOLVER options
     # ========================================================================
 
     Test.@testset "ctsolvers/backends_types: MadNCLSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
-        opts = (
-            :max_iter => 200,
-            :print_level => :info,
-        )
+        solver_default = CTSolvers.MadNCLSolver()
+        vals_default = CTSolvers._options(solver_default)
+        srcs_default = CTSolvers._option_sources(solver_default)
 
-        # MadNCLSolver has a BaseType type parameter in addition to the tuple type
-        solver = CTSolvers.MadNCLSolver{Float64,typeof(opts)}(opts)
-
-        Test.@test solver isa CTSolvers.MadNCLSolver{Float64,typeof(opts)}
-        Test.@test solver.options === opts
+        Test.@test vals_default.max_iter == CTSolversMadNCL.__mad_ncl_max_iter()
+        Test.@test srcs_default.max_iter == :ct_default
     end
 
     # ========================================================================
-    # Knitro SOLVER
+    # Knitro SOLVER options
     # ========================================================================
 
     Test.@testset "ctsolvers/backends_types: KnitroSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
-        opts = (
-            :max_iter => 300,
-            :feastol  => 1e-6,
-        )
+        solver_user = CTSolvers.KnitroSolver(; maxit=300, feastol_abs=1e-6)
+        vals_user = CTSolvers._options(solver_user)
+        srcs_user = CTSolvers._option_sources(solver_user)
 
-        solver = CTSolvers.KnitroSolver(opts)
-
-        Test.@test solver isa CTSolvers.KnitroSolver{typeof(opts)}
-        Test.@test solver.options === opts
+        Test.@test vals_user.maxit == 300
+        Test.@test srcs_user.maxit == :user
+        Test.@test vals_user.feastol_abs == 1e-6
+        Test.@test srcs_user.feastol_abs == :user
     end
 
 end
