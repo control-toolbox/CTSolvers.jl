@@ -189,7 +189,7 @@ function _unknown_option_error(key::Symbol, tool_type::Type{<:AbstractOCPTool}, 
     if !isempty(suggestions)
         msg *= " Did you mean " * join(string.(suggestions), " or ") * "?"
     end
-    msg *= " Use CTSolvers._show_options($(tool_name)) to list all available options."
+    msg *= " Use CTSolvers.show_options($(tool_name)) to list all available options."
     throw(CTBase.IncorrectArgument(msg))
 end
 
@@ -257,6 +257,14 @@ function _show_options(x::AbstractOCPTool)
     return _show_options(typeof(x))
 end
 
+function show_options(tool_type::Type{<:AbstractOCPTool})
+    return _show_options(tool_type)
+end
+
+function show_options(x::AbstractOCPTool)
+    return _show_options(typeof(x))
+end
+
 # Validate user-supplied keyword options against the metadata of a tool.
 # If `strict_keys` is true, unknown keys trigger an error. If false, unknown
 # keys are accepted and only known keys are type-checked when a type is
@@ -288,7 +296,7 @@ function _validate_option_kwargs(
             if !isempty(suggestions)
                 msg *= " Did you mean " * join(string.(suggestions), " or ") * "?"
             end
-            msg *= " Use CTSolvers._show_options($(tool_name)) to list all available options."
+            msg *= " Use CTSolvers.show_options($(tool_name)) to list all available options."
             throw(CTBase.IncorrectArgument(msg))
         end
     end

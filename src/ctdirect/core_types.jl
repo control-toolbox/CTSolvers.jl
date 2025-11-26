@@ -29,12 +29,13 @@ function _option_specs(::Type{Collocation})
 end
 
 function Collocation(; kwargs...)
-    values, sources = _build_ocp_tool_options(Collocation; kwargs..., strict_keys=true)
+    values, sources = _build_ocp_tool_options(
+        Collocation; kwargs..., strict_keys=true)
     scheme = values.scheme
     return Collocation{typeof(scheme)}(values, sources)
 end
 
-get_symbol(::Type{Collocation}) = :collocation
+get_symbol(::Type{<:Collocation}) = :collocation
 
 const REGISTERED_DISCRETIZERS = (Collocation,)
 

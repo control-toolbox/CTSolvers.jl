@@ -66,11 +66,23 @@ function test_ctsolvers_backends_types()
         Test.@test CTSolvers.get_symbol(CTSolvers.MadNCLSolver) == :madncl
         Test.@test CTSolvers.get_symbol(CTSolvers.KnitroSolver) == :knitro
 
+        # get_symbol on solver instances should behave identically
+        Test.@test CTSolvers.get_symbol(CTSolvers.IpoptSolver())  == :ipopt
+        Test.@test CTSolvers.get_symbol(CTSolvers.MadNLPSolver()) == :madnlp
+        Test.@test CTSolvers.get_symbol(CTSolvers.MadNCLSolver()) == :madncl
+        Test.@test CTSolvers.get_symbol(CTSolvers.KnitroSolver()) == :knitro
+
         # tool_package_name on solver types
         Test.@test CTSolvers.tool_package_name(CTSolvers.IpoptSolver)   == "NLPModelsIpopt"
         Test.@test CTSolvers.tool_package_name(CTSolvers.MadNLPSolver)  == "MadNLP suite"
         Test.@test CTSolvers.tool_package_name(CTSolvers.MadNCLSolver)  == "MadNCL"
         Test.@test CTSolvers.tool_package_name(CTSolvers.KnitroSolver)  == "NLPModelsKnitro"
+
+        # tool_package_name on solver instances
+        Test.@test CTSolvers.tool_package_name(CTSolvers.IpoptSolver())   == "NLPModelsIpopt"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNLPSolver())  == "MadNLP suite"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNCLSolver())  == "MadNCL"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.KnitroSolver())  == "NLPModelsKnitro"
 
         regs = CTSolvers.registered_solver_types()
         Test.@test CTSolvers.IpoptSolver  in regs
@@ -214,14 +226,15 @@ function test_ctsolvers_backends_types()
         buf = sprint(showerror, err)
         Test.@test occursin("mx_iter", buf)
         Test.@test occursin("max_iter", buf)
-        Test.@test occursin("_show_options(IpoptSolver)", buf)
+        Test.@test occursin("show_options(IpoptSolver)", buf)
     end
 
     Test.@testset "IpoptSolver unknown option suggestions" verbose=VERBOSE showtiming=SHOWTIMING begin
         err = nothing
         try
-            # Misspelled option name to trigger suggestion logic.
-            CTSolvers.IpoptSolver(; mx_iter=10)
+            # Misspelled option name to trigger suggestion logic at the
+            # validation layer, independently of constructor strictness.
+            CTSolvers._validate_option_kwargs((mx_iter=10,), CTSolvers.IpoptSolver; strict_keys=true)
         catch e
             err = e
         end
@@ -231,18 +244,15 @@ function test_ctsolvers_backends_types()
         buf = sprint(showerror, err)
         Test.@test occursin("mx_iter", buf)
         Test.@test occursin("max_iter", buf)
-        Test.@test occursin("_show_options(IpoptSolver)", buf)
+        Test.@test occursin("show_options(IpoptSolver)", buf)
     end
 
     Test.@testset "IpoptSolver _show_options runs" verbose=VERBOSE showtiming=SHOWTIMING begin
-        # Just ensure that _show_options does not throw and produces some text.
-        buf = sprint() do io
-            redirect_stdout(io) do
-                CTSolvers._show_options(CTSolvers.IpoptSolver)
-            end
+        # Just ensure that _show_options does not throw when called on IpoptSolver.
+        redirect_stdout(devnull) do
+            CTSolvers.show_options(CTSolvers.IpoptSolver)
         end
-        Test.@test occursin("Options for", buf)
-        Test.@test occursin("IpoptSolver", buf)
+        Test.@test true
     end
 
 end

@@ -13,7 +13,7 @@ __nlp_models_ipopt_mu_strategy() = "adaptive"
 __nlp_models_ipopt_linear_solver() = "Mumps"
 __nlp_models_ipopt_sb() = "yes"
 
-function CTSolvers._option_specs(::Type{CTSolvers.IpoptSolver})
+function CTSolvers._option_specs(::Type{<:CTSolvers.IpoptSolver})
     return (
         max_iter = CTSolvers.OptionSpec(
             type=Integer,
@@ -58,7 +58,8 @@ end
 
 # backend constructor
 function CTSolvers.IpoptSolver(; kwargs...)
-    values, sources = CTSolvers._build_ocp_tool_options(CTSolvers.IpoptSolver; kwargs..., strict_keys=true)
+    values, sources = CTSolvers._build_ocp_tool_options(
+        CTSolvers.IpoptSolver; kwargs..., strict_keys=false)
     return CTSolvers.IpoptSolver(values, sources)
 end
 

@@ -178,6 +178,26 @@ function test_optimalcontrol_solve_api()
         Test.@test_throws CTBase.IncorrectArgument CTSolvers._route_option_for_description(:foo, 1.0, owners_amb, :explicit)
     end
 
+    Test.@testset "description kwarg splitting" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # Ensure that description-mode parsing and splitting of kwargs produces
+        # well-typed NamedTuples and routes options to the expected tools.
+        parsed = CTSolvers._parse_top_level_kwargs_description((
+            initial_guess=OCDummyInit([1.0, 2.0]),
+            display=false,
+            modeler_options=(backend=:manual,),
+            tol=1e-6,
+        ))
+
+        pieces = CTSolvers._split_kwargs_for_description((:collocation, :adnlp, :ipopt), parsed)
+
+        Test.@test pieces.initial_guess isa OCDummyInit
+        Test.@test pieces.display == false
+        Test.@test pieces.disc_kwargs == NamedTuple()
+        Test.@test pieces.modeler_options == (backend=:manual,)
+        Test.@test haskey(pieces.solver_kwargs, :tol)
+        Test.@test pieces.solver_kwargs.tol == 1e-6
+    end
+
     Test.@testset "display helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
         method = (:collocation, :adnlp, :ipopt)
         discretizer = CTSolvers.Collocation()
@@ -185,15 +205,14 @@ function test_optimalcontrol_solve_api()
         solver = CTSolvers.IpoptSolver()
 
         buf = sprint() do io
-            redirect_stdout(io) do
-                CTSolvers._display_ocp_method(
-                    method,
-                    discretizer,
-                    modeler,
-                    solver;
-                    display=true,
-                )
-            end
+            CTSolvers._display_ocp_method(
+                io,
+                method,
+                discretizer,
+                modeler,
+                solver;
+                display=true,
+            )
         end
         Test.@test occursin("ADNLPModels", buf)
         Test.@test occursin("NLPModelsIpopt", buf)

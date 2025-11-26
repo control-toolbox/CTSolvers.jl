@@ -81,7 +81,7 @@ function test_ctmodels_options_schema()
         Test.@test d_close < d_far
 
         # Suggestions should prioritize the closest known key
-        sugg = CTSolvers._suggest_option_keys(:mx_iter, DummyToolWithSpecs)
+        sugg = CTSolvers._suggest_option_keys(:mx_iter, CM_DummyToolWithSpecs)
         Test.@test length(sugg) >= 1
         Test.@test sugg[1] == :max_iter
     end
@@ -127,7 +127,7 @@ function test_ctmodels_options_schema()
         buf_unknown = sprint(showerror, err_unknown)
         Test.@test occursin("Unknown option mx_iter", buf_unknown)
         Test.@test occursin("max_iter", buf_unknown)
-        Test.@test occursin("_show_options(CM_DummyToolWithSpecs)", buf_unknown)
+        Test.@test occursin("show_options(CM_DummyToolWithSpecs)", buf_unknown)
     end
 
     # ========================================================================
@@ -135,9 +135,12 @@ function test_ctmodels_options_schema()
     # ========================================================================
 
     Test.@testset "_show_options" verbose=VERBOSE showtiming=SHOWTIMING begin
-        # Just ensure that calling _show_options on both dummy tools does not throw.
-        CTSolvers._show_options(CM_DummyToolNoSpecs)
-        CTSolvers._show_options(CM_DummyToolWithSpecs)
+        # Just ensure that calling _show_options on both dummy tools does not throw,
+        # while silencing the printed output.
+        redirect_stdout(devnull) do
+            CTSolvers.show_options(CM_DummyToolNoSpecs)
+            CTSolvers.show_options(CM_DummyToolWithSpecs)
+        end
         Test.@test true
     end
 
@@ -166,7 +169,7 @@ function test_ctmodels_options_schema()
         buf = sprint(showerror, err_unknown)
         Test.@test occursin("Unknown option mx_iter", buf)
         Test.@test occursin("max_iter", buf)
-        Test.@test occursin("_show_options(DummyToolWithSpecs)", buf)
+        Test.@test occursin("show_options(CM_DummyToolWithSpecs)", buf)
 
         # Wrong type for a known option should error
         err_type = nothing

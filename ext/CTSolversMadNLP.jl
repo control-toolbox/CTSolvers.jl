@@ -11,7 +11,7 @@ __mad_nlp_tol() = 1e-8
 __mad_nlp_print_level() = MadNLP.INFO
 __mad_nlp_linear_solver() = MadNLPMumps.MumpsSolver
 
-function CTSolvers._option_specs(::Type{CTSolvers.MadNLPSolver})
+function CTSolvers._option_specs(::Type{<:CTSolvers.MadNLPSolver})
     return (
         max_iter = CTSolvers.OptionSpec(
             type=Integer,
@@ -46,7 +46,8 @@ end
 
 # backend constructor
 function CTSolvers.MadNLPSolver(; kwargs...)
-    values, sources = CTSolvers._build_ocp_tool_options(CTSolvers.MadNLPSolver; kwargs..., strict_keys=true)
+    values, sources = CTSolvers._build_ocp_tool_options(
+        CTSolvers.MadNLPSolver; kwargs..., strict_keys=false)
     return CTSolvers.MadNLPSolver(values, sources)
 end
 

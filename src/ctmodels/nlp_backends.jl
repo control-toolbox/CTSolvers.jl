@@ -30,7 +30,8 @@ function _option_specs(::Type{ADNLPModeler})
 end
 
 function ADNLPModeler(; kwargs...)
-    values, sources = _build_ocp_tool_options(ADNLPModeler; kwargs..., strict_keys=false)
+    values, sources = _build_ocp_tool_options(
+        ADNLPModeler; kwargs..., strict_keys=false)
     return ADNLPModeler{typeof(values),typeof(sources)}(values, sources)
 end
 
@@ -85,7 +86,8 @@ function _option_specs(::Type{ExaModeler})
 end
 
 function ExaModeler(; kwargs...)
-    values, sources = _build_ocp_tool_options(ExaModeler; kwargs..., strict_keys=false)
+    values, sources = _build_ocp_tool_options(
+        ExaModeler; kwargs..., strict_keys=true)
     BaseType = values.base_type
 
     # base_type is only needed to fix the type parameter; it does not need to

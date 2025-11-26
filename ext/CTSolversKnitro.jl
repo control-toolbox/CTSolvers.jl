@@ -11,7 +11,7 @@ __nlp_models_knitro_feastol_abs() = 1e-8
 __nlp_models_knitro_opttol_abs() = 1e-8
 __nlp_models_knitro_print_level() = 3
 
-function CTSolvers._option_specs(::Type{CTSolvers.KnitroSolver})
+function CTSolvers._option_specs(::Type{<:CTSolvers.KnitroSolver})
     return (
         maxit = CTSolvers.OptionSpec(
             type=Integer,
@@ -45,7 +45,8 @@ end
 
 # backend constructor
 function CTSolvers.KnitroSolver(; kwargs...)
-    values, sources = CTSolvers._build_ocp_tool_options(CTSolvers.KnitroSolver; kwargs..., strict_keys=true)
+    values, sources = CTSolvers._build_ocp_tool_options(
+        CTSolvers.KnitroSolver; kwargs..., strict_keys=false)
     return CTSolvers.KnitroSolver(values, sources)
 end
 

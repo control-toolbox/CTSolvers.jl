@@ -140,15 +140,25 @@ function test_ctmodels_nlp_backends()
 
         # Custom base_type and kwargs: base_type is reflected in the modeler type,
         # while remaining options and their provenance are tracked as usual.
-        exa_custom = CTSolvers.ExaModeler(; base_type=Float32, foo=2)
+        exa_custom = CTSolvers.ExaModeler(; base_type=Float32)
         vals_custom = CTSolvers._options_values(exa_custom)
         srcs_custom = CTSolvers._option_sources(exa_custom)
 
         Test.@test exa_custom isa CTSolvers.ExaModeler{Float32}
         Test.@test vals_custom.backend === CTSolvers.__exa_model_backend()
         Test.@test srcs_custom.backend == :ct_default
-        Test.@test vals_custom.foo == 2
-        Test.@test srcs_custom.foo == :user
+
+        # Unknown options should now be rejected for ExaModeler (strict_keys=true).
+        err = nothing
+        try
+            CTSolvers.ExaModeler(; base_type=Float32, foo=2)
+        catch e
+            err = e
+        end
+        Test.@test err isa CTBase.IncorrectArgument
+        buf = sprint(showerror, err)
+        Test.@test occursin("Unknown option foo", buf)
+        Test.@test occursin("show_options(ExaModeler)", buf)
     end
 
     # ------------------------------------------------------------------
@@ -182,6 +192,20 @@ function test_ctmodels_nlp_backends()
 
         # Invalid type for a known option should trigger a CTBase.IncorrectArgument
         Test.@test_throws CTBase.IncorrectArgument CTSolvers.ExaModeler(; minimize=1)
+    end
+
+    Test.@testset "ExaModeler unknown option suggestions" verbose=VERBOSE showtiming=SHOWTIMING begin
+        err = nothing
+        try
+            CTSolvers._validate_option_kwargs((minimise=true,), CTSolvers.ExaModeler; strict_keys=true)
+        catch e
+            err = e
+        end
+        Test.@test err isa CTBase.IncorrectArgument
+        buf = sprint(showerror, err)
+        Test.@test occursin("Unknown option minimise", buf)
+        Test.@test occursin("minimize", buf)
+        Test.@test occursin("show_options(ExaModeler)", buf)
     end
 
     Test.@testset "default_options and option_default" verbose=VERBOSE showtiming=SHOWTIMING begin

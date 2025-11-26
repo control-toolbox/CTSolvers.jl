@@ -8,6 +8,7 @@ using NLPModels
 
 # default
 __mad_ncl_max_iter() = 1000
+__mad_ncl_tol() = 1e-8
 __mad_ncl_print_level() = MadNLP.INFO
 __mad_ncl_linear_solver() = MadNLPMumps.MumpsSolver
 function __mad_ncl_ncl_options()
@@ -23,12 +24,17 @@ end
 
 base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseType
 
-function CTSolvers._option_specs(::Type{CTSolvers.MadNCLSolver})
+function CTSolvers._option_specs(::Type{<:CTSolvers.MadNCLSolver})
     return (
         max_iter = CTSolvers.OptionSpec(
             type=Integer,
             default=__mad_ncl_max_iter(),
             description="Maximum number of augmented Lagrangian iterations.",
+        ),
+        tol = CTSolvers.OptionSpec(
+            type=Real,
+            default=__mad_ncl_tol(),
+            description="Optimality tolerance.",
         ),
         print_level = CTSolvers.OptionSpec(
             type=MadNLP.LogLevels,
@@ -57,7 +63,8 @@ end
 
 # backend constructor
 function CTSolvers.MadNCLSolver(; kwargs...)
-    values, sources = CTSolvers._build_ocp_tool_options(CTSolvers.MadNCLSolver; kwargs..., strict_keys=true)
+    values, sources = CTSolvers._build_ocp_tool_options(
+        CTSolvers.MadNCLSolver; kwargs..., strict_keys=false)
     BaseType = base_type(values.ncl_options)
     return CTSolvers.MadNCLSolver{BaseType,typeof(values),typeof(sources)}(values, sources)
 end

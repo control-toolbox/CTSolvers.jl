@@ -194,6 +194,7 @@ end
 # Display helpers.
 
 function _display_ocp_method(
+    io::IO,
     method::Tuple,
     discretizer::AbstractOptimalControlDiscretizer,
     modeler::AbstractOptimizationModeler,
@@ -204,10 +205,10 @@ function _display_ocp_method(
 
     version_str = string(Base.pkgversion(@__MODULE__))
 
-    print("▫ This is CTSolvers version v", version_str, " running with: ")
+    print(io, "▫ This is CTSolvers version v", version_str, " running with: ")
     for (i, m) in enumerate(method)
         sep = i == length(method) ? ".\n\n" : ", "
-        printstyled(string(m) * sep; color=:cyan, bold=true)
+        printstyled(io, string(m) * sep; color=:cyan, bold=true)
     end
 
     model_pkg = tool_package_name(modeler)
@@ -215,13 +216,14 @@ function _display_ocp_method(
 
     if model_pkg !== missing && solver_pkg !== missing
         println(
+            io,
             "   ┌─ The NLP is modelled with ",
             model_pkg,
             " and solved with ",
             solver_pkg,
             ".",
         )
-        println("   │")
+        println(io, "   │")
     end
 
     # Discretizer options (including grid size and scheme)
@@ -239,36 +241,46 @@ function _display_ocp_method(
     has_sol  = !isempty(propertynames(sol_vals))
 
     if has_disc || has_mod || has_sol
-        println("   Options:")
+        println(io, "   Options:")
 
         if has_disc
-            println("   ├─ Discretizer:")
+            println(io, "   ├─ Discretizer:")
             for name in propertynames(disc_vals)
                 src = haskey(disc_srcs, name) ? disc_srcs[name] : :unknown
-                println("   │    ", name, " = ", disc_vals[name], "  (", src, ")")
+                println(io, "   │    ", name, " = ", disc_vals[name], "  (", src, ")")
             end
         end
 
         if has_mod
-            println("   ├─ Modeler:")
+            println(io, "   ├─ Modeler:")
             for name in propertynames(mod_vals)
                 src = haskey(mod_srcs, name) ? mod_srcs[name] : :unknown
-                println("   │    ", name, " = ", mod_vals[name], "  (", src, ")")
+                println(io, "   │    ", name, " = ", mod_vals[name], "  (", src, ")")
             end
         end
 
         if has_sol
-            println("   └─ Solver:")
+            println(io, "   └─ Solver:")
             for name in propertynames(sol_vals)
                 src = haskey(sol_srcs, name) ? sol_srcs[name] : :unknown
-                println("        ", name, " = ", sol_vals[name], "  (", src, ")")
+                println(io, "        ", name, " = ", sol_vals[name], "  (", src, ")")
             end
         end
     end
 
-    println("")
+    println(io)
 
     return nothing
+end
+
+function _display_ocp_method(
+    method::Tuple,
+    discretizer::AbstractOptimalControlDiscretizer,
+    modeler::AbstractOptimizationModeler,
+    solver::AbstractOptimizationSolver;
+    display::Bool,
+)
+    return _display_ocp_method(stdout, method, discretizer, modeler, solver; display=display)
 end
 
 # ------------------------------------------------------------------------
@@ -535,11 +547,20 @@ function _split_kwargs_for_description(
     model_kwargs  = (; model_pairs...)
     solver_kwargs = (; solver_pairs...)
 
+    # Normalize user-supplied modeler_options (which may be nothing, a NamedTuple,
+    # or a tuple of pairs) and merge them with any untagged options that belong
+    # to the modeler for the selected method. We explicitly build a NamedTuple
+    # here instead of relying on generic union operators, to avoid type surprises
+    # and keep the API contract of _build_modeler_from_method, which expects a
+    # NamedTuple of keyword arguments.
+    base_modeler_opts = _normalize_modeler_options(parsed.modeler_options)
+    combined_modeler_opts = (; base_modeler_opts..., model_kwargs...)
+
     return (
         initial_guess=parsed.initial_guess,
         display=parsed.display,
         disc_kwargs=disc_kwargs,
-        modeler_options=_normalize_modeler_options(parsed.modeler_options) ∪ model_kwargs,
+        modeler_options=combined_modeler_opts,
         solver_kwargs=solver_kwargs,
     )
 end

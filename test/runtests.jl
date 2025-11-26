@@ -45,7 +45,8 @@ end
 # Main test runner orchestrating all CTSolvers test suites.
 using Test
 using Aqua
-using CTBase
+using CTBase: CTBase
+using CTDirect: CTDirect
 using CTModels: CTModels
 using CTParser: CTParser, @def
 using CTSolvers: CTSolvers, @init
@@ -75,7 +76,7 @@ include(joinpath("problems", "beam.jl"))
 const VERBOSE = false
 const SHOWTIMING = true
 
-const TEST_SELECTION = isempty(ARGS) ? nothing : Symbol(ARGS[1])
+const TEST_SELECTIONS = isempty(ARGS) ? Symbol[] : Symbol.(ARGS)
 
 const TEST_GROUP_INFO = Dict(
     :aqua           => (title = "Aqua",           subdir = ""),
@@ -88,12 +89,15 @@ const TEST_GROUP_INFO = Dict(
 
 function selected_tests()
     tests = default_tests()
-    sel = TEST_SELECTION
+    sels = TEST_SELECTIONS
 
-    if sel === nothing
+    # No selection: run the default configuration
+    if isempty(sels)
         return tests
-    elseif sel === :all
-        # Activer tous les tests de tous les groupes
+    end
+
+    # Single :all selection: enable every test in every group
+    if length(sels) == 1 && sels[1] == :all
         for (_, group_tests) in tests
             for k in keys(group_tests)
                 group_tests[k] = true
@@ -102,26 +106,39 @@ function selected_tests()
         return tests
     end
 
-    # Pour toute autre sélection, on part d'un dictionnaire entièrement à false
+    # For any other selection, start with a dictionary entirely set to false
     for (_, group_tests) in tests
         for k in keys(group_tests)
             group_tests[k] = false
         end
     end
 
-    # sel = clé de groupe (ex: :aqua, :ctmodels, :extensions, :notrigger, ...)
-    if haskey(tests, sel)
-        for k in keys(tests[sel])
-            tests[sel][k] = true
-        end
-        return tests
-    end
-
-    # sel = clé feuille (ex: :ctmodels_nlp_backends, :ctsolvers_extensions_ipopt, ...)
-    for (_, group_tests) in tests
-        if haskey(group_tests, sel)
-            group_tests[sel] = true
+    # Apply each selection symbol in order (group or leaf), enabling tests additively.
+    for sel in sels
+        # If :all is mixed with other selectors, just enable everything and stop.
+        if sel == :all
+            for (_, group_tests) in tests
+                for k in keys(group_tests)
+                    group_tests[k] = true
+                end
+            end
             break
+        end
+
+        # sel = group key (ex: :aqua, :ctmodels, :extensions, :notrigger, ...)
+        if haskey(tests, sel)
+            for k in keys(tests[sel])
+                tests[sel][k] = true
+            end
+            continue
+        end
+
+        # sel = leaf key (ex: :ctmodels_nlp_backends, :ctsolvers_extensions_ipopt, ...)
+        for (_, group_tests) in tests
+            if haskey(group_tests, sel)
+                group_tests[sel] = true
+                break
+            end
         end
     end
 
