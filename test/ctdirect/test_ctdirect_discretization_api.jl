@@ -42,6 +42,11 @@ function test_ctdirect_discretization_api()
         # The default discretizer should produce a DiscretizedOptimalControlProblem
         Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
         Test.@test CTSolvers.ocp_model(docp) === ocp
+
+        # And the low-level __discretizer() helper should return a Collocation
+        disc = CTSolvers.__discretizer()
+        Test.@test disc isa CTSolvers.AbstractOptimalControlDiscretizer
+        Test.@test disc isa CTSolvers.Collocation
     end
 
 end

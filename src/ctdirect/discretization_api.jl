@@ -5,6 +5,8 @@ function discretize(
     return discretizer(ocp)
 end
 
+__discretizer()::AbstractOptimalControlDiscretizer = Collocation()
+
 function discretize(
     ocp::AbstractOptimalControlProblem;
     discretizer::AbstractOptimalControlDiscretizer=__discretizer(),

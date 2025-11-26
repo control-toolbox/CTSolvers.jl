@@ -20,8 +20,31 @@ end
 
 struct OptionSpec
     type::Any         # Expected Julia type for the option value, or `missing` if unknown.
+    default::Any
     description::Any  # Short English description (String) or `missing` if not documented yet.
 end
+
+# ---------------------------------------------------------------------------
+# Internal options API overview
+#
+# For each tool T<:AbstractOCPTool:
+#   - _option_specs(T) :: NamedTuple of OptionSpec describing option keys.
+#   - default_options(T) :: NamedTuple of default values taken from specs
+#       (only options with non-missing defaults are included).
+#   - _build_ocp_tool_options(T; kwargs..., strict_keys=false) :: (values, sources)
+#       merges default options with user kwargs and tracks provenance
+#       (:ct_default or :user) in a parallel NamedTuple.
+#   - Concrete tools store `options_values` and `options_sources` fields and
+#       are accessed via _options_values(tool) and _option_sources(tool).
+#
+# OptionSpec fields:
+#   - type        : expected Julia type for validation (or `missing`).
+#   - default     : default value at the tool level (or `missing` if none).
+#   - description : short human-readable description (or `missing`).
+# ---------------------------------------------------------------------------
+
+OptionSpec(; type=missing, default=missing, description=missing) =
+    OptionSpec(type, default, description)
 
 # Default: no metadata for a given tool type.
 function _option_specs(::Type{T}) where {T<:AbstractOCPTool}
@@ -31,16 +54,12 @@ end
 # Convenience overload to accept instances as well as types.
 _option_specs(x::AbstractOCPTool) = _option_specs(typeof(x))
 
-function _options(tool::AbstractOCPTool)
-    throw(
-        CTBase.NotImplemented("_options not implemented for $(typeof(tool))"),
-    )
+function _options_values(tool::AbstractOCPTool)
+    return tool.options_values
 end
 
 function _option_sources(tool::AbstractOCPTool)
-    throw(
-        CTBase.NotImplemented("_option_sources not implemented for $(typeof(tool))"),
-    )
+    return tool.options_sources
 end
 
 # Retrieve the list of known option keys for a given tool type.
@@ -84,6 +103,37 @@ end
 
 option_description(key::Symbol, x::AbstractOCPTool) = option_description(key, typeof(x))
 
+function option_default(key::Symbol, tool_type::Type{<:AbstractOCPTool})
+    specs = _option_specs(tool_type)
+    specs === missing && return missing
+    if !(haskey(specs, key))
+        return missing
+    end
+    spec = getfield(specs, key)::OptionSpec
+    return spec.default
+end
+
+option_default(key::Symbol, x::AbstractOCPTool) = option_default(key, typeof(x))
+
+function default_options(tool_type::Type{<:AbstractOCPTool})
+    specs = _option_specs(tool_type)
+    specs === missing && return NamedTuple()
+    pairs = Pair{Symbol,Any}[]
+    for name in propertynames(specs)
+        spec = getfield(specs, name)::OptionSpec
+        if spec.default !== missing
+            push!(pairs, name => spec.default)
+        end
+    end
+    return (; pairs...)
+end
+
+default_options(x::AbstractOCPTool) = default_options(typeof(x))
+
+function _filter_options(nt::NamedTuple, exclude)
+    return (; (k => v for (k, v) in pairs(nt) if !(k in exclude))...)
+end
+
 # Simple Levenshtein distance for suggestion of close option names.
 function _string_distance(a::AbstractString, b::AbstractString)
     m = lastindex(a)
@@ -125,6 +175,67 @@ end
 
 _suggest_option_keys(key::Symbol, x::AbstractOCPTool; max_suggestions::Int=3) =
     _suggest_option_keys(key, typeof(x); max_suggestions=max_suggestions)
+
+# ---------------------------------------------------------------------------
+# High-level getters for option value/source/default on instantiated tools.
+# These helpers validate the option key and reuse the suggestion machinery
+# used when parsing user keyword arguments.
+# ---------------------------------------------------------------------------
+
+function _unknown_option_error(key::Symbol, tool_type::Type{<:AbstractOCPTool}, context::AbstractString)
+    suggestions = _suggest_option_keys(key, tool_type; max_suggestions=3)
+    tool_name = string(nameof(tool_type))
+    msg = "Unknown option $(key) for $(tool_name) when querying the $(context)."
+    if !isempty(suggestions)
+        msg *= " Did you mean " * join(string.(suggestions), " or ") * "?"
+    end
+    msg *= " Use CTSolvers._show_options($(tool_name)) to list all available options."
+    throw(CTBase.IncorrectArgument(msg))
+end
+
+function get_option_value(tool::AbstractOCPTool, key::Symbol)
+    vals = _options_values(tool)
+    if haskey(vals, key)
+        return vals[key]
+    end
+
+    tool_type = typeof(tool)
+    specs = _option_specs(tool_type)
+    if specs === missing || !haskey(specs, key)
+        return _unknown_option_error(key, tool_type, "value")
+    end
+
+    tool_name = string(nameof(tool_type))
+    msg = "Option $(key) is defined for $(tool_name) but has no value: " *
+          "no default was provided and the option was not set by the user."
+    throw(CTBase.IncorrectArgument(msg))
+end
+
+function get_option_source(tool::AbstractOCPTool, key::Symbol)
+    srcs = _option_sources(tool)
+    if haskey(srcs, key)
+        return srcs[key]
+    end
+
+    tool_type = typeof(tool)
+    specs = _option_specs(tool_type)
+    if specs === missing || !haskey(specs, key)
+        return _unknown_option_error(key, tool_type, "source")
+    end
+
+    tool_name = string(nameof(tool_type))
+    msg = "Option $(key) is defined for $(tool_name) but has no recorded source."
+    throw(CTBase.IncorrectArgument(msg))
+end
+
+function get_option_default(tool::AbstractOCPTool, key::Symbol)
+    tool_type = typeof(tool)
+    specs = _option_specs(tool_type)
+    if specs === missing || !haskey(specs, key)
+        return _unknown_option_error(key, tool_type, "default")
+    end
+    return option_default(key, tool_type)
+end
 
 # Human-readable listing of options and their metadata.
 function _show_options(tool_type::Type{<:AbstractOCPTool})
@@ -203,3 +314,30 @@ end
 
 _validate_option_kwargs(user_nt::NamedTuple, x::AbstractOCPTool; strict_keys::Bool=false) =
     _validate_option_kwargs(user_nt, typeof(x); strict_keys=strict_keys)
+
+function _build_ocp_tool_options(
+    ::Type{T};
+    kwargs...;
+    strict_keys::Bool=false,
+) where {T<:AbstractOCPTool}
+    # Normalize user-supplied keyword arguments to a NamedTuple.
+    user_nt = NamedTuple(kwargs)
+
+    # Validate option keys and types against the tool metadata.
+    _validate_option_kwargs(user_nt, T; strict_keys=strict_keys)
+
+    # Merge tool-level default options with user overrides (user wins).
+    defaults = default_options(T)
+    values = merge(defaults, user_nt)
+
+    # Build a parallel NamedTuple recording the provenance of each option
+    # (:ct_default for defaults coming from the tool, :user for overrides).
+    src_pairs = Pair{Symbol,Symbol}[]
+    for name in keys(values)
+        src = haskey(user_nt, name) ? :user : :ct_default
+        push!(src_pairs, name => src)
+    end
+    sources = (; src_pairs...)
+
+    return values, sources
+end

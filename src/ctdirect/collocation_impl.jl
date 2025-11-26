@@ -1,5 +1,16 @@
 function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
 
+    SchemeSymbol = Dict(
+        Midpoint => :midpoint,
+        Trapezoidal => :trapeze,
+        Trapeze => :trapeze,
+    )
+
+    function scheme_symbol(discretizer::Collocation)
+        scheme = CTSolvers.get_option_value(discretizer, :scheme)
+        return SchemeSymbol[typeof(scheme)]
+    end
+
     function get_docp(initial_guess::Union{AbstractOptimalControlInitialGuess, Nothing}, modeler::Symbol; kwargs...)
         scheme_ctdirect = scheme_symbol(discretizer)
         init_ctdirect = (initial_guess === nothing) ? 
@@ -17,8 +28,8 @@ function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
             docp = CTDirect.direct_transcription(
                 ocp,
                 modeler;
-                grid_size=CTSolvers.grid_size(discretizer),
-                scheme=scheme_ctdirect,
+                grid_size=CTSolvers.get_option_value(discretizer, :grid_size),
+                disc_method=scheme_ctdirect,
                 init=init_ctdirect,
                 lagrange_to_mayer=false,
                 exa_backend=exa_backend,
@@ -28,8 +39,8 @@ function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
             docp = CTDirect.direct_transcription(
                 ocp,
                 modeler;
-                grid_size=CTSolvers.grid_size(discretizer),
-                scheme=scheme_ctdirect,
+                grid_size=CTSolvers.get_option_value(discretizer, :grid_size),
+                disc_method=scheme_ctdirect,
                 init=init_ctdirect,
                 lagrange_to_mayer=false,
                 kwargs...,

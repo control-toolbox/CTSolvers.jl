@@ -3,6 +3,8 @@
 # ------------------------------------------------------------------------------
 abstract type AbstractOptimizationSolver <: AbstractOCPTool end
 
+__display() = true
+
 function CommonSolve.solve(
     problem::AbstractOptimizationProblem,
     initial_guess,

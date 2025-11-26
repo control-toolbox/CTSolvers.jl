@@ -26,20 +26,24 @@ base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseT
 function CTSolvers._option_specs(::Type{CTSolvers.MadNCLSolver})
     return (
         max_iter = CTSolvers.OptionSpec(
-            Integer,
-            "Maximum number of augmented Lagrangian iterations.",
+            type=Integer,
+            default=__mad_ncl_max_iter(),
+            description="Maximum number of augmented Lagrangian iterations.",
         ),
         print_level = CTSolvers.OptionSpec(
-            MadNLP.LogLevels,
-            "MadNCL/MadNLP logging level.",
+            type=MadNLP.LogLevels,
+            default=__mad_ncl_print_level(),
+            description="MadNCL/MadNLP logging level.",
         ),
         linear_solver = CTSolvers.OptionSpec(
-            Type{<:MadNLP.AbstractLinearSolver},
-            "Linear solver implementation used inside MadNCL.",
+            type=Type{<:MadNLP.AbstractLinearSolver},
+            default=__mad_ncl_linear_solver(),
+            description="Linear solver implementation used inside MadNCL.",
         ),
         ncl_options = CTSolvers.OptionSpec(
-            MadNCL.NCLOptions,
-            "Low-level NCLOptions structure controlling the augmented Lagrangian algorithm.",
+            type=MadNCL.NCLOptions,
+            default=__mad_ncl_ncl_options(),
+            description="Low-level NCLOptions structure controlling the augmented Lagrangian algorithm.",
         ),
     )
 end
@@ -53,24 +57,7 @@ end
 
 # backend constructor
 function CTSolvers.MadNCLSolver(; kwargs...)
-    defaults = (
-        max_iter=__mad_ncl_max_iter(),
-        print_level=__mad_ncl_print_level(),
-        linear_solver=__mad_ncl_linear_solver(),
-        ncl_options=__mad_ncl_ncl_options(),
-    )
-
-    user_nt = kwargs
-    CTSolvers._validate_option_kwargs(user_nt, CTSolvers.MadNCLSolver; strict_keys=true)
-    values = merge(defaults, user_nt)
-
-    src_pairs = Pair{Symbol,Symbol}[]
-    for name in keys(values)
-        src = haskey(user_nt, name) ? :user : :ct_default
-        push!(src_pairs, name => src)
-    end
-    sources = (; src_pairs...)
-
+    values, sources = CTSolvers._build_ocp_tool_options(CTSolvers.MadNCLSolver; kwargs..., strict_keys=true)
     BaseType = base_type(values.ncl_options)
     return CTSolvers.MadNCLSolver{BaseType,typeof(values),typeof(sources)}(values, sources)
 end
@@ -79,7 +66,7 @@ function (solver::CTSolvers.MadNCLSolver{BaseType})(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::MadNCL.NCLStats where {BaseType<:AbstractFloat}
     # options control
-    options = Dict(CTSolvers._options(solver))
+    options = Dict(CTSolvers._options_values(solver))
     if !display
         options[:print_level] = MadNLP.ERROR
         ncl_options_dict = Dict()

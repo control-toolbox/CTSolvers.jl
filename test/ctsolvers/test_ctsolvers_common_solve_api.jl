@@ -73,6 +73,14 @@ end
  function test_ctsolvers_common_solve_api()
 
     # ========================================================================
+    # Low-level default display flag
+    # ========================================================================
+
+    Test.@testset "ctsolvers/common_solve_api: raw defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+        Test.@test CTSolvers.__display() isa Bool
+    end
+
+    # ========================================================================
     # solve(problem, init, modeler, solver)
     # ========================================================================
 

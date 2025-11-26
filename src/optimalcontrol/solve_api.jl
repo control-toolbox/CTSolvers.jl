@@ -1,5 +1,11 @@
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
+# Default options
+# __display() = true
+__initial_guess() = nothing
+
+# ------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 # Main solve function
 function _solve(
     ocp::AbstractOptimalControlProblem,
@@ -69,9 +75,12 @@ function _build_discretizer_from_method(method::Tuple, discretizer_options::Name
     return build_discretizer_from_symbol(disc_sym; discretizer_options...)
 end
 
-function _discretizer_options(method::Tuple)
+function _discretizer_options_keys(method::Tuple)
     disc_sym = _get_discretizer_symbol(method)
-    return discretizer_options(disc_sym)
+    disc_type = _discretizer_type_from_symbol(disc_sym)
+    keys = options_keys(disc_type)
+    keys === missing && return ()
+    return keys
 end
 
 # ------------------------------------------------------------------------
@@ -95,6 +104,14 @@ function _normalize_modeler_options(options)
     end
 end
 
+function _modeler_options_keys(method::Tuple)
+    model_sym = _get_modeler_symbol(method)
+    model_type = _modeler_type_from_symbol(model_sym)
+    keys = options_keys(model_type)
+    keys === missing && return ()
+    return keys
+end
+
 function _build_modeler_from_method(method::Tuple, modeler_options::NamedTuple)
     model_sym = _get_modeler_symbol(method)
     return build_modeler_from_symbol(model_sym; modeler_options...)
@@ -111,6 +128,14 @@ end
 function _build_solver_from_method(method::Tuple, solver_options::NamedTuple)
     solver_sym = _get_solver_symbol(method)
     return build_solver_from_symbol(solver_sym; solver_options...)
+end
+
+function _solver_options_keys(method::Tuple)
+    solver_sym = _get_solver_symbol(method)
+    solver_type = _solver_type_from_symbol(solver_sym)
+    keys = options_keys(solver_type)
+    keys === missing && return ()
+    return keys
 end
 
 # ------------------------------------------------------------------------
@@ -200,13 +225,13 @@ function _display_ocp_method(
     end
 
     # Discretizer options (including grid size and scheme)
-    disc_vals = _options(discretizer)
+    disc_vals = _options_values(discretizer)
     disc_srcs = _option_sources(discretizer)
 
-    mod_vals = _options(modeler)
+    mod_vals = _options_values(modeler)
     mod_srcs = _option_sources(modeler)
 
-    sol_vals = _options(solver)
+    sol_vals = _options_values(solver)
     sol_srcs = _option_sources(solver)
 
     has_disc = !isempty(propertynames(disc_vals))
@@ -472,20 +497,23 @@ function _split_kwargs_for_description(
 )
     # All top-level kwargs except initial_guess, display, modeler_options
     # are in parsed.other_kwargs. Among them, some belong to the discretizer,
-    # the rest are solver options.
-    disc_keys = Set(_discretizer_options(method))
+    # some to the modeler, and some to the solver.
+    disc_keys   = Set(_discretizer_options_keys(method))
+    model_keys  = Set(_modeler_options_keys(method))
+    solver_keys = Set(_solver_options_keys(method))
 
-    disc_pairs = Pair{Symbol,Any}[]
+    disc_pairs   = Pair{Symbol,Any}[]
+    model_pairs  = Pair{Symbol,Any}[]
     solver_pairs = Pair{Symbol,Any}[]
     for (k, raw) in pairs(parsed.other_kwargs)
         owners = Symbol[]
         if k in disc_keys
             push!(owners, :discretizer)
         end
-        # For now, any key may be sent to the solver as well (this covers all
-        # current solver options). Extend here if more tools get their own
-        # option sets.
-        if !(k in disc_keys)
+        if k in model_keys
+            push!(owners, :modeler)
+        end
+        if k in solver_keys
             push!(owners, :solver)
         end
 
@@ -493,6 +521,8 @@ function _split_kwargs_for_description(
 
         if tool === :discretizer
             push!(disc_pairs, k => value)
+        elseif tool === :modeler
+            push!(model_pairs, k => value)
         elseif tool === :solver
             push!(solver_pairs, k => value)
         else
@@ -502,13 +532,14 @@ function _split_kwargs_for_description(
     end
 
     disc_kwargs   = (; disc_pairs...)
+    model_kwargs  = (; model_pairs...)
     solver_kwargs = (; solver_pairs...)
 
     return (
         initial_guess=parsed.initial_guess,
         display=parsed.display,
         disc_kwargs=disc_kwargs,
-        modeler_options=_normalize_modeler_options(parsed.modeler_options),
+        modeler_options=_normalize_modeler_options(parsed.modeler_options) ∪ model_kwargs,
         solver_kwargs=solver_kwargs,
     )
 end

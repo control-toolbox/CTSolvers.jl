@@ -27,37 +27,26 @@ function test_ctdirect_core_types()
     # COLLOCATION BEHAVIOUR
     # ========================================================================
 
-    Test.@testset "ctdirect/core_types: Collocation, grid_size, scheme, scheme_symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
-        # Build a Collocation using the default helpers to remain consistent
-        # with test_ctdirect_default.jl
-        default_grid = CTSolvers.__grid_size()
-        default_scheme = CTSolvers.__scheme()
+    Test.@testset "ctdirect/core_types: Collocation options and scheme_symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # Build a Collocation and read its default options via the generic
+        # options API. This keeps the test aligned with the public access
+        # pattern instead of calling low-level helpers directly.
+        default_colloc = CTSolvers.Collocation()
+        default_grid = CTSolvers.get_option_value(default_colloc, :grid_size)
+        default_scheme = CTSolvers.get_option_value(default_colloc, :scheme)
 
         # Sanity checks on defaults
         Test.@test default_grid isa Int
         Test.@test default_grid > 0
         Test.@test default_scheme isa CTSolvers.AbstractIntegratorScheme
+        Test.@test default_scheme isa CTSolvers.Midpoint
 
         # Explicitly construct Collocation with given grid size and scheme
         colloc = CTSolvers.Collocation(; grid_size=default_grid, scheme=default_scheme)
 
-        # grid_size(discretizer::Collocation) should return the stored grid_size
-        Test.@test CTSolvers.grid_size(colloc) == default_grid
-
-        # scheme(discretizer::Collocation) should return the stored scheme
-        Test.@test CTSolvers.scheme(colloc) === default_scheme
-
-        # scheme_symbol(::Collocation{T}) should map to the expected symbol
-        sym = CTSolvers.scheme_symbol(colloc)
-        Test.@test sym in (:midpoint, :trapeze)
-
-        # For Midpoint, scheme_symbol should be :midpoint
-        colloc_mid = CTSolvers.Collocation(; grid_size=default_grid, scheme=CTSolvers.Midpoint())
-        Test.@test CTSolvers.scheme_symbol(colloc_mid) == :midpoint
-
-        # For Trapezoidal, scheme_symbol should be :trapeze
-        colloc_trap = CTSolvers.Collocation(; grid_size=default_grid, scheme=CTSolvers.Trapezoidal())
-        Test.@test CTSolvers.scheme_symbol(colloc_trap) == :trapeze
+        # Collocation options should expose the stored grid_size and scheme via options_values
+        Test.@test CTSolvers.get_option_value(colloc, :grid_size) == default_grid
+        Test.@test CTSolvers.get_option_value(colloc, :scheme)    === default_scheme
     end
 
     Test.@testset "ctdirect/core_types: discretizer symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -72,13 +61,32 @@ function test_ctdirect_core_types()
         syms = CTSolvers.discretizer_symbols()
         Test.@test :collocation in syms
 
-        # build_discretizer_from_symbol should construct a Collocation discretizer.
-        default_grid = CTSolvers.__grid_size()
-        default_scheme = CTSolvers.__scheme()
+        # build_discretizer_from_symbol should construct a Collocation
+        # discretizer. Use the defaults read from a Collocation instance so
+        # that we stay on the generic options API.
+        base_disc = CTSolvers.Collocation()
+        default_grid = CTSolvers.get_option_value(base_disc, :grid_size)
+        default_scheme = CTSolvers.get_option_value(base_disc, :scheme)
         disc = CTSolvers.build_discretizer_from_symbol(:collocation; grid_size=default_grid, scheme=default_scheme)
         Test.@test disc isa CTSolvers.Collocation
-        Test.@test CTSolvers.grid_size(disc) == default_grid
-        Test.@test CTSolvers.scheme(disc) === default_scheme
+        Test.@test CTSolvers.get_option_value(disc, :grid_size) == default_grid
+        Test.@test CTSolvers.get_option_value(disc, :scheme)    === default_scheme
+    end
+
+    Test.@testset "ctdirect/core_types: Collocation default_options and option_default" verbose=VERBOSE showtiming=SHOWTIMING begin
+        opts = CTSolvers.default_options(CTSolvers.Collocation)
+
+        # Read the defaults through the generic options API on a default
+        # Collocation instance instead of calling low-level helpers.
+        base_disc = CTSolvers.Collocation()
+        default_grid = CTSolvers.get_option_value(base_disc, :grid_size)
+        default_scheme = CTSolvers.get_option_value(base_disc, :scheme)
+
+        Test.@test opts.grid_size == default_grid
+        Test.@test opts.scheme    === default_scheme
+
+        Test.@test CTSolvers.option_default(:grid_size, CTSolvers.Collocation) == default_grid
+        Test.@test CTSolvers.option_default(:scheme, CTSolvers.Collocation)    === default_scheme
     end
 
 end

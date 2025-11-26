@@ -14,20 +14,24 @@ __nlp_models_knitro_print_level() = 3
 function CTSolvers._option_specs(::Type{CTSolvers.KnitroSolver})
     return (
         maxit = CTSolvers.OptionSpec(
-            Integer,
-            "Maximum number of iterations.",
+            type=Integer,
+            default=__nlp_models_knitro_max_iter(),
+            description="Maximum number of iterations.",
         ),
         feastol_abs = CTSolvers.OptionSpec(
-            Real,
-            "Absolute feasibility tolerance.",
+            type=Real,
+            default=__nlp_models_knitro_feastol_abs(),
+            description="Absolute feasibility tolerance.",
         ),
         opttol_abs = CTSolvers.OptionSpec(
-            Real,
-            "Absolute optimality tolerance.",
+            type=Real,
+            default=__nlp_models_knitro_opttol_abs(),
+            description="Absolute optimality tolerance.",
         ),
         print_level = CTSolvers.OptionSpec(
-            Integer,
-            "Knitro print level.",
+            type=Integer,
+            default=__nlp_models_knitro_print_level(),
+            description="Knitro print level.",
         ),
     )
 end
@@ -41,31 +45,14 @@ end
 
 # backend constructor
 function CTSolvers.KnitroSolver(; kwargs...)
-    defaults = (
-        maxit=__nlp_models_knitro_max_iter(),
-        feastol_abs=__nlp_models_knitro_feastol_abs(),
-        opttol_abs=__nlp_models_knitro_opttol_abs(),
-        print_level=__nlp_models_knitro_print_level(),
-    )
-
-    user_nt = kwargs
-    CTSolvers._validate_option_kwargs(user_nt, CTSolvers.KnitroSolver; strict_keys=true)
-    values = merge(defaults, user_nt)
-
-    src_pairs = Pair{Symbol,Symbol}[]
-    for name in keys(values)
-        src = haskey(user_nt, name) ? :user : :ct_default
-        push!(src_pairs, name => src)
-    end
-    sources = (; src_pairs...)
-
+    values, sources = CTSolvers._build_ocp_tool_options(CTSolvers.KnitroSolver; kwargs..., strict_keys=true)
     return CTSolvers.KnitroSolver(values, sources)
 end
 
 function (solver::CTSolvers.KnitroSolver)(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::SolverCore.GenericExecutionStats
-    options = Dict(CTSolvers._options(solver))
+    options = Dict(CTSolvers._options_values(solver))
     options[:print_level] = display ? options[:print_level] : 0
     return CTSolvers.solve_with_knitro(nlp; options...)
 end

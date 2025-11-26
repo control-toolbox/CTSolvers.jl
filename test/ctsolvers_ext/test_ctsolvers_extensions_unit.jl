@@ -10,7 +10,7 @@ function test_ctsolvers_extensions_unit()
         Test.@test CTSolversIpopt.__nlp_models_ipopt_sb() == "yes"
 
         solver = CTSolvers.IpoptSolver()
-        opts = Dict(CTSolvers._options(solver))
+        opts = Dict(CTSolvers._options_values(solver))
 
         Test.@test opts[:max_iter] == CTSolversIpopt.__nlp_models_ipopt_max_iter()
         Test.@test opts[:tol] == CTSolversIpopt.__nlp_models_ipopt_tol()
@@ -27,7 +27,7 @@ function test_ctsolvers_extensions_unit()
         Test.@test CTSolversKnitro.__nlp_models_knitro_print_level() == 3
 
         solver = CTSolvers.KnitroSolver()
-        opts = Dict(CTSolvers._options(solver))
+        opts = Dict(CTSolvers._options_values(solver))
 
         Test.@test opts[:maxit] == CTSolversKnitro.__nlp_models_knitro_max_iter()
         Test.@test opts[:feastol_abs] == CTSolversKnitro.__nlp_models_knitro_feastol_abs()
@@ -42,7 +42,7 @@ function test_ctsolvers_extensions_unit()
         Test.@test CTSolversMadNLP.__mad_nlp_linear_solver() == MadNLPMumps.MumpsSolver
 
         solver = CTSolvers.MadNLPSolver()
-        opts = Dict(CTSolvers._options(solver))
+        opts = Dict(CTSolvers._options_values(solver))
 
         Test.@test opts[:max_iter] == CTSolversMadNLP.__mad_nlp_max_iter()
         Test.@test opts[:tol] == CTSolversMadNLP.__mad_nlp_tol()
@@ -58,7 +58,7 @@ function test_ctsolvers_extensions_unit()
         ref_opts = CTSolversMadNCL.__mad_ncl_ncl_options()
 
         solver = CTSolvers.MadNCLSolver()
-        opts = Dict(CTSolvers._options(solver))
+        opts = Dict(CTSolvers._options_values(solver))
 
         Test.@test opts[:max_iter] == CTSolversMadNCL.__mad_ncl_max_iter()
         Test.@test opts[:print_level] == CTSolversMadNCL.__mad_ncl_print_level()
@@ -70,5 +70,40 @@ function test_ctsolvers_extensions_unit()
         for field in fieldnames(MadNCL.NCLOptions)
             Test.@test getfield(ncl_opts, field) == getfield(ref_opts, field)
         end
+    end
+
+    Test.@testset "ctsolvers_ext: metadata defaults (default_options and option_default)" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # Ipopt
+        opts_ipopt = CTSolvers.default_options(CTSolvers.IpoptSolver)
+        Test.@test opts_ipopt.max_iter == CTSolversIpopt.__nlp_models_ipopt_max_iter()
+        Test.@test opts_ipopt.tol == CTSolversIpopt.__nlp_models_ipopt_tol()
+        Test.@test opts_ipopt.print_level == CTSolversIpopt.__nlp_models_ipopt_print_level()
+        Test.@test CTSolvers.option_default(:max_iter, CTSolvers.IpoptSolver) == CTSolversIpopt.__nlp_models_ipopt_max_iter()
+        Test.@test CTSolvers.option_default(:tol,      CTSolvers.IpoptSolver) == CTSolversIpopt.__nlp_models_ipopt_tol()
+
+        # MadNLP
+        opts_mad = CTSolvers.default_options(CTSolvers.MadNLPSolver)
+        Test.@test opts_mad.max_iter == CTSolversMadNLP.__mad_nlp_max_iter()
+        Test.@test opts_mad.tol == CTSolversMadNLP.__mad_nlp_tol()
+        Test.@test opts_mad.print_level == CTSolversMadNLP.__mad_nlp_print_level()
+        Test.@test CTSolvers.option_default(:max_iter, CTSolvers.MadNLPSolver) == CTSolversMadNLP.__mad_nlp_max_iter()
+        Test.@test CTSolvers.option_default(:tol,      CTSolvers.MadNLPSolver) == CTSolversMadNLP.__mad_nlp_tol()
+
+        # MadNCL
+        opts_ncl = CTSolvers.default_options(CTSolvers.MadNCLSolver)
+        Test.@test opts_ncl.max_iter == CTSolversMadNCL.__mad_ncl_max_iter()
+        Test.@test opts_ncl.print_level == CTSolversMadNCL.__mad_ncl_print_level()
+        Test.@test opts_ncl.linear_solver == CTSolversMadNCL.__mad_ncl_linear_solver()
+        Test.@test CTSolvers.option_default(:max_iter, CTSolvers.MadNCLSolver) == CTSolversMadNCL.__mad_ncl_max_iter()
+        Test.@test CTSolvers.option_default(:print_level, CTSolvers.MadNCLSolver) == CTSolversMadNCL.__mad_ncl_print_level()
+
+        # Knitro
+        opts_k = CTSolvers.default_options(CTSolvers.KnitroSolver)
+        Test.@test opts_k.maxit == CTSolversKnitro.__nlp_models_knitro_max_iter()
+        Test.@test opts_k.feastol_abs == CTSolversKnitro.__nlp_models_knitro_feastol_abs()
+        Test.@test opts_k.opttol_abs == CTSolversKnitro.__nlp_models_knitro_opttol_abs()
+        Test.@test CTSolvers.option_default(:maxit,       CTSolvers.KnitroSolver) == CTSolversKnitro.__nlp_models_knitro_max_iter()
+        Test.@test CTSolvers.option_default(:feastol_abs, CTSolvers.KnitroSolver) == CTSolversKnitro.__nlp_models_knitro_feastol_abs()
+        Test.@test CTSolvers.option_default(:opttol_abs,  CTSolvers.KnitroSolver) == CTSolversKnitro.__nlp_models_knitro_opttol_abs()
     end
 end

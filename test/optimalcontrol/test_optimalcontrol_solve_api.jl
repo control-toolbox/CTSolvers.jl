@@ -61,6 +61,10 @@ end
 
 function test_optimalcontrol_solve_api()
 
+    Test.@testset "optimalcontrol/solve_api: raw defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+        Test.@test CTSolvers.__initial_guess() === nothing
+    end
+
     Test.@testset "optimalcontrol/solve_api: description helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
         methods = CTSolvers.available_methods()
         Test.@test !isempty(methods)
@@ -76,8 +80,11 @@ function test_optimalcontrol_solve_api()
         method_from_solver = CTBase.complete(:ipopt; descriptions=methods)
         Test.@test :ipopt in method_from_solver
 
-        # Discretizer options registry
-        Test.@test CTSolvers.discretizer_options(:collocation) == (:grid_size, :scheme)
+        # Discretizer options registry: keys inferred from the Collocation tool
+        method = (:collocation, :adnlp, :ipopt)
+        keys_from_method = CTSolvers._discretizer_options_keys(method)
+        keys_from_type   = CTSolvers.options_keys(CTSolvers.Collocation)
+        Test.@test keys_from_method == keys_from_type
 
         # Discretizer symbol helper
         for m in methods
@@ -94,6 +101,19 @@ function test_optimalcontrol_solve_api()
             ssym = CTSolvers._get_solver_symbol(m)
             Test.@test ssym in CTSolvers.solver_symbols()
         end
+
+        # _modeler_options_keys / _solver_options_keys should match options_keys
+        method_ad_ip = (:collocation, :adnlp, :ipopt)
+        Test.@test Set(CTSolvers._modeler_options_keys(method_ad_ip)) ==
+                   Set(CTSolvers.options_keys(CTSolvers.ADNLPModeler))
+        Test.@test Set(CTSolvers._solver_options_keys(method_ad_ip)) ==
+                   Set(CTSolvers.options_keys(CTSolvers.IpoptSolver))
+
+        method_exa_mad = (:collocation, :exa, :madnlp)
+        Test.@test Set(CTSolvers._modeler_options_keys(method_exa_mad)) ==
+                   Set(CTSolvers.options_keys(CTSolvers.ExaModeler))
+        Test.@test Set(CTSolvers._solver_options_keys(method_exa_mad)) ==
+                   Set(CTSolvers.options_keys(CTSolvers.MadNLPSolver))
 
         # Multiple symbols of the same family in a method should raise an error
         Test.@test_throws CTBase.IncorrectArgument CTSolvers._get_modeler_symbol((:collocation, :adnlp, :exa, :ipopt))
@@ -450,8 +470,8 @@ function test_optimalcontrol_solve_api()
                     initial_guess=init,
                     display=false,
                     # Discretizer options
-                    grid_size=(CTSolvers.grid_size(discretizer), :discretizer),
-                    scheme=(CTSolvers.scheme(discretizer), :discretizer),
+                    grid_size=(CTSolvers.get_option_value(discretizer, :grid_size), :discretizer),
+                    scheme=(CTSolvers.get_option_value(discretizer, :scheme), :discretizer),
                     # Ipopt solver options
                     max_iter=(ipopt_options[:max_iter], :solver),
                     tol=(ipopt_options[:tol], :solver),

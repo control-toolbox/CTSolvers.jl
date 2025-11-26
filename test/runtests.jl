@@ -105,7 +105,6 @@ if TESTS[:ctmodels]
     println("========== CTModels tests ==========")
     @testset "CTModels" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            :ctmodels_default,
             :ctmodels_problem_core,
             :ctmodels_nlp_backends,
             :ctmodels_discretized_ocp,
@@ -144,7 +143,6 @@ if TESTS[:ctsolvers]
     println("========== CTSolvers tests ==========")
     @testset "CTSolvers" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            :ctsolvers_default,
             :ctsolvers_backends_types,
             :ctsolvers_common_solve_api,
             :ctsolvers_extension_stubs,
@@ -164,7 +162,6 @@ if TESTS[:ctdirect]
     println("========== CTDirect tests ==========")
     @testset "CTDirect" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            :ctdirect_default,
             :ctdirect_core_types,
             :ctdirect_discretization_api,
             :ctdirect_collocation_impl,
@@ -184,7 +181,6 @@ if TESTS[:optimalcontrol]
     println("========== OptimalControl tests ==========")
     @testset "OptimalControl" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            :optimalcontrol_default,
             :optimalcontrol_solve_api,
         )
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin

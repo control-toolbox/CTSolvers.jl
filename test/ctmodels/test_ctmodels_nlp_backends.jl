@@ -4,6 +4,25 @@ struct DummyBackendStats <: SolverCore.AbstractExecutionStats end
 function test_ctmodels_nlp_backends()
 
     # ------------------------------------------------------------------
+    # Low-level defaults for ADNLPModeler / ExaModeler
+    # ------------------------------------------------------------------
+    Test.@testset "ctmodels/nlp_backends: raw defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # ADNLPModels defaults
+        Test.@test CTSolvers.__adnlp_model_show_time() isa Bool
+        Test.@test CTSolvers.__adnlp_model_backend() isa Symbol
+
+        Test.@test CTSolvers.__adnlp_model_show_time() == false
+        Test.@test CTSolvers.__adnlp_model_backend() == :optimized
+
+        # ExaModels defaults
+        Test.@test CTSolvers.__exa_model_base_type() isa DataType
+        Test.@test CTSolvers.__exa_model_backend() isa Union{Nothing,Symbol}
+
+        Test.@test CTSolvers.__exa_model_base_type() === Float64
+        Test.@test CTSolvers.__exa_model_backend() === nothing
+    end
+
+    # ------------------------------------------------------------------
     # ADNLPModels backends (direct calls to ADNLPModeler)
     # ------------------------------------------------------------------
     # These tests exercise the call
@@ -90,7 +109,7 @@ function test_ctmodels_nlp_backends()
     Test.@testset "ctmodels/nlp_backends: ADNLPModeler constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Default constructor should use the values from ctmodels/default.jl
         backend_default = CTSolvers.ADNLPModeler()
-        vals_default = CTSolvers._options(backend_default)
+        vals_default = CTSolvers._options_values(backend_default)
         srcs_default = CTSolvers._option_sources(backend_default)
 
         Test.@test vals_default.show_time == CTSolvers.__adnlp_model_show_time()
@@ -99,7 +118,7 @@ function test_ctmodels_nlp_backends()
 
         # Custom backend and extra kwargs should be stored with provenance
         backend_manual = CTSolvers.ADNLPModeler(; backend=:toto, foo=1)
-        vals_manual = CTSolvers._options(backend_manual)
+        vals_manual = CTSolvers._options_values(backend_manual)
         srcs_manual = CTSolvers._option_sources(backend_manual)
 
         Test.@test vals_manual.backend == :toto
@@ -109,21 +128,21 @@ function test_ctmodels_nlp_backends()
     end
 
     Test.@testset "ctmodels/nlp_backends: ExaModeler constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
-        # Default constructor should use base_type and backend from ctmodels/default.jl
+        # Default constructor should use backend from ctmodels/default.jl
         exa_default = CTSolvers.ExaModeler()
-        vals_default = CTSolvers._options(exa_default)
+        vals_default = CTSolvers._options_values(exa_default)
         srcs_default = CTSolvers._option_sources(exa_default)
 
         Test.@test vals_default.backend === CTSolvers.__exa_model_backend()
         Test.@test srcs_default.backend == :ct_default
 
-        # Custom base_type and kwargs should be stored correctly with provenance
+        # Custom base_type and kwargs: base_type is reflected in the modeler type,
+        # while remaining options and their provenance are tracked as usual.
         exa_custom = CTSolvers.ExaModeler(; base_type=Float32, foo=2)
-        vals_custom = CTSolvers._options(exa_custom)
+        vals_custom = CTSolvers._options_values(exa_custom)
         srcs_custom = CTSolvers._option_sources(exa_custom)
 
-        Test.@test vals_custom.base_type === Float32
-        Test.@test srcs_custom.base_type == :user
+        Test.@test exa_custom isa CTSolvers.ExaModeler{Float32}
         Test.@test vals_custom.backend === CTSolvers.__exa_model_backend()
         Test.@test srcs_custom.backend == :ct_default
         Test.@test vals_custom.foo == 2
@@ -163,6 +182,26 @@ function test_ctmodels_nlp_backends()
         Test.@test_throws CTBase.IncorrectArgument CTSolvers.ExaModeler(; minimize=1)
     end
 
+    Test.@testset "ctmodels/nlp_backends: default_options and option_default" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # ADNLPModeler defaults should be consistent between helpers and metadata.
+        opts_ad = CTSolvers.default_options(CTSolvers.ADNLPModeler)
+        Test.@test opts_ad.show_time == CTSolvers.__adnlp_model_show_time()
+        Test.@test opts_ad.backend   == CTSolvers.__adnlp_model_backend()
+
+        Test.@test CTSolvers.option_default(:show_time, CTSolvers.ADNLPModeler) == CTSolvers.__adnlp_model_show_time()
+        Test.@test CTSolvers.option_default(:backend,   CTSolvers.ADNLPModeler) == CTSolvers.__adnlp_model_backend()
+
+        # ExaModeler defaults: base_type and backend have defaults, minimize has none.
+        opts_exa = CTSolvers.default_options(CTSolvers.ExaModeler)
+        Test.@test opts_exa.base_type === CTSolvers.__exa_model_base_type()
+        Test.@test opts_exa.backend   === CTSolvers.__exa_model_backend()
+        Test.@test :minimize ∉ propertynames(opts_exa)
+
+        Test.@test CTSolvers.option_default(:base_type, CTSolvers.ExaModeler) === CTSolvers.__exa_model_base_type()
+        Test.@test CTSolvers.option_default(:backend,   CTSolvers.ExaModeler) === CTSolvers.__exa_model_backend()
+        Test.@test CTSolvers.option_default(:minimize,  CTSolvers.ExaModeler) === missing
+    end
+
     Test.@testset "ctmodels/nlp_backends: modeler symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
         # get_symbol on types and instances
         Test.@test CTSolvers.get_symbol(CTSolvers.ADNLPModeler) == :adnlp
@@ -187,13 +226,39 @@ function test_ctmodels_nlp_backends()
         # build_modeler_from_symbol should construct proper concrete modelers.
         m_ad = CTSolvers.build_modeler_from_symbol(:adnlp; backend=:manual)
         Test.@test m_ad isa CTSolvers.ADNLPModeler
-        vals_ad = CTSolvers._options(m_ad)
+        vals_ad = CTSolvers._options_values(m_ad)
         Test.@test vals_ad.backend == :manual
 
         m_exa = CTSolvers.build_modeler_from_symbol(:exa; base_type=Float32)
-        Test.@test m_exa isa CTSolvers.ExaModeler
-        vals_exa = CTSolvers._options(m_exa)
-        Test.@test vals_exa.base_type === Float32
+        Test.@test m_exa isa CTSolvers.ExaModeler{Float32}
+    end
+
+    Test.@testset "ctmodels/nlp_backends: build_modeler_from_symbol unknown symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
+        err = nothing
+        try
+            CTSolvers.build_modeler_from_symbol(:foo)
+        catch e
+            err = e
+        end
+        Test.@test err isa CTBase.IncorrectArgument
+
+        buf = sprint(showerror, err)
+        Test.@test occursin("Unknown NLP model symbol", buf)
+        Test.@test occursin("foo", buf)
+        # The message should list the supported symbols from modeler_symbols().
+        for sym in CTSolvers.modeler_symbols()
+            Test.@test occursin(string(sym), buf)
+        end
+    end
+
+    Test.@testset "ctmodels/nlp_backends: tool_package_name default implementation" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # Define a dummy modeler without a tool_package_name specialization.
+        struct DummyModelerMissing <: CTSolvers.AbstractOptimizationModeler end
+
+        dummy = DummyModelerMissing()
+        # For types without specialization, tool_package_name should return missing.
+        Test.@test CTSolvers.tool_package_name(DummyModelerMissing) === missing
+        Test.@test CTSolvers.tool_package_name(dummy) === missing
     end
 
     # ------------------------------------------------------------------
