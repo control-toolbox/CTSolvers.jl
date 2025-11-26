@@ -13,7 +13,7 @@ function test_ctsolvers_extensions_ipopt()
         Test.@test CTSolversIpopt.__nlp_models_ipopt_sb() == "yes"
 
         solver = CTSolvers.IpoptSolver()
-        opts = Dict(CTSolvers._options_values(solver))
+        opts = Dict(pairs(CTSolvers._options_values(solver)))
 
         Test.@test opts[:max_iter] == CTSolversIpopt.__nlp_models_ipopt_max_iter()
         Test.@test opts[:tol] == CTSolversIpopt.__nlp_models_ipopt_tol()

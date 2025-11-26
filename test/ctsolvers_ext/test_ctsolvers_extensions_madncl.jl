@@ -12,7 +12,7 @@ function test_ctsolvers_extensions_madncl()
         ref_opts = CTSolversMadNCL.__mad_ncl_ncl_options()
 
         solver = CTSolvers.MadNCLSolver()
-        opts = Dict(CTSolvers._options_values(solver))
+        opts = Dict(pairs(CTSolvers._options_values(solver)))
 
         Test.@test opts[:max_iter] == CTSolversMadNCL.__mad_ncl_max_iter()
         Test.@test opts[:print_level] == CTSolversMadNCL.__mad_ncl_print_level()

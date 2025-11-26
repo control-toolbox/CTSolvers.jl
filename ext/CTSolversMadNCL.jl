@@ -66,7 +66,7 @@ function (solver::CTSolvers.MadNCLSolver{BaseType})(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::MadNCL.NCLStats where {BaseType<:AbstractFloat}
     # options control
-    options = Dict(CTSolvers._options_values(solver))
+    options = Dict(pairs(CTSolvers._options_values(solver)))
     if !display
         options[:print_level] = MadNLP.ERROR
         ncl_options_dict = Dict()

@@ -1,12 +1,14 @@
 # Unit tests for NLP backends (ADNLPModels and ExaModels) used by CTModels problems.
-struct DummyBackendStats <: SolverCore.AbstractExecutionStats end
+struct CM_DummyBackendStats <: SolverCore.AbstractExecutionStats end
+
+struct CM_DummyModelerMissing <: CTSolvers.AbstractOptimizationModeler end
 
 function test_ctmodels_nlp_backends()
 
     # ------------------------------------------------------------------
     # Low-level defaults for ADNLPModeler / ExaModeler
     # ------------------------------------------------------------------
-    Test.@testset "ctmodels/nlp_backends: raw defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "raw defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
         # ADNLPModels defaults
         Test.@test CTSolvers.__adnlp_model_show_time() isa Bool
         Test.@test CTSolvers.__adnlp_model_backend() isa Symbol
@@ -31,7 +33,7 @@ function test_ctmodels_nlp_backends()
     # that the resulting ADNLPModel has the correct initial point,
     # objective, constraints, and that the AD backends are configured as
     # expected when using the manual backend path.
-    Test.@testset "ctmodels/nlp_backends: ADNLPModels – Rosenbrock (direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ADNLPModels – Rosenbrock (direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
         modeler = CTSolvers.ADNLPModeler()
         nlp_adnlp = modeler(rosenbrock_prob, rosenbrock_init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
@@ -43,7 +45,7 @@ function test_ctmodels_nlp_backends()
 
     # Different CTModels problem (Elec),
     # still calling the backend directly.
-    Test.@testset "ctmodels/nlp_backends: ADNLPModels – Elec (direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ADNLPModels – Elec (direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
         modeler = CTSolvers.ADNLPModeler()
         nlp_adnlp = modeler(elec_prob, elec_init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
@@ -56,7 +58,7 @@ function test_ctmodels_nlp_backends()
     # For a problem without specialized get_* methods, ADNLPModeler
     # should surface the generic NotImplemented error from get_adnlp_model_builder
     # even when called directly.
-    Test.@testset "ctmodels/nlp_backends: ADNLPModels – DummyProblem (NotImplemented, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ADNLPModels – DummyProblem (NotImplemented, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
         modeler = CTSolvers.ADNLPModeler()
         Test.@test_throws CTBase.NotImplemented modeler(DummyProblem(), rosenbrock_init)
     end
@@ -67,7 +69,7 @@ function test_ctmodels_nlp_backends()
     # These tests exercise the call
     #   (modeler::ExaModeler)(prob, initial_guess)
     # directly, using a concrete BaseType (Float32).
-    Test.@testset "ctmodels/nlp_backends: ExaModels (CPU) – Rosenbrock (BaseType=Float32, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ExaModels (CPU) – Rosenbrock (BaseType=Float32, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
         modeler = CTSolvers.ExaModeler(; base_type=BaseType)
         nlp_exa_cpu = modeler(rosenbrock_prob, rosenbrock_init)
@@ -80,7 +82,7 @@ function test_ctmodels_nlp_backends()
     end
 
     # Same ExaModels backend but on the Elec problem, with direct backend call.
-    Test.@testset "ctmodels/nlp_backends: ExaModels (CPU) – Elec (BaseType=Float32, direct call)" begin
+    Test.@testset "ExaModels (CPU) – Elec (BaseType=Float32, direct call)" begin
         BaseType = Float32
         modeler = CTSolvers.ExaModeler(; base_type=BaseType)
         nlp_exa_cpu = modeler(elec_prob, elec_init)
@@ -95,7 +97,7 @@ function test_ctmodels_nlp_backends()
     # For a problem without specialized get_* methods, ExaModeler
     # should surface the generic NotImplemented error from get_exa_model_builder
     # even when called directly.
-    Test.@testset "ctmodels/nlp_backends: ExaModels (CPU) – DummyProblem (NotImplemented, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ExaModels (CPU) – DummyProblem (NotImplemented, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
         modeler = CTSolvers.ExaModeler()
         Test.@test_throws CTBase.NotImplemented modeler(DummyProblem(), rosenbrock_init)
     end
@@ -106,7 +108,7 @@ function test_ctmodels_nlp_backends()
     # These tests now focus on the options_values / options_sources
     # NamedTuples exposed via _options / _option_sources.
 
-    Test.@testset "ctmodels/nlp_backends: ADNLPModeler constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ADNLPModeler constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Default constructor should use the values from ctmodels/default.jl
         backend_default = CTSolvers.ADNLPModeler()
         vals_default = CTSolvers._options_values(backend_default)
@@ -127,7 +129,7 @@ function test_ctmodels_nlp_backends()
         Test.@test srcs_manual.foo == :user
     end
 
-    Test.@testset "ctmodels/nlp_backends: ExaModeler constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ExaModeler constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Default constructor should use backend from ctmodels/default.jl
         exa_default = CTSolvers.ExaModeler()
         vals_default = CTSolvers._options_values(exa_default)
@@ -153,7 +155,7 @@ function test_ctmodels_nlp_backends()
     # Options metadata and validation helpers for ADNLPModeler/ExaModeler
     # ------------------------------------------------------------------
 
-    Test.@testset "ctmodels/nlp_backends: ADNLPModeler options metadata and validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ADNLPModeler options metadata and validation" verbose=VERBOSE showtiming=SHOWTIMING begin
         keys_ad = CTSolvers.options_keys(CTSolvers.ADNLPModeler)
         Test.@test :show_time in keys_ad
         Test.@test :backend   in keys_ad
@@ -169,7 +171,7 @@ function test_ctmodels_nlp_backends()
         Test.@test_throws CTBase.IncorrectArgument CTSolvers.ADNLPModeler(; show_time="yes")
     end
 
-    Test.@testset "ctmodels/nlp_backends: ExaModeler options metadata and validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ExaModeler options metadata and validation" verbose=VERBOSE showtiming=SHOWTIMING begin
         keys_exa = CTSolvers.options_keys(CTSolvers.ExaModeler)
         Test.@test :base_type in keys_exa
         Test.@test :backend   in keys_exa
@@ -182,7 +184,7 @@ function test_ctmodels_nlp_backends()
         Test.@test_throws CTBase.IncorrectArgument CTSolvers.ExaModeler(; minimize=1)
     end
 
-    Test.@testset "ctmodels/nlp_backends: default_options and option_default" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "default_options and option_default" verbose=VERBOSE showtiming=SHOWTIMING begin
         # ADNLPModeler defaults should be consistent between helpers and metadata.
         opts_ad = CTSolvers.default_options(CTSolvers.ADNLPModeler)
         Test.@test opts_ad.show_time == CTSolvers.__adnlp_model_show_time()
@@ -202,7 +204,7 @@ function test_ctmodels_nlp_backends()
         Test.@test CTSolvers.option_default(:minimize,  CTSolvers.ExaModeler) === missing
     end
 
-    Test.@testset "ctmodels/nlp_backends: modeler symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "modeler symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
         # get_symbol on types and instances
         Test.@test CTSolvers.get_symbol(CTSolvers.ADNLPModeler) == :adnlp
         Test.@test CTSolvers.get_symbol(CTSolvers.ExaModeler)   == :exa
@@ -233,7 +235,7 @@ function test_ctmodels_nlp_backends()
         Test.@test m_exa isa CTSolvers.ExaModeler{Float32}
     end
 
-    Test.@testset "ctmodels/nlp_backends: build_modeler_from_symbol unknown symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "build_modeler_from_symbol unknown symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
         err = nothing
         try
             CTSolvers.build_modeler_from_symbol(:foo)
@@ -251,13 +253,10 @@ function test_ctmodels_nlp_backends()
         end
     end
 
-    Test.@testset "ctmodels/nlp_backends: tool_package_name default implementation" verbose=VERBOSE showtiming=SHOWTIMING begin
-        # Define a dummy modeler without a tool_package_name specialization.
-        struct DummyModelerMissing <: CTSolvers.AbstractOptimizationModeler end
-
-        dummy = DummyModelerMissing()
+    Test.@testset "tool_package_name default implementation" verbose=VERBOSE showtiming=SHOWTIMING begin
         # For types without specialization, tool_package_name should return missing.
-        Test.@test CTSolvers.tool_package_name(DummyModelerMissing) === missing
+        dummy = CM_DummyModelerMissing()
+        Test.@test CTSolvers.tool_package_name(CM_DummyModelerMissing) === missing
         Test.@test CTSolvers.tool_package_name(dummy) === missing
     end
 
@@ -270,7 +269,7 @@ function test_ctmodels_nlp_backends()
     # callable on the nlp_solution and simply return it unchanged. Here we
     # verify that the backends correctly route through those builders.
 
-    Test.@testset "ctmodels/nlp_backends: ADNLPModeler solution building" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ADNLPModeler solution building" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Build an OptimizationProblem with dummy builders (unused in this test)
         dummy_ad_builder = CTSolvers.ADNLPModelBuilder(x -> error("unused"))
         function dummy_exa_builder_f(::Type{T}, x; kwargs...) where {T}
@@ -284,7 +283,7 @@ function test_ctmodels_nlp_backends()
             ExaSolutionBuilder(),
         )
 
-        stats = DummyBackendStats()
+        stats = CM_DummyBackendStats()
         modeler = CTSolvers.ADNLPModeler()
         # Should call get_adnlp_solution_builder(prob) and then
         # builder(stats), which is implemented in problems_definition.jl
@@ -293,7 +292,7 @@ function test_ctmodels_nlp_backends()
         Test.@test result === stats
     end
 
-    Test.@testset "ctmodels/nlp_backends: ExaModeler solution building" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ExaModeler solution building" verbose=VERBOSE showtiming=SHOWTIMING begin
         dummy_ad_builder = CTSolvers.ADNLPModelBuilder(x -> error("unused"))
         function dummy_exa_builder_f2(::Type{T}, x; kwargs...) where {T}
             error("unused")
@@ -306,7 +305,7 @@ function test_ctmodels_nlp_backends()
             ExaSolutionBuilder(),
         )
 
-        stats = DummyBackendStats()
+        stats = CM_DummyBackendStats()
         modeler = CTSolvers.ExaModeler()
         # Should call get_exa_solution_builder(prob) and then
         # builder(stats), which returns stats.

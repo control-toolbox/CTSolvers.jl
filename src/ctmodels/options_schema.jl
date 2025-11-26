@@ -317,8 +317,8 @@ _validate_option_kwargs(user_nt::NamedTuple, x::AbstractOCPTool; strict_keys::Bo
 
 function _build_ocp_tool_options(
     ::Type{T};
-    kwargs...;
     strict_keys::Bool=false,
+    kwargs...,
 ) where {T<:AbstractOCPTool}
     # Normalize user-supplied keyword arguments to a NamedTuple.
     user_nt = NamedTuple(kwargs)

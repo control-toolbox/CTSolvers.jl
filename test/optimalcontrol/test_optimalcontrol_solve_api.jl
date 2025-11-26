@@ -61,11 +61,11 @@ end
 
 function test_optimalcontrol_solve_api()
 
-    Test.@testset "optimalcontrol/solve_api: raw defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "raw defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
         Test.@test CTSolvers.__initial_guess() === nothing
     end
 
-    Test.@testset "optimalcontrol/solve_api: description helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "description helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
         methods = CTSolvers.available_methods()
         Test.@test !isempty(methods)
 
@@ -139,7 +139,7 @@ function test_optimalcontrol_solve_api()
         Test.@test CTSolvers._normalize_modeler_options((; backend=:manual)) == (backend=:manual,)
     end
 
-    Test.@testset "optimalcontrol/solve_api: option routing helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "option routing helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
         # _extract_option_tool without explicit tool tag
         v, tool = CTSolvers._extract_option_tool(1.0)
         Test.@test v == 1.0
@@ -178,7 +178,7 @@ function test_optimalcontrol_solve_api()
         Test.@test_throws CTBase.IncorrectArgument CTSolvers._route_option_for_description(:foo, 1.0, owners_amb, :explicit)
     end
 
-    Test.@testset "optimalcontrol/solve_api: display helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "display helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
         method = (:collocation, :adnlp, :ipopt)
         discretizer = CTSolvers.Collocation()
         modeler = CTSolvers.ADNLPModeler()
@@ -203,7 +203,7 @@ function test_optimalcontrol_solve_api()
     # Unit test: CommonSolve.solve(ocp, init, discretizer, modeler, solver)
     # ========================================================================
 
-    Test.@testset "optimalcontrol/solve_api: solve(ocp, init, discretizer, modeler, solver)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "solve(ocp, init, discretizer, modeler, solver)" verbose=VERBOSE showtiming=SHOWTIMING begin
         prob = OCDummyOCP()
         init = OCDummyInit([1.0, 2.0])
 
@@ -225,7 +225,7 @@ function test_optimalcontrol_solve_api()
         Test.@test solution_calls[] == 1
     end
 
-    Test.@testset "optimalcontrol/solve_api: explicit-mode kwarg validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "explicit-mode kwarg validation" verbose=VERBOSE showtiming=SHOWTIMING begin
         prob = OCDummyOCP()
         init = OCDummyInit([1.0, 2.0])
 
@@ -276,7 +276,7 @@ function test_optimalcontrol_solve_api()
         end
     end
 
-    Test.@testset "optimalcontrol/solve_api: solve(ocp; kwargs)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "solve(ocp; kwargs)" verbose=VERBOSE showtiming=SHOWTIMING begin
         prob = OCDummyOCP()
         init = OCDummyInit([1.0, 2.0])
 
@@ -309,7 +309,7 @@ function test_optimalcontrol_solve_api()
     # Integration tests: Beam OCP level with Ipopt and MadNLP
     # ========================================================================
 
-    Test.@testset "optimalcontrol/solve_api: Beam OCP level" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Beam OCP level" verbose=VERBOSE showtiming=SHOWTIMING begin
 
         ipopt_options = Dict(
             :max_iter => 1000,

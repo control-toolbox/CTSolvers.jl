@@ -118,11 +118,11 @@ end
 # Registration
 # ------------------------------------------------------------------------------
 
-get_symbol(::Type{ADNLPModeler}) = :adnlp
-get_symbol(::Type{ExaModeler})   = :exa
+get_symbol(::Type{<:ADNLPModeler}) = :adnlp
+get_symbol(::Type{<:ExaModeler})   = :exa
 
-tool_package_name(::Type{ADNLPModeler}) = "ADNLPModels"
-tool_package_name(::Type{ExaModeler})   = "ExaModels"
+tool_package_name(::Type{<:ADNLPModeler}) = "ADNLPModels"
+tool_package_name(::Type{<:ExaModeler})   = "ExaModels"
 
 const REGISTERED_MODELERS = (ADNLPModeler, ExaModeler)
 

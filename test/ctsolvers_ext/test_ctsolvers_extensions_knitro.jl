@@ -11,7 +11,7 @@ function test_ctsolvers_extensions_knitro()
         Test.@test CTSolversKnitro.__nlp_models_knitro_print_level() == 3
 
         solver = CTSolvers.KnitroSolver()
-        opts = Dict(CTSolvers._options_values(solver))
+        opts = Dict(pairs(CTSolvers._options_values(solver)))
 
         Test.@test opts[:maxit] == CTSolversKnitro.__nlp_models_knitro_max_iter()
         Test.@test opts[:feastol_abs] == CTSolversKnitro.__nlp_models_knitro_feastol_abs()

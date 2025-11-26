@@ -53,7 +53,7 @@ function test_ctmodels_discretized_ocp()
     # TYPE HIERARCHY
     # ============================================================================
     
-    Test.@testset "ctmodels/discretized_ocp: type hierarchy" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "type hierarchy" verbose=VERBOSE showtiming=SHOWTIMING begin
         # AbstractOCPSolutionBuilder should be abstract and inherit from AbstractSolutionBuilder
         Test.@test isabstracttype(CTSolvers.AbstractOCPSolutionBuilder)
         Test.@test CTSolvers.AbstractOCPSolutionBuilder <: CTSolvers.AbstractSolutionBuilder
@@ -67,7 +67,7 @@ function test_ctmodels_discretized_ocp()
     # SOLUTION BUILDERS - UNIT TESTS
     # ============================================================================
     
-    Test.@testset "ctmodels/discretized_ocp: ADNLPSolutionBuilder" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ADNLPSolutionBuilder" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Test constructor: wrap a function
         call_count = Ref(0)
         last_arg = Ref{Any}(nothing)
@@ -95,7 +95,7 @@ function test_ctmodels_discretized_ocp()
         Test.@test result == (:adnlp_result, stats)
     end
     
-    Test.@testset "ctmodels/discretized_ocp: ExaSolutionBuilder" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ExaSolutionBuilder" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Test constructor: wrap a function
         call_count = Ref(0)
         last_arg = Ref{Any}(nothing)
@@ -127,7 +127,7 @@ function test_ctmodels_discretized_ocp()
     # DISCRETIZED OCP - CONSTRUCTORS
     # ============================================================================
     
-    Test.@testset "ctmodels/discretized_ocp: DiscretizedOptimalControlProblem - tuple constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "DiscretizedOptimalControlProblem - tuple constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Create a dummy OCP (we need an AbstractOptimalControlProblem)
         ocp = DummyOCPDiscretized()
         
@@ -168,7 +168,7 @@ function test_ctmodels_discretized_ocp()
         Test.@test docp.backend_builders.exa.solution === exa_solution_builder
     end
     
-    Test.@testset "ctmodels/discretized_ocp: DiscretizedOptimalControlProblem - individual args constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "DiscretizedOptimalControlProblem - individual args constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Create a dummy OCP
         ocp = DummyOCPDiscretized2()
         
@@ -209,7 +209,7 @@ function test_ctmodels_discretized_ocp()
     # ACCESSOR FUNCTIONS
     # ============================================================================
     
-    Test.@testset "ctmodels/discretized_ocp: ocp_model" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ocp_model" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Create a DOCP with a specific OCP
         ocp = DummyOCPDiscretized3("test_data")
         
@@ -232,7 +232,7 @@ function test_ctmodels_discretized_ocp()
         Test.@test retrieved_ocp.data == "test_data"
     end
     
-    Test.@testset "ctmodels/discretized_ocp: get_adnlp_model_builder" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "get_adnlp_model_builder" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp = DummyOCPDiscretized4()
         
         # Create a specific builder to verify retrieval
@@ -258,7 +258,7 @@ function test_ctmodels_discretized_ocp()
         Test.@test retrieved_builder.f === my_adnlp_builder
     end
     
-    Test.@testset "ctmodels/discretized_ocp: get_exa_model_builder" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "get_exa_model_builder" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp = DummyOCPDiscretized5()
         
         # Create a specific builder to verify retrieval
@@ -284,7 +284,7 @@ function test_ctmodels_discretized_ocp()
         Test.@test retrieved_builder.f === my_exa_builder
     end
     
-    Test.@testset "ctmodels/discretized_ocp: get_adnlp_solution_builder" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "get_adnlp_solution_builder" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp = DummyOCPDiscretized6()
         
         # Create a specific solution builder to verify retrieval
@@ -310,7 +310,7 @@ function test_ctmodels_discretized_ocp()
         Test.@test retrieved_builder.f === my_adnlp_solution_builder
     end
     
-    Test.@testset "ctmodels/discretized_ocp: get_exa_solution_builder" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "get_exa_solution_builder" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp = DummyOCPDiscretized7()
         
         # Create a specific solution builder to verify retrieval
@@ -340,7 +340,7 @@ function test_ctmodels_discretized_ocp()
     # INTEGRATION TESTS
     # ============================================================================
     
-    Test.@testset "ctmodels/discretized_ocp: end-to-end workflow" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "end-to-end workflow" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Create a complete DOCP and verify the full workflow
         ocp = DummyOCPDiscretized8("integration_test")
         
@@ -416,7 +416,7 @@ function test_ctmodels_discretized_ocp()
     # EDGE CASES
     # ============================================================================
     
-    Test.@testset "ctmodels/discretized_ocp: solution builder that throws" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "solution builder that throws" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Test that errors in solution builders are propagated correctly
         ocp = DummyOCPDiscretized9()
         
@@ -440,7 +440,7 @@ function test_ctmodels_discretized_ocp()
         Test.@test_throws ErrorException builder(stats)
     end
 
-    Test.@testset "ctmodels/discretized_ocp: missing backend errors" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "missing backend errors" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp = DummyOCPDiscretized()
 
         # Construct a DOCP with only an :adnlp backend registered.
@@ -470,7 +470,7 @@ function test_ctmodels_discretized_ocp()
         Test.@test_throws ArgumentError CTSolvers.get_adnlp_solution_builder(docp_exa_only)
     end
 
-    Test.@testset "ctmodels/discretized_ocp: different OCP types" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "different OCP types" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Test that DOCP works with different concrete OCP types
         # Create DOCPs with different OCP types
         simple_ocp = SimpleOCPDiscretized(5)

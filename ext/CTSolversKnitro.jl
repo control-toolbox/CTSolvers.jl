@@ -52,7 +52,7 @@ end
 function (solver::CTSolvers.KnitroSolver)(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::SolverCore.GenericExecutionStats
-    options = Dict(CTSolvers._options_values(solver))
+    options = Dict(pairs(CTSolvers._options_values(solver)))
     options[:print_level] = display ? options[:print_level] : 0
     return CTSolvers.solve_with_knitro(nlp; options...)
 end

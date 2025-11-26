@@ -58,7 +58,7 @@ function test_ctmodels_model_api()
     # ------------------------------------------------------------------
     # Unit tests for build_model delegation
     # ------------------------------------------------------------------
-    Test.@testset "ctmodels/model_api: build_model delegation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "build_model delegation" verbose=VERBOSE showtiming=SHOWTIMING begin
         prob = DummyProblemAPI()
         x0 = [1.0, 2.0]
         model_calls = Ref(0)
@@ -74,7 +74,7 @@ function test_ctmodels_model_api()
     # ------------------------------------------------------------------
     # Unit tests for nlp_model(DiscretizedOptimalControlProblem, ...)
     # ------------------------------------------------------------------
-    Test.@testset "ctmodels/model_api: nlp_model(DiscretizedOptimalControlProblem, ...)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "nlp_model(DiscretizedOptimalControlProblem, ...)" verbose=VERBOSE showtiming=SHOWTIMING begin
         docp = make_dummy_docp_for_model_api()
         x0 = [1.0, 2.0]
         modeler = CTSolvers.ADNLPModeler()
@@ -90,7 +90,7 @@ function test_ctmodels_model_api()
     # calls the backend's (prob, nlp_solution) method and returns whatever
     # the backend returns (here a DummySolutionAPI instance).
 
-    Test.@testset "ctmodels/model_api: build_solution(prob, stats, backend)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "build_solution(prob, stats, backend)" verbose=VERBOSE showtiming=SHOWTIMING begin
         prob = DummyProblemAPI()
         stats = DummyStatsAPI()
         model_calls = Ref(0)
@@ -106,7 +106,7 @@ function test_ctmodels_model_api()
     # ------------------------------------------------------------------
     # Unit tests for ocp_solution(DiscretizedOptimalControlProblem, ...)
     # ------------------------------------------------------------------
-    Test.@testset "ctmodels/model_api: ocp_solution(DiscretizedOptimalControlProblem, ...)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ocp_solution(DiscretizedOptimalControlProblem, ...)" verbose=VERBOSE showtiming=SHOWTIMING begin
         docp = make_dummy_docp_for_model_api()
         stats = DummyStatsAPI()
         model_calls = Ref(0)
@@ -122,7 +122,7 @@ function test_ctmodels_model_api()
     # ------------------------------------------------------------------
     # Integration-style tests for build_model on real problems
     # ------------------------------------------------------------------
-    Test.@testset "ctmodels/model_api: build_model on Rosenbrock and Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "build_model on Rosenbrock and Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
             modeler_ad = CTSolvers.ADNLPModeler()
             nlp_ad = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler_ad)

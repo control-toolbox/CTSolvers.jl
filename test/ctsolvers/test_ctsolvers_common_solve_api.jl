@@ -76,7 +76,7 @@ end
     # Low-level default display flag
     # ========================================================================
 
-    Test.@testset "ctsolvers/common_solve_api: raw defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "raw defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
         Test.@test CTSolvers.__display() isa Bool
     end
 
@@ -84,7 +84,7 @@ end
     # solve(problem, init, modeler, solver)
     # ========================================================================
 
-    Test.@testset "ctsolvers/common_solve_api: solve(problem, init, modeler, solver)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "solve(problem, init, modeler, solver)" verbose=VERBOSE showtiming=SHOWTIMING begin
         prob = CSDummyDiscretizedOCP()
         init = CSDummyInit([3.0, 4.0])
 
@@ -107,7 +107,7 @@ end
     # solve(nlp::AbstractNLPModel, solver)
     # ========================================================================
 
-    Test.@testset "ctsolvers/common_solve_api: solve(nlp::AbstractNLPModel, solver)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "solve(nlp::AbstractNLPModel, solver)" verbose=VERBOSE showtiming=SHOWTIMING begin
         f(z) = sum(z .^ 2)
         nlp = ADNLPModels.ADNLPModel(f, [1.0, 2.0])
 
@@ -125,7 +125,7 @@ end
     # solve(nlp, solver) generic fallback
     # ========================================================================
 
-    Test.@testset "ctsolvers/common_solve_api: solve(nlp, solver) generic" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "solve(nlp, solver) generic" verbose=VERBOSE showtiming=SHOWTIMING begin
         nlp = :dummy_nlp
 
         solver_calls = Ref(0)

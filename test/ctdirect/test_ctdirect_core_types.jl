@@ -5,7 +5,7 @@ function test_ctdirect_core_types()
     # TYPE HIERARCHY
     # ========================================================================
 
-    Test.@testset "ctdirect/core_types: type hierarchy" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "type hierarchy" verbose=VERBOSE showtiming=SHOWTIMING begin
         # AbstractIntegratorScheme should be abstract
         Test.@test isabstracttype(CTSolvers.AbstractIntegratorScheme)
 
@@ -27,7 +27,7 @@ function test_ctdirect_core_types()
     # COLLOCATION BEHAVIOUR
     # ========================================================================
 
-    Test.@testset "ctdirect/core_types: Collocation options and scheme_symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Collocation options and scheme_symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Build a Collocation and read its default options via the generic
         # options API. This keeps the test aligned with the public access
         # pattern instead of calling low-level helpers directly.
@@ -53,7 +53,7 @@ function test_ctdirect_core_types()
         Test.@test colloc        isa CTSolvers.Collocation{CTSolvers.Midpoint}
     end
 
-    Test.@testset "ctdirect/core_types: discretizer symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "discretizer symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
         # get_symbol should return :collocation for the Collocation type and instances.
         Test.@test CTSolvers.get_symbol(CTSolvers.Collocation) == :collocation
         Test.@test CTSolvers.get_symbol(CTSolvers.Collocation()) == :collocation
@@ -77,7 +77,7 @@ function test_ctdirect_core_types()
         Test.@test CTSolvers.get_option_value(disc, :scheme)    === default_scheme
     end
 
-    Test.@testset "ctdirect/core_types: build_discretizer_from_symbol unknown symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "build_discretizer_from_symbol unknown symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
         err = nothing
         try
             CTSolvers.build_discretizer_from_symbol(:foo)
@@ -92,7 +92,7 @@ function test_ctdirect_core_types()
         Test.@test occursin("collocation", buf)
     end
 
-    Test.@testset "ctdirect/core_types: Collocation default_options and option_default" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Collocation default_options and option_default" verbose=VERBOSE showtiming=SHOWTIMING begin
         opts = CTSolvers.default_options(CTSolvers.Collocation)
 
         # Read the defaults through the generic options API on a default

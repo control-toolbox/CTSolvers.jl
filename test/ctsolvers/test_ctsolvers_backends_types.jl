@@ -5,7 +5,7 @@ function test_ctsolvers_backends_types()
     # Low-level defaults for solver backends
     # ========================================================================
 
-    Test.@testset "ctsolvers/backends_types: raw backend defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "raw backend defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
         # NLPModelsIpopt
         Test.@test CTSolversIpopt.__nlp_models_ipopt_max_iter() isa Int
         Test.@test CTSolversIpopt.__nlp_models_ipopt_max_iter() > 0
@@ -46,7 +46,7 @@ function test_ctsolvers_backends_types()
     # TYPE HIERARCHY
     # ========================================================================
 
-    Test.@testset "ctsolvers/backends_types: type hierarchy" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "type hierarchy" verbose=VERBOSE showtiming=SHOWTIMING begin
         # All solver wrappers should be subtypes of AbstractOptimizationSolver
         Test.@test CTSolvers.IpoptSolver    <: CTSolvers.AbstractOptimizationSolver
         Test.@test CTSolvers.MadNLPSolver   <: CTSolvers.AbstractOptimizationSolver
@@ -59,7 +59,7 @@ function test_ctsolvers_backends_types()
         Test.@test CTSolvers.AbstractOptimizationSolver       <: CTSolvers.AbstractOCPTool
     end
 
-    Test.@testset "ctsolvers/backends_types: solver symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "solver symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
         # get_symbol on solver types
         Test.@test CTSolvers.get_symbol(CTSolvers.IpoptSolver)  == :ipopt
         Test.@test CTSolvers.get_symbol(CTSolvers.MadNLPSolver) == :madnlp
@@ -91,7 +91,7 @@ function test_ctsolvers_backends_types()
         Test.@test vals_ipopt.max_iter == 123
     end
 
-    Test.@testset "ctsolvers/backends_types: build_solver_from_symbol unknown symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "build_solver_from_symbol unknown symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
         err = nothing
         try
             CTSolvers.build_solver_from_symbol(:foo)
@@ -112,7 +112,7 @@ function test_ctsolvers_backends_types()
     # IPopt SOLVER options
     # ========================================================================
 
-    Test.@testset "ctsolvers/backends_types: IpoptSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "IpoptSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Default constructor: all options should come from ct_default
         solver_default = CTSolvers.IpoptSolver()
         vals_default = CTSolvers._options_values(solver_default)
@@ -140,7 +140,7 @@ function test_ctsolvers_backends_types()
     # MadNLP SOLVER options
     # ========================================================================
 
-    Test.@testset "ctsolvers/backends_types: MadNLPSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "MadNLPSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver_user = CTSolvers.MadNLPSolver(; max_iter=500, tol=1e-6)
         vals_user = CTSolvers._options_values(solver_user)
         srcs_user = CTSolvers._option_sources(solver_user)
@@ -160,7 +160,7 @@ function test_ctsolvers_backends_types()
     # MadNCL SOLVER options
     # ========================================================================
 
-    Test.@testset "ctsolvers/backends_types: MadNCLSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "MadNCLSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver_default = CTSolvers.MadNCLSolver()
         vals_default = CTSolvers._options_values(solver_default)
         srcs_default = CTSolvers._option_sources(solver_default)
@@ -173,7 +173,7 @@ function test_ctsolvers_backends_types()
     # Knitro SOLVER options
     # ========================================================================
 
-    Test.@testset "ctsolvers/backends_types: KnitroSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "KnitroSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver_user = CTSolvers.KnitroSolver(; maxit=300, feastol_abs=1e-6)
         vals_user = CTSolvers._options_values(solver_user)
         srcs_user = CTSolvers._option_sources(solver_user)
@@ -188,7 +188,7 @@ function test_ctsolvers_backends_types()
     # Generic helpers: suggestions and option listing
     # ========================================================================
 
-    Test.@testset "ctsolvers/backends_types: get_option_* helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "get_option_* helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
         # For a solver with known metadata (IpoptSolver), the getters should
         # recover the same information as default_options / _option_sources.
         solver = CTSolvers.IpoptSolver()
@@ -217,7 +217,7 @@ function test_ctsolvers_backends_types()
         Test.@test occursin("_show_options(IpoptSolver)", buf)
     end
 
-    Test.@testset "ctsolvers/backends_types: IpoptSolver unknown option suggestions" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "IpoptSolver unknown option suggestions" verbose=VERBOSE showtiming=SHOWTIMING begin
         err = nothing
         try
             # Misspelled option name to trigger suggestion logic.
@@ -234,7 +234,7 @@ function test_ctsolvers_backends_types()
         Test.@test occursin("_show_options(IpoptSolver)", buf)
     end
 
-    Test.@testset "ctsolvers/backends_types: IpoptSolver _show_options runs" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "IpoptSolver _show_options runs" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Just ensure that _show_options does not throw and produces some text.
         buf = sprint() do io
             redirect_stdout(io) do

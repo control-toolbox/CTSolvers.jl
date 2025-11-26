@@ -1,5 +1,5 @@
 # Unit tests for extension stubs before loading CTSolvers extensions (ensure CTBase.ExtensionError is thrown).
-function test_extensions_not_triggered()
+function test_ctsolvers_extensions_notrigger()
     # NLPModelsIpopt
     @test_throws CTBase.ExtensionError CTSolvers.solve_with_ipopt(nothing)
 

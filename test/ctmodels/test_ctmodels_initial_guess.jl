@@ -90,7 +90,7 @@ CTModels.variable(sol::DummySolution1DVar) = sol.v
 
 function test_ctmodels_initial_guess()
 
-	Test.@testset "ctmodels/initial_guess: basic construction and validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "basic construction and validation" verbose=VERBOSE showtiming=SHOWTIMING begin
 		# Simple 1D dummy problem: scalar x,u, no variable (dim(x)=dim(u)=1, dim(v)=0)
 		ocp1 = DummyOCP1DNoVar()
 
@@ -120,7 +120,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.initial_guess(ocp_ctrl2; control=0.1)
 	end
 
-	Test.@testset "ctmodels/initial_guess: variable dimension handling" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "variable dimension handling" verbose=VERBOSE showtiming=SHOWTIMING begin
 		# Dummy problem with scalar variable (dim(x)=dim(u)=dim(v)=1)
 		ocp2 = DummyOCP1DVar()
 
@@ -137,7 +137,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.initial_guess(ocp3; variable=1.0)
 	end
 
-	Test.@testset "ctmodels/initial_guess: 2D variable block and components" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "2D variable block and components" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP1D2Var()
 
 		# Full block specification for variable w
@@ -181,7 +181,7 @@ function test_ctmodels_initial_guess()
 		Test.@test v_both[2] ≈ 0.5
 	end
 
-	Test.@testset "ctmodels/initial_guess: build_initial_guess from NamedTuple" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "build_initial_guess from NamedTuple" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp, _ = beam()
 
 		# Consistent NamedTuple
@@ -195,7 +195,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp, bad_named)
 	end
 
-	Test.@testset "ctmodels/initial_guess: build_initial_guess generic inputs" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "build_initial_guess generic inputs" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP1DNoVar()
 
 		ig_default = CTSolvers.build_initial_guess(ocp, nothing)
@@ -210,7 +210,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp, 42)
 	end
 
-	Test.@testset "ctmodels/initial_guess: PreInit handling" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "PreInit handling" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp1 = DummyOCP1DNoVar()
 		ocp2 = DummyOCP1DVar()
 
@@ -231,7 +231,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp2, pre_bad_var)
 	end
 
-	Test.@testset "ctmodels/initial_guess: time-grid NamedTuple (per-block tuples)" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "time-grid NamedTuple (per-block tuples)" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP1DNoVar()
 
 		time = [0.0, 0.5, 1.0]
@@ -283,7 +283,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp, bad_nt)
 	end
 
-	Test.@testset "ctmodels/initial_guess: time-grid NamedTuple with 2D state matrix" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "time-grid NamedTuple with 2D state matrix" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP2DNoVar()
 
 		time = [0.0, 0.5, 1.0]
@@ -307,7 +307,7 @@ function test_ctmodels_initial_guess()
 		Test.@test x1[2] ≈ 2.0
 	end
 
-	Test.@testset "ctmodels/initial_guess: time-grid PreInit via tuples" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "time-grid PreInit via tuples" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP1DNoVar()
 		time = [0.0, 0.5, 1.0]
 		state_samples = [[0.0], [0.5], [1.0]]
@@ -325,7 +325,7 @@ function test_ctmodels_initial_guess()
 		Test.@test isapprox(x1_val, 1.0; atol=1e-12)
 	end
 
-	Test.@testset "ctmodels/initial_guess: per-component state init without time" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "per-component state init without time" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP2DNoVar()
 
 		# Init only via components x1, x2
@@ -340,7 +340,7 @@ function test_ctmodels_initial_guess()
 		Test.@test x[2] ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess: per-component state init with time" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "per-component state init with time" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP2DNoVar()
 		time = [0.0, 1.0]
 		init_nt = (x1=(time, [0.0, 1.0]), x2=(time, [1.0, 2.0]))
@@ -356,13 +356,13 @@ function test_ctmodels_initial_guess()
 		Test.@test x1[2] ≈ 2.0
 	end
 
-	Test.@testset "ctmodels/initial_guess: uniqueness between block and component specs" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "uniqueness between block and component specs" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP2DNoVar()
 		bad_nt = (state=[0.0, 0.0], x1=1.0)
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp, bad_nt)
 	end
 
-	Test.@testset "ctmodels/initial_guess: warm-start from AbstractSolution" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "warm-start from AbstractSolution" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP1DVar()
 
 		xfun = t -> 0.1
@@ -383,7 +383,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp, sol_bad_state)
 	end
 
-	Test.@testset "ctmodels/initial_guess: NamedTuple alias keys from OCP names" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "NamedTuple alias keys from OCP names" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp1 = DummyOCP1DNoVar()
 
 		init_nt1 = (x=0.2, u=-0.1)
@@ -401,7 +401,7 @@ function test_ctmodels_initial_guess()
 		CTSolvers.validate_initial_guess(ocp1, ig2)
 	end
 
-	Test.@testset "ctmodels/initial_guess: NamedTuple error cases" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "NamedTuple error cases" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp1 = DummyOCP1DNoVar()
 
 		bad_unknown = (state=0.1, foo=1.0)
@@ -425,7 +425,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.build_initial_guess(ocp3, bad_nt_state_fun)
 	end
 
-	Test.@testset "ctmodels/initial_guess: per-component control init without time" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "per-component control init without time" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP1D2Control()
 
 		init_nt = (u1=0.0, u2=1.0)
@@ -440,7 +440,7 @@ function test_ctmodels_initial_guess()
 		Test.@test u[2] ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess: per-component control init with time" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "per-component control init with time" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP1D2Control()
 		time = [0.0, 1.0]
 
@@ -459,7 +459,7 @@ function test_ctmodels_initial_guess()
 		Test.@test u1[2] ≈ 2.0
 	end
 
-	Test.@testset "ctmodels/initial_guess: uniqueness between control block and component specs" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "uniqueness between control block and component specs" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ocp = DummyOCP1D2Control()
 
 		bad_nt1 = (control=[0.0, 1.0], u1=1.0)

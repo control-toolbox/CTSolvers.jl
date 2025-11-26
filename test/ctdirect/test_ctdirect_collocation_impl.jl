@@ -7,7 +7,7 @@ struct DummyDOCPCollocationRouting end
 
 function test_ctdirect_collocation_impl()
 
-    Test.@testset "ctdirect/collocation_impl: Collocation as discretizer" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Collocation as discretizer" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp = DummyOCPCollocation()
 
         # Use the default Collocation discretizer to avoid relying on CTDirect
@@ -33,7 +33,7 @@ function test_ctdirect_collocation_impl()
         Test.@test exa_sol       isa CTSolvers.ExaSolutionBuilder
     end
 
-    Test.@testset "ctdirect/collocation_impl: Exa backend routing" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Exa backend routing" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp = DummyOCPExaRouting()
 
         # Stub CTDirect.direct_transcription for DummyOCPExaRouting to record kwargs

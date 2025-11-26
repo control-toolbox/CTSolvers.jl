@@ -34,7 +34,7 @@ function test_ctparser_initial_guess_macro()
 		(tf + a) → min
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: minimal control function on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "minimal control function on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ig = @init ocp_fixed begin
 			u(t) := t
 		end
@@ -50,7 +50,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test u1 ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: empty and alias-only blocks delegate to defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "empty and alias-only blocks delegate to defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
 		# Empty block: should behave like a plain call to build_initial_guess(ocp, ())
 		ig_empty = @init ocp_fixed begin
 		end
@@ -66,7 +66,7 @@ function test_ctparser_initial_guess_macro()
 		CTSolvers.validate_initial_guess(ocp_fixed, ig_alias_only)
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: simple alias constant on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "simple alias constant on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ig = @init ocp_fixed begin
 			a = 1.0
 			v(t) := a
@@ -83,7 +83,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test x1[2] ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: simple alias for variable on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "simple alias for variable on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ig = @init ocp_var begin
 			a = 1.0
 			tf := a
@@ -93,7 +93,7 @@ function test_ctparser_initial_guess_macro()
 		CTSolvers.validate_initial_guess(ocp_var, ig)
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: 2D variable block and components" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "2D variable block and components" verbose=VERBOSE showtiming=SHOWTIMING begin
 		# Full variable block
 		ig_block = @init ocp_var2 begin
 			w := [1.0, 2.0]
@@ -140,7 +140,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test v_both[2] ≈ 0.5
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: per-component functions on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "per-component functions on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ig = @init ocp_fixed begin
 			q(t) := sin(t)
 			v(t) := 1.0
@@ -166,7 +166,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test u1 ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: state block function on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "state block function on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ig = @init ocp_fixed begin
 			x(t) := [sin(t), 1.0]
 			u(t) := t
@@ -191,7 +191,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test u1 ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: block time-grid init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "block time-grid init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		T = [0.0, 0.5, 1.0]
 		X = [[-1.0, 0.0], [0.0, 0.5], [0.0, 0.0]]
 		U = [0.0, 0.0, 1.0]
@@ -220,7 +220,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test u1 ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: block matrix time-grid init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "block matrix time-grid init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		T = [0.0, 0.5, 1.0]
 		Xmat = [-1.0 0.0;
 		        0.0 0.5;
@@ -251,7 +251,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test u1 ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: block (T, nothing) init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "block (T, nothing) init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		T = [0.0, 0.5, 1.0]
 
 		ig = @init ocp_fixed begin
@@ -263,7 +263,7 @@ function test_ctparser_initial_guess_macro()
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: component time-grid init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "component time-grid init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		Tq = [0.0, 0.5, 1.0]
 		Dq = [-1.0, -0.5, 0.0]
 		Tv = [0.0, 1.0]
@@ -296,7 +296,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test u1 ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: partial init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "partial init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ig = @init ocp_fixed begin
 			q(t) := sin(t)
 			v(t) := 1.0
@@ -306,7 +306,7 @@ function test_ctparser_initial_guess_macro()
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: constant init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "constant init on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ig = @init ocp_fixed begin
 			q := -1.0
 			v := 0.0
@@ -317,7 +317,7 @@ function test_ctparser_initial_guess_macro()
 		CTSolvers.validate_initial_guess(ocp_fixed, ig)
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: variable-only init on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "variable-only init on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ig = @init ocp_var begin
 			tf := 1.0
 		end
@@ -326,7 +326,7 @@ function test_ctparser_initial_guess_macro()
 		CTSolvers.validate_initial_guess(ocp_var, ig)
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: logging option does not change semantics" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "logging option does not change semantics" verbose=VERBOSE showtiming=SHOWTIMING begin
 		# Reference without logging
 		ig_plain = @init ocp_fixed begin
 			u(t) := t
@@ -351,7 +351,7 @@ function test_ctparser_initial_guess_macro()
 		end
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: per-component functions on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "per-component functions on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ig = @init ocp_var begin
 			tf := 1.0
 			q(t) := sin(t)
@@ -377,7 +377,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test u1 ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: (T, nothing) init on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "(T, nothing) init on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		T = [0.0, 0.5, 1.0]
 
 		ig = @init ocp_var begin
@@ -390,7 +390,7 @@ function test_ctparser_initial_guess_macro()
 		CTSolvers.validate_initial_guess(ocp_var, ig)
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: block time-grid init on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "block time-grid init on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		T = [0.0, 0.5, 1.0]
 		X = [[-1.0, 0.0], [0.0, 0.5], [0.0, 0.0]]
 		U = [0.0, 0.0, 1.0]
@@ -420,7 +420,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test u1 ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: component time-grid init on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "component time-grid init on variable-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		Tq = [0.0, 0.5, 1.0]
 		Dq = [-1.0, -0.5, 0.0]
 		Tv = [0.0, 1.0]
@@ -454,7 +454,7 @@ function test_ctparser_initial_guess_macro()
 		Test.@test u1 ≈ 1.0
 	end
 
-	Test.@testset "ctmodels/initial_guess_macro: invalid component vector without time (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "invalid component vector without time (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
 		Test.@test_throws CTBase.IncorrectArgument Base.redirect_stdout(Base.devnull) do
 			@init ocp_fixed begin
 				q := [0.0, 1.0]
@@ -462,7 +462,7 @@ function test_ctparser_initial_guess_macro()
 		end
 	end
 	
-	Test.@testset "ctmodels/initial_guess_macro: time-grid length mismatch on component (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "time-grid length mismatch on component (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
 		T = [0.0, 0.5, 1.0]
 		Dq_bad = [-1.0, 0.0]
 	
@@ -473,7 +473,7 @@ function test_ctparser_initial_guess_macro()
 		end
 	end
 	
-	Test.@testset "ctmodels/initial_guess_macro: mixing state block and component (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "mixing state block and component (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
 		Test.@test_throws CTBase.IncorrectArgument Base.redirect_stdout(Base.devnull) do
 			@init ocp_fixed begin
 				x(t) := [sin(t), 1.0]
@@ -482,7 +482,7 @@ function test_ctparser_initial_guess_macro()
 		end
 	end
 	
-	Test.@testset "ctmodels/initial_guess_macro: unknown component name (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "unknown component name (fixed horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
 		Test.@test_throws CTBase.IncorrectArgument Base.redirect_stdout(Base.devnull) do
 			@init ocp_fixed begin
 				z(t) := 1.0
@@ -490,7 +490,7 @@ function test_ctparser_initial_guess_macro()
 		end
 	end
 	
-	Test.@testset "ctmodels/initial_guess_macro: invalid variable dimension (variable horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "invalid variable dimension (variable horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
 		Test.@test_throws CTBase.IncorrectArgument Base.redirect_stdout(Base.devnull) do
 			@init ocp_var begin
 				tf := [1.0, 2.0]
@@ -498,7 +498,7 @@ function test_ctparser_initial_guess_macro()
 		end
 	end
 	
-	Test.@testset "ctmodels/initial_guess_macro: time-grid length mismatch on component (variable horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "time-grid length mismatch on component (variable horizon)" verbose=VERBOSE showtiming=SHOWTIMING begin
 		Tq = [0.0, 0.5, 1.0]
 		Dq_bad = [-1.0, 0.0]
 	
@@ -510,7 +510,7 @@ function test_ctparser_initial_guess_macro()
 		end
 	end
 	
-	Test.@testset "ctmodels/initial_guess_macro: invalid DSL left-hand side" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "invalid DSL left-hand side" verbose=VERBOSE showtiming=SHOWTIMING begin
 		# Non-symbol lhs in constant form should be rejected at macro level
 		Test.@test_throws CTBase.ParsingError Base.redirect_stdout(Base.devnull) do
 			@init ocp_fixed begin
@@ -526,7 +526,7 @@ function test_ctparser_initial_guess_macro()
 		end
 	end
 
-	Test.@testset "ctparser/init_prefix: getter and setter" verbose=VERBOSE showtiming=SHOWTIMING begin
+	Test.@testset "init_prefix: getter and setter" verbose=VERBOSE showtiming=SHOWTIMING begin
 		old_pref = CTSolvers.init_prefix()
 		CTSolvers.init_prefix!(:MyBackend)
 		Test.@test CTSolvers.init_prefix() == :MyBackend

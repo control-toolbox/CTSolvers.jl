@@ -53,7 +53,7 @@ end
 function (solver::CTSolvers.MadNLPSolver)(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::MadNLP.MadNLPExecutionStats
-    options = Dict(CTSolvers._options_values(solver))
+    options = Dict(pairs(CTSolvers._options_values(solver)))
     options[:print_level] = display ? options[:print_level] : MadNLP.ERROR
     return CTSolvers.solve_with_madnlp(nlp; options...)
 end

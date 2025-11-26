@@ -19,7 +19,7 @@ function test_ctdirect_discretization_api()
     # discretize(ocp, discretizer)
     # ========================================================================
 
-    Test.@testset "ctdirect/discretization_api: discretize(ocp, discretizer)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "discretize(ocp, discretizer)" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp = DummyOCPDiscretize()
         calls = Ref(0)
         discretizer = DummyDiscretizer(calls, :dummy)
@@ -34,7 +34,7 @@ function test_ctdirect_discretization_api()
     # discretize(ocp; discretizer=__discretizer())
     # ========================================================================
 
-    Test.@testset "ctdirect/discretization_api: default discretizer" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "default discretizer" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp = DummyOCPDiscretize()
 
         docp = CTSolvers.discretize(ocp)

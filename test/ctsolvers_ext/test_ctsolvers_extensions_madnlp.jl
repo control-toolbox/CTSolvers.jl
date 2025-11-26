@@ -11,7 +11,7 @@ function test_ctsolvers_extensions_madnlp()
         Test.@test CTSolversMadNLP.__mad_nlp_linear_solver() == MadNLPMumps.MumpsSolver
 
         solver = CTSolvers.MadNLPSolver()
-        opts = Dict(CTSolvers._options_values(solver))
+        opts = Dict(pairs(CTSolvers._options_values(solver)))
 
         Test.@test opts[:max_iter] == CTSolversMadNLP.__mad_nlp_max_iter()
         Test.@test opts[:tol] == CTSolversMadNLP.__mad_nlp_tol()
