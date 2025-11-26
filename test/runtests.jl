@@ -69,9 +69,10 @@ if TESTS[:extensions]
     println("========== CTSolvers extensions tests ==========")
     @testset "CTSolvers extensions" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
-            :ctsolvers_extensions_unit,
-            :ctsolvers_extensions_integration,
-            :ctsolvers_extensions_gpu,
+            :ctsolvers_extensions_ipopt,
+            :ctsolvers_extensions_madnlp,
+            :ctsolvers_extensions_madncl,
+            :ctsolvers_extensions_knitro,
         )
             @testset "$(name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                 test_name = Symbol(:test_, name)
@@ -106,6 +107,7 @@ if TESTS[:ctmodels]
     @testset "CTModels" verbose=VERBOSE showtiming=SHOWTIMING begin
         for name in (
             :ctmodels_problem_core,
+            :ctmodels_options_schema,
             :ctmodels_nlp_backends,
             :ctmodels_discretized_ocp,
             :ctmodels_model_api,
