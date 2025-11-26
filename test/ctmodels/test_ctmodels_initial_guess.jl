@@ -108,6 +108,16 @@ function test_ctmodels_initial_guess()
 		bad_control_fun = t -> [t, 2t]
 		init_bad_ctrl = CTSolvers.OptimalControlInitialGuess(CTSolvers.state(init1), bad_control_fun, Float64[])
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.validate_initial_guess(ocp1, init_bad_ctrl)
+
+		# For a multi-dimensional state (dim(x)=2), passing a scalar state should trigger
+		# the dimension-mismatch error in initial_state(ocp, ::Real).
+		ocp_state2 = DummyOCP2DNoVar()
+		Test.@test_throws CTBase.IncorrectArgument CTSolvers.initial_guess(ocp_state2; state=0.1)
+
+		# For a multi-dimensional control (dim(u)=2), passing a scalar control should
+		# trigger the analogous error in initial_control(ocp, ::Real).
+		ocp_ctrl2 = DummyOCP1D2Control()
+		Test.@test_throws CTBase.IncorrectArgument CTSolvers.initial_guess(ocp_ctrl2; control=0.1)
 	end
 
 	Test.@testset "ctmodels/initial_guess: variable dimension handling" verbose=VERBOSE showtiming=SHOWTIMING begin

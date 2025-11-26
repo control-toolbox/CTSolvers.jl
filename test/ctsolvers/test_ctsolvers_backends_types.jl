@@ -91,6 +91,23 @@ function test_ctsolvers_backends_types()
         Test.@test vals_ipopt.max_iter == 123
     end
 
+    Test.@testset "ctsolvers/backends_types: build_solver_from_symbol unknown symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
+        err = nothing
+        try
+            CTSolvers.build_solver_from_symbol(:foo)
+        catch e
+            err = e
+        end
+        Test.@test err isa CTBase.IncorrectArgument
+
+        buf = sprint(showerror, err)
+        Test.@test occursin("Unknown solver symbol", buf)
+        Test.@test occursin("foo", buf)
+        for sym in CTSolvers.solver_symbols()
+            Test.@test occursin(string(sym), buf)
+        end
+    end
+
     # ========================================================================
     # IPopt SOLVER options
     # ========================================================================

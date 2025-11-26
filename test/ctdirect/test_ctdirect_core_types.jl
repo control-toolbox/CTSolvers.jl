@@ -47,6 +47,10 @@ function test_ctdirect_core_types()
         # Collocation options should expose the stored grid_size and scheme via options_values
         Test.@test CTSolvers.get_option_value(colloc, :grid_size) == default_grid
         Test.@test CTSolvers.get_option_value(colloc, :scheme)    === default_scheme
+
+        # The type parameter of Collocation should reflect the concrete scheme type
+        Test.@test default_colloc isa CTSolvers.Collocation{CTSolvers.Midpoint}
+        Test.@test colloc        isa CTSolvers.Collocation{CTSolvers.Midpoint}
     end
 
     Test.@testset "ctdirect/core_types: discretizer symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -71,6 +75,21 @@ function test_ctdirect_core_types()
         Test.@test disc isa CTSolvers.Collocation
         Test.@test CTSolvers.get_option_value(disc, :grid_size) == default_grid
         Test.@test CTSolvers.get_option_value(disc, :scheme)    === default_scheme
+    end
+
+    Test.@testset "ctdirect/core_types: build_discretizer_from_symbol unknown symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
+        err = nothing
+        try
+            CTSolvers.build_discretizer_from_symbol(:foo)
+        catch e
+            err = e
+        end
+        Test.@test err isa CTBase.IncorrectArgument
+
+        buf = sprint(showerror, err)
+        Test.@test occursin("Unknown discretizer symbol", buf)
+        Test.@test occursin("foo", buf)
+        Test.@test occursin("collocation", buf)
     end
 
     Test.@testset "ctdirect/core_types: Collocation default_options and option_default" verbose=VERBOSE showtiming=SHOWTIMING begin

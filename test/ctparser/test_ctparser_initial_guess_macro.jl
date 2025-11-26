@@ -50,6 +50,22 @@ function test_ctparser_initial_guess_macro()
 		Test.@test u1 ≈ 1.0
 	end
 
+	Test.@testset "ctmodels/initial_guess_macro: empty and alias-only blocks delegate to defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+		# Empty block: should behave like a plain call to build_initial_guess(ocp, ())
+		ig_empty = @init ocp_fixed begin
+		end
+		Test.@test ig_empty isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp_fixed, ig_empty)
+
+		# Alias-only block: aliases are executed, but no init specs should still
+		# delegate to build_initial_guess(ocp, ()).
+		ig_alias_only = @init ocp_fixed begin
+			c = 1.0
+		end
+		Test.@test ig_alias_only isa CTSolvers.AbstractOptimalControlInitialGuess
+		CTSolvers.validate_initial_guess(ocp_fixed, ig_alias_only)
+	end
+
 	Test.@testset "ctmodels/initial_guess_macro: simple alias constant on fixed-horizon OCP" verbose=VERBOSE showtiming=SHOWTIMING begin
 		ig = @init ocp_fixed begin
 			a = 1.0

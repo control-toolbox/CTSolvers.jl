@@ -27,7 +27,7 @@ function test_ctmodels_problem_core()
     # that delegates to an arbitrary callable). Here we build a simple
     # ADNLPModel to respect the return type annotation ::ADNLPModels.ADNLPModel
     # and we verify that the inner builder is called exactly once with the
-    # expected initial guess.
+    # expected initial guess, and that keyword arguments are forwarded.
     Test.@testset "ctmodels/problem_core: ADNLPModelBuilder wrapper" verbose=VERBOSE showtiming=SHOWTIMING begin
         calls = Ref(0)
         last_x = Ref{Any}(nothing)
@@ -45,6 +45,23 @@ function test_ctmodels_problem_core()
         Test.@test nlp isa ADNLPModels.ADNLPModel
         Test.@test calls[] == 1
         Test.@test last_x[] == x0
+
+        # Keyword arguments should be forwarded to the inner builder.
+        kw_calls = Ref(0)
+        seen_kwargs = Ref{Any}(nothing)
+        function local_ad_builder_kwargs(x; a=0, b=0)
+            kw_calls[] += 1
+            seen_kwargs[] = (x, a, b)
+            f(z) = sum(z .^ 2)
+            return ADNLPModels.ADNLPModel(f, x)
+        end
+
+        builder_kwargs = CTSolvers.ADNLPModelBuilder(local_ad_builder_kwargs)
+        x1 = rosenbrock_init
+        _ = builder_kwargs(x1; a=1, b=2)
+
+        Test.@test kw_calls[] == 1
+        Test.@test seen_kwargs[] == (x1, 1, 2)
     end
 
     # Tests for the generic ExaModelBuilder wrapper. Constructing a full

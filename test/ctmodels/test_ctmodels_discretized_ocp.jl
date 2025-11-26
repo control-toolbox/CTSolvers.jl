@@ -439,7 +439,37 @@ function test_ctmodels_discretized_ocp()
         # Verify the error is propagated
         Test.@test_throws ErrorException builder(stats)
     end
-    
+
+    Test.@testset "ctmodels/discretized_ocp: missing backend errors" verbose=VERBOSE showtiming=SHOWTIMING begin
+        ocp = DummyOCPDiscretized()
+
+        # Construct a DOCP with only an :adnlp backend registered.
+        adnlp_model_builder = CTSolvers.ADNLPModelBuilder(x -> :ad_model)
+        adnlp_solution_builder = CTSolvers.ADNLPSolutionBuilder(s -> s)
+        adnlp_bundle = CTSolvers.OCPBackendBuilders(adnlp_model_builder, adnlp_solution_builder)
+
+        docp_ad_only = CTSolvers.DiscretizedOptimalControlProblem(
+            ocp,
+            (:adnlp => adnlp_bundle,),
+        )
+
+        Test.@test_throws ArgumentError CTSolvers.get_exa_model_builder(docp_ad_only)
+        Test.@test_throws ArgumentError CTSolvers.get_exa_solution_builder(docp_ad_only)
+
+        # Construct a DOCP with only an :exa backend registered.
+        exa_model_builder = CTSolvers.ExaModelBuilder((T, x; kwargs...) -> :exa_model)
+        exa_solution_builder = CTSolvers.ExaSolutionBuilder(s -> s)
+        exa_bundle = CTSolvers.OCPBackendBuilders(exa_model_builder, exa_solution_builder)
+
+        docp_exa_only = CTSolvers.DiscretizedOptimalControlProblem(
+            ocp,
+            (:exa => exa_bundle,),
+        )
+
+        Test.@test_throws ArgumentError CTSolvers.get_adnlp_model_builder(docp_exa_only)
+        Test.@test_throws ArgumentError CTSolvers.get_adnlp_solution_builder(docp_exa_only)
+    end
+
     Test.@testset "ctmodels/discretized_ocp: different OCP types" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Test that DOCP works with different concrete OCP types
         # Create DOCPs with different OCP types

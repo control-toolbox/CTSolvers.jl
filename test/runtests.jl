@@ -46,8 +46,8 @@ const TESTS = Dict(
 if TESTS[:extensions]
     println("========== Extension exceptions tests ==========")
     @testset "Extension exceptions" verbose=VERBOSE showtiming=SHOWTIMING begin
-        include(joinpath("ctsolvers_ext", "test_extensions.jl"))
-        test_extensions()
+        include(joinpath("ctsolvers_ext", "test_extensions_not_triggered.jl"))
+        test_extensions_not_triggered()
     end
     println("✓ Extension exceptions tests passed\n")
 end
