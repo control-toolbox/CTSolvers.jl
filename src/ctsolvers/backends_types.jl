@@ -57,3 +57,29 @@ end
 function _option_sources(solver::KnitroSolver)
     return solver.options_sources
 end
+
+get_symbol(::Type{IpoptSolver})   = :ipopt
+get_symbol(::Type{MadNLPSolver})  = :madnlp
+get_symbol(::Type{MadNCLSolver})  = :madncl
+get_symbol(::Type{KnitroSolver})  = :knitro
+
+tool_package_name(::Type{IpoptSolver})   = "NLPModelsIpopt"
+tool_package_name(::Type{MadNLPSolver})  = "MadNLP suite"
+tool_package_name(::Type{MadNCLSolver})  = "MadNCL"
+tool_package_name(::Type{KnitroSolver})  = "NLPModelsKnitro"
+
+const REGISTERED_SOLVERS = (IpoptSolver, MadNLPSolver, MadNCLSolver, KnitroSolver)
+
+registered_solver_types() = REGISTERED_SOLVERS
+
+solver_symbols() = Tuple(get_symbol(T) for T in REGISTERED_SOLVERS)
+
+function build_solver_from_symbol(sym::Symbol; kwargs...)
+    for T in REGISTERED_SOLVERS
+        if get_symbol(T) === sym
+            return T(; kwargs...)
+        end
+    end
+    msg = "Unknown solver symbol $(sym). Supported symbols: $(solver_symbols())."
+    throw(CTBase.IncorrectArgument(msg))
+end

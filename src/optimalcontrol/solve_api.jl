@@ -38,34 +38,35 @@ available_methods() = AVAILABLE_METHODS
 # ------------------------------------------------------------------------
 # Discretizer helpers (symbol  type and options).
 
-function discretizer_symbol(discretizer::AbstractOptimalControlDiscretizer)
-    return discretizer_symbol(typeof(discretizer))
-end
-
-discretizer_symbol(::Type{Collocation}) = :collocation
-
-function _build_discretizer_from_symbol(name::Symbol; kwargs...)
-    if name === :collocation
-        return Collocation(; kwargs...)
+function _get_unique_symbol(
+    method::Tuple{Vararg{Symbol}},
+    allowed::Tuple{Vararg{Symbol}},
+    tool_name::AbstractString,
+)
+    hits = Symbol[]
+    for s in method
+        if s in allowed
+            push!(hits, s)
+        end
+    end
+    if length(hits) == 1
+        return hits[1]
+    elseif isempty(hits)
+        msg = "No $(tool_name) symbol from $(allowed) found in method $(method)."
+        throw(CTBase.IncorrectArgument(msg))
     else
-        msg = "Unknown discretizer symbol $(name). Supported symbols: :collocation."
+        msg = "Multiple $(tool_name) symbols $(hits) found in method $(method); at most one is allowed."
         throw(CTBase.IncorrectArgument(msg))
     end
 end
 
 function _get_discretizer_symbol(method::Tuple)
-    disc = :collocation
-    if disc ∈ method
-        return disc
-    else
-        msg = "No known discretizer symbol (:collocation) found in method $(method)."
-        throw(CTBase.IncorrectArgument(msg))
-    end
+    return _get_unique_symbol(method, discretizer_symbols(), "discretizer")
 end
 
 function _build_discretizer_from_method(method::Tuple, discretizer_options::NamedTuple)
     disc_sym = _get_discretizer_symbol(method)
-    return _build_discretizer_from_symbol(disc_sym; discretizer_options...)
+    return build_discretizer_from_symbol(disc_sym; discretizer_options...)
 end
 
 function _discretizer_options(method::Tuple)
@@ -77,22 +78,8 @@ end
 # ------------------------------------------------------------------------
 # Modeler helpers (symbol  type).
 
-function modeler_symbol(modeler::AbstractOptimizationModeler)
-    return modeler_symbol(typeof(modeler))
-end
-
-modeler_symbol(::Type{ADNLPModeler}) = :adnlp
-modeler_symbol(::Type{ExaModeler}) = :exa
-
 function _get_modeler_symbol(method::Tuple)
-    if :adnlp ∈ method
-        return :adnlp
-    elseif :exa ∈ method
-        return :exa
-    else
-        msg = "No known NLP model symbol (:adnlp, :exa) found in method $(method)."
-        throw(CTBase.IncorrectArgument(msg))
-    end
+    return _get_unique_symbol(method, modeler_symbols(), "NLP model")
 end
 
 function _normalize_modeler_options(options)
@@ -110,52 +97,20 @@ end
 
 function _build_modeler_from_method(method::Tuple, modeler_options::NamedTuple)
     model_sym = _get_modeler_symbol(method)
-    if model_sym === :adnlp
-        return ADNLPModeler(; modeler_options...)
-    elseif model_sym === :exa
-        return ExaModeler(; modeler_options...)
-    end
+    return build_modeler_from_symbol(model_sym; modeler_options...)
 end
 
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 # Solver helpers (symbol  type).
 
-function solver_symbol(solver::AbstractOptimizationSolver)
-    return solver_symbol(typeof(solver))
-end
-
-solver_symbol(::Type{IpoptSolver}) = :ipopt
-solver_symbol(::Type{MadNLPSolver}) = :madnlp
-solver_symbol(::Type{MadNCLSolver}) = :madncl
-solver_symbol(::Type{KnitroSolver}) = :knitro
-
 function _get_solver_symbol(method::Tuple)
-    if :ipopt ∈ method
-        return :ipopt
-    elseif :madnlp ∈ method
-        return :madnlp
-    elseif :madncl ∈ method
-        return :madncl
-    elseif :knitro ∈ method
-        return :knitro
-    else
-        msg = "No known solver symbol (:ipopt, :madnlp, :madncl, :knitro) found in method $(method)."
-        throw(CTBase.IncorrectArgument(msg))
-    end
+    return _get_unique_symbol(method, solver_symbols(), "solver")
 end
 
 function _build_solver_from_method(method::Tuple, solver_options::NamedTuple)
     solver_sym = _get_solver_symbol(method)
-    if solver_sym === :ipopt
-        return IpoptSolver(; solver_options...)
-    elseif solver_sym === :madnlp
-        return MadNLPSolver(; solver_options...)
-    elseif solver_sym === :madncl
-        return MadNCLSolver(; solver_options...)
-    elseif solver_sym === :knitro
-        return KnitroSolver(; solver_options...)
-    end
+    return build_solver_from_symbol(solver_sym; solver_options...)
 end
 
 # ------------------------------------------------------------------------
@@ -230,24 +185,15 @@ function _display_ocp_method(
         printstyled(string(m) * sep; color=:cyan, bold=true)
     end
 
-    PACKAGES = Dict(
-        :ipopt => "NLPModelsIpopt",
-        :madnlp => "MadNLP suite",
-        :madncl => "MadNCL",
-        :knitro => "NLPModelsKnitro",
-        :adnlp => "ADNLPModels",
-        :exa => "ExaModels",
-    )
+    model_pkg = tool_package_name(modeler)
+    solver_pkg = tool_package_name(solver)
 
-    model_sym = _get_modeler_symbol(method)
-    solver_sym = _get_solver_symbol(method)
-
-    if model_sym !== nothing && solver_sym !== nothing
+    if model_pkg !== missing && solver_pkg !== missing
         println(
             "   ┌─ The NLP is modelled with ",
-            PACKAGES[model_sym],
+            model_pkg,
             " and solved with ",
-            PACKAGES[solver_sym],
+            solver_pkg,
             ".",
         )
         println("   │")
@@ -420,13 +366,13 @@ end
 function _build_description_from_components(discretizer, modeler, solver)
     syms = Symbol[]
     if discretizer !== nothing
-        push!(syms, discretizer_symbol(discretizer))
+        push!(syms, get_symbol(discretizer))
     end
     if modeler !== nothing
-        push!(syms, modeler_symbol(modeler))
+        push!(syms, get_symbol(modeler))
     end
     if solver !== nothing
-        push!(syms, solver_symbol(solver))
+        push!(syms, get_symbol(solver))
     end
     return Tuple(syms)
 end

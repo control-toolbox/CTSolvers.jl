@@ -2,6 +2,22 @@
 
 abstract type AbstractOCPTool end
 
+function get_symbol(tool::AbstractOCPTool)
+    return get_symbol(typeof(tool))
+end
+
+function get_symbol(::Type{T}) where {T<:AbstractOCPTool}
+    throw(CTBase.NotImplemented("get_symbol not implemented for $(T)"))
+end
+
+function tool_package_name(tool::AbstractOCPTool)
+    return tool_package_name(typeof(tool))
+end
+
+function tool_package_name(::Type{T}) where {T<:AbstractOCPTool}
+    return missing
+end
+
 struct OptionSpec
     type::Any         # Expected Julia type for the option value, or `missing` if unknown.
     description::Any  # Short English description (String) or `missing` if not documented yet.

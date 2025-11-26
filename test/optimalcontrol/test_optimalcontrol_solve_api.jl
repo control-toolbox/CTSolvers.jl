@@ -87,6 +87,32 @@ function test_optimalcontrol_solve_api()
         # Error when no discretizer symbol is present in the method
         Test.@test_throws CTBase.IncorrectArgument CTSolvers._get_discretizer_symbol((:adnlp, :ipopt))
 
+        # Modeler and solver symbol helpers using registries
+        for m in methods
+            msym = CTSolvers._get_modeler_symbol(m)
+            Test.@test msym in CTSolvers.modeler_symbols()
+            ssym = CTSolvers._get_solver_symbol(m)
+            Test.@test ssym in CTSolvers.solver_symbols()
+        end
+
+        # Multiple symbols of the same family in a method should raise an error
+        Test.@test_throws CTBase.IncorrectArgument CTSolvers._get_modeler_symbol((:collocation, :adnlp, :exa, :ipopt))
+        Test.@test_throws CTBase.IncorrectArgument CTSolvers._get_solver_symbol((:collocation, :adnlp, :ipopt, :madnlp))
+
+        # _build_modeler_from_method should construct the appropriate modeler
+        m_ad = CTSolvers._build_modeler_from_method((:collocation, :adnlp, :ipopt), (; backend=:manual))
+        Test.@test m_ad isa CTSolvers.ADNLPModeler
+
+        m_exa = CTSolvers._build_modeler_from_method((:collocation, :exa, :ipopt), NamedTuple())
+        Test.@test m_exa isa CTSolvers.ExaModeler
+
+        # _build_solver_from_method should construct the appropriate solver
+        s_ip = CTSolvers._build_solver_from_method((:collocation, :adnlp, :ipopt), NamedTuple())
+        Test.@test s_ip isa CTSolvers.IpoptSolver
+
+        s_mad = CTSolvers._build_solver_from_method((:collocation, :adnlp, :madnlp), NamedTuple())
+        Test.@test s_mad isa CTSolvers.MadNLPSolver
+
         # Modeler options normalization helper
         Test.@test CTSolvers._normalize_modeler_options(nothing) === NamedTuple()
         Test.@test CTSolvers._normalize_modeler_options((backend=:manual,)) == (backend=:manual,)
@@ -130,6 +156,27 @@ function test_optimalcontrol_solve_api()
 
         # Ambiguous when coming from explicit mode should also throw
         Test.@test_throws CTBase.IncorrectArgument CTSolvers._route_option_for_description(:foo, 1.0, owners_amb, :explicit)
+    end
+
+    Test.@testset "optimalcontrol/solve_api: display helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
+        method = (:collocation, :adnlp, :ipopt)
+        discretizer = CTSolvers.Collocation()
+        modeler = CTSolvers.ADNLPModeler()
+        solver = CTSolvers.IpoptSolver()
+
+        buf = sprint() do io
+            redirect_stdout(io) do
+                CTSolvers._display_ocp_method(
+                    method,
+                    discretizer,
+                    modeler,
+                    solver;
+                    display=true,
+                )
+            end
+        end
+        Test.@test occursin("ADNLPModels", buf)
+        Test.@test occursin("NLPModelsIpopt", buf)
     end
 
     # ========================================================================

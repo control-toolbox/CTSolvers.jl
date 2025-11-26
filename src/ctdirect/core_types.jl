@@ -11,6 +11,17 @@ const SchemeSymbol = Dict(
 
 abstract type AbstractOptimalControlDiscretizer <: AbstractOCPTool end
 
+struct Collocation{T<:AbstractIntegratorScheme} <: AbstractOptimalControlDiscretizer
+    grid_size::Int
+    scheme::T
+    function Collocation(;
+        grid_size::Int=__grid_size(),
+        scheme::AbstractIntegratorScheme=__scheme(),
+    )
+        return new{typeof(scheme)}(grid_size, scheme)
+    end
+end
+
 function _option_specs(::Type{Collocation})
     return (
         grid_size = OptionSpec(
@@ -23,18 +34,6 @@ function _option_specs(::Type{Collocation})
         ),
     )
 end
-
-struct Collocation{T<:AbstractIntegratorScheme} <: AbstractOptimalControlDiscretizer
-    grid_size::Int
-    scheme::T
-    function Collocation(;
-        grid_size::Int=__grid_size(),
-        scheme::AbstractIntegratorScheme=__scheme(),
-    )
-        return new{typeof(scheme)}(grid_size, scheme)
-    end
-end
-
 function _options(discretizer::Collocation)
     return (
         grid_size=grid_size(discretizer),
@@ -97,4 +96,22 @@ function discretizer_options(name::Symbol)
         msg = "Unknown discretizer symbol $(name). Supported symbols: :collocation."
         throw(CTBase.IncorrectArgument(msg))
     end
+end
+
+get_symbol(::Type{Collocation}) = :collocation
+
+const REGISTERED_DISCRETIZERS = (Collocation,)
+
+registered_discretizer_types() = REGISTERED_DISCRETIZERS
+
+discretizer_symbols() = Tuple(get_symbol(T) for T in REGISTERED_DISCRETIZERS)
+
+function build_discretizer_from_symbol(sym::Symbol; kwargs...)
+    for T in REGISTERED_DISCRETIZERS
+        if get_symbol(T) === sym
+            return T(; kwargs...)
+        end
+    end
+    msg = "Unknown discretizer symbol $(sym). Supported symbols: $(discretizer_symbols())."
+    throw(CTBase.IncorrectArgument(msg))
 end

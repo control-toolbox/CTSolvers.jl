@@ -147,3 +147,25 @@ function (modeler::ExaModeler)(
     builder = get_exa_solution_builder(prob)
     return builder(nlp_solution)
 end
+
+get_symbol(::Type{ADNLPModeler}) = :adnlp
+get_symbol(::Type{ExaModeler})   = :exa
+
+tool_package_name(::Type{ADNLPModeler}) = "ADNLPModels"
+tool_package_name(::Type{ExaModeler})   = "ExaModels"
+
+const REGISTERED_MODELERS = (ADNLPModeler, ExaModeler)
+
+registered_modeler_types() = REGISTERED_MODELERS
+
+modeler_symbols() = Tuple(get_symbol(T) for T in REGISTERED_MODELERS)
+
+function build_modeler_from_symbol(sym::Symbol; kwargs...)
+    for T in REGISTERED_MODELERS
+        if get_symbol(T) === sym
+            return T(; kwargs...)
+        end
+    end
+    msg = "Unknown NLP model symbol $(sym). Supported symbols: $(modeler_symbols())."
+    throw(CTBase.IncorrectArgument(msg))
+end

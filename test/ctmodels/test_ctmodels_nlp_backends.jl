@@ -163,6 +163,39 @@ function test_ctmodels_nlp_backends()
         Test.@test_throws CTBase.IncorrectArgument CTSolvers.ExaModeler(; minimize=1)
     end
 
+    Test.@testset "ctmodels/nlp_backends: modeler symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # get_symbol on types and instances
+        Test.@test CTSolvers.get_symbol(CTSolvers.ADNLPModeler) == :adnlp
+        Test.@test CTSolvers.get_symbol(CTSolvers.ExaModeler)   == :exa
+        Test.@test CTSolvers.get_symbol(CTSolvers.ADNLPModeler()) == :adnlp
+        Test.@test CTSolvers.get_symbol(CTSolvers.ExaModeler())   == :exa
+
+        # tool_package_name on types and instances
+        Test.@test CTSolvers.tool_package_name(CTSolvers.ADNLPModeler) == "ADNLPModels"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.ExaModeler)   == "ExaModels"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.ADNLPModeler()) == "ADNLPModels"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.ExaModeler())   == "ExaModels"
+
+        regs = CTSolvers.registered_modeler_types()
+        Test.@test CTSolvers.ADNLPModeler in regs
+        Test.@test CTSolvers.ExaModeler in regs
+
+        syms = CTSolvers.modeler_symbols()
+        Test.@test :adnlp in syms
+        Test.@test :exa   in syms
+
+        # build_modeler_from_symbol should construct proper concrete modelers.
+        m_ad = CTSolvers.build_modeler_from_symbol(:adnlp; backend=:manual)
+        Test.@test m_ad isa CTSolvers.ADNLPModeler
+        vals_ad = CTSolvers._options(m_ad)
+        Test.@test vals_ad.backend == :manual
+
+        m_exa = CTSolvers.build_modeler_from_symbol(:exa; base_type=Float32)
+        Test.@test m_exa isa CTSolvers.ExaModeler
+        vals_exa = CTSolvers._options(m_exa)
+        Test.@test vals_exa.base_type === Float32
+    end
+
     # ------------------------------------------------------------------
     # Solution-building via ADNLPModeler/ExaModeler(prob, nlp_solution)
     # ------------------------------------------------------------------

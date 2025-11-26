@@ -60,5 +60,26 @@ function test_ctdirect_core_types()
         Test.@test CTSolvers.scheme_symbol(colloc_trap) == :trapeze
     end
 
+    Test.@testset "ctdirect/core_types: discretizer symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # get_symbol should return :collocation for the Collocation type and instances.
+        Test.@test CTSolvers.get_symbol(CTSolvers.Collocation) == :collocation
+        Test.@test CTSolvers.get_symbol(CTSolvers.Collocation()) == :collocation
+
+        # The registered discretizer types should include Collocation.
+        regs = CTSolvers.registered_discretizer_types()
+        Test.@test CTSolvers.Collocation in regs
+
+        syms = CTSolvers.discretizer_symbols()
+        Test.@test :collocation in syms
+
+        # build_discretizer_from_symbol should construct a Collocation discretizer.
+        default_grid = CTSolvers.__grid_size()
+        default_scheme = CTSolvers.__scheme()
+        disc = CTSolvers.build_discretizer_from_symbol(:collocation; grid_size=default_grid, scheme=default_scheme)
+        Test.@test disc isa CTSolvers.Collocation
+        Test.@test CTSolvers.grid_size(disc) == default_grid
+        Test.@test CTSolvers.scheme(disc) === default_scheme
+    end
+
 end
 

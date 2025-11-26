@@ -18,6 +18,38 @@ function test_ctsolvers_backends_types()
         Test.@test CTSolvers.AbstractOptimizationSolver       <: CTSolvers.AbstractOCPTool
     end
 
+    Test.@testset "ctsolvers/backends_types: solver symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
+        # get_symbol on solver types
+        Test.@test CTSolvers.get_symbol(CTSolvers.IpoptSolver)  == :ipopt
+        Test.@test CTSolvers.get_symbol(CTSolvers.MadNLPSolver) == :madnlp
+        Test.@test CTSolvers.get_symbol(CTSolvers.MadNCLSolver) == :madncl
+        Test.@test CTSolvers.get_symbol(CTSolvers.KnitroSolver) == :knitro
+
+        # tool_package_name on solver types
+        Test.@test CTSolvers.tool_package_name(CTSolvers.IpoptSolver)   == "NLPModelsIpopt"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNLPSolver)  == "MadNLP suite"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNCLSolver)  == "MadNCL"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.KnitroSolver)  == "NLPModelsKnitro"
+
+        regs = CTSolvers.registered_solver_types()
+        Test.@test CTSolvers.IpoptSolver  in regs
+        Test.@test CTSolvers.MadNLPSolver in regs
+        Test.@test CTSolvers.MadNCLSolver in regs
+        Test.@test CTSolvers.KnitroSolver in regs
+
+        syms = CTSolvers.solver_symbols()
+        Test.@test :ipopt  in syms
+        Test.@test :madnlp in syms
+        Test.@test :madncl in syms
+        Test.@test :knitro in syms
+
+        # build_solver_from_symbol should construct appropriate solvers and respect options.
+        s_ipopt = CTSolvers.build_solver_from_symbol(:ipopt; max_iter=123)
+        Test.@test s_ipopt isa CTSolvers.IpoptSolver
+        vals_ipopt = CTSolvers._options(s_ipopt)
+        Test.@test vals_ipopt.max_iter == 123
+    end
+
     # ========================================================================
     # IPopt SOLVER options
     # ========================================================================
