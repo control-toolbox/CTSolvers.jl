@@ -222,7 +222,7 @@ function test_ctsolvers_extensions_ipopt()
     # INTEGRATION: Direct beam OCP with Collocation (Ipopt pieces)
     # ========================================================================
     Test.@testset "integration: beam_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
-        beam_data = beam()
+        beam_data = Beam()
         ocp = beam_data.ocp
         init = CTSolvers.initial_guess(ocp; beam_data.init...)
         discretizer = CTSolvers.Collocation()
@@ -272,7 +272,7 @@ function test_ctsolvers_extensions_ipopt()
     # INTEGRATION: Direct Goddard OCP with Collocation (Ipopt pieces)
     # ========================================================================
     Test.@testset "integration: goddard_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
-        gdata = goddard()
+        gdata = Goddard()
         ocp_g = gdata.ocp
         init_g = CTSolvers.initial_guess(ocp_g; gdata.init...)
         discretizer_g = CTSolvers.Collocation()

@@ -1,7 +1,7 @@
 # Goddard rocket optimal control problem used by CTSolvers tests.
 
 """
-    goddard(; vmax=0.1, Tmax=3.5)
+    Goddard(; vmax=0.1, Tmax=3.5)
 
 Return data for the classical Goddard rocket ascent, formulated as a
 *maximization* of the final altitude `r(tf)`.
@@ -12,9 +12,9 @@ The function returns a NamedTuple with fields:
   * `obj`  – reference optimal objective value
   * `name` – short problem name (`"goddard"`)
   * `init` – NamedTuple of components for `CTSolvers.initial_guess`, similar
-             in spirit to `beam()`.
+             in spirit to `Beam()`.
 """
-function goddard(; vmax=0.1, Tmax=3.5)
+function Goddard(; vmax=0.1, Tmax=3.5)
     # constants
     Cd = 310
     beta = 500

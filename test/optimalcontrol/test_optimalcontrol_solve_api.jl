@@ -506,7 +506,7 @@ function test_optimalcontrol_solve_api()
             :print_level => MadNLP.ERROR,
         )
 
-        beam_data = beam()
+        beam_data = Beam()
         ocp = beam_data.ocp
         init = CTSolvers.initial_guess(ocp; beam_data.init...)
         discretizer = CTSolvers.Collocation()
@@ -669,6 +669,133 @@ function test_optimalcontrol_solve_api()
                 Test.@test isfinite(CTModels.objective(sol))
                 Test.@test CTModels.iterations(sol) <= ipopt_options[:max_iter]
                 Test.@test CTModels.constraints_violation(sol) <= 1e-6
+            end
+        end
+
+    end
+
+    # ========================================================================
+    # Integration tests: Goddard OCP level with Ipopt and MadNLP
+    # ========================================================================
+
+    Test.@testset "Goddard OCP level" verbose=VERBOSE showtiming=SHOWTIMING begin
+
+        ipopt_options = Dict(
+            :max_iter => 1000,
+            :tol => 1e-6,
+            :print_level => 0,
+            :mu_strategy => "adaptive",
+            :linear_solver => "Mumps",
+            :sb => "yes",
+        )
+
+        madnlp_options = Dict(
+            :max_iter => 1000,
+            :tol => 1e-6,
+            :print_level => MadNLP.ERROR,
+        )
+
+        gdata = Goddard()
+        ocp_g = gdata.ocp
+        init_g = CTSolvers.initial_guess(ocp_g; gdata.init...)
+        discretizer_g = CTSolvers.Collocation()
+
+        modelers = [
+            CTSolvers.ADNLPModeler(; backend=:manual),
+            CTSolvers.ExaModeler(),
+        ]
+        modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
+
+        # ------------------------------------------------------------------
+        # OCP level: CommonSolve.solve(ocp_g, init_g, discretizer_g, modeler, solver)
+        # ------------------------------------------------------------------
+
+        Test.@testset "OCP level (Ipopt)" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    solver = CTSolvers.IpoptSolver(; ipopt_options...)
+                    sol = CTSolvers._solve(ocp_g, init_g, discretizer_g, modeler, solver; display=false)
+                    Test.@test sol isa CTModels.Solution
+                    Test.@test CTModels.successful(sol)
+                    Test.@test isfinite(CTModels.objective(sol))
+                    Test.@test CTModels.objective(sol) ≈ gdata.obj atol=1e-4
+                    Test.@test CTModels.iterations(sol) <= ipopt_options[:max_iter]
+                    Test.@test CTModels.constraints_violation(sol) <= 1e-6
+                end
+            end
+        end
+
+        Test.@testset "OCP level (MadNLP)" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    solver = CTSolvers.MadNLPSolver(; madnlp_options...)
+                    sol = CTSolvers._solve(ocp_g, init_g, discretizer_g, modeler, solver; display=false)
+                    Test.@test sol isa CTModels.Solution
+                    Test.@test CTModels.successful(sol)
+                    Test.@test isfinite(CTModels.objective(sol))
+                    Test.@test CTModels.objective(sol) ≈ gdata.obj atol=1e-4
+                    Test.@test CTModels.iterations(sol) <= madnlp_options[:max_iter]
+                    Test.@test CTModels.constraints_violation(sol) <= 1e-6
+                end
+            end
+        end
+
+        # ------------------------------------------------------------------
+        # OCP level keyword API (Ipopt, ADNLPModeler)
+        # ------------------------------------------------------------------
+
+        Test.@testset "OCP level keyword API (Ipopt, ADNLPModeler)" verbose=VERBOSE showtiming=SHOWTIMING begin
+            modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+            solver = CTSolvers.IpoptSolver(; ipopt_options...)
+            sol = CommonSolve.solve(
+                ocp_g;
+                initial_guess=init_g,
+                discretizer=discretizer_g,
+                modeler=modeler,
+                solver=solver,
+                display=false,
+            )
+            Test.@test sol isa CTModels.Solution
+            Test.@test CTModels.successful(sol)
+            Test.@test isfinite(CTModels.objective(sol))
+            Test.@test CTModels.iterations(sol) <= ipopt_options[:max_iter]
+            Test.@test CTModels.constraints_violation(sol) <= 1e-6
+        end
+
+        # ------------------------------------------------------------------
+        # OCP level description API (Ipopt and MadNLP)
+        # ------------------------------------------------------------------
+
+        Test.@testset "OCP level description API" verbose=VERBOSE showtiming=SHOWTIMING begin
+
+            desc_cases = [
+                ((:collocation, :adnlp, :ipopt), ipopt_options),
+                ((:collocation, :adnlp, :madnlp), madnlp_options),
+                ((:collocation, :exa,   :ipopt), ipopt_options),
+                ((:collocation, :exa,   :madnlp), madnlp_options),
+            ]
+
+            for (method_syms, options) in desc_cases
+                Test.@testset "description = $(method_syms)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    sol = CommonSolve.solve(
+                        ocp_g,
+                        method_syms...;
+                        initial_guess=init_g,
+                        display=false,
+                        options...,
+                    )
+                    Test.@test sol isa CTModels.Solution
+                    Test.@test CTModels.successful(sol)
+                    Test.@test isfinite(CTModels.objective(sol))
+
+                    if :ipopt in method_syms
+                        Test.@test CTModels.iterations(sol) <= ipopt_options[:max_iter]
+                        Test.@test CTModels.constraints_violation(sol) <= 1e-6
+                    elseif :madnlp in method_syms
+                        Test.@test CTModels.iterations(sol) <= madnlp_options[:max_iter]
+                        Test.@test CTModels.constraints_violation(sol) <= 1e-6
+                    end
+                end
             end
         end
 

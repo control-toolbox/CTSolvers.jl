@@ -5,8 +5,7 @@
 #   - obj  :: reference optimal objective value (Ipopt / MadNLP, Collocation)
 #   - name :: a short problem name
 #   - init :: NamedTuple of components for CTSolvers.initial_guess
-function beam()
-
+function Beam()
 
     ocp = @def begin
         t ∈ [0, 1], time

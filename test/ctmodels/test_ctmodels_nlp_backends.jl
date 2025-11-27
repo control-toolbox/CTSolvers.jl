@@ -10,6 +10,7 @@ function test_ctmodels_nlp_backends()
     # ========================================================================
     ros = Rosenbrock()
     elec = Elec()
+    maxd = Max1MinusX2()
 
     # ------------------------------------------------------------------
     # Low-level defaults for ADNLPModeler / ExaModeler
@@ -61,6 +62,17 @@ function test_ctmodels_nlp_backends()
         Test.@test nlp_adnlp.meta.minimize == elec_is_minimize()
     end
 
+    # 1D maximization problem: Max1MinusX2
+    Test.@testset "ADNLPModels – Max1MinusX2 (direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
+        modeler = CTSolvers.ADNLPModeler()
+        nlp_adnlp = modeler(maxd.prob, maxd.init)
+        Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
+        Test.@test nlp_adnlp.meta.x0 == maxd.init
+        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == max1minusx2_objective(maxd.init)
+        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] == max1minusx2_constraint(maxd.init)
+        Test.@test nlp_adnlp.meta.minimize == max1minusx2_is_minimize()
+    end
+
     # For a problem without specialized get_* methods, ADNLPModeler
     # should surface the generic NotImplemented error from get_adnlp_model_builder
     # even when called directly.
@@ -98,6 +110,18 @@ function test_ctmodels_nlp_backends()
         Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_objective(BaseType.(elec.init.x), BaseType.(elec.init.y), BaseType.(elec.init.z))
         Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_constraint(BaseType.(elec.init.x), BaseType.(elec.init.y), BaseType.(elec.init.z))
         Test.@test nlp_exa_cpu.meta.minimize == elec_is_minimize()
+    end
+
+    Test.@testset "ExaModels (CPU) – Max1MinusX2 (BaseType=Float32, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
+        BaseType = Float32
+        modeler = CTSolvers.ExaModeler(; base_type=BaseType)
+        nlp_exa_cpu = modeler(maxd.prob, maxd.init)
+        Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
+        Test.@test nlp_exa_cpu.meta.x0 == BaseType.(maxd.init)
+        Test.@test eltype(nlp_exa_cpu.meta.x0) == BaseType
+        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == max1minusx2_objective(BaseType.(maxd.init))
+        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0)[1] == max1minusx2_constraint(BaseType.(maxd.init))
+        Test.@test nlp_exa_cpu.meta.minimize == max1minusx2_is_minimize()
     end
 
     # For a problem without specialized get_* methods, ExaModeler

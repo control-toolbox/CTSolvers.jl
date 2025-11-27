@@ -132,7 +132,7 @@ function test_ctmodels_initial_guess()
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.initial_guess(ocp2; variable=[0.1, 0.2])
 
 		# Problem without variable: dim(v) == 0
-		beam_data = beam()  # beam has no variable in its initial guess
+		beam_data = Beam()  # beam has no variable in its initial guess
 		ocp3 = beam_data.ocp
 		# Providing a scalar variable must throw
 		Test.@test_throws CTBase.IncorrectArgument CTSolvers.initial_guess(ocp3; variable=1.0)
@@ -183,7 +183,7 @@ function test_ctmodels_initial_guess()
 	end
 
 	Test.@testset "build_initial_guess from NamedTuple" verbose=VERBOSE showtiming=SHOWTIMING begin
-		beam_data2 = beam()
+		beam_data2 = Beam()
 		ocp = beam_data2.ocp
 
 		# Consistent NamedTuple

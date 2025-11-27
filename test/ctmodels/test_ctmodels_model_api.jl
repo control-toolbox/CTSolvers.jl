@@ -60,6 +60,7 @@ function test_ctmodels_model_api()
     # ========================================================================
     ros = Rosenbrock()
     elec = Elec()
+     maxd = Max1MinusX2()
 
     # ------------------------------------------------------------------
     # Unit tests for build_model delegation
@@ -128,7 +129,7 @@ function test_ctmodels_model_api()
     # ------------------------------------------------------------------
     # Integration-style tests for build_model on real problems
     # ------------------------------------------------------------------
-    Test.@testset "build_model on Rosenbrock and Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "build_model on Rosenbrock, Elec, and Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
             modeler_ad = CTSolvers.ADNLPModeler()
             nlp_ad = CTSolvers.build_model(ros.prob, ros.init, modeler_ad)
@@ -155,6 +156,21 @@ function test_ctmodels_model_api()
             BaseType = Float64
             modeler_exa = CTSolvers.ExaModeler(; base_type=BaseType)
             nlp_exa = CTSolvers.build_model(elec.prob, elec.init, modeler_exa)
+            Test.@test nlp_exa isa ExaModels.ExaModel{BaseType}
+        end
+
+        Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
+            modeler_ad = CTSolvers.ADNLPModeler()
+            nlp_ad = CTSolvers.build_model(maxd.prob, maxd.init, modeler_ad)
+            Test.@test nlp_ad isa ADNLPModels.ADNLPModel
+            Test.@test nlp_ad.meta.x0 == maxd.init
+            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) == max1minusx2_objective(maxd.init)
+            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0)[1] == max1minusx2_constraint(maxd.init)
+            Test.@test nlp_ad.meta.minimize == max1minusx2_is_minimize()
+
+            BaseType = Float64
+            modeler_exa = CTSolvers.ExaModeler(; base_type=BaseType)
+            nlp_exa = CTSolvers.build_model(maxd.prob, maxd.init, modeler_exa)
             Test.@test nlp_exa isa ExaModels.ExaModel{BaseType}
         end
     end

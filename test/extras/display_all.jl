@@ -122,7 +122,7 @@ function demo_beam_solves()
     println()
     println("===== BEAM OCP SOLVES (explicit & description modes) =====")
 
-    beam_data = beam()
+    beam_data = Beam()
     ocp = beam_data.ocp
     init = CTSolvers.initial_guess(ocp; beam_data.init...)
     discretizer = CTSolvers.Collocation()
@@ -208,7 +208,7 @@ function demo_error_messages()
     end
 
     # Description mode: option with no owner in the selected method
-    beam_data = beam()
+    beam_data = Beam()
     ocp = beam_data.ocp
     init = beam_data.init
     show_captured_error("CommonSolve.solve description unknown kw :foo") do
