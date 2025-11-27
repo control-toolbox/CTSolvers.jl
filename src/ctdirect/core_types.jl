@@ -4,9 +4,7 @@ struct Trapezoidal <: AbstractIntegratorScheme end
 const Trapeze = Trapezoidal
 
 const SchemeSymbol = Dict(
-    Midpoint => :midpoint,
-    Trapezoidal => :trapeze,
-    Trapeze => :trapeze,
+    Midpoint => :midpoint, Trapezoidal => :trapeze, Trapeze => :trapeze
 )
 
 abstract type AbstractOptimalControlDiscretizer end
@@ -15,17 +13,14 @@ struct Collocation{T<:AbstractIntegratorScheme} <: AbstractOptimalControlDiscret
     grid_size::Int
     scheme::T
     function Collocation(;
-        grid_size::Int=__grid_size(),
-        scheme::AbstractIntegratorScheme=__scheme(),
+        grid_size::Int=__grid_size(), scheme::AbstractIntegratorScheme=__scheme()
     )
         return new{typeof(scheme)}(grid_size, scheme)
     end
 end
 
 function grid_size(discretizer::AbstractOptimalControlDiscretizer)
-    throw(
-        CTBase.NotImplemented("grid_size not implemented for $(typeof(discretizer))")
-    )
+    throw(CTBase.NotImplemented("grid_size not implemented for $(typeof(discretizer))"))
 end
 
 function grid_size(discretizer::Collocation)
@@ -33,9 +28,7 @@ function grid_size(discretizer::Collocation)
 end
 
 function scheme(discretizer::AbstractOptimalControlDiscretizer)
-    throw(
-        CTBase.NotImplemented("scheme not implemented for $(typeof(discretizer))")
-    )
+    throw(CTBase.NotImplemented("scheme not implemented for $(typeof(discretizer))"))
 end
 
 function scheme(discretizer::Collocation)
@@ -43,9 +36,7 @@ function scheme(discretizer::Collocation)
 end
 
 function scheme_symbol(discretizer::AbstractOptimalControlDiscretizer)
-    throw(
-        CTBase.NotImplemented("scheme_symbol not implemented for $(typeof(discretizer))")
-    )
+    throw(CTBase.NotImplemented("scheme_symbol not implemented for $(typeof(discretizer))"))
 end
 
 function scheme_symbol(::Collocation{T}) where {T<:AbstractIntegratorScheme}

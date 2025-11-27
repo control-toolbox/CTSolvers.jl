@@ -7,8 +7,10 @@ function test_ctmodels_problem_core()
         nlp_adnlp = rosenbrock_prob.build_adnlp_model(rosenbrock_init; show_time=false)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         Test.@test nlp_adnlp.meta.x0 == rosenbrock_init
-        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == rosenbrock_objective(rosenbrock_init)
-        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] == rosenbrock_constraint(rosenbrock_init)
+        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) ==
+            rosenbrock_objective(rosenbrock_init)
+        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] ==
+            rosenbrock_constraint(rosenbrock_init)
         Test.@test nlp_adnlp.meta.minimize == rosenbrock_is_minimize()
     end
 
@@ -18,8 +20,10 @@ function test_ctmodels_problem_core()
         Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
         Test.@test nlp_exa_cpu.meta.x0 == BaseType.(rosenbrock_init)
         Test.@test eltype(nlp_exa_cpu.meta.x0) == BaseType
-        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == rosenbrock_objective(BaseType.(rosenbrock_init))
-        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0)[1] == rosenbrock_constraint(BaseType.(rosenbrock_init))
+        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) ==
+            rosenbrock_objective(BaseType.(rosenbrock_init))
+        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0)[1] ==
+            rosenbrock_constraint(BaseType.(rosenbrock_init))
         Test.@test nlp_exa_cpu.meta.minimize == rosenbrock_is_minimize()
     end
 
@@ -72,7 +76,7 @@ function test_ctmodels_problem_core()
         Test.@test isabstracttype(CTSolvers.AbstractOptimizationProblem)
 
         Test.@test CTSolvers.ADNLPModelBuilder <: CTSolvers.AbstractModelBuilder
-        Test.@test CTSolvers.ExaModelBuilder  <: CTSolvers.AbstractModelBuilder
+        Test.@test CTSolvers.ExaModelBuilder <: CTSolvers.AbstractModelBuilder
     end
 
     # Tests for the generic "NotImplemented" behaviour of the get_* functions
@@ -85,5 +89,4 @@ function test_ctmodels_problem_core()
         Test.@test_throws CTBase.NotImplemented CTSolvers.get_adnlp_solution_builder(dummy)
         Test.@test_throws CTBase.NotImplemented CTSolvers.get_exa_solution_builder(dummy)
     end
-
 end

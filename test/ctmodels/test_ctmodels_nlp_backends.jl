@@ -17,8 +17,10 @@ function test_ctmodels_nlp_backends()
         nlp_adnlp = modeler(rosenbrock_prob, rosenbrock_init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         Test.@test nlp_adnlp.meta.x0 == rosenbrock_init
-        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == rosenbrock_objective(rosenbrock_init)
-        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] == rosenbrock_constraint(rosenbrock_init)
+        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) ==
+            rosenbrock_objective(rosenbrock_init)
+        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] ==
+            rosenbrock_constraint(rosenbrock_init)
         Test.@test nlp_adnlp.meta.minimize == rosenbrock_is_minimize()
 
         # Automatic Differentiation backends configured by backend_options
@@ -39,8 +41,10 @@ function test_ctmodels_nlp_backends()
         nlp_adnlp = modeler(elec_prob, elec_init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         Test.@test nlp_adnlp.meta.x0 == vcat(elec_init.x, elec_init.y, elec_init.z)
-        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == elec_objective(elec_init.x, elec_init.y, elec_init.z)
-        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0) == elec_constraint(elec_init.x, elec_init.y, elec_init.z)
+        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) ==
+            elec_objective(elec_init.x, elec_init.y, elec_init.z)
+        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0) ==
+            elec_constraint(elec_init.x, elec_init.y, elec_init.z)
         Test.@test nlp_adnlp.meta.minimize == elec_is_minimize()
     end
 
@@ -65,8 +69,10 @@ function test_ctmodels_nlp_backends()
         Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
         Test.@test nlp_exa_cpu.meta.x0 == BaseType.(rosenbrock_init)
         Test.@test eltype(nlp_exa_cpu.meta.x0) == BaseType
-        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == rosenbrock_objective(BaseType.(rosenbrock_init))
-        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0)[1] == rosenbrock_constraint(BaseType.(rosenbrock_init))
+        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) ==
+            rosenbrock_objective(BaseType.(rosenbrock_init))
+        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0)[1] ==
+            rosenbrock_constraint(BaseType.(rosenbrock_init))
         Test.@test nlp_exa_cpu.meta.minimize == rosenbrock_is_minimize()
     end
 
@@ -76,10 +82,15 @@ function test_ctmodels_nlp_backends()
         modeler = CTSolvers.ExaModeler(; base_type=BaseType)
         nlp_exa_cpu = modeler(elec_prob, elec_init)
         Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
-        Test.@test nlp_exa_cpu.meta.x0 == BaseType.(vcat(elec_init.x, elec_init.y, elec_init.z))
+        Test.@test nlp_exa_cpu.meta.x0 ==
+            BaseType.(vcat(elec_init.x, elec_init.y, elec_init.z))
         Test.@test eltype(nlp_exa_cpu.meta.x0) == BaseType
-        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_objective(BaseType.(elec_init.x), BaseType.(elec_init.y), BaseType.(elec_init.z))
-        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_constraint(BaseType.(elec_init.x), BaseType.(elec_init.y), BaseType.(elec_init.z))
+        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_objective(
+            BaseType.(elec_init.x), BaseType.(elec_init.y), BaseType.(elec_init.z)
+        )
+        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_constraint(
+            BaseType.(elec_init.x), BaseType.(elec_init.y), BaseType.(elec_init.z)
+        )
         Test.@test nlp_exa_cpu.meta.minimize == elec_is_minimize()
     end
 
@@ -101,8 +112,9 @@ function test_ctmodels_nlp_backends()
         # Default constructor should use the values from ctmodels/default.jl
         backend_default = CTSolvers.ADNLPModeler()
         Test.@test backend_default.show_time == CTSolvers.__adnlp_model_show_time()
-        Test.@test backend_default.backend    == CTSolvers.__adnlp_model_backend()
-        Test.@test backend_default.empty_backends == CTSolvers.__adnlp_model_empty_backends()
+        Test.@test backend_default.backend == CTSolvers.__adnlp_model_backend()
+        Test.@test backend_default.empty_backends ==
+            CTSolvers.__adnlp_model_empty_backends()
         Test.@test length(keys(backend_default.kwargs)) == 0
 
         # Custom backend and extra kwargs should be stored as-is
@@ -175,5 +187,4 @@ function test_ctmodels_nlp_backends()
         result = modeler(prob, stats)
         Test.@test result === stats
     end
-
 end

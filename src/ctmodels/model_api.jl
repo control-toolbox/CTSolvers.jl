@@ -2,15 +2,13 @@
 # NLP Model and Solution builders
 # ------------------------------------------------------------------------------
 function build_model(
-    prob::AbstractOptimizationProblem, 
-    initial_guess,
-    modeler::AbstractOptimizationModeler,
+    prob::AbstractOptimizationProblem, initial_guess, modeler::AbstractOptimizationModeler
 )
     return modeler(prob, initial_guess)
 end
 
 function nlp_model(
-    prob::DiscretizedOptimalControlProblem, 
+    prob::DiscretizedOptimalControlProblem,
     initial_guess,
     modeler::AbstractOptimizationModeler,
 )::NLPModels.AbstractNLPModel
@@ -18,15 +16,13 @@ function nlp_model(
 end
 
 function build_solution(
-    prob::AbstractOptimizationProblem, 
-    model_solution,
-    modeler::AbstractOptimizationModeler,
+    prob::AbstractOptimizationProblem, model_solution, modeler::AbstractOptimizationModeler
 )
     return modeler(prob, model_solution)
 end
 
 function ocp_solution(
-    docp::DiscretizedOptimalControlProblem, 
+    docp::DiscretizedOptimalControlProblem,
     model_solution::SolverCore.AbstractExecutionStats,
     modeler::AbstractOptimizationModeler,
 )::AbstractOptimalControlSolution
