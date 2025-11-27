@@ -1,60 +1,47 @@
 # ------------------------------------------------------------------------------
 # Model backends
 # ------------------------------------------------------------------------------
-abstract type AbstractOptimizationModeler end
+abstract type AbstractOptimizationModeler <: AbstractOCPTool end
 
 # ------------------------------------------------------------------------------
 # ADNLPModels
 # ------------------------------------------------------------------------------
-struct ADNLPModeler{EmptyBackends<:Tuple{Vararg{Symbol}},KW} <: AbstractOptimizationModeler
-    # attributes
-    show_time::Bool
-    backend::Symbol
-    empty_backends::EmptyBackends
-    kwargs::KW
+struct ADNLPModeler{Vals,Srcs} <: AbstractOptimizationModeler
+    options_values::Vals
+    options_sources::Srcs
+end
 
-    # constructor
-    function ADNLPModeler(;
-        show_time::Bool=__adnlp_model_show_time(),
-        backend::Symbol=__adnlp_model_backend(),
-        empty_backends::EmptyBackends=__adnlp_model_empty_backends(),
-        kwargs...,
-    ) where {EmptyBackends<:Tuple{Vararg{Symbol}}}
-        return new{EmptyBackends,typeof(kwargs)}(show_time, backend, empty_backends, kwargs)
-    end
+__adnlp_model_show_time() = false
+__adnlp_model_backend() = :optimized
+
+function _option_specs(::Type{<:ADNLPModeler})
+    return (
+        show_time = OptionSpec(
+            type=Bool,
+            default=__adnlp_model_show_time(),
+            description="Whether to show timing information while building the ADNLP model.",
+        ),
+        backend = OptionSpec(
+            type=Symbol,
+            default=__adnlp_model_backend(),
+            description="Automatic differentiation backend used by ADNLPModels.",
+        ),
+    )
+end
+
+function ADNLPModeler(; kwargs...)
+    values, sources = _build_ocp_tool_options(
+        ADNLPModeler; kwargs..., strict_keys=false)
+    return ADNLPModeler{typeof(values),typeof(sources)}(values, sources)
 end
 
 function (modeler::ADNLPModeler)(
     prob::AbstractOptimizationProblem, 
     initial_guess,
 )::ADNLPModels.ADNLPModel
-
-    # build the empty backends
-    empty_backends = Dict{Symbol,Type{ADNLPModels.EmptyADbackend}}()
-    for backend in modeler.empty_backends
-        empty_backends[backend] = ADNLPModels.EmptyADbackend
-    end
-
-    # build the backend options
-    # TODO: add sparsity pattern for ADNLPModels
-    # See https://github.com/control-toolbox/CTDirect.jl/blob/89da28d139fd5d3eecf815ceff57c3a68fda32f2/ext/CTDirectExtADNLP.jl#L38-L61
-    # Maybe, this must be set in the builder
-    backend_options = if modeler.backend==:manual # we define the AD backend manually with sparsity pattern (OCP)
-        (
-            gradient_backend=ADNLPModels.ReverseDiffADGradient,
-            jacobian_backend=ADNLPModels.SparseADJacobian,
-            hessian_backend=ADNLPModels.SparseReverseADHessian,
-            empty_backends...,
-        )
-    else
-        (backend=modeler.backend, empty_backends...)
-    end
-
-    # build the model
+    vals = _options_values(modeler)
     builder = get_adnlp_model_builder(prob)
-    return builder(
-        initial_guess; show_time=modeler.show_time, backend_options..., modeler.kwargs...
-    )
+    return builder(initial_guess; vals...)
 end
 
 function (modeler::ADNLPModeler)(
@@ -69,27 +56,56 @@ end
 # ExaModels
 # ------------------------------------------------------------------------------
 struct ExaModeler{
-    BaseType<:AbstractFloat,BackendType<:Union{Nothing,KernelAbstractions.Backend},KW
+    BaseType<:AbstractFloat,Vals,Srcs
 } <: AbstractOptimizationModeler
-    backend::BackendType
-    kwargs::KW
-    function ExaModeler(;
-        base_type::Type{<:AbstractFloat}=__exa_model_base_type(),
-        backend::Union{Nothing,KernelAbstractions.Backend}=__exa_model_backend(),
-        kwargs...,
-    )
-        return new{base_type,typeof(backend),typeof(kwargs)}(backend, kwargs)
-    end
+    options_values::Vals
+    options_sources::Srcs
 end
 
-function (modeler::ExaModeler{BaseType,BackendType,KW})(
+__exa_model_base_type() = Float64
+__exa_model_backend() = nothing
+
+function _option_specs(::Type{<:ExaModeler})
+    return (
+        base_type = OptionSpec(
+            type=Type{<:AbstractFloat},
+            default=__exa_model_base_type(),
+            description="Base floating-point type used by ExaModels.",
+        ),
+        minimize = OptionSpec(
+            type=Bool,
+            default=missing,
+            description="Whether to minimize (true) or maximize (false) the objective.",
+        ),
+        backend = OptionSpec(
+            type=Union{Nothing,KernelAbstractions.Backend},
+            default=__exa_model_backend(),
+            description="Execution backend for ExaModels (CPU, GPU, etc.).",
+        ),
+    )
+end
+
+function ExaModeler(; kwargs...)
+    values, sources = _build_ocp_tool_options(
+        ExaModeler; kwargs..., strict_keys=true)
+    BaseType = values.base_type
+
+    # base_type is only needed to fix the type parameter; it does not need to
+    # remain part of the exposed options NamedTuples.
+    filtered_vals = _filter_options(values, (:base_type,))
+    filtered_srcs = _filter_options(sources, (:base_type,))
+
+    return ExaModeler{BaseType,typeof(filtered_vals),typeof(filtered_srcs)}(filtered_vals, filtered_srcs)
+end
+
+function (modeler::ExaModeler{BaseType})(
     prob::AbstractOptimizationProblem, 
     initial_guess,
-)::ExaModels.ExaModel{BaseType} where {BaseType<:AbstractFloat,BackendType<:Union{Nothing,KernelAbstractions.Backend},KW}
+)::ExaModels.ExaModel{BaseType} where {BaseType<:AbstractFloat}
+    vals = _options_values(modeler)
+    backend = vals.backend
     builder = get_exa_model_builder(prob)
-    return builder(
-        BaseType, initial_guess; backend=modeler.backend, modeler.kwargs...
-    )
+    return builder(BaseType, initial_guess; backend=backend, vals...)
 end
 
 function (modeler::ExaModeler)(
@@ -98,4 +114,35 @@ function (modeler::ExaModeler)(
 )
     builder = get_exa_solution_builder(prob)
     return builder(nlp_solution)
+end
+
+# ------------------------------------------------------------------------------
+# Registration
+# ------------------------------------------------------------------------------
+
+get_symbol(::Type{<:ADNLPModeler}) = :adnlp
+get_symbol(::Type{<:ExaModeler})   = :exa
+
+tool_package_name(::Type{<:ADNLPModeler}) = "ADNLPModels"
+tool_package_name(::Type{<:ExaModeler})   = "ExaModels"
+
+const REGISTERED_MODELERS = (ADNLPModeler, ExaModeler)
+
+registered_modeler_types() = REGISTERED_MODELERS
+
+modeler_symbols() = Tuple(get_symbol(T) for T in REGISTERED_MODELERS)
+
+function _modeler_type_from_symbol(sym::Symbol)
+    for T in REGISTERED_MODELERS
+        if get_symbol(T) === sym
+            return T
+        end
+    end
+    msg = "Unknown NLP model symbol $(sym). Supported symbols: $(modeler_symbols())."
+    throw(CTBase.IncorrectArgument(msg))
+end
+
+function build_modeler_from_symbol(sym::Symbol; kwargs...)
+    T = _modeler_type_from_symbol(sym)
+    return T(; kwargs...)
 end

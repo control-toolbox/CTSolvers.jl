@@ -8,6 +8,7 @@ using NLPModels
 
 # default
 __mad_ncl_max_iter() = 1000
+__mad_ncl_tol() = 1e-8
 __mad_ncl_print_level() = MadNLP.INFO
 __mad_ncl_linear_solver() = MadNLPMumps.MumpsSolver
 function __mad_ncl_ncl_options()
@@ -21,7 +22,38 @@ function __mad_ncl_ncl_options()
     )
 end
 
-# solver interface
+base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseType
+
+function CTSolvers._option_specs(::Type{<:CTSolvers.MadNCLSolver})
+    return (
+        max_iter = CTSolvers.OptionSpec(
+            type=Integer,
+            default=__mad_ncl_max_iter(),
+            description="Maximum number of augmented Lagrangian iterations.",
+        ),
+        tol = CTSolvers.OptionSpec(
+            type=Real,
+            default=__mad_ncl_tol(),
+            description="Optimality tolerance.",
+        ),
+        print_level = CTSolvers.OptionSpec(
+            type=MadNLP.LogLevels,
+            default=__mad_ncl_print_level(),
+            description="MadNCL/MadNLP logging level.",
+        ),
+        linear_solver = CTSolvers.OptionSpec(
+            type=Type{<:MadNLP.AbstractLinearSolver},
+            default=__mad_ncl_linear_solver(),
+            description="Linear solver implementation used inside MadNCL.",
+        ),
+        ncl_options = CTSolvers.OptionSpec(
+            type=MadNCL.NCLOptions,
+            default=__mad_ncl_ncl_options(),
+            description="Low-level NCLOptions structure controlling the augmented Lagrangian algorithm.",
+        ),
+    )
+end
+
 function CTSolvers.solve_with_madncl(
     nlp::NLPModels.AbstractNLPModel; ncl_options::MadNCL.NCLOptions, kwargs...
 )::MadNCL.NCLStats
@@ -30,28 +62,18 @@ function CTSolvers.solve_with_madncl(
 end
 
 # backend constructor
-function CTSolvers.MadNCLSolver(;
-    max_iter::Int=__mad_ncl_max_iter(),
-    print_level::MadNLP.LogLevels=__mad_ncl_print_level(),
-    linear_solver::Type{<:MadNLP.AbstractLinearSolver}=__mad_ncl_linear_solver(),
-    ncl_options::MadNCL.NCLOptions{BaseType}=__mad_ncl_ncl_options(),
-    kwargs...,
-) where {BaseType<:AbstractFloat}
-    options = (
-        :max_iter => max_iter,
-        :print_level => print_level,
-        :linear_solver => linear_solver,
-        :ncl_options => ncl_options,
-        kwargs...,
-    )
-    return CTSolvers.MadNCLSolver{BaseType,typeof(options)}(options)
+function CTSolvers.MadNCLSolver(; kwargs...)
+    values, sources = CTSolvers._build_ocp_tool_options(
+        CTSolvers.MadNCLSolver; kwargs..., strict_keys=false)
+    BaseType = base_type(values.ncl_options)
+    return CTSolvers.MadNCLSolver{BaseType,typeof(values),typeof(sources)}(values, sources)
 end
 
 function (solver::CTSolvers.MadNCLSolver{BaseType})(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::MadNCL.NCLStats where {BaseType<:AbstractFloat}
     # options control
-    options = Dict(solver.options)
+    options = Dict(pairs(CTSolvers._options_values(solver)))
     if !display
         options[:print_level] = MadNLP.ERROR
         ncl_options_dict = Dict()

@@ -6,7 +6,7 @@ function test_aqua()
             ambiguities=false,
             #stale_deps=(ignore=[:SomePackage],),
             deps_compat=(ignore=[:LinearAlgebra, :Unicode],),
-            piracies=true,
+            piracies=(treat_as_own=[CommonSolve.solve],),
         )
         # do not warn about ambiguities in dependencies
         Aqua.test_ambiguities(CTSolvers)

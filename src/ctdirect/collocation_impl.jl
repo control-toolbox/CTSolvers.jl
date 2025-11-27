@@ -1,8 +1,37 @@
 function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
 
+    SchemeSymbol = Dict(
+        Midpoint => :midpoint,
+        Trapezoidal => :trapeze,
+        Trapeze => :trapeze,
+    )
+
+    function scheme_symbol(discretizer::Collocation)
+        scheme = CTSolvers.get_option_value(discretizer, :scheme)
+        return SchemeSymbol[typeof(scheme)]
+    end
+
     function get_docp(initial_guess::Union{AbstractOptimalControlInitialGuess, Nothing}, modeler::Symbol; kwargs...)
         scheme_ctdirect = scheme_symbol(discretizer)
-        init_ctdirect = (initial_guess === nothing) ? nothing : (state = state(initial_guess), control = control(initial_guess), variable = variable(initial_guess))
+        init_ctdirect = (initial_guess === nothing) ? 
+            nothing : 
+            (
+                state = state(initial_guess), 
+                control = control(initial_guess), 
+                variable = variable(initial_guess)
+            )
+
+        # Unified grid option: Int => grid_size, Vector => explicit time_grid
+        grid = CTSolvers.get_option_value(discretizer, :grid)
+        if grid isa Int
+            grid_size = grid
+            time_grid = nothing
+        else
+            grid_size = length(grid)
+            time_grid = grid
+        end
+
+        lagrange_to_mayer = CTSolvers.get_option_value(discretizer, :lagrange_to_mayer)
 
         if modeler == :exa && haskey(kwargs, :backend)
             # Route ExaModeler backend to CTDirect via exa_backend and drop backend from forwarded kwargs.
@@ -11,10 +40,11 @@ function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
             docp = CTDirect.direct_transcription(
                 ocp,
                 modeler;
-                grid_size=CTSolvers.grid_size(discretizer),
-                scheme=scheme_ctdirect,
+                grid_size=grid_size,
+                disc_method=scheme_ctdirect,
                 init=init_ctdirect,
-                lagrange_to_mayer=false,
+                lagrange_to_mayer=lagrange_to_mayer,
+                time_grid=time_grid,
                 exa_backend=exa_backend,
                 filtered_kwargs...,
             )
@@ -22,10 +52,11 @@ function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
             docp = CTDirect.direct_transcription(
                 ocp,
                 modeler;
-                grid_size=CTSolvers.grid_size(discretizer),
-                scheme=scheme_ctdirect,
+                grid_size=grid_size,
+                disc_method=scheme_ctdirect,
                 init=init_ctdirect,
-                lagrange_to_mayer=false,
+                lagrange_to_mayer=lagrange_to_mayer,
+                time_grid=time_grid,
                 kwargs...,
             )
         end

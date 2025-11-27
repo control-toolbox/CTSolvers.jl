@@ -13,6 +13,41 @@ __nlp_models_ipopt_mu_strategy() = "adaptive"
 __nlp_models_ipopt_linear_solver() = "Mumps"
 __nlp_models_ipopt_sb() = "yes"
 
+function CTSolvers._option_specs(::Type{<:CTSolvers.IpoptSolver})
+    return (
+        max_iter = CTSolvers.OptionSpec(
+            type=Integer,
+            default=__nlp_models_ipopt_max_iter(),
+            description="Maximum number of iterations.",
+        ),
+        tol = CTSolvers.OptionSpec(
+            type=Real,
+            default=__nlp_models_ipopt_tol(),
+            description="Optimality tolerance.",
+        ),
+        print_level = CTSolvers.OptionSpec(
+            type=Integer,
+            default=__nlp_models_ipopt_print_level(),
+            description="Ipopt print level.",
+        ),
+        mu_strategy = CTSolvers.OptionSpec(
+            type=String,
+            default=__nlp_models_ipopt_mu_strategy(),
+            description="Strategy used to update the barrier parameter.",
+        ),
+        linear_solver = CTSolvers.OptionSpec(
+            type=String,
+            default=__nlp_models_ipopt_linear_solver(),
+            description="Linear solver used by Ipopt.",
+        ),
+        sb = CTSolvers.OptionSpec(
+            type=String,
+            default=__nlp_models_ipopt_sb(),
+            description="Ipopt 'sb' (screen output) option, typically 'yes' or 'no'.",
+        ),
+    )
+end
+
 # solver interface
 function CTSolvers.solve_with_ipopt(
     nlp::NLPModels.AbstractNLPModel; kwargs...
@@ -22,30 +57,16 @@ function CTSolvers.solve_with_ipopt(
 end
 
 # backend constructor
-function CTSolvers.IpoptSolver(;
-    max_iter::Int=__nlp_models_ipopt_max_iter(),
-    tol::Float64=__nlp_models_ipopt_tol(),
-    print_level::Int=__nlp_models_ipopt_print_level(),
-    mu_strategy::String=__nlp_models_ipopt_mu_strategy(),
-    linear_solver::String=__nlp_models_ipopt_linear_solver(),
-    sb::String=__nlp_models_ipopt_sb(),
-    kwargs...,
-)
-    return CTSolvers.IpoptSolver((
-        :max_iter => max_iter,
-        :tol => tol,
-        :print_level => print_level,
-        :mu_strategy => mu_strategy,
-        :linear_solver => linear_solver,
-        :sb => sb,
-        kwargs...,
-    ))
+function CTSolvers.IpoptSolver(; kwargs...)
+    values, sources = CTSolvers._build_ocp_tool_options(
+        CTSolvers.IpoptSolver; kwargs..., strict_keys=false)
+    return CTSolvers.IpoptSolver(values, sources)
 end
 
 function (solver::CTSolvers.IpoptSolver)(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::SolverCore.GenericExecutionStats
-    options = Dict(solver.options)
+    options = Dict(pairs(CTSolvers._options_values(solver)))
     options[:print_level] = display ? options[:print_level] : 0
     return CTSolvers.solve_with_ipopt(nlp; options...)
 end

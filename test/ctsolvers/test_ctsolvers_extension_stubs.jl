@@ -1,7 +1,7 @@
 # Unit tests for CTSolvers extension stubs throwing CTBase.ExtensionError when backends are unavailable.
 function test_ctsolvers_extension_stubs()
 
-    Test.@testset "ctsolvers/extension_stubs: solve_with_* throws ExtensionError" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "solve_with_* throws ExtensionError" verbose=VERBOSE showtiming=SHOWTIMING begin
 
         # NLPModelsIpopt stub must throw a CTBase.ExtensionError when the
         # Ipopt extension is not loaded.
