@@ -34,8 +34,22 @@ function test_ctsolvers_extensions_madncl()
         Test.@test opts_ncl.max_iter == CTSolversMadNCL.__mad_ncl_max_iter()
         Test.@test opts_ncl.print_level == CTSolversMadNCL.__mad_ncl_print_level()
         Test.@test opts_ncl.linear_solver == CTSolversMadNCL.__mad_ncl_linear_solver()
+
+        solver_inst = CTSolvers.MadNCLSolver()
+        madncl_type = typeof(solver_inst)
+
+        opts_ncl_from_inst = CTSolvers.default_options(madncl_type)
+        Test.@test opts_ncl_from_inst == opts_ncl
+
+        keys_type = CTSolvers.options_keys(CTSolvers.MadNCLSolver)
+        keys_inst = CTSolvers.options_keys(madncl_type)
+        Test.@test Set(keys_inst) == Set(keys_type)
+
         Test.@test CTSolvers.option_default(:max_iter,    CTSolvers.MadNCLSolver) == CTSolversMadNCL.__mad_ncl_max_iter()
         Test.@test CTSolvers.option_default(:print_level, CTSolvers.MadNCLSolver) == CTSolversMadNCL.__mad_ncl_print_level()
+
+        Test.@test CTSolvers.option_default(:max_iter,    madncl_type) == CTSolversMadNCL.__mad_ncl_max_iter()
+        Test.@test CTSolvers.option_default(:print_level, madncl_type) == CTSolversMadNCL.__mad_ncl_print_level()
     end
 
     # ========================================================================

@@ -287,6 +287,13 @@ end
 # ------------------------------------------------------------------------
 # Top-level solve entry: unifies explicit and description modes.
 
+const _SOLVE_INITIAL_GUESS_ALIASES = (:initial_guess, :init, :i)
+const _SOLVE_DISCRETIZER_ALIASES   = (:discretizer, :d)
+const _SOLVE_MODELER_ALIASES       = (:modeler, :modeller, :m)
+const _SOLVE_SOLVER_ALIASES        = (:solver, :s)
+const _SOLVE_DISPLAY_ALIASES       = (:display,)
+const _SOLVE_MODELER_OPTIONS_ALIASES = (:modeler_options,)
+
 solve_ocp_option_keys_explicit_mode() = (:initial_guess, :display)
 
 struct _ParsedTopLevelKwargs
@@ -299,16 +306,71 @@ struct _ParsedTopLevelKwargs
     other_kwargs::NamedTuple
 end
 
-function _parse_top_level_kwargs(kwargs::NamedTuple)
-    initial_guess = haskey(kwargs, :initial_guess) ? kwargs[:initial_guess] : __initial_guess()
-    display       = haskey(kwargs, :display)       ? kwargs[:display]       : __display()
-    discretizer   = haskey(kwargs, :discretizer)   ? kwargs[:discretizer]   : nothing
-    modeler       = haskey(kwargs, :modeler)       ? kwargs[:modeler]       : nothing
-    solver        = haskey(kwargs, :solver)        ? kwargs[:solver]        : nothing
-    modeler_options = haskey(kwargs, :modeler_options) ? kwargs[:modeler_options] : nothing
+function _take_solve_kwarg(
+    kwargs::NamedTuple,
+    names::Tuple{Vararg{Symbol}},
+    default;
+    only_solve_owner::Bool=false,
+)
+    present = Symbol[]
+    for n in names
+        if haskey(kwargs, n)
+            if only_solve_owner
+                raw = kwargs[n]
+                _, explicit_tool = _extract_option_tool(raw)
+                if !(explicit_tool === nothing || explicit_tool === :solve)
+                    continue
+                end
+            end
+            push!(present, n)
+        end
+    end
 
-    known_keys = (:initial_guess, :display, :discretizer, :modeler, :solver, :modeler_options)
-    other_kwargs = (; (k => v for (k, v) in pairs(kwargs) if !(k in known_keys))...)
+    if isempty(present)
+        return default, kwargs
+    elseif length(present) == 1
+        name = present[1]
+        value = kwargs[name]
+        remaining = (; (k => v for (k, v) in pairs(kwargs) if k != name)...)
+        return value, remaining
+    else
+        msg = "Conflicting aliases $(present) for argument $(names[1]). " *
+              "Use only one of $(names)."
+        throw(CTBase.IncorrectArgument(msg))
+    end
+end
+
+function _parse_top_level_kwargs(kwargs::NamedTuple)
+    initial_guess, kwargs1 = _take_solve_kwarg(
+        kwargs,
+        _SOLVE_INITIAL_GUESS_ALIASES,
+        __initial_guess(),
+    )
+    display, kwargs2 = _take_solve_kwarg(
+        kwargs1,
+        _SOLVE_DISPLAY_ALIASES,
+        __display(),
+    )
+    discretizer, kwargs3 = _take_solve_kwarg(
+        kwargs2,
+        _SOLVE_DISCRETIZER_ALIASES,
+        nothing,
+    )
+    modeler, kwargs4 = _take_solve_kwarg(
+        kwargs3,
+        _SOLVE_MODELER_ALIASES,
+        nothing,
+    )
+    solver, kwargs5 = _take_solve_kwarg(
+        kwargs4,
+        _SOLVE_SOLVER_ALIASES,
+        nothing,
+    )
+    modeler_options, other_kwargs = _take_solve_kwarg(
+        kwargs5,
+        _SOLVE_MODELER_OPTIONS_ALIASES,
+        nothing,
+    )
 
     return _ParsedTopLevelKwargs(
         initial_guess,
@@ -335,43 +397,59 @@ function _parse_top_level_kwargs_description(kwargs::NamedTuple)
     modeler_options = nothing
 
     # Reserved keywords
-    if haskey(kwargs, :initial_guess)
-        raw = kwargs[:initial_guess]
-        # Currently initial_guess is unambiguously a top-level option for the
-        # solve call. We still pass it through the routing helper with a
-        # single owner (:solve) so that future owners (e.g., :solver) can be
-        # added without changing the parsing structure.
-        value, _ = _route_option_for_description(:initial_guess, raw, Symbol[:solve], :description)
-        initial_guess = value
-    end
+    initial_guess_raw, kwargs1 = _take_solve_kwarg(
+        kwargs,
+        _SOLVE_INITIAL_GUESS_ALIASES,
+        __initial_guess();
+        only_solve_owner=true,
+    )
+    value, _ = _route_option_for_description(
+        :initial_guess,
+        initial_guess_raw,
+        Symbol[:solve],
+        :description,
+    )
+    initial_guess = value
 
-    if haskey(kwargs, :display)
-        display = kwargs[:display]
-    end
+    display_raw, kwargs2 = _take_solve_kwarg(
+        kwargs1,
+        _SOLVE_DISPLAY_ALIASES,
+        __display();
+        only_solve_owner=true,
+    )
+    display_unwrapped, _ = _extract_option_tool(display_raw)
+    display = display_unwrapped
 
-    if haskey(kwargs, :modeler_options)
-        modeler_options = kwargs[:modeler_options]
-    end
+    modeler_options_raw, kwargs3 = _take_solve_kwarg(
+        kwargs2,
+        _SOLVE_MODELER_OPTIONS_ALIASES,
+        nothing;
+        only_solve_owner=true,
+    )
+    modeler_options_unwrapped, _ = _extract_option_tool(modeler_options_raw)
+    modeler_options = modeler_options_unwrapped
 
     # Explicit components, if any
-    if haskey(kwargs, :discretizer)
-        discretizer = kwargs[:discretizer]
-    end
-    if haskey(kwargs, :modeler)
-        modeler = kwargs[:modeler]
-    end
-    if haskey(kwargs, :solver)
-        solver = kwargs[:solver]
-    end
+    discretizer, kwargs4 = _take_solve_kwarg(
+        kwargs3,
+        _SOLVE_DISCRETIZER_ALIASES,
+        nothing,
+    )
+    modeler, kwargs5 = _take_solve_kwarg(
+        kwargs4,
+        _SOLVE_MODELER_ALIASES,
+        nothing,
+    )
+    solver, kwargs6 = _take_solve_kwarg(
+        kwargs5,
+        _SOLVE_SOLVER_ALIASES,
+        nothing,
+    )
 
     # Everything else goes to other_kwargs and will be routed to discretizer
     # or solver by the description-mode splitter.
-    known_keys = (:initial_guess, :display, :discretizer, :modeler, :solver, :modeler_options)
     other_pairs = Pair{Symbol,Any}[]
-    for (k, v) in pairs(kwargs)
-        if k in known_keys
-            continue
-        end
+    for (k, v) in pairs(kwargs6)
         push!(other_pairs, k => v)
     end
 
@@ -384,6 +462,42 @@ function _parse_top_level_kwargs_description(kwargs::NamedTuple)
         modeler_options,
         (; other_pairs...),
     )
+end
+
+function _ensure_no_ambiguous_description_kwargs(
+    method::Tuple,
+    kwargs::NamedTuple,
+)
+    disc_keys   = Set(_discretizer_options_keys(method))
+    model_keys  = Set(_modeler_options_keys(method))
+    solver_keys = Set(_solver_options_keys(method))
+
+    for (k, raw) in pairs(kwargs)
+        owners = Symbol[]
+
+        if (k in _SOLVE_INITIAL_GUESS_ALIASES) ||
+           (k in _SOLVE_DISCRETIZER_ALIASES)   ||
+           (k in _SOLVE_MODELER_ALIASES)       ||
+           (k in _SOLVE_SOLVER_ALIASES)        ||
+           (k in _SOLVE_DISPLAY_ALIASES)       ||
+           (k in _SOLVE_MODELER_OPTIONS_ALIASES)
+            push!(owners, :solve)
+        end
+
+        if k in disc_keys
+            push!(owners, :discretizer)
+        end
+        if k in model_keys
+            push!(owners, :modeler)
+        end
+        if k in solver_keys
+            push!(owners, :solver)
+        end
+
+        _route_option_for_description(k, raw, owners, :description)
+    end
+
+    return nothing
 end
 
 function _has_explicit_components(parsed::_ParsedTopLevelKwargs)
@@ -595,6 +709,10 @@ function _solve_descriptif_mode(
     kwargs...,
 )::AbstractOptimalControlSolution
 
+    method = CTBase.complete(description...; descriptions=available_methods())
+
+    _ensure_no_ambiguous_description_kwargs(method, (; kwargs...))
+
     parsed = _parse_top_level_kwargs_description((; kwargs...))
 
     if _has_explicit_components(parsed)
@@ -602,7 +720,6 @@ function _solve_descriptif_mode(
         throw(CTBase.IncorrectArgument(msg))
     end
 
-    method = CTBase.complete(description...; descriptions=available_methods())
     return _solve_from_complete_description(ocp, method, parsed)
 end
 

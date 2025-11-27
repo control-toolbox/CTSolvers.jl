@@ -14,7 +14,7 @@ end
 __adnlp_model_show_time() = false
 __adnlp_model_backend() = :optimized
 
-function _option_specs(::Type{ADNLPModeler})
+function _option_specs(::Type{<:ADNLPModeler})
     return (
         show_time = OptionSpec(
             type=Bool,
@@ -65,7 +65,7 @@ end
 __exa_model_base_type() = Float64
 __exa_model_backend() = nothing
 
-function _option_specs(::Type{ExaModeler})
+function _option_specs(::Type{<:ExaModeler})
     return (
         base_type = OptionSpec(
             type=Type{<:AbstractFloat},

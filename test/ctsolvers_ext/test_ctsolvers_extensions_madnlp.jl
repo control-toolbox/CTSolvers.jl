@@ -27,8 +27,22 @@ function test_ctsolvers_extensions_madnlp()
         Test.@test opts_mad.max_iter == CTSolversMadNLP.__mad_nlp_max_iter()
         Test.@test opts_mad.tol == CTSolversMadNLP.__mad_nlp_tol()
         Test.@test opts_mad.print_level == CTSolversMadNLP.__mad_nlp_print_level()
+
+        solver_inst = CTSolvers.MadNLPSolver()
+        madnlp_type = typeof(solver_inst)
+
+        opts_mad_from_inst = CTSolvers.default_options(madnlp_type)
+        Test.@test opts_mad_from_inst == opts_mad
+
+        keys_type = CTSolvers.options_keys(CTSolvers.MadNLPSolver)
+        keys_inst = CTSolvers.options_keys(madnlp_type)
+        Test.@test Set(keys_inst) == Set(keys_type)
+
         Test.@test CTSolvers.option_default(:max_iter, CTSolvers.MadNLPSolver) == CTSolversMadNLP.__mad_nlp_max_iter()
         Test.@test CTSolvers.option_default(:tol,      CTSolvers.MadNLPSolver) == CTSolversMadNLP.__mad_nlp_tol()
+
+        Test.@test CTSolvers.option_default(:max_iter, madnlp_type) == CTSolversMadNLP.__mad_nlp_max_iter()
+        Test.@test CTSolvers.option_default(:tol,      madnlp_type) == CTSolversMadNLP.__mad_nlp_tol()
     end
 
     # ========================================================================

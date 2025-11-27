@@ -31,8 +31,22 @@ function test_ctsolvers_extensions_ipopt()
         Test.@test opts_ipopt.max_iter == CTSolversIpopt.__nlp_models_ipopt_max_iter()
         Test.@test opts_ipopt.tol == CTSolversIpopt.__nlp_models_ipopt_tol()
         Test.@test opts_ipopt.print_level == CTSolversIpopt.__nlp_models_ipopt_print_level()
+
+        solver_inst = CTSolvers.IpoptSolver()
+        ipopt_type = typeof(solver_inst)
+
+        opts_ipopt_from_inst = CTSolvers.default_options(ipopt_type)
+        Test.@test opts_ipopt_from_inst == opts_ipopt
+
+        keys_type = CTSolvers.options_keys(CTSolvers.IpoptSolver)
+        keys_inst = CTSolvers.options_keys(ipopt_type)
+        Test.@test Set(keys_inst) == Set(keys_type)
+
         Test.@test CTSolvers.option_default(:max_iter, CTSolvers.IpoptSolver) == CTSolversIpopt.__nlp_models_ipopt_max_iter()
         Test.@test CTSolvers.option_default(:tol,      CTSolvers.IpoptSolver) == CTSolversIpopt.__nlp_models_ipopt_tol()
+
+        Test.@test CTSolvers.option_default(:max_iter, ipopt_type) == CTSolversIpopt.__nlp_models_ipopt_max_iter()
+        Test.@test CTSolvers.option_default(:tol,      ipopt_type) == CTSolversIpopt.__nlp_models_ipopt_tol()
     end
 
     # ========================================================================

@@ -32,21 +32,24 @@ function test_ctdirect_core_types()
         # options API. This keeps the test aligned with the public access
         # pattern instead of calling low-level helpers directly.
         default_colloc = CTSolvers.Collocation()
-        default_grid = CTSolvers.get_option_value(default_colloc, :grid_size)
+        default_grid = CTSolvers.get_option_value(default_colloc, :grid)
         default_scheme = CTSolvers.get_option_value(default_colloc, :scheme)
+        default_l2m = CTSolvers.get_option_value(default_colloc, :lagrange_to_mayer)
 
         # Sanity checks on defaults
         Test.@test default_grid isa Int
         Test.@test default_grid > 0
         Test.@test default_scheme isa CTSolvers.AbstractIntegratorScheme
         Test.@test default_scheme isa CTSolvers.Midpoint
+        Test.@test default_l2m === false
 
-        # Explicitly construct Collocation with given grid size and scheme
-        colloc = CTSolvers.Collocation(; grid_size=default_grid, scheme=default_scheme)
+        # Explicitly construct Collocation with given grid and scheme
+        colloc = CTSolvers.Collocation(; grid=default_grid, scheme=default_scheme, lagrange_to_mayer=true)
 
-        # Collocation options should expose the stored grid_size and scheme via options_values
-        Test.@test CTSolvers.get_option_value(colloc, :grid_size) == default_grid
+        # Collocation options should expose the stored grid and scheme via options_values
+        Test.@test CTSolvers.get_option_value(colloc, :grid) == default_grid
         Test.@test CTSolvers.get_option_value(colloc, :scheme)    === default_scheme
+        Test.@test CTSolvers.get_option_value(colloc, :lagrange_to_mayer) === true
 
         # The type parameter of Collocation should reflect the concrete scheme type
         Test.@test default_colloc isa CTSolvers.Collocation{CTSolvers.Midpoint}
@@ -69,11 +72,11 @@ function test_ctdirect_core_types()
         # discretizer. Use the defaults read from a Collocation instance so
         # that we stay on the generic options API.
         base_disc = CTSolvers.Collocation()
-        default_grid = CTSolvers.get_option_value(base_disc, :grid_size)
+        default_grid = CTSolvers.get_option_value(base_disc, :grid)
         default_scheme = CTSolvers.get_option_value(base_disc, :scheme)
-        disc = CTSolvers.build_discretizer_from_symbol(:collocation; grid_size=default_grid, scheme=default_scheme)
+        disc = CTSolvers.build_discretizer_from_symbol(:collocation; grid=default_grid, scheme=default_scheme)
         Test.@test disc isa CTSolvers.Collocation
-        Test.@test CTSolvers.get_option_value(disc, :grid_size) == default_grid
+        Test.@test CTSolvers.get_option_value(disc, :grid) == default_grid
         Test.@test CTSolvers.get_option_value(disc, :scheme)    === default_scheme
     end
 
@@ -98,14 +101,32 @@ function test_ctdirect_core_types()
         # Read the defaults through the generic options API on a default
         # Collocation instance instead of calling low-level helpers.
         base_disc = CTSolvers.Collocation()
-        default_grid = CTSolvers.get_option_value(base_disc, :grid_size)
+        default_grid = CTSolvers.get_option_value(base_disc, :grid)
         default_scheme = CTSolvers.get_option_value(base_disc, :scheme)
+        default_l2m = CTSolvers.get_option_value(base_disc, :lagrange_to_mayer)
 
-        Test.@test opts.grid_size == default_grid
+        Test.@test opts.grid == default_grid
         Test.@test opts.scheme    === default_scheme
+        Test.@test opts.lagrange_to_mayer === default_l2m
 
-        Test.@test CTSolvers.option_default(:grid_size, CTSolvers.Collocation) == default_grid
+        # Type-based and instance-based views of the options metadata should agree.
+        colloc_type = typeof(base_disc)
+
+        opts_from_type = CTSolvers.default_options(CTSolvers.Collocation)
+        opts_from_inst = CTSolvers.default_options(colloc_type)
+        Test.@test opts_from_inst == opts_from_type
+
+        keys_from_type = CTSolvers.options_keys(CTSolvers.Collocation)
+        keys_from_inst = CTSolvers.options_keys(colloc_type)
+        Test.@test Set(keys_from_inst) == Set(keys_from_type)
+
+        Test.@test CTSolvers.option_default(:grid, CTSolvers.Collocation) == default_grid
         Test.@test CTSolvers.option_default(:scheme, CTSolvers.Collocation)    === default_scheme
+        Test.@test CTSolvers.option_default(:grid, colloc_type) == default_grid
+        Test.@test CTSolvers.option_default(:scheme,    colloc_type) === default_scheme
+
+        Test.@test CTSolvers.option_default(:lagrange_to_mayer, CTSolvers.Collocation) === false
+        Test.@test CTSolvers.option_default(:lagrange_to_mayer, colloc_type) === false
     end
 
 end

@@ -73,6 +73,7 @@ function test_ctdirect_collocation_impl()
         # Stub CTDirect.direct_transcription for DummyOCPExaRouting to record kwargs
         CM_ExaRecordedCollocation[] = nothing
 
+        # Case 1: default grid (Int) and default lagrange_to_mayer=false
         discretizer = CTSolvers.Collocation()
         docp = discretizer(ocp)
 
@@ -90,7 +91,16 @@ function test_ctdirect_collocation_impl()
         Test.@test rec !== nothing
         Test.@test rec[:modeler] === :exa
 
+        grid_default = CTSolvers.get_option_value(discretizer, :grid)
+        Test.@test rec[:grid_size] == grid_default
+        Test.@test rec[:lagrange_to_mayer] === false
+
         kw = rec[:kwargs]
+        # time_grid should be absent or nothing for Int grid
+        if haskey(kw, :time_grid)
+            Test.@test kw[:time_grid] === nothing
+        end
+
         # backend should have been rerouted to exa_backend
         Test.@test haskey(kw, :exa_backend)
         Test.@test kw[:exa_backend] === :gpu
@@ -99,6 +109,25 @@ function test_ctdirect_collocation_impl()
         # other kwargs are preserved
         Test.@test haskey(kw, :foo)
         Test.@test kw[:foo] == 1
+
+        # Case 2: explicit time grid (Vector) and lagrange_to_mayer=true
+        CM_ExaRecordedCollocation[] = nothing
+        grid_vec = collect(range(0.0, 1.0; length=5))
+        discretizer2 = CTSolvers.Collocation(; grid=grid_vec, lagrange_to_mayer=true)
+        docp2 = discretizer2(ocp)
+        exa_builder2 = CTSolvers.get_exa_model_builder(docp2)
+        exa_nlp2 = exa_builder2(BaseType, init_guess; backend=:gpu)
+        Test.@test exa_nlp2 isa ExaModels.ExaModel
+
+        rec2 = CM_ExaRecordedCollocation[]
+        Test.@test rec2 !== nothing
+        Test.@test rec2[:modeler] === :exa
+        Test.@test rec2[:grid_size] == length(grid_vec)
+        Test.@test rec2[:lagrange_to_mayer] === true
+
+        kw2 = rec2[:kwargs]
+        Test.@test haskey(kw2, :time_grid)
+        Test.@test kw2[:time_grid] === grid_vec
     end
 
 end

@@ -170,12 +170,25 @@ function test_ctmodels_nlp_backends()
         Test.@test :show_time in keys_ad
         Test.@test :backend   in keys_ad
 
+        ad_backend = CTSolvers.ADNLPModeler()
+        ad_type_from_instance = typeof(ad_backend)
+
+        keys_ad_inst = CTSolvers.options_keys(ad_type_from_instance)
+        Test.@test Set(keys_ad_inst) == Set(keys_ad)
+
         Test.@test CTSolvers.option_type(:show_time, CTSolvers.ADNLPModeler) == Bool
         Test.@test CTSolvers.option_type(:backend,   CTSolvers.ADNLPModeler) == Symbol
+
+        Test.@test CTSolvers.option_type(:show_time, ad_type_from_instance) == Bool
+        Test.@test CTSolvers.option_type(:backend,   ad_type_from_instance) == Symbol
 
         desc_backend = CTSolvers.option_description(:backend, CTSolvers.ADNLPModeler)
         Test.@test desc_backend isa AbstractString
         Test.@test !isempty(desc_backend)
+
+        desc_backend_inst = CTSolvers.option_description(:backend, ad_type_from_instance)
+        Test.@test desc_backend_inst isa AbstractString
+        Test.@test !isempty(desc_backend_inst)
 
         # Invalid type for a known option should trigger a CTBase.IncorrectArgument
         Test.@test_throws CTBase.IncorrectArgument CTSolvers.ADNLPModeler(; show_time="yes")
@@ -187,8 +200,17 @@ function test_ctmodels_nlp_backends()
         Test.@test :backend   in keys_exa
         Test.@test :minimize  in keys_exa
 
+        exa_backend = CTSolvers.ExaModeler()
+        exa_type_from_instance = typeof(exa_backend)
+
+        keys_exa_inst = CTSolvers.options_keys(exa_type_from_instance)
+        Test.@test Set(keys_exa_inst) == Set(keys_exa)
+
         Test.@test CTSolvers.option_type(:base_type, CTSolvers.ExaModeler) <: Type{<:AbstractFloat}
         Test.@test CTSolvers.option_type(:minimize,  CTSolvers.ExaModeler) == Bool
+
+        Test.@test CTSolvers.option_type(:base_type, exa_type_from_instance) <: Type{<:AbstractFloat}
+        Test.@test CTSolvers.option_type(:minimize,  exa_type_from_instance) == Bool
 
         # Invalid type for a known option should trigger a CTBase.IncorrectArgument
         Test.@test_throws CTBase.IncorrectArgument CTSolvers.ExaModeler(; minimize=1)
@@ -214,8 +236,17 @@ function test_ctmodels_nlp_backends()
         Test.@test opts_ad.show_time == CTSolvers.__adnlp_model_show_time()
         Test.@test opts_ad.backend   == CTSolvers.__adnlp_model_backend()
 
+        ad_backend = CTSolvers.ADNLPModeler()
+        ad_type_from_instance = typeof(ad_backend)
+
+        opts_ad_inst = CTSolvers.default_options(ad_type_from_instance)
+        Test.@test opts_ad_inst == opts_ad
+
         Test.@test CTSolvers.option_default(:show_time, CTSolvers.ADNLPModeler) == CTSolvers.__adnlp_model_show_time()
         Test.@test CTSolvers.option_default(:backend,   CTSolvers.ADNLPModeler) == CTSolvers.__adnlp_model_backend()
+
+        Test.@test CTSolvers.option_default(:show_time, ad_type_from_instance) == CTSolvers.__adnlp_model_show_time()
+        Test.@test CTSolvers.option_default(:backend,   ad_type_from_instance) == CTSolvers.__adnlp_model_backend()
 
         # ExaModeler defaults: base_type and backend have defaults, minimize has none.
         opts_exa = CTSolvers.default_options(CTSolvers.ExaModeler)
@@ -223,9 +254,19 @@ function test_ctmodels_nlp_backends()
         Test.@test opts_exa.backend   === CTSolvers.__exa_model_backend()
         Test.@test :minimize ∉ propertynames(opts_exa)
 
+        exa_backend = CTSolvers.ExaModeler()
+        exa_type_from_instance = typeof(exa_backend)
+
+        opts_exa_inst = CTSolvers.default_options(exa_type_from_instance)
+        Test.@test opts_exa_inst == opts_exa
+
         Test.@test CTSolvers.option_default(:base_type, CTSolvers.ExaModeler) === CTSolvers.__exa_model_base_type()
         Test.@test CTSolvers.option_default(:backend,   CTSolvers.ExaModeler) === CTSolvers.__exa_model_backend()
         Test.@test CTSolvers.option_default(:minimize,  CTSolvers.ExaModeler) === missing
+
+        Test.@test CTSolvers.option_default(:base_type, exa_type_from_instance) === CTSolvers.__exa_model_base_type()
+        Test.@test CTSolvers.option_default(:backend,   exa_type_from_instance) === CTSolvers.__exa_model_backend()
+        Test.@test CTSolvers.option_default(:minimize,  exa_type_from_instance) === missing
     end
 
     Test.@testset "modeler symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin

@@ -137,6 +137,16 @@ function test_ctsolvers_backends_types()
         Test.@test :max_iter in keys_ipopt
         Test.@test CTSolvers.option_type(:max_iter, CTSolvers.IpoptSolver) <: Integer
 
+        # Type-based vs instance-based metadata access should agree
+        ipopt_type_from_inst = typeof(solver_default)
+
+        keys_ipopt_inst = CTSolvers.options_keys(ipopt_type_from_inst)
+        Test.@test Set(keys_ipopt_inst) == Set(keys_ipopt)
+
+        defs_ipopt_type = CTSolvers.default_options(CTSolvers.IpoptSolver)
+        defs_ipopt_inst = CTSolvers.default_options(ipopt_type_from_inst)
+        Test.@test defs_ipopt_inst == defs_ipopt_type
+
         # User overrides should be visible in both values and sources
         solver_user = CTSolvers.IpoptSolver(; max_iter=100, tol=1e-8)
         vals_user = CTSolvers._options_values(solver_user)
@@ -166,6 +176,16 @@ function test_ctsolvers_backends_types()
         keys_madnlp = CTSolvers.options_keys(CTSolvers.MadNLPSolver)
         Test.@test :max_iter in keys_madnlp
         Test.@test :tol in keys_madnlp
+
+        # Type-based vs instance-based metadata access should agree
+        madnlp_type_from_inst = typeof(solver_user)
+
+        keys_madnlp_inst = CTSolvers.options_keys(madnlp_type_from_inst)
+        Test.@test Set(keys_madnlp_inst) == Set(keys_madnlp)
+
+        defs_madnlp_type = CTSolvers.default_options(CTSolvers.MadNLPSolver)
+        defs_madnlp_inst = CTSolvers.default_options(madnlp_type_from_inst)
+        Test.@test defs_madnlp_inst == defs_madnlp_type
     end
 
     # ========================================================================
@@ -179,6 +199,17 @@ function test_ctsolvers_backends_types()
 
         Test.@test vals_default.max_iter == CTSolversMadNCL.__mad_ncl_max_iter()
         Test.@test srcs_default.max_iter == :ct_default
+
+        # Type-based vs instance-based metadata access should agree
+        madncl_type_from_inst = typeof(solver_default)
+
+        keys_madncl_type = CTSolvers.options_keys(CTSolvers.MadNCLSolver)
+        keys_madncl_inst = CTSolvers.options_keys(madncl_type_from_inst)
+        Test.@test Set(keys_madncl_inst) == Set(keys_madncl_type)
+
+        defs_madncl_type = CTSolvers.default_options(CTSolvers.MadNCLSolver)
+        defs_madncl_inst = CTSolvers.default_options(madncl_type_from_inst)
+        Test.@test defs_madncl_inst == defs_madncl_type
     end
 
     # ========================================================================
@@ -194,6 +225,17 @@ function test_ctsolvers_backends_types()
         Test.@test srcs_user.maxit == :user
         Test.@test vals_user.feastol_abs == 1e-6
         Test.@test srcs_user.feastol_abs == :user
+
+        # Type-based vs instance-based metadata access should agree
+        knitro_type_from_inst = typeof(solver_user)
+
+        keys_knitro_type = CTSolvers.options_keys(CTSolvers.KnitroSolver)
+        keys_knitro_inst = CTSolvers.options_keys(knitro_type_from_inst)
+        Test.@test Set(keys_knitro_inst) == Set(keys_knitro_type)
+
+        defs_knitro_type = CTSolvers.default_options(CTSolvers.KnitroSolver)
+        defs_knitro_inst = CTSolvers.default_options(knitro_type_from_inst)
+        Test.@test defs_knitro_inst == defs_knitro_type
     end
 
     # ========================================================================

@@ -54,6 +54,22 @@ function test_ctmodels_options_schema()
         Test.@test Set(propertynames(defs)) == Set((:max_iter, :tol))
         Test.@test defs.max_iter == 100
         Test.@test defs.tol == 1e-6
+
+        # Instance-based accessors should behave like the type-based ones
+        vals_inst, srcs_inst = CTSolvers._build_ocp_tool_options(CM_DummyToolWithSpecs)
+        tool_inst = CM_DummyToolWithSpecs(vals_inst, srcs_inst)
+
+        keys_from_type = CTSolvers.options_keys(CM_DummyToolWithSpecs)
+        keys_from_inst = CTSolvers.options_keys(tool_inst)
+        Test.@test Set(keys_from_inst) == Set(keys_from_type)
+
+        defs_from_type = CTSolvers.default_options(CM_DummyToolWithSpecs)
+        defs_from_inst = CTSolvers.default_options(tool_inst)
+        Test.@test defs_from_inst == defs_from_type
+
+        Test.@test CTSolvers.option_default(:max_iter, tool_inst) == 100
+        Test.@test CTSolvers.option_default(:tol,      tool_inst) == 1e-6
+        Test.@test CTSolvers.option_default(:verbose,  tool_inst) === missing
     end
 
     # ========================================================================

@@ -137,6 +137,19 @@ function test_optimalcontrol_solve_api()
         Test.@test CTSolvers._normalize_modeler_options(nothing) === NamedTuple()
         Test.@test CTSolvers._normalize_modeler_options((backend=:manual,)) == (backend=:manual,)
         Test.@test CTSolvers._normalize_modeler_options((; backend=:manual)) == (backend=:manual,)
+
+        Test.@testset "description ambiguity pre-check (ownerless key)" verbose=VERBOSE showtiming=SHOWTIMING begin
+            method = (:collocation, :adnlp, :ipopt)
+
+            # foo ne correspond à aucun outil ni à solve -> erreur
+            Test.@test_throws CTBase.IncorrectArgument begin
+                CTSolvers._ensure_no_ambiguous_description_kwargs(
+                    method,
+                    (foo = 1,),
+                )
+            end
+        end
+
     end
 
     Test.@testset "option routing helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -196,6 +209,154 @@ function test_optimalcontrol_solve_api()
         Test.@test pieces.modeler_options == (backend=:manual,)
         Test.@test haskey(pieces.solver_kwargs, :tol)
         Test.@test pieces.solver_kwargs.tol == 1e-6
+
+        # Solve-level aliases should be accepted in description mode.
+        parsed_alias = CTSolvers._parse_top_level_kwargs_description((
+            init=OCDummyInit([3.0, 4.0]),
+            display=false,
+            modeler_options=(backend=:manual,),
+            tol=2e-6,
+        ))
+
+        pieces_alias = CTSolvers._split_kwargs_for_description((:collocation, :adnlp, :ipopt), parsed_alias)
+
+        Test.@test pieces_alias.initial_guess isa OCDummyInit
+        Test.@test pieces_alias.display == false
+        Test.@test pieces_alias.disc_kwargs == NamedTuple()
+        Test.@test pieces_alias.modeler_options == (backend=:manual,)
+        Test.@test haskey(pieces_alias.solver_kwargs, :tol)
+        Test.@test pieces_alias.solver_kwargs.tol == 2e-6
+
+        # Conflicting aliases for initial_guess should raise.
+        Test.@test_throws CTBase.IncorrectArgument begin
+            CTSolvers._parse_top_level_kwargs_description((
+                initial_guess=OCDummyInit([1.0, 2.0]),
+                i=OCDummyInit([3.0, 4.0]),
+            ))
+        end
+
+        Test.@testset "description-mode solve/tool disambiguation" verbose=VERBOSE showtiming=SHOWTIMING begin
+            init = OCDummyInit([1.0, 2.0])
+
+            # 1) Alias i taggé :solve -> utilisé comme initial_guess, pas dans other_kwargs
+            parsed_solve = CTSolvers._parse_top_level_kwargs_description((
+                i   = (init, :solve),
+                tol = 1e-6,
+            ))
+
+            Test.@test parsed_solve.initial_guess isa OCDummyInit
+            Test.@test parsed_solve.initial_guess === init
+            Test.@test !haskey(parsed_solve.other_kwargs, :i)
+            Test.@test haskey(parsed_solve.other_kwargs, :tol)
+            Test.@test parsed_solve.other_kwargs.tol == 1e-6
+
+            # 2) Alias i taggé :solver -> ignoré par solve, laissé pour les tools
+            parsed_solver = CTSolvers._parse_top_level_kwargs_description((
+                i   = (init, :solver),
+                tol = 2e-6,
+            ))
+
+            # initial_guess reste au défaut, l'alias i est laissé dans other_kwargs
+            Test.@test parsed_solver.initial_guess === CTSolvers.__initial_guess()
+            Test.@test haskey(parsed_solver.other_kwargs, :i)
+            Test.@test parsed_solver.other_kwargs.i == (init, :solver)
+            Test.@test haskey(parsed_solver.other_kwargs, :tol)
+            Test.@test parsed_solver.other_kwargs.tol == 2e-6
+
+            # 3) display taggé :solve -> top-level display
+            parsed_display_solve = CTSolvers._parse_top_level_kwargs_description((
+                display = (false, :solve),
+            ))
+            Test.@test parsed_display_solve.display == false
+            Test.@test !haskey(parsed_display_solve.other_kwargs, :display)
+
+            # 4) display taggé :solver -> ignoré par solve, laissé pour les tools
+            parsed_display_solver = CTSolvers._parse_top_level_kwargs_description((
+                display = (false, :solver),
+            ))
+            Test.@test parsed_display_solver.display == CTSolvers.__display()
+            Test.@test haskey(parsed_display_solver.other_kwargs, :display)
+            Test.@test parsed_display_solver.other_kwargs.display == (false, :solver)
+        end
+
+    end
+
+    Test.@testset "explicit-mode solve kwarg aliases" verbose=VERBOSE showtiming=SHOWTIMING begin
+        prob = OCDummyOCP()
+        init = OCDummyInit([1.0, 2.0])
+
+        discretizer_calls = Ref(0)
+        model_calls = Ref(0)
+        solution_calls = Ref(0)
+        solver_calls = Ref(0)
+
+        discretizer = OCFakeDiscretizer(discretizer_calls)
+        modeler = OCFakeModeler(model_calls, solution_calls)
+        solver = OCFakeSolverNLP(solver_calls)
+
+        # Using the "init" alias for initial_guess.
+        sol_init = CommonSolve.solve(
+            prob;
+            init=init,
+            discretizer=discretizer,
+            modeler=modeler,
+            solver=solver,
+            display=false,
+        )
+        Test.@test sol_init isa OCDummySolution
+
+        # Using the short "i" alias for initial_guess.
+        discretizer_calls[] = 0
+        model_calls[] = 0
+        solution_calls[] = 0
+        solver_calls[] = 0
+
+        sol_i = CommonSolve.solve(
+            prob;
+            i=init,
+            discretizer=discretizer,
+            modeler=modeler,
+            solver=solver,
+            display=false,
+        )
+        Test.@test sol_i isa OCDummySolution
+        Test.@test discretizer_calls[] == 1
+        Test.@test model_calls[] == 1
+        Test.@test solver_calls[] == 1
+        Test.@test solution_calls[] == 1
+
+        # Short aliases for components d/m/s in explicit mode.
+        discretizer_calls[] = 0
+        model_calls[] = 0
+        solution_calls[] = 0
+        solver_calls[] = 0
+
+        sol_dms = CommonSolve.solve(
+            prob;
+            initial_guess=init,
+            d=discretizer,
+            m=modeler,
+            s=solver,
+            display=false,
+        )
+        Test.@test sol_dms isa OCDummySolution
+        Test.@test discretizer_calls[] == 1
+        Test.@test model_calls[] == 1
+        Test.@test solver_calls[] == 1
+        Test.@test solution_calls[] == 1
+
+        # Conflicting aliases for initial_guess in explicit mode should raise.
+        Test.@test_throws CTBase.IncorrectArgument begin
+            CommonSolve.solve(
+                prob;
+                initial_guess=init,
+                init=init,
+                discretizer=discretizer,
+                modeler=modeler,
+                solver=solver,
+                display=false,
+            )
+        end
     end
 
     Test.@testset "display helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -489,7 +650,7 @@ function test_optimalcontrol_solve_api()
                     initial_guess=init,
                     display=false,
                     # Discretizer options
-                    grid_size=(CTSolvers.get_option_value(discretizer, :grid_size), :discretizer),
+                    grid=(CTSolvers.get_option_value(discretizer, :grid), :discretizer),
                     scheme=(CTSolvers.get_option_value(discretizer, :scheme), :discretizer),
                     # Ipopt solver options
                     max_iter=(ipopt_options[:max_iter], :solver),

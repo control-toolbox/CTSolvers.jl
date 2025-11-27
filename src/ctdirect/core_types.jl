@@ -13,12 +13,19 @@ end
 __grid_size()::Int = 250
 __scheme()::AbstractIntegratorScheme = Midpoint()
 
-function _option_specs(::Type{Collocation})
+__grid()::Union{Int,AbstractVector} = __grid_size()
+
+function _option_specs(::Type{<:Collocation})
     return (
-        grid_size = OptionSpec(
-            type=Int,
-            default=__grid_size(),
-            description="Number of time steps used in the collocation grid.",
+        grid = OptionSpec(
+            type=Union{Int,AbstractVector},
+            default=__grid(),
+            description="Collocation grid (Int = number of time steps, Vector = explicit time grid).",
+        ),
+        lagrange_to_mayer = OptionSpec(
+            type=Bool,
+            default=false,
+            description="Whether to transform the Lagrange integral cost into an equivalent Mayer terminal cost.",
         ),
         scheme = OptionSpec(
             type=AbstractIntegratorScheme,
