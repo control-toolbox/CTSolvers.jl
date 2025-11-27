@@ -537,7 +537,7 @@ function test_ctsolvers_extensions_madnlp()
         end
     end
 
-    # gpu: goddard_docp (GPU tests disabled: max problem currently mis-specified as min)
+    # gpu: goddard_docp (GPU tests disabled: max problem currently works as min)
     # Test.@testset "gpu: goddard_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
     #     gdata = Goddard()
     #     ocp_g = gdata.ocp
