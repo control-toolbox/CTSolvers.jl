@@ -219,9 +219,20 @@ function test_ctsolvers_extensions_madncl()
 
     Test.@testset "gpu" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver = CTSolvers.MadNCLSolver(; linear_solver=linear_solver_gpu)
+
+        # Elec
         for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
-            Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Elec – $(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                 stats = CommonSolve.solve(elec.prob, elec.init, modeler, solver; display=false)
+                Test.@test stats isa MadNCL.NCLStats
+                Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
+            end
+        end
+
+        # Max1MinusX2
+        for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
+            Test.@testset "Max1MinusX2 – $(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                stats = CommonSolve.solve(maxd.prob, maxd.init, modeler, solver; display=false)
                 Test.@test stats isa MadNCL.NCLStats
                 Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
             end
