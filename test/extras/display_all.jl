@@ -122,7 +122,9 @@ function demo_beam_solves()
     println()
     println("===== BEAM OCP SOLVES (explicit & description modes) =====")
 
-    ocp, init = beam()
+    beam_data = beam()
+    ocp = beam_data.ocp
+    init = CTSolvers.initial_guess(ocp; beam_data.init...)
     discretizer = CTSolvers.Collocation()
 
     ipopt_options = Dict(
@@ -205,8 +207,10 @@ function demo_error_messages()
         CTSolvers._route_option_for_description(:foo, 1.0, Symbol[:discretizer, :solver], :description)
     end
 
-    # Description-mode option with no owner in the selected method
-    ocp, init = beam()
+    # Description mode: option with no owner in the selected method
+    beam_data = beam()
+    ocp = beam_data.ocp
+    init = beam_data.init
     show_captured_error("CommonSolve.solve description unknown kw :foo") do
         CommonSolve.solve(
             ocp,

@@ -1,23 +1,26 @@
-# Rosenbrock benchmark problem definition used by CTSolvers tests.
-function rosenbrock_objective(x)
-    return (x[1] - 1.0)^2 + 100*(x[2] - x[1]^2)^2
+# Simple 1D maximization problem: max f(x) = 1 - x^2
+
+function max1minusx2_objective(x)
+    return 1.0 - x[1]^2
 end
-function rosenbrock_constraint(x)
+
+function max1minusx2_constraint(x)
     return x[1]
 end
-function rosenbrock_is_minimize()
-    return true
+
+function max1minusx2_is_minimize()
+    return false
 end
 
-function Rosenbrock()
+function Max1MinusX2()
     # define common functions
-    F(x) = rosenbrock_objective(x)
-    c(x) = rosenbrock_constraint(x)
-    lcon = [-Inf]
-    ucon = [10.0]
-    minimize = rosenbrock_is_minimize()
+    F(x) = max1minusx2_objective(x)
+    c(x) = max1minusx2_constraint(x) # unconstrained problem are not working with MadNCL
+    lcon = [-5.0]
+    ucon = [ 5.0]
+    minimize = max1minusx2_is_minimize()
 
-    # define ADNLPModels builder
+    # ADNLPModels builder: simple equality-constrained problem
     function build_adnlp_model(
         initial_guess::AbstractVector; kwargs...
     )::ADNLPModels.ADNLPModel
@@ -26,7 +29,7 @@ function Rosenbrock()
         )
     end
 
-    # define ExaModels builder
+    # ExaModels builder: same equality constraint
     function build_exa_model(
         ::Type{BaseType}, initial_guess::AbstractVector; kwargs...
     )::ExaModels.ExaModel where {BaseType<:AbstractFloat}
@@ -43,8 +46,9 @@ function Rosenbrock()
         ADNLPSolutionBuilder(),
         ExaSolutionBuilder(),
     )
-    init = [-1.2; 1.0]
-    sol = [1.0; 1.0]
+
+    init = [2.0]
+    sol = [0.0]
 
     return (prob=prob, init=init, sol=sol)
 end

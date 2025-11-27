@@ -55,6 +55,12 @@ end
 
 function test_ctmodels_model_api()
 
+    # ========================================================================
+    # Problems
+    # ========================================================================
+    ros = Rosenbrock()
+    elec = Elec()
+
     # ------------------------------------------------------------------
     # Unit tests for build_model delegation
     # ------------------------------------------------------------------
@@ -125,30 +131,30 @@ function test_ctmodels_model_api()
     Test.@testset "build_model on Rosenbrock and Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
             modeler_ad = CTSolvers.ADNLPModeler()
-            nlp_ad = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler_ad)
+            nlp_ad = CTSolvers.build_model(ros.prob, ros.init, modeler_ad)
             Test.@test nlp_ad isa ADNLPModels.ADNLPModel
-            Test.@test nlp_ad.meta.x0 == rosenbrock_init
-            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) == rosenbrock_objective(rosenbrock_init)
-            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0)[1] == rosenbrock_constraint(rosenbrock_init)
+            Test.@test nlp_ad.meta.x0 == ros.init
+            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) == rosenbrock_objective(ros.init)
+            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0)[1] == rosenbrock_constraint(ros.init)
             Test.@test nlp_ad.meta.minimize == rosenbrock_is_minimize()
 
             modeler_exa = CTSolvers.ExaModeler()
-            nlp_exa = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler_exa)
+            nlp_exa = CTSolvers.build_model(ros.prob, ros.init, modeler_exa)
             Test.@test nlp_exa isa ExaModels.ExaModel
         end
 
         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
             modeler_ad = CTSolvers.ADNLPModeler()
-            nlp_ad = CTSolvers.build_model(elec_prob, elec_init, modeler_ad)
+            nlp_ad = CTSolvers.build_model(elec.prob, elec.init, modeler_ad)
             Test.@test nlp_ad isa ADNLPModels.ADNLPModel
-            Test.@test nlp_ad.meta.x0 == vcat(elec_init.x, elec_init.y, elec_init.z)
-            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) == elec_objective(elec_init.x, elec_init.y, elec_init.z)
-            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0) == elec_constraint(elec_init.x, elec_init.y, elec_init.z)
+            Test.@test nlp_ad.meta.x0 == vcat(elec.init.x, elec.init.y, elec.init.z)
+            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) == elec_objective(elec.init.x, elec.init.y, elec.init.z)
+            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0) == elec_constraint(elec.init.x, elec.init.y, elec.init.z)
             Test.@test nlp_ad.meta.minimize == elec_is_minimize()
 
             BaseType = Float64
             modeler_exa = CTSolvers.ExaModeler(; base_type=BaseType)
-            nlp_exa = CTSolvers.build_model(elec_prob, elec_init, modeler_exa)
+            nlp_exa = CTSolvers.build_model(elec.prob, elec.init, modeler_exa)
             Test.@test nlp_exa isa ExaModels.ExaModel{BaseType}
         end
     end

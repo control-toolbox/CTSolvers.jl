@@ -2,6 +2,13 @@
 function test_ctsolvers_extensions_madnlp()
 
     # ========================================================================
+    # Problems
+    # ========================================================================
+    ros = Rosenbrock()
+    elec = Elec()
+    maxd = Max1MinusX2()
+
+    # ========================================================================
     # UNIT: defaults and constructor
     # ========================================================================
     Test.@testset "unit: defaults and constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -75,13 +82,13 @@ function test_ctsolvers_extensions_madnlp()
                         local opts = copy(madnlp_options)
                         opts[:max_iter] = 0
                         sol = CommonSolve.solve(
-                            rosenbrock_prob,
-                            rosenbrock_solu,
+                            ros.prob,
+                            ros.sol,
                             modeler,
                             CTSolvers.MadNLPSolver(; opts..., linear_solver=linear_solver),
                         )
                         Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
-                        Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
+                        Test.@test sol.solution ≈ ros.sol atol=1e-6
                     end
                 end
             end
@@ -95,13 +102,13 @@ function test_ctsolvers_extensions_madnlp()
                         local opts = copy(madnlp_options)
                         opts[:max_iter] = 0
                         sol = CommonSolve.solve(
-                            elec_prob,
-                            elec_init,
+                            elec.prob,
+                            elec.init,
                             modeler,
                             CTSolvers.MadNLPSolver(; opts..., linear_solver=linear_solver),
                         )
                         Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
-                        Test.@test sol.solution ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
+                        Test.@test sol.solution ≈ vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
                     end
                 end
             end
@@ -125,13 +132,13 @@ function test_ctsolvers_extensions_madnlp()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        nlp = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler)
+                        nlp = CTSolvers.build_model(ros.prob, ros.init, modeler)
                         sol = CTSolvers.solve_with_madnlp(
                             nlp; linear_solver=linear_solver, madnlp_options...,
                         )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
-                        Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
-                        Test.@test sol.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
+                        Test.@test sol.solution ≈ ros.sol atol=1e-6
+                        Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
                     end
                 end
             end
@@ -141,11 +148,28 @@ function test_ctsolvers_extensions_madnlp()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        nlp = CTSolvers.build_model(elec_prob, elec_init, modeler)
+                        nlp = CTSolvers.build_model(elec.prob, elec.init, modeler)
                         sol = CTSolvers.solve_with_madnlp(
                             nlp; linear_solver=linear_solver, madnlp_options...,
                         )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    end
+                end
+            end
+        end
+
+        Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                    Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        nlp = CTSolvers.build_model(maxd.prob, maxd.init, modeler)
+                        sol = CTSolvers.solve_with_madnlp(
+                            nlp; linear_solver=linear_solver, madnlp_options...,
+                        )
+                        Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                        Test.@test length(sol.solution) == 1
+                        Test.@test sol.solution[1] ≈ maxd.sol[1] atol=1e-6
+                        Test.@test -sol.objective ≈ max1minusx2_objective(maxd.sol) atol=1e-6
                     end
                 end
             end
@@ -170,14 +194,14 @@ function test_ctsolvers_extensions_madnlp()
                 for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
-                            rosenbrock_prob,
-                            rosenbrock_init,
+                            ros.prob,
+                            ros.init,
                             modeler,
                             CTSolvers.MadNLPSolver(; madnlp_options..., linear_solver=linear_solver),
                         )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
-                        Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
-                        Test.@test sol.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
+                        Test.@test sol.solution ≈ ros.sol atol=1e-6
+                        Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
                     end
                 end
             end
@@ -188,12 +212,31 @@ function test_ctsolvers_extensions_madnlp()
                 for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
-                            elec_prob,
-                            elec_init,
+                            elec.prob,
+                            elec.init,
                             modeler,
                             CTSolvers.MadNLPSolver(; madnlp_options..., linear_solver=linear_solver),
                         )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    end
+                end
+            end
+        end
+
+        Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                    Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        sol = CommonSolve.solve(
+                            maxd.prob,
+                            maxd.init,
+                            modeler,
+                            CTSolvers.MadNLPSolver(; madnlp_options..., linear_solver=linear_solver),
+                        )
+                        Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                        Test.@test length(sol.solution) == 1
+                        Test.@test sol.solution[1] ≈ maxd.sol[1] atol=1e-6
+                        Test.@test -sol.objective ≈ max1minusx2_objective(maxd.sol) atol=1e-6
                     end
                 end
             end
@@ -204,7 +247,9 @@ function test_ctsolvers_extensions_madnlp()
     # INTEGRATION: Direct beam OCP with Collocation (MadNLP pieces)
     # ========================================================================
     Test.@testset "integration: beam_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
-        ocp, init = beam()
+        beam_data = beam()
+        ocp = beam_data.ocp
+        init = CTSolvers.initial_guess(ocp; beam_data.init...)
         discretizer = CTSolvers.Collocation()
         docp = CTSolvers.discretize(ocp, discretizer)
 
@@ -226,6 +271,7 @@ function test_ctsolvers_extensions_madnlp()
                     Test.@test sol isa CTModels.Solution
                     Test.@test CTModels.successful(sol)
                     Test.@test isfinite(CTModels.objective(sol))
+                    Test.@test CTModels.objective(sol) ≈ beam_data.obj atol=1e-2
                 end
             end
         end
@@ -239,6 +285,7 @@ function test_ctsolvers_extensions_madnlp()
                     Test.@test sol isa CTModels.Solution
                     Test.@test CTModels.successful(sol)
                     Test.@test isfinite(CTModels.objective(sol))
+                    Test.@test CTModels.objective(sol) ≈ beam_data.obj atol=1e-2
                     Test.@test CTModels.iterations(sol) <= madnlp_options[:max_iter]
                     Test.@test CTModels.constraints_violation(sol) <= 1e-6
                 end
@@ -266,14 +313,14 @@ function test_ctsolvers_extensions_madnlp()
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    nlp = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler)
+                    nlp = CTSolvers.build_model(ros.prob, ros.init, modeler)
                     stats = CTSolvers.solve_with_madnlp(nlp; madnlp_options..., linear_solver=linear_solver_gpu)
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
                     Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test isfinite(stats.objective)
-                    Test.@test stats.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
+                    Test.@test stats.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
                     Test.@test stats.solution isa CuArray{Float64,1}
-                    Test.@test length(stats.solution) == length(rosenbrock_init)
+                    Test.@test length(stats.solution) == length(ros.init)
                 end
             end
         end
@@ -282,13 +329,13 @@ function test_ctsolvers_extensions_madnlp()
         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    nlp = CTSolvers.build_model(elec_prob, elec_init, modeler)
+                    nlp = CTSolvers.build_model(elec.prob, elec.init, modeler)
                     stats = CTSolvers.solve_with_madnlp(nlp; madnlp_options..., linear_solver=linear_solver_gpu)
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
                     Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test isfinite(stats.objective)
                     Test.@test stats.solution isa CuArray{Float64,1}
-                    Test.@test length(stats.solution) == length(vcat(elec_init.x, elec_init.y, elec_init.z))
+                    Test.@test length(stats.solution) == length(vcat(elec.init.x, elec.init.y, elec.init.z))
                 end
             end
         end
@@ -302,8 +349,8 @@ function test_ctsolvers_extensions_madnlp()
                     local opts = copy(madnlp_options)
                     opts[:max_iter] = 0
                     stats = CommonSolve.solve(
-                        rosenbrock_prob,
-                        rosenbrock_solu,
+                        ros.prob,
+                        ros.sol,
                         modeler,
                         CTSolvers.MadNLPSolver(; opts..., linear_solver=linear_solver_gpu);
                         display=false,
@@ -311,8 +358,8 @@ function test_ctsolvers_extensions_madnlp()
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
                     Test.@test stats.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                     Test.@test stats.solution isa CuArray{Float64,1}
-                    Test.@test length(stats.solution) == length(rosenbrock_solu)
-                    Test.@test Array(stats.solution) ≈ rosenbrock_solu atol=1e-6
+                    Test.@test length(stats.solution) == length(ros.sol)
+                    Test.@test Array(stats.solution) ≈ ros.sol atol=1e-6
                 end
             end
         end
@@ -324,8 +371,8 @@ function test_ctsolvers_extensions_madnlp()
                     local opts = copy(madnlp_options)
                     opts[:max_iter] = 0
                     stats = CommonSolve.solve(
-                        elec_prob,
-                        elec_init,
+                        elec.prob,
+                        elec.init,
                         modeler,
                         CTSolvers.MadNLPSolver(; opts..., linear_solver=linear_solver_gpu);
                         display=false,
@@ -333,8 +380,8 @@ function test_ctsolvers_extensions_madnlp()
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
                     Test.@test stats.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                     Test.@test stats.solution isa CuArray{Float64,1}
-                    Test.@test length(stats.solution) == length(vcat(elec_init.x, elec_init.y, elec_init.z))
-                    Test.@test Array(stats.solution) ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
+                    Test.@test length(stats.solution) == length(vcat(elec.init.x, elec.init.y, elec.init.z))
+                    Test.@test Array(stats.solution) ≈ vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
                 end
             end
         end
@@ -348,8 +395,8 @@ function test_ctsolvers_extensions_madnlp()
             for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     stats = CommonSolve.solve(
-                        rosenbrock_prob,
-                        rosenbrock_init,
+                        ros.prob,
+                        ros.init,
                         modeler,
                         solver;
                         display=false,
@@ -357,9 +404,9 @@ function test_ctsolvers_extensions_madnlp()
                     Test.@test stats isa MadNLP.MadNLPExecutionStats
                     Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test isfinite(stats.objective)
-                    Test.@test stats.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
+                    Test.@test stats.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
                     Test.@test stats.solution isa CuArray{Float64,1}
-                    Test.@test length(stats.solution) == length(rosenbrock_init)
+                    Test.@test length(stats.solution) == length(ros.init)
                 end
             end
         end
@@ -369,8 +416,8 @@ function test_ctsolvers_extensions_madnlp()
             for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     stats = CommonSolve.solve(
-                        elec_prob,
-                        elec_init,
+                        elec.prob,
+                        elec.init,
                         modeler,
                         solver;
                         display=false,
@@ -379,7 +426,7 @@ function test_ctsolvers_extensions_madnlp()
                     Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test isfinite(stats.objective)
                     Test.@test stats.solution isa CuArray{Float64,1}
-                    Test.@test length(stats.solution) == length(vcat(elec_init.x, elec_init.y, elec_init.z))
+                    Test.@test length(stats.solution) == length(vcat(elec.init.x, elec.init.y, elec.init.z))
                 end
             end
         end

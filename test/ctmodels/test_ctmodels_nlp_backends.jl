@@ -5,6 +5,12 @@ struct CM_DummyModelerMissing <: CTSolvers.AbstractOptimizationModeler end
 
 function test_ctmodels_nlp_backends()
 
+    # ========================================================================
+    # Problems
+    # ========================================================================
+    ros = Rosenbrock()
+    elec = Elec()
+
     # ------------------------------------------------------------------
     # Low-level defaults for ADNLPModeler / ExaModeler
     # ------------------------------------------------------------------
@@ -35,11 +41,11 @@ function test_ctmodels_nlp_backends()
     # expected when using the manual backend path.
     Test.@testset "ADNLPModels – Rosenbrock (direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
         modeler = CTSolvers.ADNLPModeler()
-        nlp_adnlp = modeler(rosenbrock_prob, rosenbrock_init)
+        nlp_adnlp = modeler(ros.prob, ros.init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
-        Test.@test nlp_adnlp.meta.x0 == rosenbrock_init
-        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == rosenbrock_objective(rosenbrock_init)
-        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] == rosenbrock_constraint(rosenbrock_init)
+        Test.@test nlp_adnlp.meta.x0 == ros.init
+        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == rosenbrock_objective(ros.init)
+        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] == rosenbrock_constraint(ros.init)
         Test.@test nlp_adnlp.meta.minimize == rosenbrock_is_minimize()
     end
 
@@ -47,11 +53,11 @@ function test_ctmodels_nlp_backends()
     # still calling the backend directly.
     Test.@testset "ADNLPModels – Elec (direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
         modeler = CTSolvers.ADNLPModeler()
-        nlp_adnlp = modeler(elec_prob, elec_init)
+        nlp_adnlp = modeler(elec.prob, elec.init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
-        Test.@test nlp_adnlp.meta.x0 == vcat(elec_init.x, elec_init.y, elec_init.z)
-        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == elec_objective(elec_init.x, elec_init.y, elec_init.z)
-        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0) == elec_constraint(elec_init.x, elec_init.y, elec_init.z)
+        Test.@test nlp_adnlp.meta.x0 == vcat(elec.init.x, elec.init.y, elec.init.z)
+        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == elec_objective(elec.init.x, elec.init.y, elec.init.z)
+        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0) == elec_constraint(elec.init.x, elec.init.y, elec.init.z)
         Test.@test nlp_adnlp.meta.minimize == elec_is_minimize()
     end
 
@@ -60,7 +66,7 @@ function test_ctmodels_nlp_backends()
     # even when called directly.
     Test.@testset "ADNLPModels – DummyProblem (NotImplemented, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
         modeler = CTSolvers.ADNLPModeler()
-        Test.@test_throws CTBase.NotImplemented modeler(DummyProblem(), rosenbrock_init)
+        Test.@test_throws CTBase.NotImplemented modeler(DummyProblem(), ros.init)
     end
 
     # ------------------------------------------------------------------
@@ -72,12 +78,12 @@ function test_ctmodels_nlp_backends()
     Test.@testset "ExaModels (CPU) – Rosenbrock (BaseType=Float32, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
         modeler = CTSolvers.ExaModeler(; base_type=BaseType)
-        nlp_exa_cpu = modeler(rosenbrock_prob, rosenbrock_init)
+        nlp_exa_cpu = modeler(ros.prob, ros.init)
         Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
-        Test.@test nlp_exa_cpu.meta.x0 == BaseType.(rosenbrock_init)
+        Test.@test nlp_exa_cpu.meta.x0 == BaseType.(ros.init)
         Test.@test eltype(nlp_exa_cpu.meta.x0) == BaseType
-        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == rosenbrock_objective(BaseType.(rosenbrock_init))
-        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0)[1] == rosenbrock_constraint(BaseType.(rosenbrock_init))
+        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == rosenbrock_objective(BaseType.(ros.init))
+        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0)[1] == rosenbrock_constraint(BaseType.(ros.init))
         Test.@test nlp_exa_cpu.meta.minimize == rosenbrock_is_minimize()
     end
 
@@ -85,12 +91,12 @@ function test_ctmodels_nlp_backends()
     Test.@testset "ExaModels (CPU) – Elec (BaseType=Float32, direct call)" begin
         BaseType = Float32
         modeler = CTSolvers.ExaModeler(; base_type=BaseType)
-        nlp_exa_cpu = modeler(elec_prob, elec_init)
+        nlp_exa_cpu = modeler(elec.prob, elec.init)
         Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
-        Test.@test nlp_exa_cpu.meta.x0 == BaseType.(vcat(elec_init.x, elec_init.y, elec_init.z))
+        Test.@test nlp_exa_cpu.meta.x0 == BaseType.(vcat(elec.init.x, elec.init.y, elec.init.z))
         Test.@test eltype(nlp_exa_cpu.meta.x0) == BaseType
-        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_objective(BaseType.(elec_init.x), BaseType.(elec_init.y), BaseType.(elec_init.z))
-        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_constraint(BaseType.(elec_init.x), BaseType.(elec_init.y), BaseType.(elec_init.z))
+        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_objective(BaseType.(elec.init.x), BaseType.(elec.init.y), BaseType.(elec.init.z))
+        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_constraint(BaseType.(elec.init.x), BaseType.(elec.init.y), BaseType.(elec.init.z))
         Test.@test nlp_exa_cpu.meta.minimize == elec_is_minimize()
     end
 
@@ -99,7 +105,7 @@ function test_ctmodels_nlp_backends()
     # even when called directly.
     Test.@testset "ExaModels (CPU) – DummyProblem (NotImplemented, direct call)" verbose=VERBOSE showtiming=SHOWTIMING begin
         modeler = CTSolvers.ExaModeler()
-        Test.@test_throws CTBase.NotImplemented modeler(DummyProblem(), rosenbrock_init)
+        Test.@test_throws CTBase.NotImplemented modeler(DummyProblem(), ros.init)
     end
 
     # ------------------------------------------------------------------
@@ -379,3 +385,4 @@ function test_ctmodels_nlp_backends()
     end
 
 end
+

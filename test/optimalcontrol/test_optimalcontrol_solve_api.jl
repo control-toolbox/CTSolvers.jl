@@ -1,6 +1,6 @@
 # Optimal control-level tests for CommonSolve.solve on OCPs.
 
-struct OCDummyOCP <: CTSolvers.AbstractOptimalControlProblem end
+struct OCDummyOCP <: CTSolvers.AbstractOptimalControlProblem 		end
 
 struct OCDummyDiscretizedOCP <: CTSolvers.AbstractOptimizationProblem end
 
@@ -506,7 +506,9 @@ function test_optimalcontrol_solve_api()
             :print_level => MadNLP.ERROR,
         )
 
-        ocp, init = beam()
+        beam_data = beam()
+        ocp = beam_data.ocp
+        init = CTSolvers.initial_guess(ocp; beam_data.init...)
         discretizer = CTSolvers.Collocation()
 
         modelers = [
@@ -527,6 +529,7 @@ function test_optimalcontrol_solve_api()
                     Test.@test sol isa CTModels.Solution
                     Test.@test CTModels.successful(sol)
                     Test.@test isfinite(CTModels.objective(sol))
+                    Test.@test CTModels.objective(sol) ≈ beam_data.obj atol=1e-2
                     Test.@test CTModels.iterations(sol) <= ipopt_options[:max_iter]
                     Test.@test CTModels.constraints_violation(sol) <= 1e-6
                 end
@@ -541,6 +544,7 @@ function test_optimalcontrol_solve_api()
                     Test.@test sol isa CTModels.Solution
                     Test.@test CTModels.successful(sol)
                     Test.@test isfinite(CTModels.objective(sol))
+                    Test.@test CTModels.objective(sol) ≈ beam_data.obj atol=1e-2
                     Test.@test CTModels.iterations(sol) <= madnlp_options[:max_iter]
                     Test.@test CTModels.constraints_violation(sol) <= 1e-6
                 end

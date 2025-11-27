@@ -2,6 +2,13 @@
 function test_ctsolvers_extensions_ipopt()
 
     # ========================================================================
+    # Problems
+    # ========================================================================
+    ros = Rosenbrock()
+    elec = Elec()
+    maxd = Max1MinusX2()
+
+    # ========================================================================
     # UNIT: defaults and constructor
     # ========================================================================
     Test.@testset "unit: defaults and constructor" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -67,18 +74,17 @@ function test_ctsolvers_extensions_ipopt()
     Test.@testset "integration: solve_with_ipopt" verbose=VERBOSE showtiming=SHOWTIMING begin
         modelers = [
             CTSolvers.ADNLPModeler(),
-            CTSolvers.ExaModeler(),
         ]
-        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+        modelers_names = ["ADNLPModeler"]
 
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    nlp = CTSolvers.build_model(rosenbrock_prob, rosenbrock_init, modeler)
+                    nlp = CTSolvers.build_model(ros.prob, ros.init, modeler)
                     sol = CTSolvers.solve_with_ipopt(nlp; ipopt_options...)
                     Test.@test sol.status == :first_order
-                    Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
-                    Test.@test sol.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
+                    Test.@test sol.solution ≈ ros.sol atol=1e-6
+                    Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
                 end
             end
         end
@@ -86,9 +92,22 @@ function test_ctsolvers_extensions_ipopt()
         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    nlp = CTSolvers.build_model(elec_prob, elec_init, modeler)
+                    nlp = CTSolvers.build_model(elec.prob, elec.init, modeler)
                     sol = CTSolvers.solve_with_ipopt(nlp; ipopt_options...)
                     Test.@test sol.status == :first_order
+                end
+            end
+        end
+
+        Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    nlp = CTSolvers.build_model(maxd.prob, maxd.init, modeler)
+                    sol = CTSolvers.solve_with_ipopt(nlp; ipopt_options...)
+                    Test.@test sol.status == :first_order
+                    Test.@test length(sol.solution) == 1
+                    Test.@test sol.solution[1] ≈ maxd.sol[1] atol=1e-6
+                    Test.@test sol.objective ≈ max1minusx2_objective(maxd.sol) atol=1e-6
                 end
             end
         end
@@ -111,13 +130,13 @@ function test_ctsolvers_extensions_ipopt()
                     local opts = copy(ipopt_options)
                     opts[:max_iter] = 0
                     sol = CommonSolve.solve(
-                        rosenbrock_prob,
-                        rosenbrock_solu,
+                        ros.prob,
+                        ros.sol,
                         modeler,
                         CTSolvers.IpoptSolver(; opts...),
                     )
                     Test.@test sol.status == :max_iter
-                    Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
+                    Test.@test sol.solution ≈ ros.sol atol=1e-6
                 end
             end
         end
@@ -129,13 +148,13 @@ function test_ctsolvers_extensions_ipopt()
                     local opts = copy(ipopt_options)
                     opts[:max_iter] = 0
                     sol = CommonSolve.solve(
-                        elec_prob,
-                        elec_init,
+                        elec.prob,
+                        elec.init,
                         modeler,
                         CTSolvers.IpoptSolver(; opts...),
                     )
                     Test.@test sol.status == :max_iter
-                    Test.@test sol.solution ≈ vcat(elec_init.x, elec_init.y, elec_init.z) atol=1e-6
+                    Test.@test sol.solution ≈ vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
                 end
             end
         end
@@ -155,14 +174,14 @@ function test_ctsolvers_extensions_ipopt()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     sol = CommonSolve.solve(
-                        rosenbrock_prob,
-                        rosenbrock_init,
+                        ros.prob,
+                        ros.init,
                         modeler,
                         CTSolvers.IpoptSolver(; ipopt_options...),
                     )
                     Test.@test sol.status == :first_order
-                    Test.@test sol.solution ≈ rosenbrock_solu atol=1e-6
-                    Test.@test sol.objective ≈ rosenbrock_objective(rosenbrock_solu) atol=1e-6
+                    Test.@test sol.solution ≈ ros.sol atol=1e-6
+                    Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
                 end
             end
         end
@@ -171,12 +190,29 @@ function test_ctsolvers_extensions_ipopt()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     sol = CommonSolve.solve(
-                        elec_prob,
-                        elec_init,
+                        elec.prob,
+                        elec.init,
                         modeler,
                         CTSolvers.IpoptSolver(; ipopt_options...),
                     )
                     Test.@test sol.status == :first_order
+                end
+            end
+        end
+        
+        Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    sol = CommonSolve.solve(
+                        maxd.prob,
+                        maxd.init,
+                        modeler,
+                        CTSolvers.IpoptSolver(; ipopt_options...),
+                    )
+                    Test.@test sol.status == :first_order
+                    Test.@test length(sol.solution) == 1
+                    Test.@test sol.solution[1] ≈ maxd.sol[1] atol=1e-6
+                    Test.@test sol.objective ≈ max1minusx2_objective(maxd.sol) atol=1e-6
                 end
             end
         end
@@ -186,7 +222,9 @@ function test_ctsolvers_extensions_ipopt()
     # INTEGRATION: Direct beam OCP with Collocation (Ipopt pieces)
     # ========================================================================
     Test.@testset "integration: beam_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
-        ocp, init = beam()
+        beam_data = beam()
+        ocp = beam_data.ocp
+        init = CTSolvers.initial_guess(ocp; beam_data.init...)
         discretizer = CTSolvers.Collocation()
         docp = CTSolvers.discretize(ocp, discretizer)
 
@@ -208,6 +246,7 @@ function test_ctsolvers_extensions_ipopt()
                     Test.@test sol isa CTModels.Solution
                     Test.@test CTModels.successful(sol)
                     Test.@test isfinite(CTModels.objective(sol))
+                    Test.@test CTModels.objective(sol) ≈ beam_data.obj atol=1e-2
                 end
             end
         end
@@ -221,6 +260,57 @@ function test_ctsolvers_extensions_ipopt()
                     Test.@test sol isa CTModels.Solution
                     Test.@test CTModels.successful(sol)
                     Test.@test isfinite(CTModels.objective(sol))
+                    Test.@test CTModels.objective(sol) ≈ beam_data.obj atol=1e-2
+                    Test.@test CTModels.iterations(sol) <= ipopt_options[:max_iter]
+                    Test.@test CTModels.constraints_violation(sol) <= 1e-6
+                end
+            end
+        end
+    end
+
+    # ========================================================================
+    # INTEGRATION: Direct Goddard OCP with Collocation (Ipopt pieces)
+    # ========================================================================
+    Test.@testset "integration: goddard_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
+        gdata = goddard()
+        ocp_g = gdata.ocp
+        init_g = CTSolvers.initial_guess(ocp_g; gdata.init...)
+        discretizer_g = CTSolvers.Collocation()
+        docp_g = CTSolvers.discretize(ocp_g, discretizer_g)
+
+        Test.@test docp_g isa CTSolvers.DiscretizedOptimalControlProblem
+
+        modelers = [
+            CTSolvers.ADNLPModeler(),
+            CTSolvers.ExaModeler(),
+        ]
+        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+
+        # ocp_solution from DOCP using solve_with_ipopt
+        Test.@testset "ocp_solution from DOCP (Ipopt)" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    nlp = CTSolvers.nlp_model(docp_g, init_g, modeler)
+                    stats = CTSolvers.solve_with_ipopt(nlp; ipopt_options...)
+                    sol = CTSolvers.ocp_solution(docp_g, stats, modeler)
+                    Test.@test sol isa CTModels.Solution
+                    Test.@test CTModels.successful(sol)
+                    Test.@test isfinite(CTModels.objective(sol))
+                    Test.@test CTModels.objective(sol) ≈ gdata.obj atol=1e-4
+                end
+            end
+        end
+
+        # DOCP level: CommonSolve.solve(docp_g, init_g, modeler, solver)
+        Test.@testset "DOCP level (Ipopt)" verbose=VERBOSE showtiming=SHOWTIMING begin
+            for (modeler, modeler_name) in zip(modelers, modelers_names)
+                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    solver = CTSolvers.IpoptSolver(; ipopt_options...)
+                    sol = CommonSolve.solve(docp_g, init_g, modeler, solver; display=false)
+                    Test.@test sol isa CTModels.Solution
+                    Test.@test CTModels.successful(sol)
+                    Test.@test isfinite(CTModels.objective(sol))
+                    Test.@test CTModels.objective(sol) ≈ gdata.obj atol=1e-4
                     Test.@test CTModels.iterations(sol) <= ipopt_options[:max_iter]
                     Test.@test CTModels.constraints_violation(sol) <= 1e-6
                 end

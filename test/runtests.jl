@@ -69,8 +69,10 @@ end
 # Problems definition
 include(joinpath("problems", "problems_definition.jl"))
 include(joinpath("problems", "rosenbrock.jl"))
+include(joinpath("problems", "max1minusx2.jl"))
 include(joinpath("problems", "elec.jl"))
 include(joinpath("problems", "beam.jl"))
+include(joinpath("problems", "goddard.jl"))
 
 # Tests parameters
 const VERBOSE = false

@@ -21,7 +21,7 @@ function elec_constraint(x, y, z)
 end
 elec_is_minimize() = true
 
-function Elec(np::Int; seed::Int=2713)
+function Elec(; np::Int=5, seed::Int=2713)
     # Set the starting point to a quasi-uniform distribution of electrons on a unit sphere
     Random.seed!(seed)
 
@@ -74,20 +74,21 @@ function Elec(np::Int; seed::Int=2713)
         return ExaModels.ExaModel(m)
     end
 
-    # Return the problem
-    return OptimizationProblem(
+    prob = OptimizationProblem(
         CTSolvers.ADNLPModelBuilder(build_adnlp_model),
         CTSolvers.ExaModelBuilder(build_exa_model),
         ADNLPSolutionBuilder(),
         ExaSolutionBuilder(),
     )
-end
 
-np = 5
-theta = (2π) .* rand(np)
-phi = π .* rand(np)
-x_init = [cos(theta[i]) * sin(phi[i]) for i in 1:np]
-y_init = [sin(theta[i]) * sin(phi[i]) for i in 1:np]
-z_init = [cos(phi[i]) for i in 1:np]
-const elec_prob = Elec(np)
-const elec_init = (x=x_init, y=y_init, z=z_init)
+    theta = (2π) .* rand(np)
+    phi = π .* rand(np)
+    x_init = [cos(theta[i]) * sin(phi[i]) for i in 1:np]
+    y_init = [sin(theta[i]) * sin(phi[i]) for i in 1:np]
+    z_init = [cos(phi[i]) for i in 1:np]
+    init = (x=x_init, y=y_init, z=z_init)
+
+    sol = missing
+
+    return (prob=prob, init=init, sol=sol)
+end
