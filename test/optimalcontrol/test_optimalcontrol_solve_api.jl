@@ -141,7 +141,7 @@ function test_optimalcontrol_solve_api()
         Test.@testset "description ambiguity pre-check (ownerless key)" verbose=VERBOSE showtiming=SHOWTIMING begin
             method = (:collocation, :adnlp, :ipopt)
 
-            # foo ne correspond à aucun outil ni à solve -> erreur
+            # foo does not correspond to any tool nor to solve -> error
             Test.@test_throws CTBase.IncorrectArgument begin
                 CTSolvers._ensure_no_ambiguous_description_kwargs(
                     method,
@@ -238,7 +238,7 @@ function test_optimalcontrol_solve_api()
         Test.@testset "description-mode solve/tool disambiguation" verbose=VERBOSE showtiming=SHOWTIMING begin
             init = OCDummyInit([1.0, 2.0])
 
-            # 1) Alias i taggé :solve -> utilisé comme initial_guess, pas dans other_kwargs
+            # 1) Alias i tagged :solve -> used as initial_guess, not kept in other_kwargs
             parsed_solve = CTSolvers._parse_top_level_kwargs_description((
                 i   = (init, :solve),
                 tol = 1e-6,
@@ -250,27 +250,27 @@ function test_optimalcontrol_solve_api()
             Test.@test haskey(parsed_solve.other_kwargs, :tol)
             Test.@test parsed_solve.other_kwargs.tol == 1e-6
 
-            # 2) Alias i taggé :solver -> ignoré par solve, laissé pour les tools
+            # 2) Alias i tagged :solver -> ignored by solve, left for the tools
             parsed_solver = CTSolvers._parse_top_level_kwargs_description((
                 i   = (init, :solver),
                 tol = 2e-6,
             ))
 
-            # initial_guess reste au défaut, l'alias i est laissé dans other_kwargs
+            # initial_guess stays at its default, alias i is kept in other_kwargs
             Test.@test parsed_solver.initial_guess === CTSolvers.__initial_guess()
             Test.@test haskey(parsed_solver.other_kwargs, :i)
             Test.@test parsed_solver.other_kwargs.i == (init, :solver)
             Test.@test haskey(parsed_solver.other_kwargs, :tol)
             Test.@test parsed_solver.other_kwargs.tol == 2e-6
 
-            # 3) display taggé :solve -> top-level display
+            # 3) display tagged :solve -> top-level display
             parsed_display_solve = CTSolvers._parse_top_level_kwargs_description((
                 display = (false, :solve),
             ))
             Test.@test parsed_display_solve.display == false
             Test.@test !haskey(parsed_display_solve.other_kwargs, :display)
 
-            # 4) display taggé :solver -> ignoré par solve, laissé pour les tools
+            # 4) display tagged :solver -> ignored by solve, left for the tools
             parsed_display_solver = CTSolvers._parse_top_level_kwargs_description((
                 display = (false, :solver),
             ))
