@@ -6,7 +6,6 @@
 #   - name :: a short problem name
 #   - init :: NamedTuple of components for CTSolvers.initial_guess
 function Beam()
-
     ocp = @def begin
         t ∈ [0, 1], time
         x ∈ R², state

@@ -49,11 +49,15 @@ function test_ctsolvers_extensions_ipopt()
         keys_inst = CTSolvers.options_keys(ipopt_type)
         Test.@test Set(keys_inst) == Set(keys_type)
 
-        Test.@test CTSolvers.option_default(:max_iter, CTSolvers.IpoptSolver) == CTSolversIpopt.__nlp_models_ipopt_max_iter()
-        Test.@test CTSolvers.option_default(:tol,      CTSolvers.IpoptSolver) == CTSolversIpopt.__nlp_models_ipopt_tol()
+        Test.@test CTSolvers.option_default(:max_iter, CTSolvers.IpoptSolver) ==
+            CTSolversIpopt.__nlp_models_ipopt_max_iter()
+        Test.@test CTSolvers.option_default(:tol, CTSolvers.IpoptSolver) ==
+            CTSolversIpopt.__nlp_models_ipopt_tol()
 
-        Test.@test CTSolvers.option_default(:max_iter, ipopt_type) == CTSolversIpopt.__nlp_models_ipopt_max_iter()
-        Test.@test CTSolvers.option_default(:tol,      ipopt_type) == CTSolversIpopt.__nlp_models_ipopt_tol()
+        Test.@test CTSolvers.option_default(:max_iter, ipopt_type) ==
+            CTSolversIpopt.__nlp_models_ipopt_max_iter()
+        Test.@test CTSolvers.option_default(:tol, ipopt_type) ==
+            CTSolversIpopt.__nlp_models_ipopt_tol()
     end
 
     # ========================================================================
@@ -72,9 +76,7 @@ function test_ctsolvers_extensions_ipopt()
     # INTEGRATION: solve_with_ipopt (specific)
     # ========================================================================
     Test.@testset "integration: solve_with_ipopt" verbose=VERBOSE showtiming=SHOWTIMING begin
-        modelers = [
-            CTSolvers.ADNLPModeler(),
-        ]
+        modelers = [CTSolvers.ADNLPModeler()]
         modelers_names = ["ADNLPModeler"]
 
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -117,10 +119,7 @@ function test_ctsolvers_extensions_ipopt()
     # INTEGRATION: initial_guess with Ipopt (max_iter = 0)
     # ========================================================================
     Test.@testset "integration: initial_guess" verbose=VERBOSE showtiming=SHOWTIMING begin
-        modelers = [
-            CTSolvers.ADNLPModeler(),
-            CTSolvers.ExaModeler(),
-        ]
+        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler()]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
 
         # Rosenbrock: start at the known solution and enforce max_iter=0
@@ -130,10 +129,7 @@ function test_ctsolvers_extensions_ipopt()
                     local opts = copy(ipopt_options)
                     opts[:max_iter] = 0
                     sol = CommonSolve.solve(
-                        ros.prob,
-                        ros.sol,
-                        modeler,
-                        CTSolvers.IpoptSolver(; opts...),
+                        ros.prob, ros.sol, modeler, CTSolvers.IpoptSolver(; opts...)
                     )
                     Test.@test sol.status == :max_iter
                     Test.@test sol.solution ≈ ros.sol atol=1e-6
@@ -148,10 +144,7 @@ function test_ctsolvers_extensions_ipopt()
                     local opts = copy(ipopt_options)
                     opts[:max_iter] = 0
                     sol = CommonSolve.solve(
-                        elec.prob,
-                        elec.init,
-                        modeler,
-                        CTSolvers.IpoptSolver(; opts...),
+                        elec.prob, elec.init, modeler, CTSolvers.IpoptSolver(; opts...)
                     )
                     Test.@test sol.status == :max_iter
                     Test.@test sol.solution ≈ vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
@@ -164,10 +157,7 @@ function test_ctsolvers_extensions_ipopt()
     # INTEGRATION: CommonSolve.solve with Ipopt
     # ========================================================================
     Test.@testset "integration: CommonSolve.solve" verbose=VERBOSE showtiming=SHOWTIMING begin
-        modelers = [
-            CTSolvers.ADNLPModeler(),
-            CTSolvers.ExaModeler(),
-        ]
+        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler()]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
 
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -199,7 +189,7 @@ function test_ctsolvers_extensions_ipopt()
                 end
             end
         end
-        
+
         Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -230,10 +220,7 @@ function test_ctsolvers_extensions_ipopt()
 
         Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
 
-        modelers = [
-            CTSolvers.ADNLPModeler(),
-            CTSolvers.ExaModeler(),
-        ]
+        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler()]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
 
         # ocp_solution from DOCP using solve_with_ipopt
@@ -280,10 +267,7 @@ function test_ctsolvers_extensions_ipopt()
 
         Test.@test docp_g isa CTSolvers.DiscretizedOptimalControlProblem
 
-        modelers = [
-            CTSolvers.ADNLPModeler(),
-            CTSolvers.ExaModeler(),
-        ]
+        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler()]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
 
         # ocp_solution from DOCP using solve_with_ipopt
@@ -317,5 +301,4 @@ function test_ctsolvers_extensions_ipopt()
             end
         end
     end
-
 end

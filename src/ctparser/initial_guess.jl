@@ -25,8 +25,8 @@ const INIT_PREFIX = Ref(__default_init_prefix())
 init_prefix() = INIT_PREFIX[]
 
 function init_prefix!(p)
-	INIT_PREFIX[] = p
-	return nothing
+    INIT_PREFIX[] = p
+    return nothing
 end
 
 function _collect_init_specs(ex)
@@ -81,32 +81,32 @@ function _collect_init_specs(ex)
 end
 
 function init_fun(ocp, e)
-	alias_stmts, keys, vals = _collect_init_specs(e)
-	pref = init_prefix()
+    alias_stmts, keys, vals = _collect_init_specs(e)
+    pref = init_prefix()
 
-	# If there is no init specification, delegate to build_initial_guess/validate_initial_guess
-	if isempty(keys)
-		body_stmts = Any[]
-		append!(body_stmts, alias_stmts)
-		# By default, we delegate to build_initial_guess/validate_initial_guess
-		build_call = :($pref.build_initial_guess($ocp, ()))
-		validate_call = :($pref.validate_initial_guess($ocp, $build_call))
+    # If there is no init specification, delegate to build_initial_guess/validate_initial_guess
+    if isempty(keys)
+        body_stmts = Any[]
+        append!(body_stmts, alias_stmts)
+        # By default, we delegate to build_initial_guess/validate_initial_guess
+        build_call = :($pref.build_initial_guess($ocp, ()))
+        validate_call = :($pref.validate_initial_guess($ocp, $build_call))
         push!(body_stmts, validate_call)
         code_expr = Expr(:block, body_stmts...)
         log_str = "()"
         return log_str, code_expr
     end
 
-    	# Build the NamedTuple type and its values for execution
-	key_nodes = [QuoteNode(k) for k in keys]
-	keys_tuple = Expr(:tuple, key_nodes...)
-	vals_tuple = Expr(:tuple, vals...)
-	nt_expr = :(NamedTuple{$keys_tuple}($vals_tuple))
+    # Build the NamedTuple type and its values for execution
+    key_nodes = [QuoteNode(k) for k in keys]
+    keys_tuple = Expr(:tuple, key_nodes...)
+    vals_tuple = Expr(:tuple, vals...)
+    nt_expr = :(NamedTuple{$keys_tuple}($vals_tuple))
 
-    	body_stmts = Any[]
-	append!(body_stmts, alias_stmts)
-	build_call = :($pref.build_initial_guess($ocp, $nt_expr))
-	validate_call = :($pref.validate_initial_guess($ocp, $build_call))
+    body_stmts = Any[]
+    append!(body_stmts, alias_stmts)
+    build_call = :($pref.build_initial_guess($ocp, $nt_expr))
+    validate_call = :($pref.validate_initial_guess($ocp, $build_call))
     push!(body_stmts, validate_call)
     code_expr = Expr(:block, body_stmts...)
 
@@ -139,10 +139,10 @@ function init_fun(ocp, e)
         push!(pairs_str, string(k, " = ", rhs_str))
     end
     log_str = if length(pairs_str) == 1
-            string("(", pairs_str[1], ",)")
-        else
-            string("(", join(pairs_str, ", "), ")")
-        end
+        string("(", pairs_str[1], ",)")
+    else
+        string("(", join(pairs_str, ", "), ")")
+    end
 
     return log_str, code_expr
 end
@@ -159,17 +159,22 @@ macro init(ocp, e, rest...)
         if opt isa Expr && opt.head == :(=) && opt.args[1] == :log
             log_expr = opt.args[2]
         else
-            error("Unsupported trailing argument in @init. Use `log = true` or `log = false`.")
+            error(
+                "Unsupported trailing argument in @init. Use `log = true` or `log = false`."
+            )
         end
     elseif length(rest) > 1
-        error("Too many trailing arguments in @init. Only a single `log = ...` keyword is supported.")
+        error(
+            "Too many trailing arguments in @init. Only a single `log = ...` keyword is supported.",
+        )
     end
 
     log_str, code = try
         init_fun(ocp, e)
     catch err
         # Treat unsupported DSL syntax as a static parsing error with proper line info.
-        if err isa ErrorException && occursin("Unsupported left-hand side in @init", err.msg)
+        if err isa ErrorException &&
+            occursin("Unsupported left-hand side in @init", err.msg)
             throw_expr = CTParser.__throw(err.msg, lnum, line_str)
             return esc(throw_expr)
         else
@@ -178,12 +183,14 @@ macro init(ocp, e, rest...)
     end
 
     # When log is true, print the NamedTuple-like string corresponding to the DSL
-    logged_code = :(begin
-        if $log_expr
-            println($log_str)
+    logged_code = :(
+        begin
+            if $log_expr
+                println($log_str)
+            end
+            $code
         end
-        $code
-    end)
+    )
 
     wrapped = CTParser.__wrap(logged_code, lnum, line_str)
     return esc(wrapped)

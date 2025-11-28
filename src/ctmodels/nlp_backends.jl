@@ -16,12 +16,12 @@ __adnlp_model_backend() = :optimized
 
 function _option_specs(::Type{<:ADNLPModeler})
     return (
-        show_time = OptionSpec(
+        show_time=OptionSpec(;
             type=Bool,
             default=__adnlp_model_show_time(),
             description="Whether to show timing information while building the ADNLP model.",
         ),
-        backend = OptionSpec(
+        backend=OptionSpec(;
             type=Symbol,
             default=__adnlp_model_backend(),
             description="Automatic differentiation backend used by ADNLPModels.",
@@ -30,14 +30,12 @@ function _option_specs(::Type{<:ADNLPModeler})
 end
 
 function ADNLPModeler(; kwargs...)
-    values, sources = _build_ocp_tool_options(
-        ADNLPModeler; kwargs..., strict_keys=false)
+    values, sources = _build_ocp_tool_options(ADNLPModeler; kwargs..., strict_keys=false)
     return ADNLPModeler{typeof(values),typeof(sources)}(values, sources)
 end
 
 function (modeler::ADNLPModeler)(
-    prob::AbstractOptimizationProblem, 
-    initial_guess,
+    prob::AbstractOptimizationProblem, initial_guess
 )::ADNLPModels.ADNLPModel
     vals = _options_values(modeler)
     builder = get_adnlp_model_builder(prob)
@@ -45,8 +43,7 @@ function (modeler::ADNLPModeler)(
 end
 
 function (modeler::ADNLPModeler)(
-    prob::AbstractOptimizationProblem, 
-    nlp_solution::SolverCore.AbstractExecutionStats
+    prob::AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats
 )
     builder = get_adnlp_solution_builder(prob)
     return builder(nlp_solution)
@@ -55,9 +52,7 @@ end
 # ------------------------------------------------------------------------------
 # ExaModels
 # ------------------------------------------------------------------------------
-struct ExaModeler{
-    BaseType<:AbstractFloat,Vals,Srcs
-} <: AbstractOptimizationModeler
+struct ExaModeler{BaseType<:AbstractFloat,Vals,Srcs} <: AbstractOptimizationModeler
     options_values::Vals
     options_sources::Srcs
 end
@@ -67,17 +62,17 @@ __exa_model_backend() = nothing
 
 function _option_specs(::Type{<:ExaModeler})
     return (
-        base_type = OptionSpec(
+        base_type=OptionSpec(;
             type=Type{<:AbstractFloat},
             default=__exa_model_base_type(),
             description="Base floating-point type used by ExaModels.",
         ),
-        minimize = OptionSpec(
+        minimize=OptionSpec(;
             type=Bool,
             default=missing,
             description="Whether to minimize (true) or maximize (false) the objective.",
         ),
-        backend = OptionSpec(
+        backend=OptionSpec(;
             type=Union{Nothing,KernelAbstractions.Backend},
             default=__exa_model_backend(),
             description="Execution backend for ExaModels (CPU, GPU, etc.).",
@@ -86,8 +81,7 @@ function _option_specs(::Type{<:ExaModeler})
 end
 
 function ExaModeler(; kwargs...)
-    values, sources = _build_ocp_tool_options(
-        ExaModeler; kwargs..., strict_keys=true)
+    values, sources = _build_ocp_tool_options(ExaModeler; kwargs..., strict_keys=true)
     BaseType = values.base_type
 
     # base_type is only needed to fix the type parameter; it does not need to
@@ -95,12 +89,13 @@ function ExaModeler(; kwargs...)
     filtered_vals = _filter_options(values, (:base_type,))
     filtered_srcs = _filter_options(sources, (:base_type,))
 
-    return ExaModeler{BaseType,typeof(filtered_vals),typeof(filtered_srcs)}(filtered_vals, filtered_srcs)
+    return ExaModeler{BaseType,typeof(filtered_vals),typeof(filtered_srcs)}(
+        filtered_vals, filtered_srcs
+    )
 end
 
 function (modeler::ExaModeler{BaseType})(
-    prob::AbstractOptimizationProblem, 
-    initial_guess,
+    prob::AbstractOptimizationProblem, initial_guess
 )::ExaModels.ExaModel{BaseType} where {BaseType<:AbstractFloat}
     vals = _options_values(modeler)
     backend = vals.backend
@@ -109,8 +104,7 @@ function (modeler::ExaModeler{BaseType})(
 end
 
 function (modeler::ExaModeler)(
-    prob::AbstractOptimizationProblem, 
-    nlp_solution::SolverCore.AbstractExecutionStats,
+    prob::AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats
 )
     builder = get_exa_solution_builder(prob)
     return builder(nlp_solution)
@@ -121,10 +115,10 @@ end
 # ------------------------------------------------------------------------------
 
 get_symbol(::Type{<:ADNLPModeler}) = :adnlp
-get_symbol(::Type{<:ExaModeler})   = :exa
+get_symbol(::Type{<:ExaModeler}) = :exa
 
 tool_package_name(::Type{<:ADNLPModeler}) = "ADNLPModels"
-tool_package_name(::Type{<:ExaModeler})   = "ExaModels"
+tool_package_name(::Type{<:ExaModeler}) = "ExaModels"
 
 const REGISTERED_MODELERS = (ADNLPModeler, ExaModeler)
 

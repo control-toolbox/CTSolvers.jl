@@ -12,7 +12,7 @@ __mad_ncl_tol() = 1e-8
 __mad_ncl_print_level() = MadNLP.INFO
 __mad_ncl_linear_solver() = MadNLPMumps.MumpsSolver
 function __mad_ncl_ncl_options()
-    MadNCL.NCLOptions{Float64}(
+    MadNCL.NCLOptions{Float64}(;
         verbose=true,       # print convergence logs
         # scaling=false,      # specify if we should scale the problem
         opt_tol=1e-8,       # tolerance on dual infeasibility
@@ -26,27 +26,25 @@ base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseT
 
 function CTSolvers._option_specs(::Type{<:CTSolvers.MadNCLSolver})
     return (
-        max_iter = CTSolvers.OptionSpec(
+        max_iter=CTSolvers.OptionSpec(;
             type=Integer,
             default=__mad_ncl_max_iter(),
             description="Maximum number of augmented Lagrangian iterations.",
         ),
-        tol = CTSolvers.OptionSpec(
-            type=Real,
-            default=__mad_ncl_tol(),
-            description="Optimality tolerance.",
+        tol=CTSolvers.OptionSpec(;
+            type=Real, default=__mad_ncl_tol(), description="Optimality tolerance."
         ),
-        print_level = CTSolvers.OptionSpec(
+        print_level=CTSolvers.OptionSpec(;
             type=MadNLP.LogLevels,
             default=__mad_ncl_print_level(),
             description="MadNCL/MadNLP logging level.",
         ),
-        linear_solver = CTSolvers.OptionSpec(
+        linear_solver=CTSolvers.OptionSpec(;
             type=Type{<:MadNLP.AbstractLinearSolver},
             default=__mad_ncl_linear_solver(),
             description="Linear solver implementation used inside MadNCL.",
         ),
-        ncl_options = CTSolvers.OptionSpec(
+        ncl_options=CTSolvers.OptionSpec(;
             type=MadNCL.NCLOptions,
             default=__mad_ncl_ncl_options(),
             description="Low-level NCLOptions structure controlling the augmented Lagrangian algorithm.",
@@ -64,7 +62,8 @@ end
 # backend constructor
 function CTSolvers.MadNCLSolver(; kwargs...)
     values, sources = CTSolvers._build_ocp_tool_options(
-        CTSolvers.MadNCLSolver; kwargs..., strict_keys=false)
+        CTSolvers.MadNCLSolver; kwargs..., strict_keys=false
+    )
     BaseType = base_type(values.ncl_options)
     return CTSolvers.MadNCLSolver{BaseType,typeof(values),typeof(sources)}(values, sources)
 end

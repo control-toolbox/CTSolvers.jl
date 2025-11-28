@@ -10,7 +10,7 @@ function test_ctdirect_core_types()
         Test.@test isabstracttype(CTSolvers.AbstractIntegratorScheme)
 
         # Concrete schemes should be subtypes
-        Test.@test CTSolvers.Midpoint    <: CTSolvers.AbstractIntegratorScheme
+        Test.@test CTSolvers.Midpoint <: CTSolvers.AbstractIntegratorScheme
         Test.@test CTSolvers.Trapezoidal <: CTSolvers.AbstractIntegratorScheme
 
         # Trapeze is an alias to Trapezoidal
@@ -44,16 +44,18 @@ function test_ctdirect_core_types()
         Test.@test default_l2m === false
 
         # Explicitly construct Collocation with given grid and scheme
-        colloc = CTSolvers.Collocation(; grid=default_grid, scheme=default_scheme, lagrange_to_mayer=true)
+        colloc = CTSolvers.Collocation(;
+            grid=default_grid, scheme=default_scheme, lagrange_to_mayer=true
+        )
 
         # Collocation options should expose the stored grid and scheme via options_values
         Test.@test CTSolvers.get_option_value(colloc, :grid) == default_grid
-        Test.@test CTSolvers.get_option_value(colloc, :scheme)    === default_scheme
+        Test.@test CTSolvers.get_option_value(colloc, :scheme) === default_scheme
         Test.@test CTSolvers.get_option_value(colloc, :lagrange_to_mayer) === true
 
         # The type parameter of Collocation should reflect the concrete scheme type
         Test.@test default_colloc isa CTSolvers.Collocation{CTSolvers.Midpoint}
-        Test.@test colloc        isa CTSolvers.Collocation{CTSolvers.Midpoint}
+        Test.@test colloc isa CTSolvers.Collocation{CTSolvers.Midpoint}
     end
 
     Test.@testset "discretizer symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -74,10 +76,12 @@ function test_ctdirect_core_types()
         base_disc = CTSolvers.Collocation()
         default_grid = CTSolvers.get_option_value(base_disc, :grid)
         default_scheme = CTSolvers.get_option_value(base_disc, :scheme)
-        disc = CTSolvers.build_discretizer_from_symbol(:collocation; grid=default_grid, scheme=default_scheme)
+        disc = CTSolvers.build_discretizer_from_symbol(
+            :collocation; grid=default_grid, scheme=default_scheme
+        )
         Test.@test disc isa CTSolvers.Collocation
         Test.@test CTSolvers.get_option_value(disc, :grid) == default_grid
-        Test.@test CTSolvers.get_option_value(disc, :scheme)    === default_scheme
+        Test.@test CTSolvers.get_option_value(disc, :scheme) === default_scheme
     end
 
     Test.@testset "build_discretizer_from_symbol unknown symbol" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -106,7 +110,7 @@ function test_ctdirect_core_types()
         default_l2m = CTSolvers.get_option_value(base_disc, :lagrange_to_mayer)
 
         Test.@test opts.grid == default_grid
-        Test.@test opts.scheme    === default_scheme
+        Test.@test opts.scheme === default_scheme
         Test.@test opts.lagrange_to_mayer === default_l2m
 
         # Type-based and instance-based views of the options metadata should agree.
@@ -121,13 +125,13 @@ function test_ctdirect_core_types()
         Test.@test Set(keys_from_inst) == Set(keys_from_type)
 
         Test.@test CTSolvers.option_default(:grid, CTSolvers.Collocation) == default_grid
-        Test.@test CTSolvers.option_default(:scheme, CTSolvers.Collocation)    === default_scheme
+        Test.@test CTSolvers.option_default(:scheme, CTSolvers.Collocation) ===
+            default_scheme
         Test.@test CTSolvers.option_default(:grid, colloc_type) == default_grid
-        Test.@test CTSolvers.option_default(:scheme,    colloc_type) === default_scheme
+        Test.@test CTSolvers.option_default(:scheme, colloc_type) === default_scheme
 
-        Test.@test CTSolvers.option_default(:lagrange_to_mayer, CTSolvers.Collocation) === false
+        Test.@test CTSolvers.option_default(:lagrange_to_mayer, CTSolvers.Collocation) ===
+            false
         Test.@test CTSolvers.option_default(:lagrange_to_mayer, colloc_type) === false
     end
-
 end
-

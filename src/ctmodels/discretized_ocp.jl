@@ -7,52 +7,38 @@ abstract type AbstractOCPSolutionBuilder <: AbstractSolutionBuilder end
 struct ADNLPSolutionBuilder{T<:Function} <: AbstractOCPSolutionBuilder
     f::T
 end
-function (builder::ADNLPSolutionBuilder)(
-    nlp_solution::SolverCore.AbstractExecutionStats,
-)
+function (builder::ADNLPSolutionBuilder)(nlp_solution::SolverCore.AbstractExecutionStats)
     return builder.f(nlp_solution)
 end
 
 struct ExaSolutionBuilder{T<:Function} <: AbstractOCPSolutionBuilder
     f::T
 end
-function (builder::ExaSolutionBuilder)(
-    nlp_solution::SolverCore.AbstractExecutionStats,
-)
+function (builder::ExaSolutionBuilder)(nlp_solution::SolverCore.AbstractExecutionStats)
     return builder.f(nlp_solution)
 end
 
-struct OCPBackendBuilders{
-    TM<:AbstractModelBuilder,
-    TS<:AbstractOCPSolutionBuilder,
-}
+struct OCPBackendBuilders{TM<:AbstractModelBuilder,TS<:AbstractOCPSolutionBuilder}
     model::TM
     solution::TS
 end
 
 # Problem
-struct DiscretizedOptimalControlProblem{
-    TO <:AbstractOptimalControlProblem,
-    TB <:NamedTuple,
-} <: AbstractOptimizationProblem
+struct DiscretizedOptimalControlProblem{TO<:AbstractOptimalControlProblem,TB<:NamedTuple} <:
+       AbstractOptimizationProblem
     optimal_control_problem::TO
     backend_builders::TB
     function DiscretizedOptimalControlProblem(
-        optimal_control_problem::TO,
-        backend_builders::TB,
-    ) where {
-        TO <:AbstractOptimalControlProblem,
-        TB <:NamedTuple,
-    }
-        return new{TO, TB}(optimal_control_problem, backend_builders)
+        optimal_control_problem::TO, backend_builders::TB
+    ) where {TO<:AbstractOptimalControlProblem,TB<:NamedTuple}
+        return new{TO,TB}(optimal_control_problem, backend_builders)
     end
     function DiscretizedOptimalControlProblem(
         optimal_control_problem::AbstractOptimalControlProblem,
         backend_builders::Tuple{Vararg{Pair{Symbol,<:OCPBackendBuilders}}},
     )
         return DiscretizedOptimalControlProblem(
-            optimal_control_problem,
-            (; backend_builders...),
+            optimal_control_problem, (; backend_builders...)
         )
     end
     function DiscretizedOptimalControlProblem(
@@ -66,7 +52,7 @@ struct DiscretizedOptimalControlProblem{
             optimal_control_problem,
             (
                 :adnlp => OCPBackendBuilders(adnlp_model_builder, adnlp_solution_builder),
-                :exa   => OCPBackendBuilders(exa_model_builder,   exa_solution_builder),
+                :exa => OCPBackendBuilders(exa_model_builder, exa_solution_builder),
             ),
         )
     end
@@ -111,4 +97,3 @@ function get_exa_solution_builder(prob::DiscretizedOptimalControlProblem)
     end
     throw(ArgumentError("no :exa solution builder registered"))
 end
-

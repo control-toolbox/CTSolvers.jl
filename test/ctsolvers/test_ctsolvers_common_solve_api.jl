@@ -17,9 +17,7 @@ struct CSFakeDiscretizer <: CTSolvers.AbstractOptimalControlDiscretizer
     calls::Base.RefValue{Int}
 end
 
-function (d::CSFakeDiscretizer)(
-    ocp::CTSolvers.AbstractOptimalControlProblem,
-)
+function (d::CSFakeDiscretizer)(ocp::CTSolvers.AbstractOptimalControlProblem)
     d.calls[] += 1
     return CSDummyDiscretizedOCP()
 end
@@ -30,8 +28,7 @@ struct CSFakeModeler <: CTSolvers.AbstractOptimizationModeler
 end
 
 function (m::CSFakeModeler)(
-    prob::CTSolvers.AbstractOptimizationProblem,
-    init::CSDummyInit,
+    prob::CTSolvers.AbstractOptimizationProblem, init::CSDummyInit
 )::NLPModels.AbstractNLPModel
     m.model_calls[] += 1
     f(z) = sum(z .^ 2)
@@ -51,8 +48,7 @@ struct CSFakeSolverNLP <: CTSolvers.AbstractOptimizationSolver
 end
 
 function (s::CSFakeSolverNLP)(
-    nlp::NLPModels.AbstractNLPModel;
-    display::Bool,
+    nlp::NLPModels.AbstractNLPModel; display::Bool
 )::SolverCore.AbstractExecutionStats
     s.calls[] += 1
     return CSDummyStats(:solver_called)
@@ -62,15 +58,12 @@ struct CSFakeSolverAny <: CTSolvers.AbstractOptimizationSolver
     calls::Base.RefValue{Int}
 end
 
-function (s::CSFakeSolverAny)(
-    nlp;
-    display::Bool,
-)
+function (s::CSFakeSolverAny)(nlp; display::Bool)
     s.calls[] += 1
     return CSDummyStats(:solver_any_called)
 end
 
- function test_ctsolvers_common_solve_api()
+function test_ctsolvers_common_solve_api()
 
     # ========================================================================
     # Low-level default display flag
@@ -137,6 +130,4 @@ end
         Test.@test stats.tag == :solver_any_called
         Test.@test solver_calls[] == 1
     end
-
 end
-

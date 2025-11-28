@@ -6,9 +6,7 @@ struct DummyDiscretizer <: CTSolvers.AbstractOptimalControlDiscretizer
     tag::Symbol
 end
 
-function (d::DummyDiscretizer)(
-    ocp::CTSolvers.AbstractOptimalControlProblem,
-)
+function (d::DummyDiscretizer)(ocp::CTSolvers.AbstractOptimalControlProblem)
     d.calls[] += 1
     return (ocp, d.tag)
 end
@@ -48,6 +46,4 @@ function test_ctdirect_discretization_api()
         Test.@test disc isa CTSolvers.AbstractOptimalControlDiscretizer
         Test.@test disc isa CTSolvers.Collocation
     end
-
 end
-

@@ -43,8 +43,9 @@ end
 #   - description : short human-readable description (or `missing`).
 # ---------------------------------------------------------------------------
 
-OptionSpec(; type=missing, default=missing, description=missing) =
+function OptionSpec(; type=missing, default=missing, description=missing)
     OptionSpec(type, default, description)
+end
 
 # Default: no metadata for a given tool type.
 function _option_specs(::Type{T}) where {T<:AbstractOCPTool}
@@ -163,7 +164,9 @@ function _string_distance(a::AbstractString, b::AbstractString)
 end
 
 # Suggest up to `max_suggestions` closest option keys for a tool type.
-function _suggest_option_keys(key::Symbol, tool_type::Type{<:AbstractOCPTool}; max_suggestions::Int=3)
+function _suggest_option_keys(
+    key::Symbol, tool_type::Type{<:AbstractOCPTool}; max_suggestions::Int=3
+)
     specs = _option_specs(tool_type)
     specs === missing && return Symbol[]
     names = collect(propertynames(specs))
@@ -173,8 +176,9 @@ function _suggest_option_keys(key::Symbol, tool_type::Type{<:AbstractOCPTool}; m
     return [distances[i][2] for i in 1:take]
 end
 
-_suggest_option_keys(key::Symbol, x::AbstractOCPTool; max_suggestions::Int=3) =
+function _suggest_option_keys(key::Symbol, x::AbstractOCPTool; max_suggestions::Int=3)
     _suggest_option_keys(key, typeof(x); max_suggestions=max_suggestions)
+end
 
 # ---------------------------------------------------------------------------
 # High-level getters for option value/source/default on instantiated tools.
@@ -182,7 +186,9 @@ _suggest_option_keys(key::Symbol, x::AbstractOCPTool; max_suggestions::Int=3) =
 # used when parsing user keyword arguments.
 # ---------------------------------------------------------------------------
 
-function _unknown_option_error(key::Symbol, tool_type::Type{<:AbstractOCPTool}, context::AbstractString)
+function _unknown_option_error(
+    key::Symbol, tool_type::Type{<:AbstractOCPTool}, context::AbstractString
+)
     suggestions = _suggest_option_keys(key, tool_type; max_suggestions=3)
     tool_name = string(nameof(tool_type))
     msg = "Unknown option $(key) for $(tool_name) when querying the $(context)."
@@ -206,8 +212,9 @@ function get_option_value(tool::AbstractOCPTool, key::Symbol)
     end
 
     tool_name = string(nameof(tool_type))
-    msg = "Option $(key) is defined for $(tool_name) but has no value: " *
-          "no default was provided and the option was not set by the user."
+    msg =
+        "Option $(key) is defined for $(tool_name) but has no value: " *
+        "no default was provided and the option was not set by the user."
     throw(CTBase.IncorrectArgument(msg))
 end
 
@@ -242,7 +249,7 @@ function _show_options(tool_type::Type{<:AbstractOCPTool})
     specs = _option_specs(tool_type)
     if specs === missing
         println("No option metadata available for ", tool_type, ".")
-        return
+        return nothing
     end
     println("Options for ", tool_type, ":")
     for name in propertynames(specs)
@@ -270,9 +277,7 @@ end
 # keys are accepted and only known keys are type-checked when a type is
 # available in the metadata.
 function _validate_option_kwargs(
-    user_nt::NamedTuple,
-    tool_type::Type{<:AbstractOCPTool};
-    strict_keys::Bool=false,
+    user_nt::NamedTuple, tool_type::Type{<:AbstractOCPTool}; strict_keys::Bool=false
 )
     specs = _option_specs(tool_type)
     specs === missing && return nothing
@@ -311,8 +316,9 @@ function _validate_option_kwargs(
         v = user_nt[k]
         if !(v isa T)
             tool_name = string(nameof(tool_type))
-            msg = "Invalid type for option $(k) of $(tool_name). " *
-                  "Expected value of type $(T), got value of type $(typeof(v))."
+            msg =
+                "Invalid type for option $(k) of $(tool_name). " *
+                "Expected value of type $(T), got value of type $(typeof(v))."
             throw(CTBase.IncorrectArgument(msg))
         end
     end
@@ -320,13 +326,14 @@ function _validate_option_kwargs(
     return nothing
 end
 
-_validate_option_kwargs(user_nt::NamedTuple, x::AbstractOCPTool; strict_keys::Bool=false) =
+function _validate_option_kwargs(
+    user_nt::NamedTuple, x::AbstractOCPTool; strict_keys::Bool=false
+)
     _validate_option_kwargs(user_nt, typeof(x); strict_keys=strict_keys)
+end
 
 function _build_ocp_tool_options(
-    ::Type{T};
-    strict_keys::Bool=false,
-    kwargs...,
+    ::Type{T}; strict_keys::Bool=false, kwargs...
 ) where {T<:AbstractOCPTool}
     # Normalize user-supplied keyword arguments to a NamedTuple.
     user_nt = NamedTuple(kwargs)

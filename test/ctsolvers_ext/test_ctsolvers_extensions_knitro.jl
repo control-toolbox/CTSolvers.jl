@@ -38,13 +38,18 @@ function test_ctsolvers_extensions_knitro()
         keys_inst = CTSolvers.options_keys(knitro_type)
         Test.@test Set(keys_inst) == Set(keys_type)
 
-        Test.@test CTSolvers.option_default(:maxit,       CTSolvers.KnitroSolver) == CTSolversKnitro.__nlp_models_knitro_max_iter()
-        Test.@test CTSolvers.option_default(:feastol_abs, CTSolvers.KnitroSolver) == CTSolversKnitro.__nlp_models_knitro_feastol_abs()
-        Test.@test CTSolvers.option_default(:opttol_abs,  CTSolvers.KnitroSolver) == CTSolversKnitro.__nlp_models_knitro_opttol_abs()
+        Test.@test CTSolvers.option_default(:maxit, CTSolvers.KnitroSolver) ==
+            CTSolversKnitro.__nlp_models_knitro_max_iter()
+        Test.@test CTSolvers.option_default(:feastol_abs, CTSolvers.KnitroSolver) ==
+            CTSolversKnitro.__nlp_models_knitro_feastol_abs()
+        Test.@test CTSolvers.option_default(:opttol_abs, CTSolvers.KnitroSolver) ==
+            CTSolversKnitro.__nlp_models_knitro_opttol_abs()
 
-        Test.@test CTSolvers.option_default(:maxit,       knitro_type) == CTSolversKnitro.__nlp_models_knitro_max_iter()
-        Test.@test CTSolvers.option_default(:feastol_abs, knitro_type) == CTSolversKnitro.__nlp_models_knitro_feastol_abs()
-        Test.@test CTSolvers.option_default(:opttol_abs,  knitro_type) == CTSolversKnitro.__nlp_models_knitro_opttol_abs()
+        Test.@test CTSolvers.option_default(:maxit, knitro_type) ==
+            CTSolversKnitro.__nlp_models_knitro_max_iter()
+        Test.@test CTSolvers.option_default(:feastol_abs, knitro_type) ==
+            CTSolversKnitro.__nlp_models_knitro_feastol_abs()
+        Test.@test CTSolvers.option_default(:opttol_abs, knitro_type) ==
+            CTSolversKnitro.__nlp_models_knitro_opttol_abs()
     end
-
 end

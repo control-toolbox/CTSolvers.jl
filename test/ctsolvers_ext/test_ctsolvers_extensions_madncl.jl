@@ -51,11 +51,15 @@ function test_ctsolvers_extensions_madncl()
         keys_inst = CTSolvers.options_keys(madncl_type)
         Test.@test Set(keys_inst) == Set(keys_type)
 
-        Test.@test CTSolvers.option_default(:max_iter,    CTSolvers.MadNCLSolver) == CTSolversMadNCL.__mad_ncl_max_iter()
-        Test.@test CTSolvers.option_default(:print_level, CTSolvers.MadNCLSolver) == CTSolversMadNCL.__mad_ncl_print_level()
+        Test.@test CTSolvers.option_default(:max_iter, CTSolvers.MadNCLSolver) ==
+            CTSolversMadNCL.__mad_ncl_max_iter()
+        Test.@test CTSolvers.option_default(:print_level, CTSolvers.MadNCLSolver) ==
+            CTSolversMadNCL.__mad_ncl_print_level()
 
-        Test.@test CTSolvers.option_default(:max_iter,    madncl_type) == CTSolversMadNCL.__mad_ncl_max_iter()
-        Test.@test CTSolvers.option_default(:print_level, madncl_type) == CTSolversMadNCL.__mad_ncl_print_level()
+        Test.@test CTSolvers.option_default(:max_iter, madncl_type) ==
+            CTSolversMadNCL.__mad_ncl_max_iter()
+        Test.@test CTSolvers.option_default(:print_level, madncl_type) ==
+            CTSolversMadNCL.__mad_ncl_print_level()
     end
 
     # ========================================================================
@@ -73,10 +77,7 @@ function test_ctsolvers_extensions_madncl()
     # ========================================================================
     Test.@testset "integration: initial_guess" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float64
-        modelers = [
-            CTSolvers.ADNLPModeler(),
-            CTSolvers.ExaModeler(; base_type=BaseType),
-        ]
+        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler(; base_type=BaseType)]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
@@ -84,7 +85,8 @@ function test_ctsolvers_extensions_madncl()
 
         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers, modelers_names)
-                for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                for (linear_solver, linear_solver_name) in
+                    zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         local opts = copy(madncl_options)
                         opts[:max_iter] = 0
@@ -103,7 +105,8 @@ function test_ctsolvers_extensions_madncl()
                             CTSolvers.MadNCLSolver(; opts..., linear_solver=linear_solver),
                         )
                         Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
-                        Test.@test sol.solution ≈ vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
+                        Test.@test sol.solution ≈
+                            vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
                     end
                 end
             end
@@ -115,10 +118,7 @@ function test_ctsolvers_extensions_madncl()
     # ========================================================================
     Test.@testset "integration: solve_with_madncl" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float64
-        modelers = [
-            CTSolvers.ADNLPModeler(),
-            CTSolvers.ExaModeler(; base_type=BaseType),
-        ]
+        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler(; base_type=BaseType)]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Mumps"]
@@ -126,11 +126,12 @@ function test_ctsolvers_extensions_madncl()
 
         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers, modelers_names)
-                for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                for (linear_solver, linear_solver_name) in
+                    zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         nlp = CTSolvers.build_model(elec.prob, elec.init, modeler)
                         sol = CTSolvers.solve_with_madncl(
-                            nlp; linear_solver=linear_solver, madncl_options...,
+                            nlp; linear_solver=linear_solver, madncl_options...
                         )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     end
@@ -139,11 +140,12 @@ function test_ctsolvers_extensions_madncl()
         end
         Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers, modelers_names)
-                for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                for (linear_solver, linear_solver_name) in
+                    zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         nlp = CTSolvers.build_model(maxd.prob, maxd.init, modeler)
                         sol = CTSolvers.solve_with_madncl(
-                            nlp; linear_solver=linear_solver, madncl_options...,
+                            nlp; linear_solver=linear_solver, madncl_options...
                         )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                         Test.@test length(sol.solution) == 1
@@ -160,10 +162,7 @@ function test_ctsolvers_extensions_madncl()
     # ========================================================================
     Test.@testset "integration: CommonSolve.solve" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float64
-        modelers = [
-            CTSolvers.ADNLPModeler(),
-            CTSolvers.ExaModeler(; base_type=BaseType),
-        ]
+        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler(; base_type=BaseType)]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
@@ -171,13 +170,16 @@ function test_ctsolvers_extensions_madncl()
 
         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers, modelers_names)
-                for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                for (linear_solver, linear_solver_name) in
+                    zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
                             elec.prob,
                             elec.init,
                             modeler,
-                            CTSolvers.MadNCLSolver(; madncl_options..., linear_solver=linear_solver),
+                            CTSolvers.MadNCLSolver(;
+                                madncl_options..., linear_solver=linear_solver
+                            ),
                         )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     end
@@ -186,13 +188,16 @@ function test_ctsolvers_extensions_madncl()
         end
         Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers, modelers_names)
-                for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solvers_names)
+                for (linear_solver, linear_solver_name) in
+                    zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
                             maxd.prob,
                             maxd.init,
                             modeler,
-                            CTSolvers.MadNCLSolver(; madncl_options..., linear_solver=linear_solver),
+                            CTSolvers.MadNCLSolver(;
+                                madncl_options..., linear_solver=linear_solver
+                            ),
                         )
                         Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                         Test.@test length(sol.solution) == 1
@@ -209,7 +214,7 @@ function test_ctsolvers_extensions_madncl()
     # ========================================================================
     if !is_cuda_on()
         @info "CUDA not functional, skipping CTSolvers MadNCL GPU extension tests"
-        return
+        return nothing
     end
 
     exa_backend = CUDA.CUDABackend()
@@ -223,7 +228,9 @@ function test_ctsolvers_extensions_madncl()
         # Elec
         for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
             Test.@testset "Elec – $(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                stats = CommonSolve.solve(elec.prob, elec.init, modeler, solver; display=false)
+                stats = CommonSolve.solve(
+                    elec.prob, elec.init, modeler, solver; display=false
+                )
                 Test.@test stats isa MadNCL.NCLStats
                 Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
             end
@@ -232,11 +239,12 @@ function test_ctsolvers_extensions_madncl()
         # Max1MinusX2
         for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
             Test.@testset "Max1MinusX2 – $(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                stats = CommonSolve.solve(maxd.prob, maxd.init, modeler, solver; display=false)
+                stats = CommonSolve.solve(
+                    maxd.prob, maxd.init, modeler, solver; display=false
+                )
                 Test.@test stats isa MadNCL.NCLStats
                 Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
             end
         end
     end
-
 end

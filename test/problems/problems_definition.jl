@@ -20,15 +20,11 @@ function CTSolvers.get_exa_model_builder(prob::OptimizationProblem)
     return prob.build_exa_model
 end
 
-function (builder::ADNLPSolutionBuilder)(
-    nlp_solution::SolverCore.AbstractExecutionStats,
-)
+function (builder::ADNLPSolutionBuilder)(nlp_solution::SolverCore.AbstractExecutionStats)
     return nlp_solution
 end
 
-function (builder::ExaSolutionBuilder)(
-    nlp_solution::SolverCore.AbstractExecutionStats,
-)
+function (builder::ExaSolutionBuilder)(nlp_solution::SolverCore.AbstractExecutionStats)
     return nlp_solution
 end
 

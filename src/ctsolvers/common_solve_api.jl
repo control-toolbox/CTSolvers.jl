@@ -28,9 +28,7 @@ end
 
 # to let freedom to the user
 function CommonSolve.solve(
-    nlp,
-    solver::AbstractOptimizationSolver;
-    display::Bool=__display(),
+    nlp, solver::AbstractOptimizationSolver; display::Bool=__display()
 )
     return solver(nlp; display=display)
 end
