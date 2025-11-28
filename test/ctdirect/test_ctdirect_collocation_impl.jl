@@ -40,7 +40,6 @@ function CTDirect.nlp_model(::DummyDOCPCollocationRouting)
 end
 
 function test_ctdirect_collocation_impl()
-
     Test.@testset "Collocation as discretizer" verbose=VERBOSE showtiming=SHOWTIMING begin
         ocp = DummyOCPCollocation()
 
@@ -57,14 +56,14 @@ function test_ctdirect_collocation_impl()
         # The model and solution builders should be correctly wired with both
         # ADNLP and Exa backends present.
         adnlp_builder = CTSolvers.get_adnlp_model_builder(docp)
-        exa_builder   = CTSolvers.get_exa_model_builder(docp)
-        adnlp_sol     = CTSolvers.get_adnlp_solution_builder(docp)
-        exa_sol       = CTSolvers.get_exa_solution_builder(docp)
+        exa_builder = CTSolvers.get_exa_model_builder(docp)
+        adnlp_sol = CTSolvers.get_adnlp_solution_builder(docp)
+        exa_sol = CTSolvers.get_exa_solution_builder(docp)
 
         Test.@test adnlp_builder isa CTSolvers.ADNLPModelBuilder
-        Test.@test exa_builder   isa CTSolvers.ExaModelBuilder
-        Test.@test adnlp_sol     isa CTSolvers.ADNLPSolutionBuilder
-        Test.@test exa_sol       isa CTSolvers.ExaSolutionBuilder
+        Test.@test exa_builder isa CTSolvers.ExaModelBuilder
+        Test.@test adnlp_sol isa CTSolvers.ADNLPSolutionBuilder
+        Test.@test exa_sol isa CTSolvers.ExaSolutionBuilder
     end
 
     Test.@testset "Exa backend routing" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -129,6 +128,4 @@ function test_ctdirect_collocation_impl()
         Test.@test haskey(kw2, :time_grid)
         Test.@test kw2[:time_grid] === grid_vec
     end
-
 end
-

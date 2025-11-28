@@ -105,13 +105,7 @@ function demo_display_helper()
     modeler = CTSolvers.ADNLPModeler()
     solver = CTSolvers.IpoptSolver()
 
-    CTSolvers._display_ocp_method(
-        method,
-        discretizer,
-        modeler,
-        solver;
-        display=true,
-    )
+    CTSolvers._display_ocp_method(method, discretizer, modeler, solver; display=true)
 end
 
 # ---------------------------------------------------------------------------
@@ -136,22 +130,24 @@ function demo_beam_solves()
         :sb => "yes",
     )
 
-    madnlp_options = Dict(
-        :max_iter => 1000,
-        :tol => 1e-6,
-        :print_level => MadNLP.ERROR,
-    )
+    madnlp_options = Dict(:max_iter => 1000, :tol => 1e-6, :print_level => MadNLP.ERROR)
 
-    modeler_ad  = CTSolvers.ADNLPModeler(; backend=:manual)
+    modeler_ad = CTSolvers.ADNLPModeler(; backend=:manual)
     modeler_exa = CTSolvers.ExaModeler()
 
     # Explicit mode: low-level _solve with Ipopt and ADNLPModeler
     println()
     println("--- Explicit mode: Ipopt + ADNLPModeler ---")
     solver_ipopt = CTSolvers.IpoptSolver(; ipopt_options...)
-    sol_explicit = CTSolvers._solve(ocp, init, discretizer, modeler_ad, solver_ipopt; display=true)
-    println("successful=", CTModels.successful(sol_explicit),
-            " objective=", CTModels.objective(sol_explicit))
+    sol_explicit = CTSolvers._solve(
+        ocp, init, discretizer, modeler_ad, solver_ipopt; display=true
+    )
+    println(
+        "successful=",
+        CTModels.successful(sol_explicit),
+        " objective=",
+        CTModels.objective(sol_explicit),
+    )
 
     # Description mode: (:collocation, :adnlp, :ipopt)
     println()
@@ -165,8 +161,12 @@ function demo_beam_solves()
         display=true,
         ipopt_options...,
     )
-    println("successful=", CTModels.successful(sol_desc_ad_ipopt),
-            " objective=", CTModels.objective(sol_desc_ad_ipopt))
+    println(
+        "successful=",
+        CTModels.successful(sol_desc_ad_ipopt),
+        " objective=",
+        CTModels.objective(sol_desc_ad_ipopt),
+    )
 
     # Description mode: (:collocation, :exa, :madnlp)
     println()
@@ -180,8 +180,12 @@ function demo_beam_solves()
         display=true,
         madnlp_options...,
     )
-    println("successful=", CTModels.successful(sol_desc_exa_mad),
-            " objective=", CTModels.objective(sol_desc_exa_mad))
+    println(
+        "successful=",
+        CTModels.successful(sol_desc_exa_mad),
+        " objective=",
+        CTModels.objective(sol_desc_exa_mad),
+    )
 end
 
 # ---------------------------------------------------------------------------
@@ -194,7 +198,9 @@ function demo_error_messages()
 
     # Unknown Ipopt option name with suggestions (options schema)
     show_captured_error("Ipopt unknown option mx_iter (schema validation)") do
-        CTSolvers._validate_option_kwargs((mx_iter=10,), CTSolvers.IpoptSolver; strict_keys=true)
+        CTSolvers._validate_option_kwargs(
+            (mx_iter=10,), CTSolvers.IpoptSolver; strict_keys=true
+        )
     end
 
     # Unknown ExaModeler option name with suggestions
@@ -203,8 +209,12 @@ function demo_error_messages()
     end
 
     # Description-mode routing ambiguity between discretizer and solver
-    show_captured_error("Description routing ambiguity for :foo between discretizer/solver") do
-        CTSolvers._route_option_for_description(:foo, 1.0, Symbol[:discretizer, :solver], :description)
+    show_captured_error(
+        "Description routing ambiguity for :foo between discretizer/solver"
+    ) do
+        CTSolvers._route_option_for_description(
+            :foo, 1.0, Symbol[:discretizer, :solver], :description
+        )
     end
 
     # Description mode: option with no owner in the selected method
@@ -213,13 +223,7 @@ function demo_error_messages()
     init = beam_data.init
     show_captured_error("CommonSolve.solve description unknown kw :foo") do
         CommonSolve.solve(
-            ocp,
-            :collocation,
-            :adnlp,
-            :ipopt;
-            initial_guess=init,
-            display=false,
-            foo=1,
+            ocp, :collocation, :adnlp, :ipopt; initial_guess=init, display=false, foo=1
         )
     end
 
@@ -227,11 +231,7 @@ function demo_error_messages()
     discretizer = CTSolvers.Collocation()
     show_captured_error("CommonSolve.solve mixing description and explicit discretizer") do
         CommonSolve.solve(
-            ocp,
-            :collocation;
-            initial_guess=init,
-            discretizer=discretizer,
-            display=false,
+            ocp, :collocation; initial_guess=init, discretizer=discretizer, display=false
         )
     end
 end

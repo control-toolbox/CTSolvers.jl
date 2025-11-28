@@ -11,8 +11,7 @@ struct FakeBackendAPI <: CTSolvers.AbstractOptimizationModeler
 end
 
 function (b::FakeBackendAPI)(
-    prob::CTSolvers.AbstractOptimizationProblem,
-    initial_guess,
+    prob::CTSolvers.AbstractOptimizationProblem, initial_guess
 )::NLPModels.AbstractNLPModel
     b.model_calls[] += 1
     # Use a simple real ADNLPModel here so that we respect the declared
@@ -34,22 +33,20 @@ struct DummyOCPForModelAPI <: CTModels.AbstractModel end
 
 function make_dummy_docp_for_model_api()
     ocp = DummyOCPForModelAPI()
-    adnlp_builder = CTSolvers.ADNLPModelBuilder((x; kwargs...) -> begin
-        f(z) = sum(z .^ 2)
-        # We deliberately ignore the extra keyword arguments such as
-        # show_time, backend, and AD backend options here. For this
-        # unit test we only need a valid ADNLPModel instance.
-        return ADNLPModels.ADNLPModel(f, x)
-    end)
+    adnlp_builder = CTSolvers.ADNLPModelBuilder(
+        (x; kwargs...) -> begin
+            f(z) = sum(z .^ 2)
+            # We deliberately ignore the extra keyword arguments such as
+            # show_time, backend, and AD backend options here. For this
+            # unit test we only need a valid ADNLPModel instance.
+            return ADNLPModels.ADNLPModel(f, x)
+        end
+    )
     exa_builder = CTSolvers.ExaModelBuilder((T, x; kwargs...) -> :exa_model_dummy)
     adnlp_solution_builder = CTSolvers.ADNLPSolutionBuilder(s -> s)
     exa_solution_builder = CTSolvers.ExaSolutionBuilder(s -> s)
     return CTSolvers.DiscretizedOptimalControlProblem(
-        ocp,
-        adnlp_builder,
-        exa_builder,
-        adnlp_solution_builder,
-        exa_solution_builder,
+        ocp, adnlp_builder, exa_builder, adnlp_solution_builder, exa_solution_builder
     )
 end
 
@@ -60,7 +57,7 @@ function test_ctmodels_model_api()
     # ========================================================================
     ros = Rosenbrock()
     elec = Elec()
-     maxd = Max1MinusX2()
+    maxd = Max1MinusX2()
 
     # ------------------------------------------------------------------
     # Unit tests for build_model delegation
@@ -135,8 +132,10 @@ function test_ctmodels_model_api()
             nlp_ad = CTSolvers.build_model(ros.prob, ros.init, modeler_ad)
             Test.@test nlp_ad isa ADNLPModels.ADNLPModel
             Test.@test nlp_ad.meta.x0 == ros.init
-            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) == rosenbrock_objective(ros.init)
-            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0)[1] == rosenbrock_constraint(ros.init)
+            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) ==
+                rosenbrock_objective(ros.init)
+            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0)[1] ==
+                rosenbrock_constraint(ros.init)
             Test.@test nlp_ad.meta.minimize == rosenbrock_is_minimize()
 
             modeler_exa = CTSolvers.ExaModeler()
@@ -149,8 +148,10 @@ function test_ctmodels_model_api()
             nlp_ad = CTSolvers.build_model(elec.prob, elec.init, modeler_ad)
             Test.@test nlp_ad isa ADNLPModels.ADNLPModel
             Test.@test nlp_ad.meta.x0 == vcat(elec.init.x, elec.init.y, elec.init.z)
-            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) == elec_objective(elec.init.x, elec.init.y, elec.init.z)
-            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0) == elec_constraint(elec.init.x, elec.init.y, elec.init.z)
+            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) ==
+                elec_objective(elec.init.x, elec.init.y, elec.init.z)
+            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0) ==
+                elec_constraint(elec.init.x, elec.init.y, elec.init.z)
             Test.@test nlp_ad.meta.minimize == elec_is_minimize()
 
             BaseType = Float64
@@ -164,8 +165,10 @@ function test_ctmodels_model_api()
             nlp_ad = CTSolvers.build_model(maxd.prob, maxd.init, modeler_ad)
             Test.@test nlp_ad isa ADNLPModels.ADNLPModel
             Test.@test nlp_ad.meta.x0 == maxd.init
-            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) == max1minusx2_objective(maxd.init)
-            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0)[1] == max1minusx2_constraint(maxd.init)
+            Test.@test NLPModels.obj(nlp_ad, nlp_ad.meta.x0) ==
+                max1minusx2_objective(maxd.init)
+            Test.@test NLPModels.cons(nlp_ad, nlp_ad.meta.x0)[1] ==
+                max1minusx2_constraint(maxd.init)
             Test.@test nlp_ad.meta.minimize == max1minusx2_is_minimize()
 
             BaseType = Float64
@@ -174,5 +177,4 @@ function test_ctmodels_model_api()
             Test.@test nlp_exa isa ExaModels.ExaModel{BaseType}
         end
     end
-
 end

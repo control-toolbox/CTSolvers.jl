@@ -1,6 +1,6 @@
 # Optimal control-level tests for CommonSolve.solve on OCPs.
 
-struct OCDummyOCP <: CTSolvers.AbstractOptimalControlProblem 		end
+struct OCDummyOCP <: CTSolvers.AbstractOptimalControlProblem end
 
 struct OCDummyDiscretizedOCP <: CTSolvers.AbstractOptimizationProblem end
 
@@ -18,9 +18,7 @@ struct OCFakeDiscretizer <: CTSolvers.AbstractOptimalControlDiscretizer
     calls::Base.RefValue{Int}
 end
 
-function (d::OCFakeDiscretizer)(
-    ocp::CTSolvers.AbstractOptimalControlProblem,
-)
+function (d::OCFakeDiscretizer)(ocp::CTSolvers.AbstractOptimalControlProblem)
     d.calls[] += 1
     return OCDummyDiscretizedOCP()
 end
@@ -31,8 +29,7 @@ struct OCFakeModeler <: CTSolvers.AbstractOptimizationModeler
 end
 
 function (m::OCFakeModeler)(
-    prob::CTSolvers.AbstractOptimizationProblem,
-    init::OCDummyInit,
+    prob::CTSolvers.AbstractOptimizationProblem, init::OCDummyInit
 )::NLPModels.AbstractNLPModel
     m.model_calls[] += 1
     f(z) = sum(z .^ 2)
@@ -52,15 +49,13 @@ struct OCFakeSolverNLP <: CTSolvers.AbstractOptimizationSolver
 end
 
 function (s::OCFakeSolverNLP)(
-    nlp::NLPModels.AbstractNLPModel;
-    display::Bool,
+    nlp::NLPModels.AbstractNLPModel; display::Bool
 )::SolverCore.AbstractExecutionStats
     s.calls[] += 1
     return OCDummyStats(:solver_called)
 end
 
 function test_optimalcontrol_solve_api()
-
     Test.@testset "raw defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
         Test.@test CTSolvers.__initial_guess() === nothing
     end
@@ -71,7 +66,9 @@ function test_optimalcontrol_solve_api()
 
         first_method = methods[1]
         Test.@test first_method[1] === :collocation
-        Test.@test any(m -> m[1] === :collocation && (:adnlp in m) && (:ipopt in m), methods)
+        Test.@test any(
+            m -> m[1] === :collocation && (:adnlp in m) && (:ipopt in m), methods
+        )
 
         # Partial descriptions are completed using CTBase.complete with priority order.
         method_from_disc = CTBase.complete(:collocation; descriptions=methods)
@@ -83,7 +80,7 @@ function test_optimalcontrol_solve_api()
         # Discretizer options registry: keys inferred from the Collocation tool
         method = (:collocation, :adnlp, :ipopt)
         keys_from_method = CTSolvers._discretizer_options_keys(method)
-        keys_from_type   = CTSolvers.options_keys(CTSolvers.Collocation)
+        keys_from_type = CTSolvers.options_keys(CTSolvers.Collocation)
         Test.@test keys_from_method == keys_from_type
 
         # Discretizer symbol helper
@@ -92,7 +89,9 @@ function test_optimalcontrol_solve_api()
         end
 
         # Error when no discretizer symbol is present in the method
-        Test.@test_throws CTBase.IncorrectArgument CTSolvers._get_discretizer_symbol((:adnlp, :ipopt))
+        Test.@test_throws CTBase.IncorrectArgument CTSolvers._get_discretizer_symbol((
+            :adnlp, :ipopt
+        ))
 
         # Modeler and solver symbol helpers using registries
         for m in methods
@@ -105,51 +104,61 @@ function test_optimalcontrol_solve_api()
         # _modeler_options_keys / _solver_options_keys should match options_keys
         method_ad_ip = (:collocation, :adnlp, :ipopt)
         Test.@test Set(CTSolvers._modeler_options_keys(method_ad_ip)) ==
-                   Set(CTSolvers.options_keys(CTSolvers.ADNLPModeler))
+            Set(CTSolvers.options_keys(CTSolvers.ADNLPModeler))
         Test.@test Set(CTSolvers._solver_options_keys(method_ad_ip)) ==
-                   Set(CTSolvers.options_keys(CTSolvers.IpoptSolver))
+            Set(CTSolvers.options_keys(CTSolvers.IpoptSolver))
 
         method_exa_mad = (:collocation, :exa, :madnlp)
         Test.@test Set(CTSolvers._modeler_options_keys(method_exa_mad)) ==
-                   Set(CTSolvers.options_keys(CTSolvers.ExaModeler))
+            Set(CTSolvers.options_keys(CTSolvers.ExaModeler))
         Test.@test Set(CTSolvers._solver_options_keys(method_exa_mad)) ==
-                   Set(CTSolvers.options_keys(CTSolvers.MadNLPSolver))
+            Set(CTSolvers.options_keys(CTSolvers.MadNLPSolver))
 
         # Multiple symbols of the same family in a method should raise an error
-        Test.@test_throws CTBase.IncorrectArgument CTSolvers._get_modeler_symbol((:collocation, :adnlp, :exa, :ipopt))
-        Test.@test_throws CTBase.IncorrectArgument CTSolvers._get_solver_symbol((:collocation, :adnlp, :ipopt, :madnlp))
+        Test.@test_throws CTBase.IncorrectArgument CTSolvers._get_modeler_symbol((
+            :collocation, :adnlp, :exa, :ipopt
+        ))
+        Test.@test_throws CTBase.IncorrectArgument CTSolvers._get_solver_symbol((
+            :collocation, :adnlp, :ipopt, :madnlp
+        ))
 
         # _build_modeler_from_method should construct the appropriate modeler
-        m_ad = CTSolvers._build_modeler_from_method((:collocation, :adnlp, :ipopt), (; backend=:manual))
+        m_ad = CTSolvers._build_modeler_from_method(
+            (:collocation, :adnlp, :ipopt), (; backend=:manual)
+        )
         Test.@test m_ad isa CTSolvers.ADNLPModeler
 
-        m_exa = CTSolvers._build_modeler_from_method((:collocation, :exa, :ipopt), NamedTuple())
+        m_exa = CTSolvers._build_modeler_from_method(
+            (:collocation, :exa, :ipopt), NamedTuple()
+        )
         Test.@test m_exa isa CTSolvers.ExaModeler
 
         # _build_solver_from_method should construct the appropriate solver
-        s_ip = CTSolvers._build_solver_from_method((:collocation, :adnlp, :ipopt), NamedTuple())
+        s_ip = CTSolvers._build_solver_from_method(
+            (:collocation, :adnlp, :ipopt), NamedTuple()
+        )
         Test.@test s_ip isa CTSolvers.IpoptSolver
 
-        s_mad = CTSolvers._build_solver_from_method((:collocation, :adnlp, :madnlp), NamedTuple())
+        s_mad = CTSolvers._build_solver_from_method(
+            (:collocation, :adnlp, :madnlp), NamedTuple()
+        )
         Test.@test s_mad isa CTSolvers.MadNLPSolver
 
         # Modeler options normalization helper
         Test.@test CTSolvers._normalize_modeler_options(nothing) === NamedTuple()
-        Test.@test CTSolvers._normalize_modeler_options((backend=:manual,)) == (backend=:manual,)
-        Test.@test CTSolvers._normalize_modeler_options((; backend=:manual)) == (backend=:manual,)
+        Test.@test CTSolvers._normalize_modeler_options((backend=:manual,)) ==
+            (backend=:manual,)
+        Test.@test CTSolvers._normalize_modeler_options((; backend=:manual)) ==
+            (backend=:manual,)
 
         Test.@testset "description ambiguity pre-check (ownerless key)" verbose=VERBOSE showtiming=SHOWTIMING begin
             method = (:collocation, :adnlp, :ipopt)
 
             # foo does not correspond to any tool nor to solve -> error
             Test.@test_throws CTBase.IncorrectArgument begin
-                CTSolvers._ensure_no_ambiguous_description_kwargs(
-                    method,
-                    (foo = 1,),
-                )
+                CTSolvers._ensure_no_ambiguous_description_kwargs(method, (foo=1,))
             end
         end
-
     end
 
     Test.@testset "option routing helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -164,13 +173,17 @@ function test_optimalcontrol_solve_api()
         Test.@test tool2 === :solver
 
         # Non-ambiguous routing: single owner
-        v3, owner3 = CTSolvers._route_option_for_description(:tol, 1e-6, Symbol[:solver], :description)
+        v3, owner3 = CTSolvers._route_option_for_description(
+            :tol, 1e-6, Symbol[:solver], :description
+        )
         Test.@test v3 == 1e-6
         Test.@test owner3 === :solver
 
         # Unknown ownership: empty owner list
         owners_empty = Symbol[]
-        Test.@test_throws CTBase.IncorrectArgument CTSolvers._route_option_for_description(:foo, 1, owners_empty, :description)
+        Test.@test_throws CTBase.IncorrectArgument CTSolvers._route_option_for_description(
+            :foo, 1, owners_empty, :description
+        )
 
         # Ambiguous ownership in description mode
         owners_amb = Symbol[:discretizer, :solver]
@@ -183,12 +196,16 @@ function test_optimalcontrol_solve_api()
         Test.@test err isa CTBase.IncorrectArgument
 
         # Disambiguation via (value, tool)
-        v4, owner4 = CTSolvers._route_option_for_description(:foo, (2.0, :solver), owners_amb, :description)
+        v4, owner4 = CTSolvers._route_option_for_description(
+            :foo, (2.0, :solver), owners_amb, :description
+        )
         Test.@test v4 == 2.0
         Test.@test owner4 === :solver
 
         # Ambiguous when coming from explicit mode should also throw
-        Test.@test_throws CTBase.IncorrectArgument CTSolvers._route_option_for_description(:foo, 1.0, owners_amb, :explicit)
+        Test.@test_throws CTBase.IncorrectArgument CTSolvers._route_option_for_description(
+            :foo, 1.0, owners_amb, :explicit
+        )
     end
 
     Test.@testset "description kwarg splitting" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -201,7 +218,9 @@ function test_optimalcontrol_solve_api()
             tol=1e-6,
         ))
 
-        pieces = CTSolvers._split_kwargs_for_description((:collocation, :adnlp, :ipopt), parsed)
+        pieces = CTSolvers._split_kwargs_for_description(
+            (:collocation, :adnlp, :ipopt), parsed
+        )
 
         Test.@test pieces.initial_guess isa OCDummyInit
         Test.@test pieces.display == false
@@ -218,7 +237,9 @@ function test_optimalcontrol_solve_api()
             tol=2e-6,
         ))
 
-        pieces_alias = CTSolvers._split_kwargs_for_description((:collocation, :adnlp, :ipopt), parsed_alias)
+        pieces_alias = CTSolvers._split_kwargs_for_description(
+            (:collocation, :adnlp, :ipopt), parsed_alias
+        )
 
         Test.@test pieces_alias.initial_guess isa OCDummyInit
         Test.@test pieces_alias.display == false
@@ -230,8 +251,7 @@ function test_optimalcontrol_solve_api()
         # Conflicting aliases for initial_guess should raise.
         Test.@test_throws CTBase.IncorrectArgument begin
             CTSolvers._parse_top_level_kwargs_description((
-                initial_guess=OCDummyInit([1.0, 2.0]),
-                i=OCDummyInit([3.0, 4.0]),
+                initial_guess=OCDummyInit([1.0, 2.0]), i=OCDummyInit([3.0, 4.0])
             ))
         end
 
@@ -240,8 +260,7 @@ function test_optimalcontrol_solve_api()
 
             # 1) Alias i tagged :solve -> used as initial_guess, not kept in other_kwargs
             parsed_solve = CTSolvers._parse_top_level_kwargs_description((
-                i   = (init, :solve),
-                tol = 1e-6,
+                i=(init, :solve), tol=1e-6
             ))
 
             Test.@test parsed_solve.initial_guess isa OCDummyInit
@@ -252,8 +271,7 @@ function test_optimalcontrol_solve_api()
 
             # 2) Alias i tagged :solver -> ignored by solve, left for the tools
             parsed_solver = CTSolvers._parse_top_level_kwargs_description((
-                i   = (init, :solver),
-                tol = 2e-6,
+                i=(init, :solver), tol=2e-6
             ))
 
             # initial_guess stays at its default, alias i is kept in other_kwargs
@@ -265,20 +283,19 @@ function test_optimalcontrol_solve_api()
 
             # 3) display tagged :solve -> top-level display
             parsed_display_solve = CTSolvers._parse_top_level_kwargs_description((
-                display = (false, :solve),
+                display=(false, :solve),
             ))
             Test.@test parsed_display_solve.display == false
             Test.@test !haskey(parsed_display_solve.other_kwargs, :display)
 
             # 4) display tagged :solver -> ignored by solve, left for the tools
             parsed_display_solver = CTSolvers._parse_top_level_kwargs_description((
-                display = (false, :solver),
+                display=(false, :solver),
             ))
             Test.@test parsed_display_solver.display == CTSolvers.__display()
             Test.@test haskey(parsed_display_solver.other_kwargs, :display)
             Test.@test parsed_display_solver.other_kwargs.display == (false, :solver)
         end
-
     end
 
     Test.@testset "explicit-mode solve kwarg aliases" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -332,12 +349,7 @@ function test_optimalcontrol_solve_api()
         solver_calls[] = 0
 
         sol_dms = CommonSolve.solve(
-            prob;
-            initial_guess=init,
-            d=discretizer,
-            m=modeler,
-            s=solver,
-            display=false,
+            prob; initial_guess=init, d=discretizer, m=modeler, s=solver, display=false
         )
         Test.@test sol_dms isa OCDummySolution
         Test.@test discretizer_calls[] == 1
@@ -367,12 +379,7 @@ function test_optimalcontrol_solve_api()
 
         buf = sprint() do io
             CTSolvers._display_ocp_method(
-                io,
-                method,
-                discretizer,
-                modeler,
-                solver;
-                display=true,
+                io, method, discretizer, modeler, solver; display=true
             )
         end
         Test.@test occursin("ADNLPModels", buf)
@@ -490,7 +497,6 @@ function test_optimalcontrol_solve_api()
     # ========================================================================
 
     Test.@testset "Beam OCP level" verbose=VERBOSE showtiming=SHOWTIMING begin
-
         ipopt_options = Dict(
             :max_iter => 1000,
             :tol => 1e-6,
@@ -500,21 +506,14 @@ function test_optimalcontrol_solve_api()
             :sb => "yes",
         )
 
-        madnlp_options = Dict(
-            :max_iter => 1000,
-            :tol => 1e-6,
-            :print_level => MadNLP.ERROR,
-        )
+        madnlp_options = Dict(:max_iter => 1000, :tol => 1e-6, :print_level => MadNLP.ERROR)
 
         beam_data = Beam()
         ocp = beam_data.ocp
         init = CTSolvers.initial_guess(ocp; beam_data.init...)
         discretizer = CTSolvers.Collocation()
 
-        modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
-            CTSolvers.ExaModeler(),
-        ]
+        modelers = [CTSolvers.ADNLPModeler(; backend=:manual), CTSolvers.ExaModeler()]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
 
         # ------------------------------------------------------------------
@@ -525,7 +524,9 @@ function test_optimalcontrol_solve_api()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     solver = CTSolvers.IpoptSolver(; ipopt_options...)
-                    sol = CTSolvers._solve(ocp, init, discretizer, modeler, solver; display=false)
+                    sol = CTSolvers._solve(
+                        ocp, init, discretizer, modeler, solver; display=false
+                    )
                     Test.@test sol isa CTModels.Solution
                     Test.@test CTModels.successful(sol)
                     Test.@test isfinite(CTModels.objective(sol))
@@ -540,7 +541,9 @@ function test_optimalcontrol_solve_api()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     solver = CTSolvers.MadNLPSolver(; madnlp_options...)
-                    sol = CTSolvers._solve(ocp, init, discretizer, modeler, solver; display=false)
+                    sol = CTSolvers._solve(
+                        ocp, init, discretizer, modeler, solver; display=false
+                    )
                     Test.@test sol isa CTModels.Solution
                     Test.@test CTModels.successful(sol)
                     Test.@test isfinite(CTModels.objective(sol))
@@ -562,7 +565,9 @@ function test_optimalcontrol_solve_api()
             end
             modeler = CTSolvers.ADNLPModeler(; backend=:manual)
             solver = CTSolvers.IpoptSolver(; ipopt_options...)
-            sol = CTSolvers._solve(ocp, init_macro, discretizer, modeler, solver; display=false)
+            sol = CTSolvers._solve(
+                ocp, init_macro, discretizer, modeler, solver; display=false
+            )
             Test.@test sol isa CTModels.Solution
             Test.@test CTModels.successful(sol)
             Test.@test isfinite(CTModels.objective(sol))
@@ -595,22 +600,17 @@ function test_optimalcontrol_solve_api()
         # ------------------------------------------------------------------
 
         Test.@testset "OCP level description API" verbose=VERBOSE showtiming=SHOWTIMING begin
-
             desc_cases = [
                 ((:collocation, :adnlp, :ipopt), ipopt_options),
                 ((:collocation, :adnlp, :madnlp), madnlp_options),
-                ((:collocation, :exa,   :ipopt), ipopt_options),
-                ((:collocation, :exa,   :madnlp), madnlp_options),
+                ((:collocation, :exa, :ipopt), ipopt_options),
+                ((:collocation, :exa, :madnlp), madnlp_options),
             ]
 
             for (method_syms, options) in desc_cases
                 Test.@testset "description = $(method_syms)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     sol = CommonSolve.solve(
-                        ocp,
-                        method_syms...;
-                        initial_guess=init,
-                        display=false,
-                        options...,
+                        ocp, method_syms...; initial_guess=init, display=false, options...
                     )
                     Test.@test sol isa CTModels.Solution
                     Test.@test CTModels.successful(sol)
@@ -671,7 +671,6 @@ function test_optimalcontrol_solve_api()
                 Test.@test CTModels.constraints_violation(sol) <= 1e-6
             end
         end
-
     end
 
     # ========================================================================
@@ -679,7 +678,6 @@ function test_optimalcontrol_solve_api()
     # ========================================================================
 
     Test.@testset "Goddard OCP level" verbose=VERBOSE showtiming=SHOWTIMING begin
-
         ipopt_options = Dict(
             :max_iter => 1000,
             :tol => 1e-6,
@@ -689,21 +687,14 @@ function test_optimalcontrol_solve_api()
             :sb => "yes",
         )
 
-        madnlp_options = Dict(
-            :max_iter => 1000,
-            :tol => 1e-6,
-            :print_level => MadNLP.ERROR,
-        )
+        madnlp_options = Dict(:max_iter => 1000, :tol => 1e-6, :print_level => MadNLP.ERROR)
 
         gdata = Goddard()
         ocp_g = gdata.ocp
         init_g = CTSolvers.initial_guess(ocp_g; gdata.init...)
         discretizer_g = CTSolvers.Collocation()
 
-        modelers = [
-            CTSolvers.ADNLPModeler(; backend=:manual),
-            CTSolvers.ExaModeler(),
-        ]
+        modelers = [CTSolvers.ADNLPModeler(; backend=:manual), CTSolvers.ExaModeler()]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
 
         # ------------------------------------------------------------------
@@ -714,7 +705,9 @@ function test_optimalcontrol_solve_api()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     solver = CTSolvers.IpoptSolver(; ipopt_options...)
-                    sol = CTSolvers._solve(ocp_g, init_g, discretizer_g, modeler, solver; display=false)
+                    sol = CTSolvers._solve(
+                        ocp_g, init_g, discretizer_g, modeler, solver; display=false
+                    )
                     Test.@test sol isa CTModels.Solution
                     Test.@test CTModels.successful(sol)
                     Test.@test isfinite(CTModels.objective(sol))
@@ -729,7 +722,9 @@ function test_optimalcontrol_solve_api()
             for (modeler, modeler_name) in zip(modelers, modelers_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                     solver = CTSolvers.MadNLPSolver(; madnlp_options...)
-                    sol = CTSolvers._solve(ocp_g, init_g, discretizer_g, modeler, solver; display=false)
+                    sol = CTSolvers._solve(
+                        ocp_g, init_g, discretizer_g, modeler, solver; display=false
+                    )
                     Test.@test sol isa CTModels.Solution
                     Test.@test CTModels.successful(sol)
                     Test.@test isfinite(CTModels.objective(sol))
@@ -767,12 +762,11 @@ function test_optimalcontrol_solve_api()
         # ------------------------------------------------------------------
 
         Test.@testset "OCP level description API" verbose=VERBOSE showtiming=SHOWTIMING begin
-
             desc_cases = [
                 ((:collocation, :adnlp, :ipopt), ipopt_options),
                 ((:collocation, :adnlp, :madnlp), madnlp_options),
-                ((:collocation, :exa,   :ipopt), ipopt_options),
-                ((:collocation, :exa,   :madnlp), madnlp_options),
+                ((:collocation, :exa, :ipopt), ipopt_options),
+                ((:collocation, :exa, :madnlp), madnlp_options),
             ]
 
             for (method_syms, options) in desc_cases
@@ -798,7 +792,5 @@ function test_optimalcontrol_solve_api()
                 end
             end
         end
-
     end
-
 end

@@ -45,8 +45,10 @@ function test_ctmodels_nlp_backends()
         nlp_adnlp = modeler(ros.prob, ros.init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         Test.@test nlp_adnlp.meta.x0 == ros.init
-        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == rosenbrock_objective(ros.init)
-        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] == rosenbrock_constraint(ros.init)
+        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) ==
+            rosenbrock_objective(ros.init)
+        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] ==
+            rosenbrock_constraint(ros.init)
         Test.@test nlp_adnlp.meta.minimize == rosenbrock_is_minimize()
     end
 
@@ -57,8 +59,10 @@ function test_ctmodels_nlp_backends()
         nlp_adnlp = modeler(elec.prob, elec.init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         Test.@test nlp_adnlp.meta.x0 == vcat(elec.init.x, elec.init.y, elec.init.z)
-        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == elec_objective(elec.init.x, elec.init.y, elec.init.z)
-        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0) == elec_constraint(elec.init.x, elec.init.y, elec.init.z)
+        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) ==
+            elec_objective(elec.init.x, elec.init.y, elec.init.z)
+        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0) ==
+            elec_constraint(elec.init.x, elec.init.y, elec.init.z)
         Test.@test nlp_adnlp.meta.minimize == elec_is_minimize()
     end
 
@@ -68,8 +72,10 @@ function test_ctmodels_nlp_backends()
         nlp_adnlp = modeler(maxd.prob, maxd.init)
         Test.@test nlp_adnlp isa ADNLPModels.ADNLPModel
         Test.@test nlp_adnlp.meta.x0 == maxd.init
-        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) == max1minusx2_objective(maxd.init)
-        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] == max1minusx2_constraint(maxd.init)
+        Test.@test NLPModels.obj(nlp_adnlp, nlp_adnlp.meta.x0) ==
+            max1minusx2_objective(maxd.init)
+        Test.@test NLPModels.cons(nlp_adnlp, nlp_adnlp.meta.x0)[1] ==
+            max1minusx2_constraint(maxd.init)
         Test.@test nlp_adnlp.meta.minimize == max1minusx2_is_minimize()
     end
 
@@ -94,8 +100,10 @@ function test_ctmodels_nlp_backends()
         Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
         Test.@test nlp_exa_cpu.meta.x0 == BaseType.(ros.init)
         Test.@test eltype(nlp_exa_cpu.meta.x0) == BaseType
-        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == rosenbrock_objective(BaseType.(ros.init))
-        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0)[1] == rosenbrock_constraint(BaseType.(ros.init))
+        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) ==
+            rosenbrock_objective(BaseType.(ros.init))
+        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0)[1] ==
+            rosenbrock_constraint(BaseType.(ros.init))
         Test.@test nlp_exa_cpu.meta.minimize == rosenbrock_is_minimize()
     end
 
@@ -105,10 +113,15 @@ function test_ctmodels_nlp_backends()
         modeler = CTSolvers.ExaModeler(; base_type=BaseType)
         nlp_exa_cpu = modeler(elec.prob, elec.init)
         Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
-        Test.@test nlp_exa_cpu.meta.x0 == BaseType.(vcat(elec.init.x, elec.init.y, elec.init.z))
+        Test.@test nlp_exa_cpu.meta.x0 ==
+            BaseType.(vcat(elec.init.x, elec.init.y, elec.init.z))
         Test.@test eltype(nlp_exa_cpu.meta.x0) == BaseType
-        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_objective(BaseType.(elec.init.x), BaseType.(elec.init.y), BaseType.(elec.init.z))
-        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_constraint(BaseType.(elec.init.x), BaseType.(elec.init.y), BaseType.(elec.init.z))
+        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_objective(
+            BaseType.(elec.init.x), BaseType.(elec.init.y), BaseType.(elec.init.z)
+        )
+        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == elec_constraint(
+            BaseType.(elec.init.x), BaseType.(elec.init.y), BaseType.(elec.init.z)
+        )
         Test.@test nlp_exa_cpu.meta.minimize == elec_is_minimize()
     end
 
@@ -119,8 +132,10 @@ function test_ctmodels_nlp_backends()
         Test.@test nlp_exa_cpu isa ExaModels.ExaModel{BaseType}
         Test.@test nlp_exa_cpu.meta.x0 == BaseType.(maxd.init)
         Test.@test eltype(nlp_exa_cpu.meta.x0) == BaseType
-        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) == max1minusx2_objective(BaseType.(maxd.init))
-        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0)[1] == max1minusx2_constraint(BaseType.(maxd.init))
+        Test.@test NLPModels.obj(nlp_exa_cpu, nlp_exa_cpu.meta.x0) ==
+            max1minusx2_objective(BaseType.(maxd.init))
+        Test.@test NLPModels.cons(nlp_exa_cpu, nlp_exa_cpu.meta.x0)[1] ==
+            max1minusx2_constraint(BaseType.(maxd.init))
         Test.@test nlp_exa_cpu.meta.minimize == max1minusx2_is_minimize()
     end
 
@@ -145,7 +160,7 @@ function test_ctmodels_nlp_backends()
         srcs_default = CTSolvers._option_sources(backend_default)
 
         Test.@test vals_default.show_time == CTSolvers.__adnlp_model_show_time()
-        Test.@test vals_default.backend    == CTSolvers.__adnlp_model_backend()
+        Test.@test vals_default.backend == CTSolvers.__adnlp_model_backend()
         Test.@test all(srcs_default[k] == :ct_default for k in propertynames(srcs_default))
 
         # Custom backend and extra kwargs should be stored with provenance
@@ -198,7 +213,7 @@ function test_ctmodels_nlp_backends()
     Test.@testset "ADNLPModeler options metadata and validation" verbose=VERBOSE showtiming=SHOWTIMING begin
         keys_ad = CTSolvers.options_keys(CTSolvers.ADNLPModeler)
         Test.@test :show_time in keys_ad
-        Test.@test :backend   in keys_ad
+        Test.@test :backend in keys_ad
 
         ad_backend = CTSolvers.ADNLPModeler()
         ad_type_from_instance = typeof(ad_backend)
@@ -207,10 +222,10 @@ function test_ctmodels_nlp_backends()
         Test.@test Set(keys_ad_inst) == Set(keys_ad)
 
         Test.@test CTSolvers.option_type(:show_time, CTSolvers.ADNLPModeler) == Bool
-        Test.@test CTSolvers.option_type(:backend,   CTSolvers.ADNLPModeler) == Symbol
+        Test.@test CTSolvers.option_type(:backend, CTSolvers.ADNLPModeler) == Symbol
 
         Test.@test CTSolvers.option_type(:show_time, ad_type_from_instance) == Bool
-        Test.@test CTSolvers.option_type(:backend,   ad_type_from_instance) == Symbol
+        Test.@test CTSolvers.option_type(:backend, ad_type_from_instance) == Symbol
 
         desc_backend = CTSolvers.option_description(:backend, CTSolvers.ADNLPModeler)
         Test.@test desc_backend isa AbstractString
@@ -227,8 +242,8 @@ function test_ctmodels_nlp_backends()
     Test.@testset "ExaModeler options metadata and validation" verbose=VERBOSE showtiming=SHOWTIMING begin
         keys_exa = CTSolvers.options_keys(CTSolvers.ExaModeler)
         Test.@test :base_type in keys_exa
-        Test.@test :backend   in keys_exa
-        Test.@test :minimize  in keys_exa
+        Test.@test :backend in keys_exa
+        Test.@test :minimize in keys_exa
 
         exa_backend = CTSolvers.ExaModeler()
         exa_type_from_instance = typeof(exa_backend)
@@ -236,11 +251,13 @@ function test_ctmodels_nlp_backends()
         keys_exa_inst = CTSolvers.options_keys(exa_type_from_instance)
         Test.@test Set(keys_exa_inst) == Set(keys_exa)
 
-        Test.@test CTSolvers.option_type(:base_type, CTSolvers.ExaModeler) <: Type{<:AbstractFloat}
-        Test.@test CTSolvers.option_type(:minimize,  CTSolvers.ExaModeler) == Bool
+        Test.@test CTSolvers.option_type(:base_type, CTSolvers.ExaModeler) <:
+            Type{<:AbstractFloat}
+        Test.@test CTSolvers.option_type(:minimize, CTSolvers.ExaModeler) == Bool
 
-        Test.@test CTSolvers.option_type(:base_type, exa_type_from_instance) <: Type{<:AbstractFloat}
-        Test.@test CTSolvers.option_type(:minimize,  exa_type_from_instance) == Bool
+        Test.@test CTSolvers.option_type(:base_type, exa_type_from_instance) <:
+            Type{<:AbstractFloat}
+        Test.@test CTSolvers.option_type(:minimize, exa_type_from_instance) == Bool
 
         # Invalid type for a known option should trigger a CTBase.IncorrectArgument
         Test.@test_throws CTBase.IncorrectArgument CTSolvers.ExaModeler(; minimize=1)
@@ -249,7 +266,9 @@ function test_ctmodels_nlp_backends()
     Test.@testset "ExaModeler unknown option suggestions" verbose=VERBOSE showtiming=SHOWTIMING begin
         err = nothing
         try
-            CTSolvers._validate_option_kwargs((minimise=true,), CTSolvers.ExaModeler; strict_keys=true)
+            CTSolvers._validate_option_kwargs(
+                (minimise=true,), CTSolvers.ExaModeler; strict_keys=true
+            )
         catch e
             err = e
         end
@@ -264,7 +283,7 @@ function test_ctmodels_nlp_backends()
         # ADNLPModeler defaults should be consistent between helpers and metadata.
         opts_ad = CTSolvers.default_options(CTSolvers.ADNLPModeler)
         Test.@test opts_ad.show_time == CTSolvers.__adnlp_model_show_time()
-        Test.@test opts_ad.backend   == CTSolvers.__adnlp_model_backend()
+        Test.@test opts_ad.backend == CTSolvers.__adnlp_model_backend()
 
         ad_backend = CTSolvers.ADNLPModeler()
         ad_type_from_instance = typeof(ad_backend)
@@ -272,16 +291,20 @@ function test_ctmodels_nlp_backends()
         opts_ad_inst = CTSolvers.default_options(ad_type_from_instance)
         Test.@test opts_ad_inst == opts_ad
 
-        Test.@test CTSolvers.option_default(:show_time, CTSolvers.ADNLPModeler) == CTSolvers.__adnlp_model_show_time()
-        Test.@test CTSolvers.option_default(:backend,   CTSolvers.ADNLPModeler) == CTSolvers.__adnlp_model_backend()
+        Test.@test CTSolvers.option_default(:show_time, CTSolvers.ADNLPModeler) ==
+            CTSolvers.__adnlp_model_show_time()
+        Test.@test CTSolvers.option_default(:backend, CTSolvers.ADNLPModeler) ==
+            CTSolvers.__adnlp_model_backend()
 
-        Test.@test CTSolvers.option_default(:show_time, ad_type_from_instance) == CTSolvers.__adnlp_model_show_time()
-        Test.@test CTSolvers.option_default(:backend,   ad_type_from_instance) == CTSolvers.__adnlp_model_backend()
+        Test.@test CTSolvers.option_default(:show_time, ad_type_from_instance) ==
+            CTSolvers.__adnlp_model_show_time()
+        Test.@test CTSolvers.option_default(:backend, ad_type_from_instance) ==
+            CTSolvers.__adnlp_model_backend()
 
         # ExaModeler defaults: base_type and backend have defaults, minimize has none.
         opts_exa = CTSolvers.default_options(CTSolvers.ExaModeler)
         Test.@test opts_exa.base_type === CTSolvers.__exa_model_base_type()
-        Test.@test opts_exa.backend   === CTSolvers.__exa_model_backend()
+        Test.@test opts_exa.backend === CTSolvers.__exa_model_backend()
         Test.@test :minimize ∉ propertynames(opts_exa)
 
         exa_backend = CTSolvers.ExaModeler()
@@ -290,27 +313,31 @@ function test_ctmodels_nlp_backends()
         opts_exa_inst = CTSolvers.default_options(exa_type_from_instance)
         Test.@test opts_exa_inst == opts_exa
 
-        Test.@test CTSolvers.option_default(:base_type, CTSolvers.ExaModeler) === CTSolvers.__exa_model_base_type()
-        Test.@test CTSolvers.option_default(:backend,   CTSolvers.ExaModeler) === CTSolvers.__exa_model_backend()
-        Test.@test CTSolvers.option_default(:minimize,  CTSolvers.ExaModeler) === missing
+        Test.@test CTSolvers.option_default(:base_type, CTSolvers.ExaModeler) ===
+            CTSolvers.__exa_model_base_type()
+        Test.@test CTSolvers.option_default(:backend, CTSolvers.ExaModeler) ===
+            CTSolvers.__exa_model_backend()
+        Test.@test CTSolvers.option_default(:minimize, CTSolvers.ExaModeler) === missing
 
-        Test.@test CTSolvers.option_default(:base_type, exa_type_from_instance) === CTSolvers.__exa_model_base_type()
-        Test.@test CTSolvers.option_default(:backend,   exa_type_from_instance) === CTSolvers.__exa_model_backend()
-        Test.@test CTSolvers.option_default(:minimize,  exa_type_from_instance) === missing
+        Test.@test CTSolvers.option_default(:base_type, exa_type_from_instance) ===
+            CTSolvers.__exa_model_base_type()
+        Test.@test CTSolvers.option_default(:backend, exa_type_from_instance) ===
+            CTSolvers.__exa_model_backend()
+        Test.@test CTSolvers.option_default(:minimize, exa_type_from_instance) === missing
     end
 
     Test.@testset "modeler symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
         # get_symbol on types and instances
         Test.@test CTSolvers.get_symbol(CTSolvers.ADNLPModeler) == :adnlp
-        Test.@test CTSolvers.get_symbol(CTSolvers.ExaModeler)   == :exa
+        Test.@test CTSolvers.get_symbol(CTSolvers.ExaModeler) == :exa
         Test.@test CTSolvers.get_symbol(CTSolvers.ADNLPModeler()) == :adnlp
-        Test.@test CTSolvers.get_symbol(CTSolvers.ExaModeler())   == :exa
+        Test.@test CTSolvers.get_symbol(CTSolvers.ExaModeler()) == :exa
 
         # tool_package_name on types and instances
         Test.@test CTSolvers.tool_package_name(CTSolvers.ADNLPModeler) == "ADNLPModels"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.ExaModeler)   == "ExaModels"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.ExaModeler) == "ExaModels"
         Test.@test CTSolvers.tool_package_name(CTSolvers.ADNLPModeler()) == "ADNLPModels"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.ExaModeler())   == "ExaModels"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.ExaModeler()) == "ExaModels"
 
         regs = CTSolvers.registered_modeler_types()
         Test.@test CTSolvers.ADNLPModeler in regs
@@ -318,7 +345,7 @@ function test_ctmodels_nlp_backends()
 
         syms = CTSolvers.modeler_symbols()
         Test.@test :adnlp in syms
-        Test.@test :exa   in syms
+        Test.@test :exa in syms
 
         # build_modeler_from_symbol should construct proper concrete modelers.
         m_ad = CTSolvers.build_modeler_from_symbol(:adnlp; backend=:manual)
@@ -407,6 +434,4 @@ function test_ctmodels_nlp_backends()
         result = modeler(prob, stats)
         Test.@test result === stats
     end
-
 end
-

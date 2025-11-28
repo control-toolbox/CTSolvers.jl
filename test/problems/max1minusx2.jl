@@ -17,7 +17,7 @@ function Max1MinusX2()
     F(x) = max1minusx2_objective(x)
     c(x) = max1minusx2_constraint(x) # unconstrained problem are not working with MadNCL
     lcon = [-5.0]
-    ucon = [ 5.0]
+    ucon = [5.0]
     minimize = max1minusx2_is_minimize()
 
     # ADNLPModels builder: simple equality-constrained problem

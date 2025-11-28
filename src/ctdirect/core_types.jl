@@ -17,17 +17,17 @@ __grid()::Union{Int,AbstractVector} = __grid_size()
 
 function _option_specs(::Type{<:Collocation})
     return (
-        grid = OptionSpec(
+        grid=OptionSpec(;
             type=Union{Int,AbstractVector},
             default=__grid(),
             description="Collocation grid (Int = number of time steps, Vector = explicit time grid).",
         ),
-        lagrange_to_mayer = OptionSpec(
+        lagrange_to_mayer=OptionSpec(;
             type=Bool,
             default=false,
             description="Whether to transform the Lagrange integral cost into an equivalent Mayer terminal cost.",
         ),
-        scheme = OptionSpec(
+        scheme=OptionSpec(;
             type=AbstractIntegratorScheme,
             default=__scheme(),
             description="Time integration scheme used by the collocation discretizer.",
@@ -36,8 +36,7 @@ function _option_specs(::Type{<:Collocation})
 end
 
 function Collocation(; kwargs...)
-    values, sources = _build_ocp_tool_options(
-        Collocation; kwargs..., strict_keys=true)
+    values, sources = _build_ocp_tool_options(Collocation; kwargs..., strict_keys=true)
     scheme = values.scheme
     return Collocation{typeof(scheme)}(values, sources)
 end

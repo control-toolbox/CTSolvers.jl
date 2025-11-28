@@ -1,25 +1,26 @@
 function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
-
-    SchemeSymbol = Dict(
-        Midpoint => :midpoint,
-        Trapezoidal => :trapeze,
-        Trapeze => :trapeze,
-    )
+    SchemeSymbol = Dict(Midpoint => :midpoint, Trapezoidal => :trapeze, Trapeze => :trapeze)
 
     function scheme_symbol(discretizer::Collocation)
         scheme = CTSolvers.get_option_value(discretizer, :scheme)
         return SchemeSymbol[typeof(scheme)]
     end
 
-    function get_docp(initial_guess::Union{AbstractOptimalControlInitialGuess, Nothing}, modeler::Symbol; kwargs...)
+    function get_docp(
+        initial_guess::Union{AbstractOptimalControlInitialGuess,Nothing},
+        modeler::Symbol;
+        kwargs...,
+    )
         scheme_ctdirect = scheme_symbol(discretizer)
-        init_ctdirect = (initial_guess === nothing) ? 
-            nothing : 
+        init_ctdirect = if (initial_guess === nothing)
+            nothing
+        else
             (
-                state = state(initial_guess), 
-                control = control(initial_guess), 
-                variable = variable(initial_guess)
-            )
+            state=state(initial_guess),
+            control=control(initial_guess),
+            variable=variable(initial_guess),
+        )
+        end
 
         # Unified grid option: Int => grid_size, Vector => explicit time_grid
         grid = CTSolvers.get_option_value(discretizer, :grid)
@@ -64,7 +65,9 @@ function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
         return docp
     end
 
-    function build_adnlp_model(initial_guess::AbstractOptimalControlInitialGuess; kwargs...)::ADNLPModels.ADNLPModel
+    function build_adnlp_model(
+        initial_guess::AbstractOptimalControlInitialGuess; kwargs...
+    )::ADNLPModels.ADNLPModel
         docp = get_docp(initial_guess, :adnlp; kwargs...)
         return CTDirect.nlp_model(docp)
     end
@@ -75,7 +78,8 @@ function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
         return solu
     end
 
-    function build_exa_model(::Type{BaseType}, initial_guess::AbstractOptimalControlInitialGuess; kwargs...
+    function build_exa_model(
+        ::Type{BaseType}, initial_guess::AbstractOptimalControlInitialGuess; kwargs...
     )::ExaModels.ExaModel where {BaseType<:AbstractFloat}
         docp = get_docp(initial_guess, :exa; kwargs...)
         return CTDirect.nlp_model(docp)

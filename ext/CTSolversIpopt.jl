@@ -15,32 +15,30 @@ __nlp_models_ipopt_sb() = "yes"
 
 function CTSolvers._option_specs(::Type{<:CTSolvers.IpoptSolver})
     return (
-        max_iter = CTSolvers.OptionSpec(
+        max_iter=CTSolvers.OptionSpec(;
             type=Integer,
             default=__nlp_models_ipopt_max_iter(),
             description="Maximum number of iterations.",
         ),
-        tol = CTSolvers.OptionSpec(
-            type=Real,
-            default=__nlp_models_ipopt_tol(),
-            description="Optimality tolerance.",
+        tol=CTSolvers.OptionSpec(;
+            type=Real, default=__nlp_models_ipopt_tol(), description="Optimality tolerance."
         ),
-        print_level = CTSolvers.OptionSpec(
+        print_level=CTSolvers.OptionSpec(;
             type=Integer,
             default=__nlp_models_ipopt_print_level(),
             description="Ipopt print level.",
         ),
-        mu_strategy = CTSolvers.OptionSpec(
+        mu_strategy=CTSolvers.OptionSpec(;
             type=String,
             default=__nlp_models_ipopt_mu_strategy(),
             description="Strategy used to update the barrier parameter.",
         ),
-        linear_solver = CTSolvers.OptionSpec(
+        linear_solver=CTSolvers.OptionSpec(;
             type=String,
             default=__nlp_models_ipopt_linear_solver(),
             description="Linear solver used by Ipopt.",
         ),
-        sb = CTSolvers.OptionSpec(
+        sb=CTSolvers.OptionSpec(;
             type=String,
             default=__nlp_models_ipopt_sb(),
             description="Ipopt 'sb' (screen output) option, typically 'yes' or 'no'.",
@@ -59,7 +57,8 @@ end
 # backend constructor
 function CTSolvers.IpoptSolver(; kwargs...)
     values, sources = CTSolvers._build_ocp_tool_options(
-        CTSolvers.IpoptSolver; kwargs..., strict_keys=false)
+        CTSolvers.IpoptSolver; kwargs..., strict_keys=false
+    )
     return CTSolvers.IpoptSolver(values, sources)
 end
 

@@ -10,11 +10,13 @@ end
 
 CTSolvers._option_specs(::Type{CM_DummyToolNoSpecs}) = missing
 
-CTSolvers._option_specs(::Type{CM_DummyToolWithSpecs}) = (
-    max_iter = CTSolvers.OptionSpec(type=Int,     default=100,  description="Max iterations"),
-    tol      = CTSolvers.OptionSpec(type=Float64, default=1e-6, description="Tolerance"),
-    verbose  = CTSolvers.OptionSpec(type=Bool,    default=missing, description=missing),
-)
+function CTSolvers._option_specs(::Type{CM_DummyToolWithSpecs})
+    (
+        max_iter=CTSolvers.OptionSpec(type=Int, default=100, description="Max iterations"),
+        tol=CTSolvers.OptionSpec(type=Float64, default=1e-6, description="Tolerance"),
+        verbose=CTSolvers.OptionSpec(type=Bool, default=missing, description=missing),
+    )
+end
 
 function test_ctmodels_options_schema()
 
@@ -39,15 +41,16 @@ function test_ctmodels_options_schema()
         Test.@test !CTSolvers.is_an_option_key(:foo, CM_DummyToolWithSpecs)
 
         Test.@test CTSolvers.option_type(:max_iter, CM_DummyToolWithSpecs) == Int
-        Test.@test CTSolvers.option_type(:tol,      CM_DummyToolWithSpecs) == Float64
-        Test.@test CTSolvers.option_type(:foo,      CM_DummyToolWithSpecs) === missing
+        Test.@test CTSolvers.option_type(:tol, CM_DummyToolWithSpecs) == Float64
+        Test.@test CTSolvers.option_type(:foo, CM_DummyToolWithSpecs) === missing
 
-        Test.@test CTSolvers.option_description(:max_iter, CM_DummyToolWithSpecs) isa AbstractString
+        Test.@test CTSolvers.option_description(:max_iter, CM_DummyToolWithSpecs) isa
+            AbstractString
         Test.@test CTSolvers.option_description(:verbose, CM_DummyToolWithSpecs) === missing
 
         Test.@test CTSolvers.option_default(:max_iter, CM_DummyToolWithSpecs) == 100
-        Test.@test CTSolvers.option_default(:tol,      CM_DummyToolWithSpecs) == 1e-6
-        Test.@test CTSolvers.option_default(:verbose,  CM_DummyToolWithSpecs) === missing
+        Test.@test CTSolvers.option_default(:tol, CM_DummyToolWithSpecs) == 1e-6
+        Test.@test CTSolvers.option_default(:verbose, CM_DummyToolWithSpecs) === missing
 
         # default_options should include only non-missing defaults
         defs = CTSolvers.default_options(CM_DummyToolWithSpecs)
@@ -68,8 +71,8 @@ function test_ctmodels_options_schema()
         Test.@test defs_from_inst == defs_from_type
 
         Test.@test CTSolvers.option_default(:max_iter, tool_inst) == 100
-        Test.@test CTSolvers.option_default(:tol,      tool_inst) == 1e-6
-        Test.@test CTSolvers.option_default(:verbose,  tool_inst) === missing
+        Test.@test CTSolvers.option_default(:tol, tool_inst) == 1e-6
+        Test.@test CTSolvers.option_default(:verbose, tool_inst) === missing
     end
 
     # ========================================================================
@@ -92,7 +95,7 @@ function test_ctmodels_options_schema()
         # A simple sanity check on the distance function
         d_exact = CTSolvers._string_distance("max_iter", "max_iter")
         d_close = CTSolvers._string_distance("max_iter", "mx_iter")
-        d_far   = CTSolvers._string_distance("max_iter", "tol")
+        d_far = CTSolvers._string_distance("max_iter", "tol")
         Test.@test d_exact == 0
         Test.@test d_close < d_far
 
@@ -169,15 +172,21 @@ function test_ctmodels_options_schema()
         CTSolvers._validate_option_kwargs((foo=1,), CM_DummyToolNoSpecs; strict_keys=false)
 
         # Known keys with correct types
-        CTSolvers._validate_option_kwargs((max_iter=200, tol=1e-5), CM_DummyToolWithSpecs; strict_keys=false)
+        CTSolvers._validate_option_kwargs(
+            (max_iter=200, tol=1e-5), CM_DummyToolWithSpecs; strict_keys=false
+        )
 
         # Unknown key with strict_keys = false should be accepted
-        CTSolvers._validate_option_kwargs((foo=1,), CM_DummyToolWithSpecs; strict_keys=false)
+        CTSolvers._validate_option_kwargs(
+            (foo=1,), CM_DummyToolWithSpecs; strict_keys=false
+        )
 
         # Unknown key with strict_keys = true should error with suggestions
         err_unknown = nothing
         try
-            CTSolvers._validate_option_kwargs((mx_iter=10,), CM_DummyToolWithSpecs; strict_keys=true)
+            CTSolvers._validate_option_kwargs(
+                (mx_iter=10,), CM_DummyToolWithSpecs; strict_keys=true
+            )
         catch e
             err_unknown = e
         end
@@ -190,7 +199,9 @@ function test_ctmodels_options_schema()
         # Wrong type for a known option should error
         err_type = nothing
         try
-            CTSolvers._validate_option_kwargs((tol="1e-6",), CM_DummyToolWithSpecs; strict_keys=false)
+            CTSolvers._validate_option_kwargs(
+                (tol="1e-6",), CM_DummyToolWithSpecs; strict_keys=false
+            )
         catch e
             err_type = e
         end
@@ -216,5 +227,4 @@ function test_ctmodels_options_schema()
         Test.@test vals2 == (foo=1, bar=2)
         Test.@test srcs2 == (foo=:user, bar=:user)
     end
-
 end

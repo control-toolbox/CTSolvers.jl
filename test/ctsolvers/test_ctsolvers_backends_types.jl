@@ -48,50 +48,51 @@ function test_ctsolvers_backends_types()
 
     Test.@testset "type hierarchy" verbose=VERBOSE showtiming=SHOWTIMING begin
         # All solver wrappers should be subtypes of AbstractOptimizationSolver
-        Test.@test CTSolvers.IpoptSolver    <: CTSolvers.AbstractOptimizationSolver
-        Test.@test CTSolvers.MadNLPSolver   <: CTSolvers.AbstractOptimizationSolver
-        Test.@test CTSolvers.MadNCLSolver   <: CTSolvers.AbstractOptimizationSolver
-        Test.@test CTSolvers.KnitroSolver   <: CTSolvers.AbstractOptimizationSolver
+        Test.@test CTSolvers.IpoptSolver <: CTSolvers.AbstractOptimizationSolver
+        Test.@test CTSolvers.MadNLPSolver <: CTSolvers.AbstractOptimizationSolver
+        Test.@test CTSolvers.MadNCLSolver <: CTSolvers.AbstractOptimizationSolver
+        Test.@test CTSolvers.KnitroSolver <: CTSolvers.AbstractOptimizationSolver
 
         # And all abstract tool families should be subtypes of AbstractOCPTool
         Test.@test CTSolvers.AbstractOptimalControlDiscretizer <: CTSolvers.AbstractOCPTool
-        Test.@test CTSolvers.AbstractOptimizationModeler      <: CTSolvers.AbstractOCPTool
-        Test.@test CTSolvers.AbstractOptimizationSolver       <: CTSolvers.AbstractOCPTool
+        Test.@test CTSolvers.AbstractOptimizationModeler <: CTSolvers.AbstractOCPTool
+        Test.@test CTSolvers.AbstractOptimizationSolver <: CTSolvers.AbstractOCPTool
     end
 
     Test.@testset "solver symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
         # get_symbol on solver types
-        Test.@test CTSolvers.get_symbol(CTSolvers.IpoptSolver)  == :ipopt
+        Test.@test CTSolvers.get_symbol(CTSolvers.IpoptSolver) == :ipopt
         Test.@test CTSolvers.get_symbol(CTSolvers.MadNLPSolver) == :madnlp
         Test.@test CTSolvers.get_symbol(CTSolvers.MadNCLSolver) == :madncl
         Test.@test CTSolvers.get_symbol(CTSolvers.KnitroSolver) == :knitro
 
         # get_symbol on solver instances should behave identically
-        Test.@test CTSolvers.get_symbol(CTSolvers.IpoptSolver())  == :ipopt
+        Test.@test CTSolvers.get_symbol(CTSolvers.IpoptSolver()) == :ipopt
         Test.@test CTSolvers.get_symbol(CTSolvers.MadNLPSolver()) == :madnlp
         Test.@test CTSolvers.get_symbol(CTSolvers.MadNCLSolver()) == :madncl
         Test.@test CTSolvers.get_symbol(CTSolvers.KnitroSolver()) == :knitro
 
         # tool_package_name on solver types
-        Test.@test CTSolvers.tool_package_name(CTSolvers.IpoptSolver)   == "NLPModelsIpopt"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNLPSolver)  == "MadNLP suite"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNCLSolver)  == "MadNCL"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.KnitroSolver)  == "NLPModelsKnitro"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.IpoptSolver) == "NLPModelsIpopt"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNLPSolver) == "MadNLP suite"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNCLSolver) == "MadNCL"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.KnitroSolver) == "NLPModelsKnitro"
 
         # tool_package_name on solver instances
-        Test.@test CTSolvers.tool_package_name(CTSolvers.IpoptSolver())   == "NLPModelsIpopt"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNLPSolver())  == "MadNLP suite"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNCLSolver())  == "MadNCL"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.KnitroSolver())  == "NLPModelsKnitro"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.IpoptSolver()) == "NLPModelsIpopt"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNLPSolver()) == "MadNLP suite"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNCLSolver()) == "MadNCL"
+        Test.@test CTSolvers.tool_package_name(CTSolvers.KnitroSolver()) ==
+            "NLPModelsKnitro"
 
         regs = CTSolvers.registered_solver_types()
-        Test.@test CTSolvers.IpoptSolver  in regs
+        Test.@test CTSolvers.IpoptSolver in regs
         Test.@test CTSolvers.MadNLPSolver in regs
         Test.@test CTSolvers.MadNCLSolver in regs
         Test.@test CTSolvers.KnitroSolver in regs
 
         syms = CTSolvers.solver_symbols()
-        Test.@test :ipopt  in syms
+        Test.@test :ipopt in syms
         Test.@test :madnlp in syms
         Test.@test :madncl in syms
         Test.@test :knitro in syms
@@ -250,8 +251,12 @@ function test_ctsolvers_backends_types()
         srcs = CTSolvers._option_sources(solver)
         defaults = CTSolvers.default_options(CTSolvers.IpoptSolver)
 
-        Test.@test CTSolvers.get_option_value(solver, :max_iter) == vals.max_iter == defaults.max_iter
-        Test.@test CTSolvers.get_option_source(solver, :max_iter) == srcs.max_iter == :ct_default
+        Test.@test CTSolvers.get_option_value(solver, :max_iter) ==
+            vals.max_iter ==
+            defaults.max_iter
+        Test.@test CTSolvers.get_option_source(solver, :max_iter) ==
+            srcs.max_iter ==
+            :ct_default
         Test.@test CTSolvers.get_option_default(solver, :max_iter) == defaults.max_iter
 
         # Unknown option keys should trigger an IncorrectArgument with
@@ -276,7 +281,9 @@ function test_ctsolvers_backends_types()
         try
             # Misspelled option name to trigger suggestion logic at the
             # validation layer, independently of constructor strictness.
-            CTSolvers._validate_option_kwargs((mx_iter=10,), CTSolvers.IpoptSolver; strict_keys=true)
+            CTSolvers._validate_option_kwargs(
+                (mx_iter=10,), CTSolvers.IpoptSolver; strict_keys=true
+            )
         catch e
             err = e
         end
@@ -296,6 +303,4 @@ function test_ctsolvers_backends_types()
         end
         Test.@test true
     end
-
 end
-
