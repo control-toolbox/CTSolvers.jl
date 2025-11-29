@@ -12,9 +12,11 @@ CTSolvers._option_specs(::Type{CM_DummyToolNoSpecs}) = missing
 
 function CTSolvers._option_specs(::Type{CM_DummyToolWithSpecs})
     (
-        max_iter=CTSolvers.OptionSpec(type=Int, default=100, description="Max iterations"),
-        tol=CTSolvers.OptionSpec(type=Float64, default=1e-6, description="Tolerance"),
-        verbose=CTSolvers.OptionSpec(type=Bool, default=missing, description=missing),
+        max_iter=CTSolvers.OptionSpec(;
+            type=Int, default=100, description="Max iterations"
+        ),
+        tol=CTSolvers.OptionSpec(; type=Float64, default=1e-6, description="Tolerance"),
+        verbose=CTSolvers.OptionSpec(; type=Bool, default=missing, description=missing),
     )
 end
 
