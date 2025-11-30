@@ -16,10 +16,10 @@ function (discretizer::Collocation)(ocp::AbstractOptimalControlProblem)
             nothing
         else
             (
-            state=state(initial_guess),
-            control=control(initial_guess),
-            variable=variable(initial_guess),
-        )
+                state=state(initial_guess),
+                control=control(initial_guess),
+                variable=variable(initial_guess),
+            )
         end
 
         # Unified grid option: Int => grid_size, Vector => explicit time_grid
