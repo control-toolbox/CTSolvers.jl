@@ -33,7 +33,7 @@ CTSolversMadNLP = ["MadNLP", "MadNLPMumps"]
 [compat]
 ADNLPModels = "0.8"
 CTBase = "0.16"
-CTDirect = "0.17"
+CTDirect = "1.0"
 CTModels = "0.6"
 CTParser = "0.7.1"
 CommonSolve = "0.2"
