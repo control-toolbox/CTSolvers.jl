@@ -18,6 +18,7 @@ function default_tests()
             :ctdirect_core_types => true,
             :ctdirect_discretization_api => true,
             :ctdirect_collocation_impl => true,
+            :ctdirect_solve => true,
         ),
         :ctsolvers => OrderedDict(
             :ctsolvers_backends_types => true,
