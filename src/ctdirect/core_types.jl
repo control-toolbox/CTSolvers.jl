@@ -22,11 +22,6 @@ function _option_specs(::Type{<:Collocation})
             default=__grid(),
             description="Collocation grid (Int = number of time steps, Vector = explicit time grid).",
         ),
-        lagrange_to_mayer=OptionSpec(;
-            type=Bool,
-            default=false,
-            description="Whether to transform the Lagrange integral cost into an equivalent Mayer terminal cost.",
-        ),
         scheme=OptionSpec(;
             type=AbstractIntegratorScheme,
             default=__scheme(),
