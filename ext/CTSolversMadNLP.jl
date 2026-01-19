@@ -1,5 +1,6 @@
 module CTSolversMadNLP
 
+using CTModels
 using CTSolvers
 using MadNLP
 using MadNLPMumps
@@ -11,22 +12,22 @@ __mad_nlp_tol() = 1e-8
 __mad_nlp_print_level() = MadNLP.INFO
 __mad_nlp_linear_solver() = MadNLPMumps.MumpsSolver
 
-function CTSolvers._option_specs(::Type{<:CTSolvers.MadNLPSolver})
+function CTModels._option_specs(::Type{<:CTSolvers.MadNLPSolver})
     return (
-        max_iter=CTSolvers.OptionSpec(;
+        max_iter=CTModels.OptionSpec(;
             type=Integer,
             default=__mad_nlp_max_iter(),
             description="Maximum number of iterations.",
         ),
-        tol=CTSolvers.OptionSpec(;
+        tol=CTModels.OptionSpec(;
             type=Real, default=__mad_nlp_tol(), description="Optimality tolerance."
         ),
-        print_level=CTSolvers.OptionSpec(;
+        print_level=CTModels.OptionSpec(;
             type=MadNLP.LogLevels,
             default=__mad_nlp_print_level(),
             description="MadNLP logging level.",
         ),
-        linear_solver=CTSolvers.OptionSpec(;
+        linear_solver=CTModels.OptionSpec(;
             type=Type{<:MadNLP.AbstractLinearSolver},
             default=__mad_nlp_linear_solver(),
             description="Linear solver implementation used by MadNLP.",
@@ -44,7 +45,7 @@ end
 
 # backend constructor
 function CTSolvers.MadNLPSolver(; kwargs...)
-    values, sources = CTSolvers._build_ocp_tool_options(
+    values, sources = CTModels._build_ocp_tool_options(
         CTSolvers.MadNLPSolver; kwargs..., strict_keys=false
     )
     return CTSolvers.MadNLPSolver(values, sources)
@@ -53,7 +54,7 @@ end
 function (solver::CTSolvers.MadNLPSolver)(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::MadNLP.MadNLPExecutionStats
-    options = Dict(pairs(CTSolvers._options_values(solver)))
+    options = Dict(pairs(CTModels._options_values(solver)))
     options[:print_level] = display ? options[:print_level] : MadNLP.ERROR
     return CTSolvers.solve_with_madnlp(nlp; options...)
 end

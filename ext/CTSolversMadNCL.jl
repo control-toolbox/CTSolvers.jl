@@ -1,5 +1,6 @@
 module CTSolversMadNCL
 
+using CTModels
 using CTSolvers
 using MadNCL
 using MadNLP
@@ -24,27 +25,27 @@ end
 
 base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseType
 
-function CTSolvers._option_specs(::Type{<:CTSolvers.MadNCLSolver})
+function CTModels._option_specs(::Type{<:CTSolvers.MadNCLSolver})
     return (
-        max_iter=CTSolvers.OptionSpec(;
+        max_iter=CTModels.OptionSpec(;
             type=Integer,
             default=__mad_ncl_max_iter(),
             description="Maximum number of augmented Lagrangian iterations.",
         ),
-        tol=CTSolvers.OptionSpec(;
+        tol=CTModels.OptionSpec(;
             type=Real, default=__mad_ncl_tol(), description="Optimality tolerance."
         ),
-        print_level=CTSolvers.OptionSpec(;
+        print_level=CTModels.OptionSpec(;
             type=MadNLP.LogLevels,
             default=__mad_ncl_print_level(),
             description="MadNCL/MadNLP logging level.",
         ),
-        linear_solver=CTSolvers.OptionSpec(;
+        linear_solver=CTModels.OptionSpec(;
             type=Type{<:MadNLP.AbstractLinearSolver},
             default=__mad_ncl_linear_solver(),
             description="Linear solver implementation used inside MadNCL.",
         ),
-        ncl_options=CTSolvers.OptionSpec(;
+        ncl_options=CTModels.OptionSpec(;
             type=MadNCL.NCLOptions,
             default=__mad_ncl_ncl_options(),
             description="Low-level NCLOptions structure controlling the augmented Lagrangian algorithm.",
@@ -61,7 +62,7 @@ end
 
 # backend constructor
 function CTSolvers.MadNCLSolver(; kwargs...)
-    values, sources = CTSolvers._build_ocp_tool_options(
+    values, sources = CTModels._build_ocp_tool_options(
         CTSolvers.MadNCLSolver; kwargs..., strict_keys=false
     )
     BaseType = base_type(values.ncl_options)
@@ -72,7 +73,7 @@ function (solver::CTSolvers.MadNCLSolver{BaseType})(
     nlp::NLPModels.AbstractNLPModel; display::Bool
 )::MadNCL.NCLStats where {BaseType<:AbstractFloat}
     # options control
-    options = Dict(pairs(CTSolvers._options_values(solver)))
+    options = Dict(pairs(CTModels._options_values(solver)))
     if !display
         options[:print_level] = MadNLP.ERROR
         ncl_options_dict = Dict()

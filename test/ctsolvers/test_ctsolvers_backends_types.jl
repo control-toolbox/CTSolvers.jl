@@ -100,7 +100,7 @@ function test_ctsolvers_backends_types()
         # build_solver_from_symbol should construct appropriate solvers and respect options.
         s_ipopt = CTSolvers.build_solver_from_symbol(:ipopt; max_iter=123)
         Test.@test s_ipopt isa CTSolvers.IpoptSolver
-        vals_ipopt = CTSolvers._options_values(s_ipopt)
+        vals_ipopt = CTModels._options_values(s_ipopt)
         Test.@test vals_ipopt.max_iter == 123
     end
 
@@ -128,29 +128,29 @@ function test_ctsolvers_backends_types()
     Test.@testset "IpoptSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Default constructor: all options should come from ct_default
         solver_default = CTSolvers.IpoptSolver()
-        vals_default = CTSolvers._options_values(solver_default)
+        vals_default = CTModels._options_values(solver_default)
         srcs_default = CTSolvers._option_sources(solver_default)
 
         Test.@test all(srcs_default[k] == :ct_default for k in propertynames(srcs_default))
 
         # Metadata helpers should expose the same keys and basic types
-        keys_ipopt = CTSolvers.options_keys(CTSolvers.IpoptSolver)
+        keys_ipopt = CTModels.options_keys(CTSolvers.IpoptSolver)
         Test.@test :max_iter in keys_ipopt
         Test.@test CTSolvers.option_type(:max_iter, CTSolvers.IpoptSolver) <: Integer
 
         # Type-based vs instance-based metadata access should agree
         ipopt_type_from_inst = typeof(solver_default)
 
-        keys_ipopt_inst = CTSolvers.options_keys(ipopt_type_from_inst)
+        keys_ipopt_inst = CTModels.options_keys(ipopt_type_from_inst)
         Test.@test Set(keys_ipopt_inst) == Set(keys_ipopt)
 
-        defs_ipopt_type = CTSolvers.default_options(CTSolvers.IpoptSolver)
-        defs_ipopt_inst = CTSolvers.default_options(ipopt_type_from_inst)
+        defs_ipopt_type = CTModels.default_options(CTSolvers.IpoptSolver)
+        defs_ipopt_inst = CTModels.default_options(ipopt_type_from_inst)
         Test.@test defs_ipopt_inst == defs_ipopt_type
 
         # User overrides should be visible in both values and sources
         solver_user = CTSolvers.IpoptSolver(; max_iter=100, tol=1e-8)
-        vals_user = CTSolvers._options_values(solver_user)
+        vals_user = CTModels._options_values(solver_user)
         srcs_user = CTSolvers._option_sources(solver_user)
 
         Test.@test vals_user.max_iter == 100
@@ -165,7 +165,7 @@ function test_ctsolvers_backends_types()
 
     Test.@testset "MadNLPSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver_user = CTSolvers.MadNLPSolver(; max_iter=500, tol=1e-6)
-        vals_user = CTSolvers._options_values(solver_user)
+        vals_user = CTModels._options_values(solver_user)
         srcs_user = CTSolvers._option_sources(solver_user)
 
         Test.@test vals_user.max_iter == 500
@@ -174,18 +174,18 @@ function test_ctsolvers_backends_types()
         Test.@test srcs_user.tol == :user
 
         # Metadata should know about max_iter and tol
-        keys_madnlp = CTSolvers.options_keys(CTSolvers.MadNLPSolver)
+        keys_madnlp = CTModels.options_keys(CTSolvers.MadNLPSolver)
         Test.@test :max_iter in keys_madnlp
         Test.@test :tol in keys_madnlp
 
         # Type-based vs instance-based metadata access should agree
         madnlp_type_from_inst = typeof(solver_user)
 
-        keys_madnlp_inst = CTSolvers.options_keys(madnlp_type_from_inst)
+        keys_madnlp_inst = CTModels.options_keys(madnlp_type_from_inst)
         Test.@test Set(keys_madnlp_inst) == Set(keys_madnlp)
 
-        defs_madnlp_type = CTSolvers.default_options(CTSolvers.MadNLPSolver)
-        defs_madnlp_inst = CTSolvers.default_options(madnlp_type_from_inst)
+        defs_madnlp_type = CTModels.default_options(CTSolvers.MadNLPSolver)
+        defs_madnlp_inst = CTModels.default_options(madnlp_type_from_inst)
         Test.@test defs_madnlp_inst == defs_madnlp_type
     end
 
@@ -195,7 +195,7 @@ function test_ctsolvers_backends_types()
 
     Test.@testset "MadNCLSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver_default = CTSolvers.MadNCLSolver()
-        vals_default = CTSolvers._options_values(solver_default)
+        vals_default = CTModels._options_values(solver_default)
         srcs_default = CTSolvers._option_sources(solver_default)
 
         Test.@test vals_default.max_iter == CTSolversMadNCL.__mad_ncl_max_iter()
@@ -204,12 +204,12 @@ function test_ctsolvers_backends_types()
         # Type-based vs instance-based metadata access should agree
         madncl_type_from_inst = typeof(solver_default)
 
-        keys_madncl_type = CTSolvers.options_keys(CTSolvers.MadNCLSolver)
-        keys_madncl_inst = CTSolvers.options_keys(madncl_type_from_inst)
+        keys_madncl_type = CTModels.options_keys(CTSolvers.MadNCLSolver)
+        keys_madncl_inst = CTModels.options_keys(madncl_type_from_inst)
         Test.@test Set(keys_madncl_inst) == Set(keys_madncl_type)
 
-        defs_madncl_type = CTSolvers.default_options(CTSolvers.MadNCLSolver)
-        defs_madncl_inst = CTSolvers.default_options(madncl_type_from_inst)
+        defs_madncl_type = CTModels.default_options(CTSolvers.MadNCLSolver)
+        defs_madncl_inst = CTModels.default_options(madncl_type_from_inst)
         Test.@test defs_madncl_inst == defs_madncl_type
     end
 
@@ -219,7 +219,7 @@ function test_ctsolvers_backends_types()
 
     Test.@testset "KnitroSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver_user = CTSolvers.KnitroSolver(; maxit=300, feastol_abs=1e-6)
-        vals_user = CTSolvers._options_values(solver_user)
+        vals_user = CTModels._options_values(solver_user)
         srcs_user = CTSolvers._option_sources(solver_user)
 
         Test.@test vals_user.maxit == 300
@@ -230,12 +230,12 @@ function test_ctsolvers_backends_types()
         # Type-based vs instance-based metadata access should agree
         knitro_type_from_inst = typeof(solver_user)
 
-        keys_knitro_type = CTSolvers.options_keys(CTSolvers.KnitroSolver)
-        keys_knitro_inst = CTSolvers.options_keys(knitro_type_from_inst)
+        keys_knitro_type = CTModels.options_keys(CTSolvers.KnitroSolver)
+        keys_knitro_inst = CTModels.options_keys(knitro_type_from_inst)
         Test.@test Set(keys_knitro_inst) == Set(keys_knitro_type)
 
-        defs_knitro_type = CTSolvers.default_options(CTSolvers.KnitroSolver)
-        defs_knitro_inst = CTSolvers.default_options(knitro_type_from_inst)
+        defs_knitro_type = CTModels.default_options(CTSolvers.KnitroSolver)
+        defs_knitro_inst = CTModels.default_options(knitro_type_from_inst)
         Test.@test defs_knitro_inst == defs_knitro_type
     end
 
@@ -247,9 +247,9 @@ function test_ctsolvers_backends_types()
         # For a solver with known metadata (IpoptSolver), the getters should
         # recover the same information as default_options / _option_sources.
         solver = CTSolvers.IpoptSolver()
-        vals = CTSolvers._options_values(solver)
+        vals = CTModels._options_values(solver)
         srcs = CTSolvers._option_sources(solver)
-        defaults = CTSolvers.default_options(CTSolvers.IpoptSolver)
+        defaults = CTModels.default_options(CTSolvers.IpoptSolver)
 
         Test.@test CTSolvers.get_option_value(solver, :max_iter) ==
             vals.max_iter ==

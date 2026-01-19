@@ -26,15 +26,15 @@ struct KnitroSolver{Vals,Srcs} <: AbstractOptimizationSolver
     options_sources::Srcs
 end
 
-get_symbol(::Type{<:IpoptSolver}) = :ipopt
-get_symbol(::Type{<:MadNLPSolver}) = :madnlp
-get_symbol(::Type{<:MadNCLSolver}) = :madncl
-get_symbol(::Type{<:KnitroSolver}) = :knitro
+CTModels.get_symbol(::Type{<:IpoptSolver}) = :ipopt
+CTModels.get_symbol(::Type{<:MadNLPSolver}) = :madnlp
+CTModels.get_symbol(::Type{<:MadNCLSolver}) = :madncl
+CTModels.get_symbol(::Type{<:KnitroSolver}) = :knitro
 
-tool_package_name(::Type{<:IpoptSolver}) = "NLPModelsIpopt"
-tool_package_name(::Type{<:MadNLPSolver}) = "MadNLP suite"
-tool_package_name(::Type{<:MadNCLSolver}) = "MadNCL"
-tool_package_name(::Type{<:KnitroSolver}) = "NLPModelsKnitro"
+CTModels.tool_package_name(::Type{<:IpoptSolver}) = "NLPModelsIpopt"
+CTModels.tool_package_name(::Type{<:MadNLPSolver}) = "MadNLP suite"
+CTModels.tool_package_name(::Type{<:MadNCLSolver}) = "MadNCL"
+CTModels.tool_package_name(::Type{<:KnitroSolver}) = "NLPModelsKnitro"
 
 const REGISTERED_SOLVERS = (IpoptSolver, MadNLPSolver, MadNCLSolver, KnitroSolver)
 

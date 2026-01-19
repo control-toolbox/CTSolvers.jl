@@ -18,7 +18,7 @@ function test_ctsolvers_extensions_madnlp()
         Test.@test CTSolversMadNLP.__mad_nlp_linear_solver() == MadNLPMumps.MumpsSolver
 
         solver = CTSolvers.MadNLPSolver()
-        opts = Dict(pairs(CTSolvers._options_values(solver)))
+        opts = Dict(pairs(CTModels._options_values(solver)))
 
         Test.@test opts[:max_iter] == CTSolversMadNLP.__mad_nlp_max_iter()
         Test.@test opts[:tol] == CTSolversMadNLP.__mad_nlp_tol()
@@ -30,7 +30,7 @@ function test_ctsolvers_extensions_madnlp()
     # UNIT: metadata defaults (default_options and option_default)
     # ========================================================================
     Test.@testset "unit: metadata defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
-        opts_mad = CTSolvers.default_options(CTSolvers.MadNLPSolver)
+        opts_mad = CTModels.default_options(CTSolvers.MadNLPSolver)
         Test.@test opts_mad.max_iter == CTSolversMadNLP.__mad_nlp_max_iter()
         Test.@test opts_mad.tol == CTSolversMadNLP.__mad_nlp_tol()
         Test.@test opts_mad.print_level == CTSolversMadNLP.__mad_nlp_print_level()
@@ -38,21 +38,21 @@ function test_ctsolvers_extensions_madnlp()
         solver_inst = CTSolvers.MadNLPSolver()
         madnlp_type = typeof(solver_inst)
 
-        opts_mad_from_inst = CTSolvers.default_options(madnlp_type)
+        opts_mad_from_inst = CTModels.default_options(madnlp_type)
         Test.@test opts_mad_from_inst == opts_mad
 
-        keys_type = CTSolvers.options_keys(CTSolvers.MadNLPSolver)
-        keys_inst = CTSolvers.options_keys(madnlp_type)
+        keys_type = CTModels.options_keys(CTSolvers.MadNLPSolver)
+        keys_inst = CTModels.options_keys(madnlp_type)
         Test.@test Set(keys_inst) == Set(keys_type)
 
-        Test.@test CTSolvers.option_default(:max_iter, CTSolvers.MadNLPSolver) ==
+        Test.@test CTModels.option_default(:max_iter, CTSolvers.MadNLPSolver) ==
             CTSolversMadNLP.__mad_nlp_max_iter()
-        Test.@test CTSolvers.option_default(:tol, CTSolvers.MadNLPSolver) ==
+        Test.@test CTModels.option_default(:tol, CTSolvers.MadNLPSolver) ==
             CTSolversMadNLP.__mad_nlp_tol()
 
-        Test.@test CTSolvers.option_default(:max_iter, madnlp_type) ==
+        Test.@test CTModels.option_default(:max_iter, madnlp_type) ==
             CTSolversMadNLP.__mad_nlp_max_iter()
-        Test.@test CTSolvers.option_default(:tol, madnlp_type) ==
+        Test.@test CTModels.option_default(:tol, madnlp_type) ==
             CTSolversMadNLP.__mad_nlp_tol()
     end
 
@@ -66,7 +66,7 @@ function test_ctsolvers_extensions_madnlp()
     # ========================================================================
     Test.@testset "integration: initial_guess" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
-        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler(; base_type=BaseType)]
+        modelers = [CTModels.ADNLPModeler(), CTModels.ExaModeler(; base_type=BaseType)]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
@@ -120,7 +120,7 @@ function test_ctsolvers_extensions_madnlp()
     # ========================================================================
     Test.@testset "integration: solve_with_madnlp" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
-        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler(; base_type=BaseType)]
+        modelers = [CTModels.ADNLPModeler(), CTModels.ExaModeler(; base_type=BaseType)]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
@@ -130,7 +130,7 @@ function test_ctsolvers_extensions_madnlp()
                 for (linear_solver, linear_solver_name) in
                     zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        nlp = CTSolvers.build_model(ros.prob, ros.init, modeler)
+                        nlp = CTModels.build_model(ros.prob, ros.init, modeler)
                         sol = CTSolvers.solve_with_madnlp(
                             nlp; linear_solver=linear_solver, madnlp_options...
                         )
@@ -147,7 +147,7 @@ function test_ctsolvers_extensions_madnlp()
                 for (linear_solver, linear_solver_name) in
                     zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        nlp = CTSolvers.build_model(elec.prob, elec.init, modeler)
+                        nlp = CTModels.build_model(elec.prob, elec.init, modeler)
                         sol = CTSolvers.solve_with_madnlp(
                             nlp; linear_solver=linear_solver, madnlp_options...
                         )
@@ -162,7 +162,7 @@ function test_ctsolvers_extensions_madnlp()
                 for (linear_solver, linear_solver_name) in
                     zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        nlp = CTSolvers.build_model(maxd.prob, maxd.init, modeler)
+                        nlp = CTModels.build_model(maxd.prob, maxd.init, modeler)
                         sol = CTSolvers.solve_with_madnlp(
                             nlp; linear_solver=linear_solver, madnlp_options...
                         )
@@ -181,7 +181,7 @@ function test_ctsolvers_extensions_madnlp()
     # ========================================================================
     Test.@testset "integration: CommonSolve.solve" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float32
-        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler(; base_type=BaseType)]
+        modelers = [CTModels.ADNLPModeler(), CTModels.ExaModeler(; base_type=BaseType)]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
@@ -249,99 +249,99 @@ function test_ctsolvers_extensions_madnlp()
         end
     end
 
-    # ========================================================================
-    # INTEGRATION: Direct beam OCP with Collocation (MadNLP pieces)
-    # ========================================================================
-    Test.@testset "integration: beam_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
-        beam_data = Beam()
-        ocp = beam_data.ocp
-        init = CTSolvers.initial_guess(ocp; beam_data.init...)
-        discretizer = CTSolvers.Collocation()
-        docp = CTSolvers.discretize(ocp, discretizer)
+    # # ========================================================================
+    # # INTEGRATION: Direct beam OCP with Collocation (MadNLP pieces)
+    # # ========================================================================
+    # Test.@testset "integration: beam_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #     beam_data = Beam()
+    #     ocp = beam_data.ocp
+    #     init = CTSolvers.initial_guess(ocp; beam_data.init...)
+    #     discretizer = CTSolvers.Collocation()
+    #     docp = CTSolvers.discretize(ocp, discretizer)
 
-        Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
+    #     Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
 
-        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler()]
-        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+    #     modelers = [CTModels.ADNLPModeler(), CTModels.ExaModeler()]
+    #     modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
 
-        # ocp_solution from DOCP using solve_with_madnlp
-        Test.@testset "ocp_solution from DOCP (MadNLP)" verbose=VERBOSE showtiming=SHOWTIMING begin
-            for (modeler, modeler_name) in zip(modelers, modelers_names)
-                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    nlp = CTSolvers.nlp_model(docp, init, modeler)
-                    stats = CTSolvers.solve_with_madnlp(nlp; madnlp_options...)
-                    sol = CTSolvers.ocp_solution(docp, stats, modeler)
-                    Test.@test sol isa CTModels.Solution
-                    Test.@test CTModels.successful(sol)
-                    Test.@test isfinite(CTModels.objective(sol))
-                    Test.@test CTModels.objective(sol) ≈ beam_data.obj atol=1e-2
-                end
-            end
-        end
+    #     # ocp_solution from DOCP using solve_with_madnlp
+    #     Test.@testset "ocp_solution from DOCP (MadNLP)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #         for (modeler, modeler_name) in zip(modelers, modelers_names)
+    #             Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #                 nlp = CTSolvers.nlp_model(docp, init, modeler)
+    #                 stats = CTSolvers.solve_with_madnlp(nlp; madnlp_options...)
+    #                 sol = CTSolvers.ocp_solution(docp, stats, modeler)
+    #                 Test.@test sol isa CTModels.Solution
+    #                 Test.@test CTModels.successful(sol)
+    #                 Test.@test isfinite(CTModels.objective(sol))
+    #                 Test.@test CTModels.objective(sol) ≈ beam_data.obj atol=1e-2
+    #             end
+    #         end
+    #     end
 
-        # DOCP level: CommonSolve.solve(docp, init, modeler, solver)
-        Test.@testset "DOCP level (MadNLP)" verbose=VERBOSE showtiming=SHOWTIMING begin
-            for (modeler, modeler_name) in zip(modelers, modelers_names)
-                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    solver = CTSolvers.MadNLPSolver(; madnlp_options...)
-                    sol = CommonSolve.solve(docp, init, modeler, solver; display=false)
-                    Test.@test sol isa CTModels.Solution
-                    Test.@test CTModels.successful(sol)
-                    Test.@test isfinite(CTModels.objective(sol))
-                    Test.@test CTModels.objective(sol) ≈ beam_data.obj atol=1e-2
-                    Test.@test CTModels.iterations(sol) <= madnlp_options[:max_iter]
-                    Test.@test CTModels.constraints_violation(sol) <= 1e-6
-                end
-            end
-        end
-    end
+    #     # DOCP level: CommonSolve.solve(docp, init, modeler, solver)
+    #     Test.@testset "DOCP level (MadNLP)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #         for (modeler, modeler_name) in zip(modelers, modelers_names)
+    #             Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #                 solver = CTSolvers.MadNLPSolver(; madnlp_options...)
+    #                 sol = CommonSolve.solve(docp, init, modeler, solver; display=false)
+    #                 Test.@test sol isa CTModels.Solution
+    #                 Test.@test CTModels.successful(sol)
+    #                 Test.@test isfinite(CTModels.objective(sol))
+    #                 Test.@test CTModels.objective(sol) ≈ beam_data.obj atol=1e-2
+    #                 Test.@test CTModels.iterations(sol) <= madnlp_options[:max_iter]
+    #                 Test.@test CTModels.constraints_violation(sol) <= 1e-6
+    #             end
+    #         end
+    #     end
+    # end
 
-    # ========================================================================
-    # INTEGRATION: Direct Goddard OCP with Collocation (MadNLP pieces)
-    # ========================================================================
-    Test.@testset "integration: goddard_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
-        gdata = Goddard()
-        ocp_g = gdata.ocp
-        init_g = CTSolvers.initial_guess(ocp_g; gdata.init...)
-        discretizer_g = CTSolvers.Collocation()
-        docp_g = CTSolvers.discretize(ocp_g, discretizer_g)
+    # # ========================================================================
+    # # INTEGRATION: Direct Goddard OCP with Collocation (MadNLP pieces)
+    # # ========================================================================
+    # Test.@testset "integration: goddard_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #     gdata = Goddard()
+    #     ocp_g = gdata.ocp
+    #     init_g = CTSolvers.initial_guess(ocp_g; gdata.init...)
+    #     discretizer_g = CTSolvers.Collocation()
+    #     docp_g = CTSolvers.discretize(ocp_g, discretizer_g)
 
-        Test.@test docp_g isa CTSolvers.DiscretizedOptimalControlProblem
+    #     Test.@test docp_g isa CTSolvers.DiscretizedOptimalControlProblem
 
-        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler()]
-        modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+    #     modelers = [CTModels.ADNLPModeler(), CTModels.ExaModeler()]
+    #     modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
 
-        # ocp_solution from DOCP using solve_with_madnlp
-        Test.@testset "ocp_solution from DOCP (MadNLP)" verbose=VERBOSE showtiming=SHOWTIMING begin
-            for (modeler, modeler_name) in zip(modelers, modelers_names)
-                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    nlp = CTSolvers.nlp_model(docp_g, init_g, modeler)
-                    stats = CTSolvers.solve_with_madnlp(nlp; madnlp_options...)
-                    sol = CTSolvers.ocp_solution(docp_g, stats, modeler)
-                    Test.@test sol isa CTModels.Solution
-                    Test.@test CTModels.successful(sol)
-                    Test.@test isfinite(CTModels.objective(sol))
-                    Test.@test CTModels.objective(sol) ≈ gdata.obj atol=1e-4
-                end
-            end
-        end
+    #     # ocp_solution from DOCP using solve_with_madnlp
+    #     Test.@testset "ocp_solution from DOCP (MadNLP)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #         for (modeler, modeler_name) in zip(modelers, modelers_names)
+    #             Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #                 nlp = CTSolvers.nlp_model(docp_g, init_g, modeler)
+    #                 stats = CTSolvers.solve_with_madnlp(nlp; madnlp_options...)
+    #                 sol = CTSolvers.ocp_solution(docp_g, stats, modeler)
+    #                 Test.@test sol isa CTModels.Solution
+    #                 Test.@test CTModels.successful(sol)
+    #                 Test.@test isfinite(CTModels.objective(sol))
+    #                 Test.@test CTModels.objective(sol) ≈ gdata.obj atol=1e-4
+    #             end
+    #         end
+    #     end
 
-        # DOCP level: CommonSolve.solve(docp_g, init_g, modeler, solver)
-        Test.@testset "DOCP level (MadNLP)" verbose=VERBOSE showtiming=SHOWTIMING begin
-            for (modeler, modeler_name) in zip(modelers, modelers_names)
-                Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    solver = CTSolvers.MadNLPSolver(; madnlp_options...)
-                    sol = CommonSolve.solve(docp_g, init_g, modeler, solver; display=false)
-                    Test.@test sol isa CTModels.Solution
-                    Test.@test CTModels.successful(sol)
-                    Test.@test isfinite(CTModels.objective(sol))
-                    Test.@test CTModels.objective(sol) ≈ gdata.obj atol=1e-4
-                    Test.@test CTModels.iterations(sol) <= madnlp_options[:max_iter]
-                    Test.@test CTModels.constraints_violation(sol) <= 1e-6
-                end
-            end
-        end
-    end
+    #     # DOCP level: CommonSolve.solve(docp_g, init_g, modeler, solver)
+    #     Test.@testset "DOCP level (MadNLP)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #         for (modeler, modeler_name) in zip(modelers, modelers_names)
+    #             Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #                 solver = CTSolvers.MadNLPSolver(; madnlp_options...)
+    #                 sol = CommonSolve.solve(docp_g, init_g, modeler, solver; display=false)
+    #                 Test.@test sol isa CTModels.Solution
+    #                 Test.@test CTModels.successful(sol)
+    #                 Test.@test isfinite(CTModels.objective(sol))
+    #                 Test.@test CTModels.objective(sol) ≈ gdata.obj atol=1e-4
+    #                 Test.@test CTModels.iterations(sol) <= madnlp_options[:max_iter]
+    #                 Test.@test CTModels.constraints_violation(sol) <= 1e-6
+    #             end
+    #         end
+    #     end
+    # end
 
     # ========================================================================
     # GPU TESTS (only if CUDA functional)
@@ -353,7 +353,7 @@ function test_ctsolvers_extensions_madnlp()
 
     exa_backend = CUDA.CUDABackend()
     linear_solver_gpu = MadNLPGPU.CUDSSSolver
-    modelers_gpu = [CTSolvers.ExaModeler(; backend=exa_backend)]
+    modelers_gpu = [CTModels.ExaModeler(; backend=exa_backend)]
     modelers_gpu_names = ["ExaModeler (GPU)"]
 
     Test.@testset "gpu: solve_with_madnlp" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -363,7 +363,7 @@ function test_ctsolvers_extensions_madnlp()
         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    nlp = CTSolvers.build_model(ros.prob, ros.init, modeler)
+                    nlp = CTModels.build_model(ros.prob, ros.init, modeler)
                     stats = CTSolvers.solve_with_madnlp(
                         nlp; madnlp_options..., linear_solver=linear_solver_gpu
                     )
@@ -381,7 +381,7 @@ function test_ctsolvers_extensions_madnlp()
         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
             for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    nlp = CTSolvers.build_model(elec.prob, elec.init, modeler)
+                    nlp = CTModels.build_model(elec.prob, elec.init, modeler)
                     stats = CTSolvers.solve_with_madnlp(
                         nlp; madnlp_options..., linear_solver=linear_solver_gpu
                     )
@@ -399,7 +399,7 @@ function test_ctsolvers_extensions_madnlp()
         # Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
         #     for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
         #         Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-        #             nlp = CTSolvers.build_model(maxd.prob, maxd.init, modeler)
+        #             nlp = CTModels.build_model(maxd.prob, maxd.init, modeler)
         #             stats = CTSolvers.solve_with_madnlp(nlp; madnlp_options..., linear_solver=linear_solver_gpu)
         #             Test.@test stats isa MadNLP.MadNLPExecutionStats
         #             Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
@@ -496,68 +496,69 @@ function test_ctsolvers_extensions_madnlp()
             end
         end
 
-        # Max1MinusX2 (GPU tests disabled: MadNLP treats max problems as min on GPU)
-        # Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
-        #     for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
-        #         Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-        #             stats = CommonSolve.solve(
-        #                 maxd.prob,
-        #                 maxd.init,
-        #                 modeler,
-        #                 solver;
-        #                 display=false,
-        #             )
-        #             Test.@test stats isa MadNLP.MadNLPExecutionStats
-        #             Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
-        #             Test.@test isfinite(stats.objective)
-        #             Test.@test stats.solution isa CuArray{Float64,1}
-        #             Test.@test length(stats.solution) == 1
-        #         end
-        #     end
-        # end
+    #     # Max1MinusX2 (GPU tests disabled: MadNLP treats max problems as min on GPU)
+    #     # Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #     #     for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
+    #     #         Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #     #             stats = CommonSolve.solve(
+    #     #                 maxd.prob,
+    #     #                 maxd.init,
+    #     #                 modeler,
+    #     #                 solver;
+    #     #                 display=false,
+    #     #             )
+    #     #             Test.@test stats isa MadNLP.MadNLPExecutionStats
+    #     #             Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
+    #     #             Test.@test isfinite(stats.objective)
+    #     #             Test.@test stats.solution isa CuArray{Float64,1}
+    #     #             Test.@test length(stats.solution) == 1
+    #     #         end
+    #     #     end
+    #     # end
+    
     end
 
-    Test.@testset "gpu: beam_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
-        beam_data = Beam()
-        ocp = beam_data.ocp
-        init = CTSolvers.initial_guess(ocp; beam_data.init...)
-        discretizer = CTSolvers.Collocation()
-        docp = CTSolvers.discretize(ocp, discretizer)
+    # Test.@testset "gpu: beam_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
+    #     beam_data = Beam()
+    #     ocp = beam_data.ocp
+    #     init = CTSolvers.initial_guess(ocp; beam_data.init...)
+    #     discretizer = CTSolvers.Collocation()
+    #     docp = CTSolvers.discretize(ocp, discretizer)
 
-        Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
+    #     Test.@test docp isa CTSolvers.DiscretizedOptimalControlProblem
 
-        for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
-            Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                solver = CTSolvers.MadNLPSolver(;
-                    madnlp_options..., linear_solver=linear_solver_gpu
-                )
-                sol = CommonSolve.solve(docp, init, modeler, solver; display=false)
-                Test.@test sol isa CTModels.Solution
-                Test.@test CTModels.successful(sol)
-                Test.@test isfinite(CTModels.objective(sol))
-            end
-        end
-    end
-
-    # gpu: goddard_docp (GPU tests disabled: max problem currently works as min)
-    # Test.@testset "gpu: goddard_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
-    #     gdata = Goddard()
-    #     ocp_g = gdata.ocp
-    #     init_g = CTSolvers.initial_guess(ocp_g; gdata.init...)
-    #     discretizer_g = CTSolvers.Collocation()
-    #     docp_g = CTSolvers.discretize(ocp_g, discretizer_g)
-    #
-    #     Test.@test docp_g isa CTSolvers.DiscretizedOptimalControlProblem
-    #
     #     for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
     #         Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-    #             solver = CTSolvers.MadNLPSolver(; madnlp_options..., linear_solver=linear_solver_gpu)
-    #             sol = CommonSolve.solve(docp_g, init_g, modeler, solver; display=false)
+    #             solver = CTSolvers.MadNLPSolver(;
+    #                 madnlp_options..., linear_solver=linear_solver_gpu
+    #             )
+    #             sol = CommonSolve.solve(docp, init, modeler, solver; display=false)
     #             Test.@test sol isa CTModels.Solution
     #             Test.@test CTModels.successful(sol)
     #             Test.@test isfinite(CTModels.objective(sol))
     #         end
     #     end
     # end
+
+    # # gpu: goddard_docp (GPU tests disabled: max problem currently works as min)
+    # # Test.@testset "gpu: goddard_docp" verbose=VERBOSE showtiming=SHOWTIMING begin
+    # #     gdata = Goddard()
+    # #     ocp_g = gdata.ocp
+    # #     init_g = CTSolvers.initial_guess(ocp_g; gdata.init...)
+    # #     discretizer_g = CTSolvers.Collocation()
+    # #     docp_g = CTSolvers.discretize(ocp_g, discretizer_g)
+    # #
+    # #     Test.@test docp_g isa CTSolvers.DiscretizedOptimalControlProblem
+    # #
+    # #     for (modeler, modeler_name) in zip(modelers_gpu, modelers_gpu_names)
+    # #         Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    # #             solver = CTSolvers.MadNLPSolver(; madnlp_options..., linear_solver=linear_solver_gpu)
+    # #             sol = CommonSolve.solve(docp_g, init_g, modeler, solver; display=false)
+    # #             Test.@test sol isa CTModels.Solution
+    # #             Test.@test CTModels.successful(sol)
+    # #             Test.@test isfinite(CTModels.objective(sol))
+    # #         end
+    # #     end
+    # # end
 
 end

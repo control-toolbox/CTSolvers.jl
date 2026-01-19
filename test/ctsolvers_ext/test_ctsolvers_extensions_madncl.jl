@@ -18,7 +18,7 @@ function test_ctsolvers_extensions_madncl()
         ref_opts = CTSolversMadNCL.__mad_ncl_ncl_options()
 
         solver = CTSolvers.MadNCLSolver()
-        opts = Dict(pairs(CTSolvers._options_values(solver)))
+        opts = Dict(pairs(CTModels._options_values(solver)))
 
         Test.@test opts[:max_iter] == CTSolversMadNCL.__mad_ncl_max_iter()
         Test.@test opts[:print_level] == CTSolversMadNCL.__mad_ncl_print_level()
@@ -36,7 +36,7 @@ function test_ctsolvers_extensions_madncl()
     # UNIT: metadata defaults (default_options and option_default)
     # ========================================================================
     Test.@testset "unit: metadata defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
-        opts_ncl = CTSolvers.default_options(CTSolvers.MadNCLSolver)
+        opts_ncl = CTModels.default_options(CTSolvers.MadNCLSolver)
         Test.@test opts_ncl.max_iter == CTSolversMadNCL.__mad_ncl_max_iter()
         Test.@test opts_ncl.print_level == CTSolversMadNCL.__mad_ncl_print_level()
         Test.@test opts_ncl.linear_solver == CTSolversMadNCL.__mad_ncl_linear_solver()
@@ -44,21 +44,21 @@ function test_ctsolvers_extensions_madncl()
         solver_inst = CTSolvers.MadNCLSolver()
         madncl_type = typeof(solver_inst)
 
-        opts_ncl_from_inst = CTSolvers.default_options(madncl_type)
+        opts_ncl_from_inst = CTModels.default_options(madncl_type)
         Test.@test opts_ncl_from_inst == opts_ncl
 
-        keys_type = CTSolvers.options_keys(CTSolvers.MadNCLSolver)
-        keys_inst = CTSolvers.options_keys(madncl_type)
+        keys_type = CTModels.options_keys(CTSolvers.MadNCLSolver)
+        keys_inst = CTModels.options_keys(madncl_type)
         Test.@test Set(keys_inst) == Set(keys_type)
 
-        Test.@test CTSolvers.option_default(:max_iter, CTSolvers.MadNCLSolver) ==
+        Test.@test CTModels.option_default(:max_iter, CTSolvers.MadNCLSolver) ==
             CTSolversMadNCL.__mad_ncl_max_iter()
-        Test.@test CTSolvers.option_default(:print_level, CTSolvers.MadNCLSolver) ==
+        Test.@test CTModels.option_default(:print_level, CTSolvers.MadNCLSolver) ==
             CTSolversMadNCL.__mad_ncl_print_level()
 
-        Test.@test CTSolvers.option_default(:max_iter, madncl_type) ==
+        Test.@test CTModels.option_default(:max_iter, madncl_type) ==
             CTSolversMadNCL.__mad_ncl_max_iter()
-        Test.@test CTSolvers.option_default(:print_level, madncl_type) ==
+        Test.@test CTModels.option_default(:print_level, madncl_type) ==
             CTSolversMadNCL.__mad_ncl_print_level()
     end
 
@@ -77,7 +77,7 @@ function test_ctsolvers_extensions_madncl()
     # ========================================================================
     Test.@testset "integration: initial_guess" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float64
-        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler(; base_type=BaseType)]
+        modelers = [CTModels.ADNLPModeler(), CTModels.ExaModeler(; base_type=BaseType)]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
@@ -118,7 +118,7 @@ function test_ctsolvers_extensions_madncl()
     # ========================================================================
     Test.@testset "integration: solve_with_madncl" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float64
-        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler(; base_type=BaseType)]
+        modelers = [CTModels.ADNLPModeler(), CTModels.ExaModeler(; base_type=BaseType)]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Mumps"]
@@ -129,7 +129,7 @@ function test_ctsolvers_extensions_madncl()
                 for (linear_solver, linear_solver_name) in
                     zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        nlp = CTSolvers.build_model(elec.prob, elec.init, modeler)
+                        nlp = CTModels.build_model(elec.prob, elec.init, modeler)
                         sol = CTSolvers.solve_with_madncl(
                             nlp; linear_solver=linear_solver, madncl_options...
                         )
@@ -143,7 +143,7 @@ function test_ctsolvers_extensions_madncl()
                 for (linear_solver, linear_solver_name) in
                     zip(linear_solvers, linear_solvers_names)
                     Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        nlp = CTSolvers.build_model(maxd.prob, maxd.init, modeler)
+                        nlp = CTModels.build_model(maxd.prob, maxd.init, modeler)
                         sol = CTSolvers.solve_with_madncl(
                             nlp; linear_solver=linear_solver, madncl_options...
                         )
@@ -162,7 +162,7 @@ function test_ctsolvers_extensions_madncl()
     # ========================================================================
     Test.@testset "integration: CommonSolve.solve" verbose=VERBOSE showtiming=SHOWTIMING begin
         BaseType = Float64
-        modelers = [CTSolvers.ADNLPModeler(), CTSolvers.ExaModeler(; base_type=BaseType)]
+        modelers = [CTModels.ADNLPModeler(), CTModels.ExaModeler(; base_type=BaseType)]
         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
         linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
         linear_solvers_names = ["Umfpack", "Mumps"]
@@ -219,7 +219,7 @@ function test_ctsolvers_extensions_madncl()
 
     exa_backend = CUDA.CUDABackend()
     linear_solver_gpu = MadNLPGPU.CUDSSSolver
-    modelers_gpu = [CTSolvers.ExaModeler(; backend=exa_backend)]
+    modelers_gpu = [CTModels.ExaModeler(; backend=exa_backend)]
     modelers_gpu_names = ["ExaModeler (GPU)"]
 
     Test.@testset "gpu" verbose=VERBOSE showtiming=SHOWTIMING begin

@@ -28,14 +28,14 @@ ipopt_options = Dict(
 )
 ros = Rosenbrock()
 
-modeler = CTSolvers.ADNLPModeler()
+modeler = CTModels.ADNLPModeler()
 solver = CTSolvers.IpoptSolver(; ipopt_options...)
 sol = CommonSolve.solve(ros.prob, ros.init, modeler, solver)
 sol = CommonSolve.solve(ros.prob, ros.init, modeler, solver; display=false)
 
 # MadNLP
 madnlp_options = Dict(:max_iter => 100, :tol => 1e-6, :print_level => MadNLP.INFO)
-modeler = CTSolvers.ADNLPModeler()
+modeler = CTModels.ADNLPModeler()
 solver = CTSolvers.MadNLPSolver(; madnlp_options...)
 sol = CommonSolve.solve(ros.prob, ros.init, modeler, solver)
 sol = CommonSolve.solve(ros.prob, ros.init, modeler, solver; display=false)
@@ -50,7 +50,7 @@ function f_madncl_options(BaseType)
     )
 end
 BaseType = Float64
-modeler = CTSolvers.ADNLPModeler()
+modeler = CTModels.ADNLPModeler()
 solver = CTSolvers.MadNCLSolver(; f_madncl_options(BaseType)...)
 sol = CommonSolve.solve(ros.prob, ros.init, modeler, solver)
 sol = CommonSolve.solve(ros.prob, ros.init, modeler, solver; display=false)

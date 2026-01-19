@@ -77,8 +77,8 @@ function demo_show_options()
 
     tools = (
         CTSolvers.Collocation,
-        CTSolvers.ADNLPModeler,
-        CTSolvers.ExaModeler,
+        CTModels.ADNLPModeler,
+        CTModels.ExaModeler,
         CTSolvers.IpoptSolver,
         CTSolvers.MadNLPSolver,
         CTSolvers.MadNCLSolver,
@@ -102,7 +102,7 @@ function demo_display_helper()
 
     method = (:collocation, :adnlp, :ipopt)
     discretizer = CTSolvers.Collocation()
-    modeler = CTSolvers.ADNLPModeler()
+    modeler = CTModels.ADNLPModeler()
     solver = CTSolvers.IpoptSolver()
 
     CTSolvers._display_ocp_method(method, discretizer, modeler, solver; display=true)
@@ -132,8 +132,8 @@ function demo_beam_solves()
 
     madnlp_options = Dict(:max_iter => 1000, :tol => 1e-6, :print_level => MadNLP.ERROR)
 
-    modeler_ad = CTSolvers.ADNLPModeler(; backend=:manual)
-    modeler_exa = CTSolvers.ExaModeler()
+    modeler_ad = CTModels.ADNLPModeler(; backend=:manual)
+    modeler_exa = CTModels.ExaModeler()
 
     # Explicit mode: low-level _solve with Ipopt and ADNLPModeler
     println()
@@ -205,7 +205,7 @@ function demo_error_messages()
 
     # Unknown ExaModeler option name with suggestions
     show_captured_error("ExaModeler unknown option foo (strict modeler options)") do
-        CTSolvers.ExaModeler(; base_type=Float32, foo=2)
+        CTModels.ExaModeler(; base_type=Float32, foo=2)
     end
 
     # Description-mode routing ambiguity between discretizer and solver

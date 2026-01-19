@@ -80,7 +80,7 @@ function test_optimalcontrol_solve_api()
         # Discretizer options registry: keys inferred from the Collocation tool
         method = (:collocation, :adnlp, :ipopt)
         keys_from_method = CTSolvers._discretizer_options_keys(method)
-        keys_from_type = CTSolvers.options_keys(CTSolvers.Collocation)
+        keys_from_type = CTModels.options_keys(CTSolvers.Collocation)
         Test.@test keys_from_method == keys_from_type
 
         # Discretizer symbol helper
@@ -104,15 +104,15 @@ function test_optimalcontrol_solve_api()
         # _modeler_options_keys / _solver_options_keys should match options_keys
         method_ad_ip = (:collocation, :adnlp, :ipopt)
         Test.@test Set(CTSolvers._modeler_options_keys(method_ad_ip)) ==
-            Set(CTSolvers.options_keys(CTSolvers.ADNLPModeler))
+            Set(CTModels.options_keys(CTModels.ADNLPModeler))
         Test.@test Set(CTSolvers._solver_options_keys(method_ad_ip)) ==
-            Set(CTSolvers.options_keys(CTSolvers.IpoptSolver))
+            Set(CTModels.options_keys(CTSolvers.IpoptSolver))
 
         method_exa_mad = (:collocation, :exa, :madnlp)
         Test.@test Set(CTSolvers._modeler_options_keys(method_exa_mad)) ==
-            Set(CTSolvers.options_keys(CTSolvers.ExaModeler))
+            Set(CTModels.options_keys(CTModels.ExaModeler))
         Test.@test Set(CTSolvers._solver_options_keys(method_exa_mad)) ==
-            Set(CTSolvers.options_keys(CTSolvers.MadNLPSolver))
+            Set(CTModels.options_keys(CTSolvers.MadNLPSolver))
 
         # Multiple symbols of the same family in a method should raise an error
         Test.@test_throws CTBase.IncorrectArgument CTSolvers._get_modeler_symbol((
@@ -126,12 +126,12 @@ function test_optimalcontrol_solve_api()
         m_ad = CTSolvers._build_modeler_from_method(
             (:collocation, :adnlp, :ipopt), (; backend=:manual)
         )
-        Test.@test m_ad isa CTSolvers.ADNLPModeler
+        Test.@test m_ad isa CTModels.ADNLPModeler
 
         m_exa = CTSolvers._build_modeler_from_method(
             (:collocation, :exa, :ipopt), NamedTuple()
         )
-        Test.@test m_exa isa CTSolvers.ExaModeler
+        Test.@test m_exa isa CTModels.ExaModeler
 
         # _build_solver_from_method should construct the appropriate solver
         s_ip = CTSolvers._build_solver_from_method(
@@ -374,7 +374,7 @@ function test_optimalcontrol_solve_api()
     Test.@testset "display helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
         method = (:collocation, :adnlp, :ipopt)
         discretizer = CTSolvers.Collocation()
-        modeler = CTSolvers.ADNLPModeler()
+        modeler = CTModels.ADNLPModeler()
         solver = CTSolvers.IpoptSolver()
 
         buf = sprint() do io
@@ -513,7 +513,7 @@ function test_optimalcontrol_solve_api()
         init = CTSolvers.initial_guess(ocp; beam_data.init...)
         discretizer = CTSolvers.Collocation()
 
-        modelers = [CTSolvers.ADNLPModeler(; backend=:manual), CTSolvers.ExaModeler()]
+        modelers = [CTModels.ADNLPModeler(; backend=:manual), CTModels.ExaModeler()]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
 
         # ------------------------------------------------------------------
@@ -563,7 +563,7 @@ function test_optimalcontrol_solve_api()
                 x := [0.05, 0.1]
                 u := 0.1
             end
-            modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+            modeler = CTModels.ADNLPModeler(; backend=:manual)
             solver = CTSolvers.IpoptSolver(; ipopt_options...)
             sol = CTSolvers._solve(
                 ocp, init_macro, discretizer, modeler, solver; display=false
@@ -578,7 +578,7 @@ function test_optimalcontrol_solve_api()
         # ------------------------------------------------------------------
 
         Test.@testset "OCP level keyword API (Ipopt, ADNLPModeler)" verbose=VERBOSE showtiming=SHOWTIMING begin
-            modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+            modeler = CTModels.ADNLPModeler(; backend=:manual)
             solver = CTSolvers.IpoptSolver(; ipopt_options...)
             sol = CommonSolve.solve(
                 ocp;
@@ -694,7 +694,7 @@ function test_optimalcontrol_solve_api()
         init_g = CTSolvers.initial_guess(ocp_g; gdata.init...)
         discretizer_g = CTSolvers.Collocation()
 
-        modelers = [CTSolvers.ADNLPModeler(; backend=:manual), CTSolvers.ExaModeler()]
+        modelers = [CTModels.ADNLPModeler(; backend=:manual), CTModels.ExaModeler()]
         modelers_names = ["ADNLPModeler (manual)", "ExaModeler (CPU)"]
 
         # ------------------------------------------------------------------
@@ -740,7 +740,7 @@ function test_optimalcontrol_solve_api()
         # ------------------------------------------------------------------
 
         Test.@testset "OCP level keyword API (Ipopt, ADNLPModeler)" verbose=VERBOSE showtiming=SHOWTIMING begin
-            modeler = CTSolvers.ADNLPModeler(; backend=:manual)
+            modeler = CTModels.ADNLPModeler(; backend=:manual)
             solver = CTSolvers.IpoptSolver(; ipopt_options...)
             sol = CommonSolve.solve(
                 ocp_g;

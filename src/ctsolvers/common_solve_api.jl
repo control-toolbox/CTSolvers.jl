@@ -1,20 +1,20 @@
 # ------------------------------------------------------------------------------
 # Generic solver method
 # ------------------------------------------------------------------------------
-abstract type AbstractOptimizationSolver <: AbstractOCPTool end
+abstract type AbstractOptimizationSolver <: CTModels.AbstractOCPTool end
 
 __display() = true
 
 function CommonSolve.solve(
-    problem::AbstractOptimizationProblem,
+    problem::CTModels.AbstractOptimizationProblem,
     initial_guess,
-    modeler::AbstractOptimizationModeler,
+    modeler::CTModels.AbstractOptimizationModeler,
     solver::AbstractOptimizationSolver;
     display::Bool=__display(),
 )
-    nlp = build_model(problem, initial_guess, modeler)
+    nlp = CTModels.build_model(problem, initial_guess, modeler)
     nlp_solution = CommonSolve.solve(nlp, solver; display=display)
-    solution = build_solution(problem, nlp_solution, modeler)
+    solution = CTModels.build_solution(problem, nlp_solution, modeler)
     return solution
 end
 

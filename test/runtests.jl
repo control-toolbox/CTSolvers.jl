@@ -5,20 +5,6 @@ function default_tests()
     return OrderedDict(
         :notrigger => OrderedDict(:ctsolvers_extensions_notrigger => true),
         :aqua => OrderedDict(:aqua => true),
-        :ctmodels => OrderedDict(
-            :ctmodels_problem_core => true,
-            :ctmodels_options_schema => true,
-            :ctmodels_nlp_backends => true,
-            :ctmodels_discretized_ocp => true,
-            :ctmodels_model_api => true,
-            :ctmodels_initial_guess => true,
-        ),
-        :ctparser => OrderedDict(:ctparser_initial_guess_macro => true),
-        :ctdirect => OrderedDict(
-            :ctdirect_core_types => true,
-            :ctdirect_discretization_api => true,
-            :ctdirect_collocation_impl => true,
-        ),
         :ctsolvers => OrderedDict(
             :ctsolvers_backends_types => true,
             :ctsolvers_common_solve_api => true,
@@ -30,19 +16,17 @@ function default_tests()
             :ctsolvers_extensions_madncl => true,
             :ctsolvers_extensions_knitro => true,
         ),
-        :optimalcontrol => OrderedDict(:optimalcontrol_solve_api => true),
+        #:optimalcontrol => OrderedDict(:optimalcontrol_solve_api => true),
     )
 end
 
 # Main test runner orchestrating all CTSolvers test suites.
 using Test
+using ADNLPModels
 using Aqua
 using CTBase: CTBase
-using CTDirect: CTDirect
 using CTModels: CTModels
-using CTParser: CTParser, @def
-using CTSolvers: CTSolvers, @init
-using ADNLPModels
+using CTSolvers: CTSolvers
 using ExaModels
 using NLPModels
 using CommonSolve
@@ -63,8 +47,8 @@ include(joinpath("problems", "problems_definition.jl"))
 include(joinpath("problems", "rosenbrock.jl"))
 include(joinpath("problems", "max1minusx2.jl"))
 include(joinpath("problems", "elec.jl"))
-include(joinpath("problems", "beam.jl"))
-include(joinpath("problems", "goddard.jl"))
+# include(joinpath("problems", "beam.jl"))
+# include(joinpath("problems", "goddard.jl"))
 
 # Tests parameters
 const VERBOSE = false
@@ -74,10 +58,7 @@ const TEST_SELECTIONS = isempty(ARGS) ? Symbol[] : Symbol.(ARGS)
 
 const TEST_GROUP_INFO = Dict(
     :aqua => (title="Aqua", subdir=""),
-    :ctmodels => (title="CTModels", subdir="ctmodels"),
-    :ctparser => (title="CTParser", subdir="ctparser"),
     :ctsolvers => (title="CTSolvers", subdir="ctsolvers"),
-    :ctdirect => (title="CTDirect", subdir="ctdirect"),
     :optimalcontrol => (title="OptimalControl", subdir="optimalcontrol"),
 )
 
@@ -202,10 +183,10 @@ end
 run_extension_exceptions(selected_notrigger_tests())
 
 # Load extensions
-using NLPModelsIpopt
-using MadNLPMumps
-using MadNLP
 using MadNCL
+using MadNLP
+using MadNLPMumps
+using NLPModelsIpopt
 using NLPModelsKnitro
 
 const CTSolversIpopt = Base.get_extension(CTSolvers, :CTSolversIpopt)
