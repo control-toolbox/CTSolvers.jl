@@ -9,7 +9,7 @@ function CommonSolve.solve(
     problem::CTModels.AbstractOptimizationProblem,
     initial_guess,
     modeler::CTModels.AbstractOptimizationModeler,
-    solver::AbstractOptimizationSolver;
+    solver::CTSolvers.AbstractOptimizationSolver;
     display::Bool=__display(),
 )
     nlp = CTModels.build_model(problem, initial_guess, modeler)
@@ -20,7 +20,7 @@ end
 
 function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel,
-    solver::AbstractOptimizationSolver;
+    solver::CTSolvers.AbstractOptimizationSolver;
     display::Bool=__display(),
 )::SolverCore.AbstractExecutionStats
     return solver(nlp; display=display)
@@ -28,7 +28,7 @@ end
 
 # to let freedom to the user
 function CommonSolve.solve(
-    nlp, solver::AbstractOptimizationSolver; display::Bool=__display()
+    nlp, solver::CTSolvers.AbstractOptimizationSolver; display::Bool=__display()
 )
     return solver(nlp; display=display)
 end

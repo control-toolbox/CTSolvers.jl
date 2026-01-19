@@ -3,25 +3,25 @@
 # ------------------------------------------------------------------------------
 
 # NLPModelsIpopt
-struct IpoptSolver{Vals,Srcs} <: AbstractOptimizationSolver
+struct IpoptSolver{Vals,Srcs} <: CTSolvers.AbstractOptimizationSolver
     options_values::Vals
     options_sources::Srcs
 end
 
 # MadNLP
-struct MadNLPSolver{Vals,Srcs} <: AbstractOptimizationSolver
+struct MadNLPSolver{Vals,Srcs} <: CTSolvers.AbstractOptimizationSolver
     options_values::Vals
     options_sources::Srcs
 end
 
 # MadNCL
-struct MadNCLSolver{BaseType<:AbstractFloat,Vals,Srcs} <: AbstractOptimizationSolver
+struct MadNCLSolver{BaseType<:AbstractFloat,Vals,Srcs} <: CTSolvers.AbstractOptimizationSolver
     options_values::Vals
     options_sources::Srcs
 end
 
 # Knitro
-struct KnitroSolver{Vals,Srcs} <: AbstractOptimizationSolver
+struct KnitroSolver{Vals,Srcs} <: CTSolvers.AbstractOptimizationSolver
     options_values::Vals
     options_sources::Srcs
 end
@@ -40,11 +40,11 @@ const REGISTERED_SOLVERS = (IpoptSolver, MadNLPSolver, MadNCLSolver, KnitroSolve
 
 registered_solver_types() = REGISTERED_SOLVERS
 
-solver_symbols() = Tuple(get_symbol(T) for T in REGISTERED_SOLVERS)
+solver_symbols() = Tuple(CTModels.get_symbol(T) for T in REGISTERED_SOLVERS)
 
 function _solver_type_from_symbol(sym::Symbol)
     for T in REGISTERED_SOLVERS
-        if get_symbol(T) === sym
+        if CTModels.get_symbol(T) === sym
             return T
         end
     end

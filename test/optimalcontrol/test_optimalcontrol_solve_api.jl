@@ -654,8 +654,8 @@ function test_optimalcontrol_solve_api()
                     initial_guess=init,
                     display=false,
                     # Discretizer options
-                    grid=(CTSolvers.get_option_value(discretizer, :grid), :discretizer),
-                    scheme=(CTSolvers.get_option_value(discretizer, :scheme), :discretizer),
+                    grid=(CTModels.get_option_value(discretizer, :grid), :discretizer),
+                    scheme=(CTModels.get_option_value(discretizer, :scheme), :discretizer),
                     # Ipopt solver options
                     max_iter=(ipopt_options[:max_iter], :solver),
                     tol=(ipopt_options[:tol], :solver),

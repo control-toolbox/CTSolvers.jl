@@ -68,12 +68,12 @@ function show_captured_error(f::Function, label::AbstractString)
 end
 
 # ---------------------------------------------------------------------------
-# Section 1: Options metadata via CTSolvers.show_options
+# Section 1: Options metadata via CTModels.show_options
 # ---------------------------------------------------------------------------
 
 function demo_show_options()
     println()
-    println("===== OPTIONS METADATA (CTSolvers.show_options) =====")
+    println("===== OPTIONS METADATA (CTModels.show_options) =====")
 
     tools = (
         CTSolvers.Collocation,
@@ -87,8 +87,8 @@ function demo_show_options()
 
     for T in tools
         println()
-        println("---- CTSolvers.show_options(", T, ") ----")
-        CTSolvers.show_options(T)
+        println("---- CTModels.show_options(", T, ") ----")
+        CTModels.show_options(T)
     end
 end
 
@@ -198,7 +198,7 @@ function demo_error_messages()
 
     # Unknown Ipopt option name with suggestions (options schema)
     show_captured_error("Ipopt unknown option mx_iter (schema validation)") do
-        CTSolvers._validate_option_kwargs(
+        CTModels._validate_option_kwargs(
             (mx_iter=10,), CTSolvers.IpoptSolver; strict_keys=true
         )
     end
@@ -212,7 +212,7 @@ function demo_error_messages()
     show_captured_error(
         "Description routing ambiguity for :foo between discretizer/solver"
     ) do
-        CTSolvers._route_option_for_description(
+        CTModels._route_option_for_description(
             :foo, 1.0, Symbol[:discretizer, :solver], :description
         )
     end

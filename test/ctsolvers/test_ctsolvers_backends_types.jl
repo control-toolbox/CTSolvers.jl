@@ -52,37 +52,32 @@ function test_ctsolvers_backends_types()
         Test.@test CTSolvers.MadNLPSolver <: CTSolvers.AbstractOptimizationSolver
         Test.@test CTSolvers.MadNCLSolver <: CTSolvers.AbstractOptimizationSolver
         Test.@test CTSolvers.KnitroSolver <: CTSolvers.AbstractOptimizationSolver
-
-        # And all abstract tool families should be subtypes of AbstractOCPTool
-        Test.@test CTSolvers.AbstractOptimalControlDiscretizer <: CTSolvers.AbstractOCPTool
-        Test.@test CTSolvers.AbstractOptimizationModeler <: CTSolvers.AbstractOCPTool
-        Test.@test CTSolvers.AbstractOptimizationSolver <: CTSolvers.AbstractOCPTool
     end
 
     Test.@testset "solver symbols and registry" verbose=VERBOSE showtiming=SHOWTIMING begin
         # get_symbol on solver types
-        Test.@test CTSolvers.get_symbol(CTSolvers.IpoptSolver) == :ipopt
-        Test.@test CTSolvers.get_symbol(CTSolvers.MadNLPSolver) == :madnlp
-        Test.@test CTSolvers.get_symbol(CTSolvers.MadNCLSolver) == :madncl
-        Test.@test CTSolvers.get_symbol(CTSolvers.KnitroSolver) == :knitro
+        Test.@test CTModels.get_symbol(CTSolvers.IpoptSolver) == :ipopt
+        Test.@test CTModels.get_symbol(CTSolvers.MadNLPSolver) == :madnlp
+        Test.@test CTModels.get_symbol(CTSolvers.MadNCLSolver) == :madncl
+        Test.@test CTModels.get_symbol(CTSolvers.KnitroSolver) == :knitro
 
         # get_symbol on solver instances should behave identically
-        Test.@test CTSolvers.get_symbol(CTSolvers.IpoptSolver()) == :ipopt
-        Test.@test CTSolvers.get_symbol(CTSolvers.MadNLPSolver()) == :madnlp
-        Test.@test CTSolvers.get_symbol(CTSolvers.MadNCLSolver()) == :madncl
-        Test.@test CTSolvers.get_symbol(CTSolvers.KnitroSolver()) == :knitro
+        Test.@test CTModels.get_symbol(CTSolvers.IpoptSolver()) == :ipopt
+        Test.@test CTModels.get_symbol(CTSolvers.MadNLPSolver()) == :madnlp
+        Test.@test CTModels.get_symbol(CTSolvers.MadNCLSolver()) == :madncl
+        Test.@test CTModels.get_symbol(CTSolvers.KnitroSolver()) == :knitro
 
         # tool_package_name on solver types
-        Test.@test CTSolvers.tool_package_name(CTSolvers.IpoptSolver) == "NLPModelsIpopt"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNLPSolver) == "MadNLP suite"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNCLSolver) == "MadNCL"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.KnitroSolver) == "NLPModelsKnitro"
+        Test.@test CTModels.tool_package_name(CTSolvers.IpoptSolver) == "NLPModelsIpopt"
+        Test.@test CTModels.tool_package_name(CTSolvers.MadNLPSolver) == "MadNLP suite"
+        Test.@test CTModels.tool_package_name(CTSolvers.MadNCLSolver) == "MadNCL"
+        Test.@test CTModels.tool_package_name(CTSolvers.KnitroSolver) == "NLPModelsKnitro"
 
         # tool_package_name on solver instances
-        Test.@test CTSolvers.tool_package_name(CTSolvers.IpoptSolver()) == "NLPModelsIpopt"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNLPSolver()) == "MadNLP suite"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.MadNCLSolver()) == "MadNCL"
-        Test.@test CTSolvers.tool_package_name(CTSolvers.KnitroSolver()) ==
+        Test.@test CTModels.tool_package_name(CTSolvers.IpoptSolver()) == "NLPModelsIpopt"
+        Test.@test CTModels.tool_package_name(CTSolvers.MadNLPSolver()) == "MadNLP suite"
+        Test.@test CTModels.tool_package_name(CTSolvers.MadNCLSolver()) == "MadNCL"
+        Test.@test CTModels.tool_package_name(CTSolvers.KnitroSolver()) ==
             "NLPModelsKnitro"
 
         regs = CTSolvers.registered_solver_types()
@@ -129,14 +124,14 @@ function test_ctsolvers_backends_types()
         # Default constructor: all options should come from ct_default
         solver_default = CTSolvers.IpoptSolver()
         vals_default = CTModels._options_values(solver_default)
-        srcs_default = CTSolvers._option_sources(solver_default)
+        srcs_default = CTModels._option_sources(solver_default)
 
         Test.@test all(srcs_default[k] == :ct_default for k in propertynames(srcs_default))
 
         # Metadata helpers should expose the same keys and basic types
         keys_ipopt = CTModels.options_keys(CTSolvers.IpoptSolver)
         Test.@test :max_iter in keys_ipopt
-        Test.@test CTSolvers.option_type(:max_iter, CTSolvers.IpoptSolver) <: Integer
+        Test.@test CTModels.option_type(:max_iter, CTSolvers.IpoptSolver) <: Integer
 
         # Type-based vs instance-based metadata access should agree
         ipopt_type_from_inst = typeof(solver_default)
@@ -151,7 +146,7 @@ function test_ctsolvers_backends_types()
         # User overrides should be visible in both values and sources
         solver_user = CTSolvers.IpoptSolver(; max_iter=100, tol=1e-8)
         vals_user = CTModels._options_values(solver_user)
-        srcs_user = CTSolvers._option_sources(solver_user)
+        srcs_user = CTModels._option_sources(solver_user)
 
         Test.@test vals_user.max_iter == 100
         Test.@test srcs_user.max_iter == :user
@@ -166,7 +161,7 @@ function test_ctsolvers_backends_types()
     Test.@testset "MadNLPSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver_user = CTSolvers.MadNLPSolver(; max_iter=500, tol=1e-6)
         vals_user = CTModels._options_values(solver_user)
-        srcs_user = CTSolvers._option_sources(solver_user)
+        srcs_user = CTModels._option_sources(solver_user)
 
         Test.@test vals_user.max_iter == 500
         Test.@test srcs_user.max_iter == :user
@@ -196,7 +191,7 @@ function test_ctsolvers_backends_types()
     Test.@testset "MadNCLSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver_default = CTSolvers.MadNCLSolver()
         vals_default = CTModels._options_values(solver_default)
-        srcs_default = CTSolvers._option_sources(solver_default)
+        srcs_default = CTModels._option_sources(solver_default)
 
         Test.@test vals_default.max_iter == CTSolversMadNCL.__mad_ncl_max_iter()
         Test.@test srcs_default.max_iter == :ct_default
@@ -220,7 +215,7 @@ function test_ctsolvers_backends_types()
     Test.@testset "KnitroSolver options storage" verbose=VERBOSE showtiming=SHOWTIMING begin
         solver_user = CTSolvers.KnitroSolver(; maxit=300, feastol_abs=1e-6)
         vals_user = CTModels._options_values(solver_user)
-        srcs_user = CTSolvers._option_sources(solver_user)
+        srcs_user = CTModels._option_sources(solver_user)
 
         Test.@test vals_user.maxit == 300
         Test.@test srcs_user.maxit == :user
@@ -248,22 +243,22 @@ function test_ctsolvers_backends_types()
         # recover the same information as default_options / _option_sources.
         solver = CTSolvers.IpoptSolver()
         vals = CTModels._options_values(solver)
-        srcs = CTSolvers._option_sources(solver)
+        srcs = CTModels._option_sources(solver)
         defaults = CTModels.default_options(CTSolvers.IpoptSolver)
 
-        Test.@test CTSolvers.get_option_value(solver, :max_iter) ==
+        Test.@test CTModels.get_option_value(solver, :max_iter) ==
             vals.max_iter ==
             defaults.max_iter
-        Test.@test CTSolvers.get_option_source(solver, :max_iter) ==
+        Test.@test CTModels.get_option_source(solver, :max_iter) ==
             srcs.max_iter ==
             :ct_default
-        Test.@test CTSolvers.get_option_default(solver, :max_iter) == defaults.max_iter
+        Test.@test CTModels.get_option_default(solver, :max_iter) == defaults.max_iter
 
         # Unknown option keys should trigger an IncorrectArgument with
         # suggestions based on the Levenshtein machinery.
         err = nothing
         try
-            CTSolvers.get_option_value(solver, :mx_iter)
+            CTModels.get_option_value(solver, :mx_iter)
         catch e
             err = e
         end
@@ -281,7 +276,7 @@ function test_ctsolvers_backends_types()
         try
             # Misspelled option name to trigger suggestion logic at the
             # validation layer, independently of constructor strictness.
-            CTSolvers._validate_option_kwargs(
+            CTModels._validate_option_kwargs(
                 (mx_iter=10,), CTSolvers.IpoptSolver; strict_keys=true
             )
         catch e
@@ -299,7 +294,7 @@ function test_ctsolvers_backends_types()
     Test.@testset "IpoptSolver _show_options runs" verbose=VERBOSE showtiming=SHOWTIMING begin
         # Just ensure that _show_options does not throw when called on IpoptSolver.
         redirect_stdout(devnull) do
-            CTSolvers.show_options(CTSolvers.IpoptSolver)
+            CTModels.show_options(CTSolvers.IpoptSolver)
         end
         Test.@test true
     end

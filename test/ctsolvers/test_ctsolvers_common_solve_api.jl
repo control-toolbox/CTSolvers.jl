@@ -1,9 +1,9 @@
 # Unit tests for the CommonSolve API across OCP, discretized problems, and NLP models.
-struct CSDummyOCP <: CTSolvers.AbstractOptimalControlProblem end
+struct CSDummyOCP <: CTModels.AbstractOptimalControlProblem end
 
-struct CSDummyDiscretizedOCP <: CTSolvers.AbstractOptimizationProblem end
+struct CSDummyDiscretizedOCP <: CTModels.AbstractOptimizationProblem end
 
-struct CSDummyInit <: CTSolvers.AbstractOptimalControlInitialGuess
+struct CSDummyInit <: CTModels.AbstractOptimalControlInitialGuess
     x0::Vector{Float64}
 end
 
@@ -11,24 +11,15 @@ struct CSDummyStats <: SolverCore.AbstractExecutionStats
     tag::Symbol
 end
 
-struct CSDummySolution <: CTSolvers.AbstractOptimalControlSolution end
+struct CSDummySolution <: CTModels.AbstractOptimalControlSolution end
 
-struct CSFakeDiscretizer <: CTSolvers.AbstractOptimalControlDiscretizer
-    calls::Base.RefValue{Int}
-end
-
-function (d::CSFakeDiscretizer)(ocp::CTSolvers.AbstractOptimalControlProblem)
-    d.calls[] += 1
-    return CSDummyDiscretizedOCP()
-end
-
-struct CSFakeModeler <: CTSolvers.AbstractOptimizationModeler
+struct CSFakeModeler <: CTModels.AbstractOptimizationModeler
     model_calls::Base.RefValue{Int}
     solution_calls::Base.RefValue{Int}
 end
 
 function (m::CSFakeModeler)(
-    prob::CTSolvers.AbstractOptimizationProblem, init::CSDummyInit
+    prob::CTModels.AbstractOptimizationProblem, init::CSDummyInit
 )::NLPModels.AbstractNLPModel
     m.model_calls[] += 1
     f(z) = sum(z .^ 2)
@@ -36,7 +27,7 @@ function (m::CSFakeModeler)(
 end
 
 function (m::CSFakeModeler)(
-    prob::CTSolvers.AbstractOptimizationProblem,
+    prob::CTModels.AbstractOptimizationProblem,
     nlp_solution::SolverCore.AbstractExecutionStats,
 )
     m.solution_calls[] += 1
