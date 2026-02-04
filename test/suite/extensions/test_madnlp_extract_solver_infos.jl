@@ -20,7 +20,7 @@ This tests the `extract_solver_infos` function which extracts solver information
 from MadNLP execution statistics, including proper handling of objective sign
 correction and status codes.
 """
-function test_madnlp()
+function test_madnlp_extract_solver_infos()
     Test.@testset "MadNLP Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         Test.@testset "extract_solver_infos with minimization" begin
@@ -288,4 +288,4 @@ end
 
 end # module
 
-test_madnlp() = TestExtMadNLP.test_madnlp()
+test_madnlp_extract_solver_infos() = TestExtMadNLP.test_madnlp_extract_solver_infos()

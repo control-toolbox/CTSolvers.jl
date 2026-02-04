@@ -59,7 +59,6 @@ include(joinpath(@__DIR__, "ipopt_solver.jl"))
 include(joinpath(@__DIR__, "madnlp_solver.jl"))
 include(joinpath(@__DIR__, "madncl_solver.jl"))
 include(joinpath(@__DIR__, "knitro_solver.jl"))
-include(joinpath(@__DIR__, "extension_stubs.jl"))
 include(joinpath(@__DIR__, "common_solve_api.jl"))
 
 # Public API - types abstraits et concrets

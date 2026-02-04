@@ -68,4 +68,8 @@ using .Modelers
 include(joinpath(@__DIR__, "DOCP", "DOCP.jl"))
 using .DOCP
 
+# Solvers module - optimization solver implementations and CommonSolve API
+include(joinpath(@__DIR__, "Solvers", "Solvers.jl"))
+using .Solvers
+
 end
