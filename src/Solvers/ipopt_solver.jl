@@ -35,6 +35,9 @@ $(TYPEDFIELDS)
 - `mu_strategy::String`: Barrier parameter update strategy (default: "adaptive")
   - "adaptive": Automatically adjusts barrier parameter
   - "monotone": Monotonically decreases barrier parameter
+- `timing_statistics::String`: Measure time spent in components (default: "no")
+  - "yes": Enable timing measurement for Ipopt and NLP evaluation components
+  - "no": Disable timing measurement (overall algorithm time unaffected)
 - `linear_solver::String`: Linear solver used for step computations (default: "mumps")
   - "ma27": Harwell routine MA27
   - "ma57": Harwell routine MA57 (robust performance)
@@ -221,6 +224,20 @@ function Strategies.metadata(::Type{<:IpoptSolver})
                 expected="'monotone' or 'adaptive'",
                 suggestion="Use 'adaptive' for most problems or 'monotone' for specific cases",
                 context="IpoptSolver mu_strategy validation"
+            ))
+        ),
+        
+        Strategies.OptionDefinition(;
+            name=:timing_statistics,
+            type=String,
+            default="no",
+            description="Indicates whether to measure time spent in components of Ipopt and NLP evaluation. The overall algorithm time is unaffected by this option.",
+            validator=x -> x in ["yes", "no"] || throw(Exceptions.IncorrectArgument(
+                "Invalid timing_statistics value",
+                got="timing_statistics='$x'",
+                expected="'yes' or 'no'",
+                suggestion="Use 'yes' to enable component timing or 'no' to disable",
+                context="IpoptSolver timing_statistics validation"
             ))
         ),
         
