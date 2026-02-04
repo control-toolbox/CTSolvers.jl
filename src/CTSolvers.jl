@@ -60,4 +60,8 @@ using .Orchestration
 include(joinpath(@__DIR__, "Optimization", "Optimization.jl"))
 using .Optimization
 
+# Modelers module - backend modeler implementations (ADNLPModeler, ExaModeler)
+include(joinpath(@__DIR__, "Modelers", "Modelers.jl"))
+using .Modelers
+
 end
