@@ -56,6 +56,10 @@ using .Options
 include(joinpath(@__DIR__, "Strategies", "Strategies.jl"))
 using .Strategies
 
+# Orchestration module - high-level coordination and method routing
+include(joinpath(@__DIR__, "Orchestration", "Orchestration.jl"))
+using .Orchestration
+
 # ============================================================================ #
 # END OF MODULE
 # ============================================================================ #
