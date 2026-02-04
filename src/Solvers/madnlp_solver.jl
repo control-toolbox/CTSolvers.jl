@@ -1,3 +1,18 @@
+# ============================================================================
+# Tag Dispatch Infrastructure
+# ============================================================================
+
+"""
+    MadNLPTag <: AbstractTag
+
+Tag type for MadNLP-specific implementation dispatch.
+"""
+struct MadNLPTag <: AbstractTag end
+
+# ============================================================================
+# Solver Type Definition
+# ============================================================================
+
 """
     MadNLPSolver
 
@@ -17,12 +32,12 @@ $(TYPEDFIELDS)
 
 - `max_iter::Integer`: Maximum number of iterations (default: 3000, must be ≥ 0)
 - `tol::Real`: Convergence tolerance (default: 1e-8, must be > 0)
-- `print_level::String`: MadNLP log level (default: "MadNLP.INFO")
-  - "MadNLP.DEBUG": Detailed debugging output
-  - "MadNLP.INFO": Standard informational output
-  - "MadNLP.WARN": Warning messages only
-  - "MadNLP.ERROR": Error messages only
-- `linear_solver::String`: Linear solver backend (default: "MadNLPMumps.MumpsSolver")
+- `print_level::MadNLP.LogLevels`: MadNLP log level (default: MadNLP.INFO)
+  - MadNLP.DEBUG: Detailed debugging output
+  - MadNLP.INFO: Standard informational output
+  - MadNLP.WARN: Warning messages only
+  - MadNLP.ERROR: Error messages only
+- `linear_solver::Type{<:MadNLP.AbstractLinearSolver}`: Linear solver backend (default: MadNLPMumps.MumpsSolver)
 
 # Examples
 
@@ -31,7 +46,8 @@ $(TYPEDFIELDS)
 solver = MadNLPSolver()
 
 # Create solver with custom options
-solver = MadNLPSolver(max_iter=1000, tol=1e-6, print_level="MadNLP.DEBUG")
+using MadNLP, MadNLPMumps
+solver = MadNLPSolver(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
 
 # Solve an NLP problem
 using ADNLPModels
@@ -71,65 +87,8 @@ Return the unique identifier for MadNLPSolver.
 """
 Strategies.id(::Type{<:MadNLPSolver}) = :madnlp
 
-"""
-    Strategies.metadata(::Type{<:MadNLPSolver})
-
-Return metadata defining MadNLPSolver options and their specifications.
-"""
-function Strategies.metadata(::Type{<:MadNLPSolver})
-    return Strategies.StrategyMetadata(
-        Strategies.OptionDefinition(;
-            name=:max_iter,
-            type=Integer,
-            default=3000,
-            description="Maximum number of iterations",
-            aliases=(:max, :maxiter),
-            validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid max_iter value",
-                got="max_iter=$x",
-                expected="non-negative integer (>= 0)",
-                suggestion="Provide a non-negative value for maximum iterations",
-                context="MadNLPSolver max_iter validation"
-            ))
-        ),
-        Strategies.OptionDefinition(;
-            name=:tol,
-            type=Real,
-            default=1e-8,
-            description="Convergence tolerance",
-            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid tolerance value",
-                got="tol=$x",
-                expected="positive real number (> 0)",
-                suggestion="Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
-                context="MadNLPSolver tol validation"
-            ))
-        ),
-        Strategies.OptionDefinition(;
-            name=:print_level,
-            type=String,
-            default="MadNLP.INFO",
-            description="MadNLP output verbosity level",
-            validator=x -> x in ["MadNLP.DEBUG", "MadNLP.INFO", "MadNLP.WARN", "MadNLP.ERROR"] || 
-                          throw(Exceptions.IncorrectArgument(
-                "Invalid print_level value",
-                got="print_level='$x'",
-                expected="'MadNLP.DEBUG', 'MadNLP.INFO', 'MadNLP.WARN', or 'MadNLP.ERROR'",
-                suggestion="Use 'MadNLP.INFO' for standard output or 'MadNLP.DEBUG' for detailed logging",
-                context="MadNLPSolver print_level validation"
-            ))
-        ),
-        Strategies.OptionDefinition(;
-            name=:linear_solver,
-            type=String,
-            default="MadNLPMumps.MumpsSolver",
-            description="Linear solver type for MadNLP"
-        )
-    )
-end
-
 # ============================================================================
-# Constructor
+# Constructor with Tag Dispatch
 # ============================================================================
 
 """
@@ -137,86 +96,60 @@ end
 
 Create a MadNLPSolver with specified options.
 
+Requires the CTSolversMadNLP extension to be loaded.
+
 # Arguments
-- `kwargs...`: Solver options (see MadNLPSolver documentation for available options)
+- `kwargs...`: Solver options (see extension documentation for available options)
 
 # Example
 ```julia
+using MadNLP, MadNLPMumps
 solver = MadNLPSolver(max_iter=1000, tol=1e-6)
 ```
 """
 function MadNLPSolver(; kwargs...)
-    opts = Strategies.build_strategy_options(MadNLPSolver; kwargs...)
-    return MadNLPSolver(opts)
+    return build_madnlp_solver(MadNLPTag(); kwargs...)
 end
 
-# ============================================================================
-# Callable Interface
-# ============================================================================
+"""
+    build_madnlp_solver(::AbstractTag; kwargs...)
+
+Stub function that throws ExtensionError if CTSolversMadNLP extension is not loaded.
+Real implementation provided by the extension.
+"""
+function build_madnlp_solver(::AbstractTag; kwargs...)
+    throw(Exceptions.ExtensionError(
+        :MadNLP, :MadNLPMumps;
+        message="to create MadNLPSolver",
+        feature="solver construction",
+        context="MadNLPSolver constructor"
+    ))
+end
 
 """
     (solver::MadNLPSolver)(nlp; display=true)
 
-Solve an NLP problem using MadNLP.
-
-# Arguments
-- `nlp::NLPModels.AbstractNLPModel`: The NLP problem to solve
-- `display::Bool`: Whether to show solver output (default: true)
-
-# Returns
-- `SolverCore.GenericExecutionStats`: Solver execution statistics
-
-# Example
-```julia
-solver = MadNLPSolver(max_iter=100)
-nlp = ADNLPModel(x -> sum(x.^2), zeros(5))
-stats = solver(nlp, display=false)
-```
+Callable interface stub - implementation provided by CTSolversMadNLP extension.
 """
-function (solver::MadNLPSolver)(
-    nlp::NLPModels.AbstractNLPModel;
-    display::Bool=true
-)::SolverCore.AbstractExecutionStats
-    opts = Strategies.options(solver)
-    
-    # Extract raw options as Dict
-    raw_opts = Options.extract_raw_options(opts.options)
-    
-    # Adjust print_level based on display flag
-    if !display
-        raw_opts[:print_level] = "MadNLP.ERROR"
-    end
-    
-    # Call backend interface (stub or extension implementation)
-    return solve_with_madnlp(nlp; raw_opts...)
-end
-
-# ============================================================================
-# Extension Stub
-# ============================================================================
+function (solver::MadNLPSolver) end
 
 """
     solve_with_madnlp(nlp; kwargs...)
 
-Backend interface for MadNLP solver.
-
-This is a stub that throws an ExtensionError if the MadNLP extension
-is not loaded. Load the extension with:
-```julia
-using MadNLP, MadNLPMumps
-```
-
-# Arguments
-- `nlp::NLPModels.AbstractNLPModel`: The NLP problem to solve
-- `kwargs...`: Solver options to pass to MadNLP
-
-# Returns
-- `SolverCore.GenericExecutionStats`: Solver execution statistics
+Backend solver interface stub - implementation provided by CTSolversMadNLP extension.
 """
-function solve_with_madnlp(nlp::NLPModels.AbstractNLPModel; kwargs...)
+function solve_with_madnlp end
+
+"""
+    Strategies.metadata(::Type{<:MadNLPSolver})
+
+Metadata stub - implementation provided by CTSolversMadNLP extension.
+"""
+function Strategies.metadata(::Type{<:MadNLPSolver})
     throw(Exceptions.ExtensionError(
-        [:MadNLP, :MadNLPMumps],
-        suggestion="Install and load MadNLP packages: `using Pkg; Pkg.add([\"MadNLP\", \"MadNLPMumps\"]); using MadNLP, MadNLPMumps`",
-        context="MadNLPSolver requires the MadNLP and MadNLPMumps extensions to solve NLP problems. MadNLP is a pure-Julia interior point solver with GPU support."
+        :MadNLP, :MadNLPMumps;
+        message="to access MadNLPSolver metadata",
+        feature="metadata definition",
+        context="MadNLPSolver metadata"
     ))
 end
