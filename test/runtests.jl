@@ -21,6 +21,10 @@ const SHOWTIMING = true
 end
 using .TestOptions: VERBOSE, SHOWTIMING
 
+# Include shared test problems via TestProblems module
+include(joinpath("problems", "TestProblems.jl"))
+using .TestProblems
+
 # Run tests using the TestRunner extension
 CTBase.run_tests(;
     args=String.(ARGS),

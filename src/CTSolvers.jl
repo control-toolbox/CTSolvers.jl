@@ -44,10 +44,6 @@ The modular architecture ensures that:
 """
 module CTSolvers
 
-# ============================================================================ #
-# CONFIGURATION AND OPTIONS MODULES
-# ============================================================================ #
-
 # Options module - configuration and options management
 include(joinpath(@__DIR__, "Options", "Options.jl"))
 using .Options
@@ -60,8 +56,8 @@ using .Strategies
 include(joinpath(@__DIR__, "Orchestration", "Orchestration.jl"))
 using .Orchestration
 
-# ============================================================================ #
-# END OF MODULE
-# ============================================================================ #
+# Optimization module - general optimization abstractions and builders
+include(joinpath(@__DIR__, "Optimization", "Optimization.jl"))
+using .Optimization
 
 end
