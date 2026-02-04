@@ -53,7 +53,7 @@ function test_enhanced_options()
                 
                 # Invalid backend should throw error (redirect stderr to hide error logs)
                 redirect_stderr(devnull) do
-                    @test_throws ArgumentError ADNLPModeler(backend=:invalid)
+                    @test_throws Exceptions.IncorrectArgument ADNLPModeler(backend=:invalid)
                 end
             end
             
@@ -64,7 +64,7 @@ function test_enhanced_options()
                 
                 # Empty name should throw error (redirect stderr to hide error logs)
                 redirect_stderr(devnull) do
-                    @test_throws ArgumentError ADNLPModeler(name="")
+                    @test_throws Exceptions.IncorrectArgument ADNLPModeler(name="")
                 end
             end
             

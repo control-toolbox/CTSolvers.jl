@@ -30,8 +30,12 @@ function validate_adnlp_backend(backend::Symbol)
     valid_backends = (:default, :optimized, :generic, :enzyme, :zygote)
     
     if backend ∉ valid_backends
-        throw(ArgumentError(
-            "Invalid backend: $backend. Valid options: $(valid_backends)"
+        throw(Exceptions.IncorrectArgument(
+            "Invalid ADNLPModels backend",
+            got="backend=$backend",
+            expected="one of $(valid_backends)",
+            suggestion="Use :default for general purpose, :optimized for performance, or :enzyme/:zygote for specific AD backends",
+            context="ADNLPModeler backend validation"
         ))
     end
     
@@ -78,8 +82,12 @@ ERROR: ArgumentError: base_type must be a subtype of AbstractFloat, got: Int
 """
 function validate_exa_base_type(T::Type)
     if !(T <: AbstractFloat)
-        throw(ArgumentError(
-            "base_type must be a subtype of AbstractFloat, got: $T"
+        throw(Exceptions.IncorrectArgument(
+            "Invalid base type for ExaModeler",
+            got="base_type=$T",
+            expected="subtype of AbstractFloat (e.g., Float64, Float32)",
+            suggestion="Use Float64 for standard precision or Float32 for GPU performance",
+            context="ExaModeler base type validation"
         ))
     end
     
@@ -117,8 +125,12 @@ function validate_gpu_preference(preference::Symbol)
     valid_preferences = (:cuda, :rocm, :oneapi)
     
     if preference ∉ valid_preferences
-        throw(ArgumentError(
-            "Invalid GPU preference: $preference. Valid options: $(valid_preferences)"
+        throw(Exceptions.IncorrectArgument(
+            "Invalid GPU backend preference",
+            got="gpu_preference=$preference",
+            expected="one of $(valid_preferences)",
+            suggestion="Use :cuda for NVIDIA GPUs, :rocm for AMD GPUs, or :oneapi for Intel GPUs",
+            context="ExaModeler GPU preference validation"
         ))
     end
     
@@ -149,8 +161,12 @@ function validate_precision_mode(mode::Symbol)
     valid_modes = (:standard, :high, :mixed)
     
     if mode ∉ valid_modes
-        throw(ArgumentError(
-            "Invalid precision mode: $mode. Valid options: $(valid_modes)"
+        throw(Exceptions.IncorrectArgument(
+            "Invalid precision mode",
+            got="precision_mode=$mode",
+            expected="one of $(valid_modes)",
+            suggestion="Use :standard for default precision, :high for maximum accuracy, or :mixed for performance",
+            context="ExaModeler precision mode validation"
         ))
     end
     
@@ -186,11 +202,23 @@ ERROR: ArgumentError: Model name cannot be empty
 """
 function validate_model_name(name::String)
     if !isa(name, String)
-        throw(ArgumentError("Model name must be a string, got: $(typeof(name))"))
+        throw(Exceptions.IncorrectArgument(
+            "Invalid model name type",
+            got="name of type $(typeof(name))",
+            expected="String",
+            suggestion="Provide a non-empty string for the model name",
+            context="Model name validation"
+        ))
     end
     
     if isempty(name)
-        throw(ArgumentError("Model name cannot be empty"))
+        throw(Exceptions.IncorrectArgument(
+            "Empty model name",
+            got="name=\"\" (empty string)",
+            expected="non-empty String",
+            suggestion="Provide a descriptive name for your optimization model",
+            context="Model name validation"
+        ))
     end
     
     # Check for valid characters (alphanumeric, underscore, hyphen)
@@ -225,7 +253,13 @@ false
 """
 function validate_matrix_free(matrix_free::Bool, problem_size::Int = 1000)
     if !isa(matrix_free, Bool)
-        throw(ArgumentError("matrix_free must be a boolean, got: $(typeof(matrix_free))"))
+        throw(Exceptions.IncorrectArgument(
+            "Invalid matrix_free type",
+            got="matrix_free of type $(typeof(matrix_free))",
+            expected="Bool (true or false)",
+            suggestion="Use matrix_free=true for large problems or matrix_free=false for small problems",
+            context="Matrix-free mode validation"
+        ))
     end
     
     # Provide recommendations based on problem size
@@ -262,7 +296,13 @@ false
 """
 function validate_optimization_direction(minimize::Bool)
     if !isa(minimize, Bool)
-        throw(ArgumentError("Optimization direction must be a boolean (true for minimization, false for maximization)"))
+        throw(Exceptions.IncorrectArgument(
+            "Invalid optimization direction type",
+            got="minimize of type $(typeof(minimize))",
+            expected="Bool (true for minimization, false for maximization)",
+            suggestion="Use minimize=true for minimization problems or minimize=false for maximization problems",
+            context="Optimization direction validation"
+        ))
     end
     return minimize
 end
