@@ -1,7 +1,7 @@
 module TestOptionsNotProvided
 
 using Test
-using CTModels.Options
+using CTSolvers.Options
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 

@@ -40,7 +40,7 @@ The constructor performs the following validations:
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> def = OptionDefinition(
            name = :max_iter,
@@ -171,7 +171,7 @@ using all possible names (primary name and all aliases).
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> def = OptionDefinition(
            name = :grid_size,
@@ -207,7 +207,7 @@ they are shown in parentheses after the primary name.
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> def = OptionDefinition(
            name = :max_iter,

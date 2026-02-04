@@ -28,7 +28,7 @@ returns the default value with `:default` source.
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> def = OptionDefinition(
            name = :grid_size,
@@ -119,7 +119,7 @@ See also: [`extract_option`](@ref), [`OptionDefinition`](@ref), [`OptionValue`](
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> defs = [
            OptionDefinition(name = :grid_size, type = Int, default = 100, description = "Grid size"),
@@ -183,7 +183,7 @@ See also: [`extract_option`](@ref), [`OptionDefinition`](@ref), [`OptionValue`](
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> defs = (
            grid_size = OptionDefinition(name = :grid_size, type = Int, default = 100, description = "Grid size"),
@@ -239,7 +239,7 @@ builders to use their own defaults. Options with explicit `nothing` values are i
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> opts = (backend = OptionValue(:optimized, :user), 
                show_time = OptionValue(false, :default),

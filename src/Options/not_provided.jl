@@ -13,7 +13,7 @@ This type is used to distinguish between:
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> # Option with no default - won't be stored if not provided
 julia> opt1 = OptionDefinition(
@@ -47,7 +47,7 @@ by the user.
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> def = OptionDefinition(
            name = :optional_param,

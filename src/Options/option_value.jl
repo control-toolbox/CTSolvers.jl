@@ -19,7 +19,7 @@ The `source` field tracks the provenance of the option value:
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> opt = OptionValue(100, :user)
 100 (user)
@@ -62,7 +62,7 @@ Create an `OptionValue` with user-provided source.
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> OptionValue(42)
 42 (user)
@@ -77,7 +77,7 @@ Display the option value in the format "value (source)".
 
 # Example
 ```julia-repl
-julia> using CTModels.Options
+julia> using CTSolvers.Options
 
 julia> println(OptionValue(3.14, :default))
 3.14 (default)

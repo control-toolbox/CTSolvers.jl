@@ -2,8 +2,8 @@ module TestOptionsExtractionAPI
 
 using Test
 using CTBase
-using CTModels
-using CTModels.Options
+using CTSolvers
+using CTSolvers.Options
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
