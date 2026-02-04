@@ -120,36 +120,8 @@ Real implementation provided by the extension.
 function build_madnlp_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
         :MadNLP, :MadNLPMumps;
-        message="to create MadNLPSolver",
-        feature="solver construction",
-        context="MadNLPSolver constructor"
-    ))
-end
-
-"""
-    (solver::MadNLPSolver)(nlp; display=true)
-
-Callable interface stub - implementation provided by CTSolversMadNLP extension.
-"""
-function (solver::MadNLPSolver) end
-
-"""
-    solve_with_madnlp(nlp; kwargs...)
-
-Backend solver interface stub - implementation provided by CTSolversMadNLP extension.
-"""
-function solve_with_madnlp end
-
-"""
-    Strategies.metadata(::Type{<:MadNLPSolver})
-
-Metadata stub - implementation provided by CTSolversMadNLP extension.
-"""
-function Strategies.metadata(::Type{<:MadNLPSolver})
-    throw(Exceptions.ExtensionError(
-        :MadNLP, :MadNLPMumps;
-        message="to access MadNLPSolver metadata",
-        feature="metadata definition",
-        context="MadNLPSolver metadata"
+        message="to create MadNLPSolver, access options, and solve problems",
+        feature="MadNLPSolver functionality",
+        context="Load MadNLP extension first: using MadNLP, MadNLPMumps"
     ))
 end

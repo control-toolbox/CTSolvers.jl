@@ -126,22 +126,8 @@ Real implementation provided by the extension.
 function build_ipopt_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
         :NLPModelsIpopt;
-        message="to create IpoptSolver",
-        feature="solver construction",
-        context="IpoptSolver constructor"
+        message="to create IpoptSolver, access options, and solve problems",
+        feature="IpoptSolver functionality",
+        context="Load NLPModelsIpopt extension first: using NLPModelsIpopt"
     ))
 end
-
-"""
-    (solver::IpoptSolver)(nlp; display=true)
-
-Callable interface stub - implementation provided by CTSolversIpopt extension.
-"""
-function (solver::IpoptSolver) end
-
-"""
-    solve_with_ipopt(nlp; kwargs...)
-
-Backend solver interface stub - implementation provided by CTSolversIpopt extension.
-"""
-function solve_with_ipopt end

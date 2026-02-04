@@ -122,36 +122,8 @@ Real implementation provided by the extension.
 function build_knitro_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
         :NLPModelsKnitro;
-        message="to create KnitroSolver",
-        feature="solver construction",
-        context="KnitroSolver constructor"
-    ))
-end
-
-"""
-    (solver::KnitroSolver)(nlp; display=true)
-
-Callable interface stub - implementation provided by CTSolversKnitro extension.
-"""
-function (solver::KnitroSolver) end
-
-"""
-    solve_with_knitro(nlp; kwargs...)
-
-Backend solver interface stub - implementation provided by CTSolversKnitro extension.
-"""
-function solve_with_knitro end
-
-"""
-    Strategies.metadata(::Type{<:KnitroSolver})
-
-Metadata stub - implementation provided by CTSolversKnitro extension.
-"""
-function Strategies.metadata(::Type{<:KnitroSolver})
-    throw(Exceptions.ExtensionError(
-        :NLPModelsKnitro;
-        message="to access KnitroSolver metadata",
-        feature="metadata definition",
-        context="KnitroSolver metadata"
+        message="to create KnitroSolver, access options, and solve problems",
+        feature="KnitroSolver functionality",
+        context="Load NLPModelsKnitro extension first: using NLPModelsKnitro"
     ))
 end
