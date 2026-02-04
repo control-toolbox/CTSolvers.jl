@@ -64,4 +64,8 @@ using .Optimization
 include(joinpath(@__DIR__, "Modelers", "Modelers.jl"))
 using .Modelers
 
+# DOCP module - Discretized Optimal Control Problem types and operations
+include(joinpath(@__DIR__, "DOCP", "DOCP.jl"))
+using .DOCP
+
 end
