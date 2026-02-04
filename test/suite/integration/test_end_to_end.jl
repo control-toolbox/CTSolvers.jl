@@ -8,6 +8,7 @@ using SolverCore
 using ADNLPModels
 using ExaModels
 using MadNLP
+using MadNLPMumps # must be removed in the future
 using Main.TestProblems
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
