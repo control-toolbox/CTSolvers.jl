@@ -1,63 +1,235 @@
+"""
+CTSolversKnitro Extension
+
+Extension providing Knitro solver metadata, constructor, and backend interface.
+Implements the complete KnitroSolver functionality with proper option definitions.
+"""
 module CTSolversKnitro
 
-using CTModels
 using CTSolvers
+using CTSolvers.Solvers
+using CTSolvers.Strategies
+using CTSolvers.Options
+using CTBase.Exceptions
 using NLPModelsKnitro
 using NLPModels
 using SolverCore
 
-# default
-__nlp_models_knitro_max_iter() = 1000
-__nlp_models_knitro_feastol_abs() = 1e-8
-__nlp_models_knitro_opttol_abs() = 1e-8
-__nlp_models_knitro_print_level() = 3
+# ============================================================================
+# Metadata Definition
+# ============================================================================
 
-function CTModels._option_specs(::Type{<:CTSolvers.KnitroSolver})
-    return (
-        maxit=CTModels.OptionSpec(;
+"""
+    Strategies.metadata(::Type{<:Solvers.KnitroSolver})
+
+Return metadata defining KnitroSolver options and their specifications.
+"""
+function Strategies.metadata(::Type{<:Solvers.KnitroSolver})
+    return Strategies.StrategyMetadata(
+        # ====================================================================
+        # TERMINATION OPTIONS
+        # ====================================================================
+        
+        Strategies.OptionDefinition(;
+            name=:maxit,
             type=Integer,
-            default=__nlp_models_knitro_max_iter(),
-            description="Maximum number of iterations.",
+            default=1000,
+            description="Maximum number of iterations before termination",
+            aliases=(:max_iter, :maxiter),
+            validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid maxit value",
+                got="maxit=$x",
+                expected="non-negative integer (>= 0)",
+                suggestion="Provide a non-negative value for maximum iterations",
+                context="KnitroSolver maxit validation"
+            ))
         ),
-        feastol_abs=CTModels.OptionSpec(;
+        
+        Strategies.OptionDefinition(;
+            name=:maxtime,
             type=Real,
-            default=__nlp_models_knitro_feastol_abs(),
-            description="Absolute feasibility tolerance.",
+            default=1e8,
+            description="Maximum allowable real time in seconds before termination",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid maxtime value",
+                got="maxtime=$x",
+                expected="positive real number (> 0)",
+                suggestion="Provide a positive time limit in seconds (e.g., 3600 for 1 hour)",
+                context="KnitroSolver maxtime validation"
+            ))
         ),
-        opttol_abs=CTModels.OptionSpec(;
-            type=Real,
-            default=__nlp_models_knitro_opttol_abs(),
-            description="Absolute optimality tolerance.",
-        ),
-        print_level=CTModels.OptionSpec(;
+        
+        Strategies.OptionDefinition(;
+            name=:maxfevals,
             type=Integer,
-            default=__nlp_models_knitro_print_level(),
-            description="Knitro print level.",
+            default=-1,
+            description="Maximum number of function evaluations before termination (-1 for unlimited)",
+            validator=x -> x >= -1 || throw(Exceptions.IncorrectArgument(
+                "Invalid maxfevals value",
+                got="maxfevals=$x",
+                expected="integer >= -1 (-1 for unlimited)",
+                suggestion="Use -1 for unlimited or positive integer for limit",
+                context="KnitroSolver maxfevals validation"
+            ))
         ),
+        
+        Strategies.OptionDefinition(;
+            name=:feastol_abs,
+            type=Real,
+            default=1e-8,
+            description="Absolute feasibility tolerance for successful termination",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid feastol_abs value",
+                got="feastol_abs=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use 1e-8 for standard tolerance or smaller for stricter feasibility",
+                context="KnitroSolver feastol_abs validation"
+            ))
+        ),
+        
+        Strategies.OptionDefinition(;
+            name=:opttol_abs,
+            type=Real,
+            default=1e-8,
+            description="Absolute optimality tolerance for KKT error",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid opttol_abs value",
+                got="opttol_abs=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use 1e-8 for standard tolerance or smaller for stricter optimality",
+                context="KnitroSolver opttol_abs validation"
+            ))
+        ),
+        
+        Strategies.OptionDefinition(;
+            name=:ftol,
+            type=Real,
+            default=1e-12,
+            description="Relative change tolerance for objective function",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid ftol value",
+                got="ftol=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use 1e-12 for standard tolerance or smaller for stricter convergence",
+                context="KnitroSolver ftol validation"
+            ))
+        ),
+        
+        Strategies.OptionDefinition(;
+            name=:xtol,
+            type=Real,
+            default=1e-12,
+            description="Relative change tolerance for solution point estimate",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid xtol value",
+                got="xtol=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use 1e-12 for standard tolerance or smaller for stricter convergence",
+                context="KnitroSolver xtol validation"
+            ))
+        ),
+        
+        # ====================================================================
+        # ALGORITHM OPTIONS
+        # ====================================================================
+        
+        Strategies.OptionDefinition(;
+            name=:soltype,
+            type=Integer,
+            default=0,
+            description="Solution type returned by Knitro (0=final, 1=bestfeas)",
+            validator=x -> x in [0, 1] || throw(Exceptions.IncorrectArgument(
+                "Invalid soltype value",
+                got="soltype=$x",
+                expected="0 (final) or 1 (bestfeas)",
+                suggestion="Use 0 for final solution or 1 for best feasible encountered",
+                context="KnitroSolver soltype validation"
+            ))
+        ),
+        
+        # ====================================================================
+        # OUTPUT OPTIONS
+        # ====================================================================
+        
+        Strategies.OptionDefinition(;
+            name=:outlev,
+            type=Integer,
+            default=2,
+            description="Controls the level of output produced by Knitro",
+            aliases=(:print_level, ),
+            validator=x -> (0 <= x <= 6) || throw(Exceptions.IncorrectArgument(
+                "Invalid outlev value",
+                got="outlev=$x",
+                expected="integer between 0 and 6",
+                suggestion="Use 0 for no output, 2 for every 10 iterations, 3 for each iteration, or higher for more details",
+                context="KnitroSolver outlev validation"
+            ))
+        )
     )
 end
 
-function CTSolvers.solve_with_knitro(
-    nlp::NLPModels.AbstractNLPModel; kwargs...
+# ============================================================================
+# Constructor Implementation
+# ============================================================================
+
+"""
+    Solvers.build_knitro_solver(::Solvers.KnitroTag; kwargs...)
+
+Build a KnitroSolver with validated options.
+"""
+function Solvers.build_knitro_solver(::Solvers.KnitroTag; kwargs...)
+    opts = Strategies.build_strategy_options(Solvers.KnitroSolver; kwargs...)
+    return Solvers.KnitroSolver(opts)
+end
+
+# ============================================================================
+# Callable Interface with Display Handling
+# ============================================================================
+
+"""
+    (solver::Solvers.KnitroSolver)(nlp; display=true)
+
+Solve an NLP problem using Knitro.
+
+# Arguments
+- `nlp::NLPModels.AbstractNLPModel`: The NLP problem to solve
+- `display::Bool`: Whether to show solver output (default: true)
+
+# Returns
+- `SolverCore.GenericExecutionStats`: Solver execution statistics
+"""
+function (solver::Solvers.KnitroSolver)(
+    nlp::NLPModels.AbstractNLPModel;
+    display::Bool=true
+)::SolverCore.GenericExecutionStats
+    opts = Strategies.options(solver)
+    raw_opts = Options.extract_raw_options(opts.options)
+    
+    # Handle display flag
+    if !display
+        raw_opts[:outlev] = 0
+    end
+    
+    return solve_with_knitro(nlp; raw_opts...)
+end
+
+# ============================================================================
+# Backend Solver Interface
+# ============================================================================
+
+"""
+    solve_with_knitro(nlp; kwargs...)
+
+Backend interface for Knitro solver.
+
+Calls NLPModelsKnitro to solve the NLP problem.
+"""
+function solve_with_knitro(
+    nlp::NLPModels.AbstractNLPModel;
+    kwargs...
 )::SolverCore.GenericExecutionStats
     solver = NLPModelsKnitro.KnitroSolver(nlp; kwargs...)
     return NLPModelsKnitro.solve!(solver, nlp)
-end
-
-# backend constructor
-function CTSolvers.KnitroSolver(; kwargs...)
-    values, sources = CTModels._build_ocp_tool_options(
-        CTSolvers.KnitroSolver; kwargs..., strict_keys=false
-    )
-    return CTSolvers.KnitroSolver(values, sources)
-end
-
-function (solver::CTSolvers.KnitroSolver)(
-    nlp::NLPModels.AbstractNLPModel; display::Bool
-)::SolverCore.GenericExecutionStats
-    options = Dict(pairs(CTModels._options_values(solver)))
-    options[:print_level] = display ? options[:print_level] : 0
-    return CTSolvers.solve_with_knitro(nlp; options...)
 end
 
 end
