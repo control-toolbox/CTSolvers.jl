@@ -15,12 +15,18 @@ $(TYPEDFIELDS)
 
 # Solver Options
 
-- `max_iter::Integer`: Maximum number of iterations (default: 3000, must be ≥ 0)
-- `tol::Real`: Convergence tolerance (default: 1e-8, must be > 0)
-- `outlev::Integer`: Output verbosity level (default: 3, must be ≥ 0)
+- `maxit::Integer`: Maximum number of iterations (default: 1000, must be ≥ 0)
+  - Algorithm terminates if this number of iterations is exceeded
+  - Aliases: max_iter, maxiter
+- `feastol_abs::Real`: Absolute feasibility tolerance (default: 1e-8, must be > 0)
+  - Absolute tolerance on constraint violation for successful termination
+- `opttol_abs::Real`: Absolute optimality tolerance (default: 1e-8, must be > 0)
+  - Absolute tolerance on optimality conditions for successful termination
+- `print_level::Integer`: Knitro print level (default: 3, must be ≥ 0)
   - 0: No output
   - 3: Standard output
   - Higher values: More detailed output
+  - Alias: outlev
 
 # Examples
 
@@ -29,7 +35,7 @@ $(TYPEDFIELDS)
 solver = KnitroSolver()
 
 # Create solver with custom options
-solver = KnitroSolver(max_iter=1000, tol=1e-6, outlev=2)
+solver = KnitroSolver(maxit=1000, feastol_abs=1e-6, print_level=2)
 
 # Solve an NLP problem
 using ADNLPModels
@@ -79,43 +85,57 @@ Return metadata defining KnitroSolver options and their specifications.
 function Strategies.metadata(::Type{<:KnitroSolver})
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
-            name=:max_iter,
+            name=:maxit,
             type=Integer,
-            default=3000,
+            default=1000,
             description="Maximum number of iterations",
-            aliases=(:max, :maxiter),
+            aliases=(:max_iter, :maxiter),
             validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid max_iter value",
-                got="max_iter=$x",
+                "Invalid maxit value",
+                got="maxit=$x",
                 expected="non-negative integer (>= 0)",
                 suggestion="Provide a non-negative value for maximum iterations",
-                context="KnitroSolver max_iter validation"
+                context="KnitroSolver maxit validation"
             ))
         ),
         Strategies.OptionDefinition(;
-            name=:tol,
+            name=:feastol_abs,
             type=Real,
             default=1e-8,
-            description="Convergence tolerance",
+            description="Absolute feasibility tolerance",
             validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid tolerance value",
-                got="tol=$x",
+                "Invalid feastol_abs value",
+                got="feastol_abs=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
-                context="KnitroSolver tol validation"
+                context="KnitroSolver feastol_abs validation"
             ))
         ),
         Strategies.OptionDefinition(;
-            name=:outlev,
+            name=:opttol_abs,
+            type=Real,
+            default=1e-8,
+            description="Absolute optimality tolerance",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid opttol_abs value",
+                got="opttol_abs=$x",
+                expected="positive real number (> 0)",
+                suggestion="Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
+                context="KnitroSolver opttol_abs validation"
+            ))
+        ),
+        Strategies.OptionDefinition(;
+            name=:print_level,
             type=Integer,
             default=3,
-            description="Knitro output verbosity level",
+            description="Knitro print level",
+            aliases=(:outlev, ),
             validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid outlev value",
-                got="outlev=$x",
+                "Invalid print_level value",
+                got="print_level=$x",
                 expected="non-negative integer (>= 0)",
                 suggestion="Use 0 for no output, 3 for standard output, or higher for more verbosity",
-                context="KnitroSolver outlev validation"
+                context="KnitroSolver print_level validation"
             ))
         )
     )
