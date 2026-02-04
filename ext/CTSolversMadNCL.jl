@@ -1,91 +1,154 @@
+"""
+CTSolversMadNCL Extension
+
+Extension providing MadNCL solver metadata, constructor, and backend interface.
+Implements the complete MadNCLSolver functionality with proper option definitions.
+"""
 module CTSolversMadNCL
 
-using CTModels
 using CTSolvers
+using CTSolvers.Solvers
+using CTSolvers.Strategies
+using CTSolvers.Options
+using CTBase.Exceptions
 using MadNCL
 using MadNLP
 using MadNLPMumps
 using NLPModels
+using SolverCore
 
-# default
-__mad_ncl_max_iter() = 1000
-__mad_ncl_tol() = 1e-8
-__mad_ncl_print_level() = MadNLP.INFO
-__mad_ncl_linear_solver() = MadNLPMumps.MumpsSolver
-function __mad_ncl_ncl_options()
-    MadNCL.NCLOptions{Float64}(;
-        verbose=true,       # print convergence logs
-        # scaling=false,      # specify if we should scale the problem
-        opt_tol=1e-8,       # tolerance on dual infeasibility
-        feas_tol=1e-8,      # tolerance on primal infeasibility
-        # rho_init=1e1,       # initial augmented Lagrangian penalty
-        # max_auglag_iter=20, # maximum number of outer iterations
-    )
-end
+# ============================================================================
+# Metadata Definition
+# ============================================================================
 
-base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseType
+"""
+    Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
 
-function CTModels._option_specs(::Type{<:CTSolvers.MadNCLSolver})
-    return (
-        max_iter=CTModels.OptionSpec(;
+Return metadata defining MadNCLSolver options and their specifications.
+"""
+function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
+    return Strategies.StrategyMetadata(
+        Strategies.OptionDefinition(;
+            name=:max_iter,
             type=Integer,
-            default=__mad_ncl_max_iter(),
-            description="Maximum number of augmented Lagrangian iterations.",
+            default=3000,
+            description="Maximum number of augmented Lagrangian iterations",
+            aliases=(:maxiter,),
+            validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid max_iter value",
+                got="max_iter=$x",
+                expected="non-negative integer (>= 0)",
+                suggestion="Provide a non-negative value for maximum iterations",
+                context="MadNCLSolver max_iter validation"
+            ))
         ),
-        tol=CTModels.OptionSpec(;
-            type=Real, default=__mad_ncl_tol(), description="Optimality tolerance."
+        Strategies.OptionDefinition(;
+            name=:tol,
+            type=Real,
+            default=1e-8,
+            description="Optimality tolerance",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid tolerance value",
+                got="tol=$x",
+                expected="positive real number (> 0)",
+                suggestion="Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
+                context="MadNCLSolver tol validation"
+            ))
         ),
-        print_level=CTModels.OptionSpec(;
+        Strategies.OptionDefinition(;
+            name=:print_level,
             type=MadNLP.LogLevels,
-            default=__mad_ncl_print_level(),
-            description="MadNCL/MadNLP logging level.",
+            default=MadNLP.INFO,
+            description="MadNCL/MadNLP logging level"
         ),
-        linear_solver=CTModels.OptionSpec(;
+        Strategies.OptionDefinition(;
+            name=:linear_solver,
             type=Type{<:MadNLP.AbstractLinearSolver},
-            default=__mad_ncl_linear_solver(),
-            description="Linear solver implementation used inside MadNCL.",
+            default=MadNLPMumps.MumpsSolver,
+            description="Linear solver implementation used inside MadNCL"
         ),
-        ncl_options=CTModels.OptionSpec(;
+        Strategies.OptionDefinition(;
+            name=:ncl_options,
             type=MadNCL.NCLOptions,
-            default=__mad_ncl_ncl_options(),
-            description="Low-level NCLOptions structure controlling the augmented Lagrangian algorithm.",
-        ),
+            default=MadNCL.NCLOptions{Float64}(;
+                verbose=true,
+                opt_tol=1e-8,
+                feas_tol=1e-8
+            ),
+            description="Low-level NCLOptions structure controlling the augmented Lagrangian algorithm"
+        )
     )
 end
 
-function CTSolvers.solve_with_madncl(
-    nlp::NLPModels.AbstractNLPModel; ncl_options::MadNCL.NCLOptions, kwargs...
+# ============================================================================
+# Constructor Implementation
+# ============================================================================
+
+"""
+    Solvers.build_madncl_solver(::Solvers.MadNCLTag; kwargs...)
+
+Build a MadNCLSolver with validated options.
+"""
+function Solvers.build_madncl_solver(::Solvers.MadNCLTag; kwargs...)
+    opts = Strategies.build_strategy_options(Solvers.MadNCLSolver; kwargs...)
+    return Solvers.MadNCLSolver(opts)
+end
+
+# ============================================================================
+# Callable Interface with Display Handling
+# ============================================================================
+
+"""
+    (solver::Solvers.MadNCLSolver)(nlp; display=true)
+
+Solve an NLP problem using MadNCL.
+
+# Arguments
+- `nlp::NLPModels.AbstractNLPModel`: The NLP problem to solve
+- `display::Bool`: Whether to show solver output (default: true)
+
+# Returns
+- `MadNCL.NCLStats`: MadNCL execution statistics
+"""
+function (solver::Solvers.MadNCLSolver)(
+    nlp::NLPModels.AbstractNLPModel;
+    display::Bool=true
+)::MadNCL.NCLStats
+    opts = Strategies.options(solver)
+    raw_opts = Options.extract_raw_options(opts.options)
+    
+    # Handle display flag
+    if !display
+        raw_opts[:print_level] = MadNLP.ERROR
+        # Reconstruct ncl_options with verbose=false
+        ncl_opts = raw_opts[:ncl_options]
+        BaseType = typeof(ncl_opts).parameters[1]
+        ncl_opts_dict = Dict(field => getfield(ncl_opts, field) for field in fieldnames(MadNCL.NCLOptions))
+        ncl_opts_dict[:verbose] = false
+        raw_opts[:ncl_options] = MadNCL.NCLOptions{BaseType}(; ncl_opts_dict...)
+    end
+    
+    return solve_with_madncl(nlp; raw_opts...)
+end
+
+# ============================================================================
+# Backend Solver Interface
+# ============================================================================
+
+"""
+    solve_with_madncl(nlp; ncl_options, kwargs...)
+
+Backend interface for MadNCL solver.
+
+Calls MadNCL to solve the NLP problem.
+"""
+function solve_with_madncl(
+    nlp::NLPModels.AbstractNLPModel;
+    ncl_options::MadNCL.NCLOptions,
+    kwargs...
 )::MadNCL.NCLStats
     solver = MadNCL.NCLSolver(nlp; ncl_options=ncl_options, kwargs...)
     return MadNCL.solve!(solver)
-end
-
-# backend constructor
-function CTSolvers.MadNCLSolver(; kwargs...)
-    values, sources = CTModels._build_ocp_tool_options(
-        CTSolvers.MadNCLSolver; kwargs..., strict_keys=false
-    )
-    BaseType = base_type(values.ncl_options)
-    return CTSolvers.MadNCLSolver{BaseType,typeof(values),typeof(sources)}(values, sources)
-end
-
-function (solver::CTSolvers.MadNCLSolver{BaseType})(
-    nlp::NLPModels.AbstractNLPModel; display::Bool
-)::MadNCL.NCLStats where {BaseType<:AbstractFloat}
-    # options control
-    options = Dict(pairs(CTModels._options_values(solver)))
-    if !display
-        options[:print_level] = MadNLP.ERROR
-        ncl_options_dict = Dict()
-        for field in fieldnames(MadNCL.NCLOptions)
-            ncl_options_dict[field] = getfield(options[:ncl_options], field)
-        end
-        ncl_options_dict[:verbose] = false
-        options[:ncl_options] = MadNCL.NCLOptions{BaseType}(; ncl_options_dict...)
-    end
-
-    # solve the problem
-    return CTSolvers.solve_with_madncl(nlp; options...)
 end
 
 end
