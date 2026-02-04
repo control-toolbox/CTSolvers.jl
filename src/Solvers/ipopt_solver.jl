@@ -24,7 +24,17 @@ $(TYPEDFIELDS)
 - `mu_strategy::String`: Barrier parameter update strategy (default: "adaptive")
   - "adaptive": Automatically adjusts barrier parameter
   - "monotone": Monotonically decreases barrier parameter
-- `linear_solver::String`: Linear solver backend (default: "mumps")
+- `linear_solver::String`: Linear solver used for step computations (default: "mumps")
+  - "ma27": Harwell routine MA27
+  - "ma57": Harwell routine MA57 (robust performance)
+  - "ma77": Harwell routine HSL_MA77
+  - "ma86": Harwell routine HSL_MA86
+  - "ma97": Harwell routine HSL_MA97
+  - "pardiso": Pardiso package from pardiso-project.org
+  - "pardisomkl": Pardiso package from Intel MKL
+  - "spral": Spral package
+  - "wsmp": Wsmp package
+  - "mumps": Mumps package (general purpose)
 - `sb::String`: Suppress Ipopt banner (default: "yes", options: "yes"/"no")
 
 # Examples
@@ -83,9 +93,9 @@ function Strategies.metadata(::Type{<:IpoptSolver})
         Strategies.OptionDefinition(;
             name=:max_iter,
             type=Integer,
-            default=3000,
+            default=1000,
             description="Maximum number of iterations",
-            aliases=(:max, :maxiter),
+            aliases=(:maxiter, ),
             validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
                 "Invalid max_iter value",
                 got="max_iter=$x",
@@ -137,7 +147,14 @@ function Strategies.metadata(::Type{<:IpoptSolver})
             name=:linear_solver,
             type=String,
             default="mumps",
-            description="Linear solver used by Ipopt"
+            description="Linear solver used for step computations. Determines which linear algebra package is to be used for the solution of the augmented linear system (for obtaining the search directions).",
+            validator=x -> x in ["ma27", "ma57", "ma77", "ma86", "ma97", "pardiso", "pardisomkl", "spral", "wsmp", "mumps"] || throw(Exceptions.IncorrectArgument(
+                "Invalid linear_solver value",
+                got="linear_solver='$x'",
+                expected="one of: ma27, ma57, ma77, ma86, ma97, pardiso, pardisomkl, spral, wsmp, mumps",
+                suggestion="Use 'mumps' for general purpose, 'ma57' for robust performance, or 'pardiso' for Intel MKL",
+                context="IpoptSolver linear_solver validation"
+            ))
         ),
         Strategies.OptionDefinition(;
             name=:sb,
