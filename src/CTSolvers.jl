@@ -1,0 +1,63 @@
+"""
+    CTSolvers
+
+Control Toolbox Solvers (CTSolvers) - A Julia package for solving optimal control problems.
+
+This module provides a comprehensive framework for solving optimal control problems
+with a modular architecture that separates concerns and facilitates extensibility.
+
+# Architecture Overview
+
+CTSolvers is organized into specialized modules, each with clear responsibilities:
+
+## Core Modules
+
+- **Options**: Configuration and options management system
+  - Option definitions and validation
+  - Option extraction API
+  - NotProvided sentinel for optional parameters
+
+## Planned Modules
+
+- **DOCP**: Discretized Optimal Control Problem types and operations
+- **Modelers**: Backend modeler implementations (ADNLPModeler, ExaModeler)
+- **Optimization**: General optimization abstractions and builders
+- **Orchestration**: High-level coordination and method routing
+- **Strategies**: Strategy patterns for solution approaches
+- **Solvers**: Solver integration and CommonSolve API
+
+# Loading Order
+
+Modules are loaded in dependency order to ensure all types and functions are available
+when needed.
+
+# Public API
+
+All functions and types are accessible via qualified module paths (e.g., `CTSolvers.Options.extract_options()`).
+The modular architecture ensures that:
+
+- Types are defined where they belong
+- Dependencies are explicit and minimal
+- Extensions can target specific modules
+- The public API remains stable and clean
+- No direct exports to avoid namespace conflicts
+"""
+module CTSolvers
+
+# ============================================================================ #
+# CONFIGURATION AND OPTIONS MODULES
+# ============================================================================ #
+
+# Options module - configuration and options management
+include(joinpath(@__DIR__, "Options", "Options.jl"))
+using .Options
+
+# Strategies module - strategy patterns for solution approaches
+include(joinpath(@__DIR__, "Strategies", "Strategies.jl"))
+using .Strategies
+
+# ============================================================================ #
+# END OF MODULE
+# ============================================================================ #
+
+end
