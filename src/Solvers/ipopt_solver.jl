@@ -15,12 +15,23 @@ $(TYPEDFIELDS)
 
 # Solver Options
 
+## Termination Options
+
+- `tol::Real`: Desired convergence tolerance (relative) (default: 1e-8, must be > 0)
+  - Determines when the algorithm terminates successfully based on NLP error
 - `max_iter::Integer`: Maximum number of iterations (default: 3000, must be ≥ 0)
-- `tol::Real`: Convergence tolerance (default: 1e-8, must be > 0)
-- `print_level::Integer`: Output verbosity level (default: 5, range: 0-12)
-  - 0: No output
-  - 5: Standard output
-  - 12: Maximum verbosity
+  - Algorithm terminates if this number of iterations is exceeded
+- `max_wall_time::Real`: Maximum walltime clock seconds (default: 1e20, must be > 0)
+  - Limit on walltime that Ipopt can use to solve one problem
+- `max_cpu_time::Real`: Maximum CPU seconds (default: 1e20, must be > 0)
+  - Limit on CPU time that Ipopt can use to solve one problem
+- `dual_inf_tol::Real`: Threshold for dual infeasibility (default: 1.0, must be > 0)
+  - Absolute tolerance on dual infeasibility for successful termination
+- `constr_viol_tol::Real`: Threshold for constraint violation (default: 1e-4, must be > 0)
+  - Absolute tolerance on constraint and variable bound violation
+
+## Algorithm Options
+
 - `mu_strategy::String`: Barrier parameter update strategy (default: "adaptive")
   - "adaptive": Automatically adjusts barrier parameter
   - "monotone": Monotonically decreases barrier parameter
@@ -35,6 +46,22 @@ $(TYPEDFIELDS)
   - "spral": Spral package
   - "wsmp": Wsmp package
   - "mumps": Mumps package (general purpose)
+
+## Output Options
+
+- `print_level::Integer`: Output verbosity level (default: 5, range: 0-12)
+  - 0: No output
+  - 5: Standard output
+  - 12: Maximum verbosity
+- `print_timing_statistics::String`: Switch to print timing statistics (default: "no")
+  - "yes": Print time spent for selected tasks (implies timing_statistics=yes)
+  - "no": Disable timing statistics
+- `print_frequency_iter::Integer`: Iteration frequency for summary output (default: 1, must be ≥ 1)
+  - Controls how often the summarizing iteration output line is printed
+  - Output printed every N iterations if time condition is also met
+- `print_frequency_time::Real`: Time frequency for summary output (default: 0.0, must be ≥ 0)
+  - Minimum seconds between summary outputs
+  - Used together with print_frequency_iter for output control
 - `sb::String`: Suppress Ipopt banner (default: "yes", options: "yes"/"no")
 
 # Examples
@@ -90,11 +117,29 @@ Return metadata defining IpoptSolver options and their specifications.
 """
 function Strategies.metadata(::Type{<:IpoptSolver})
     return Strategies.StrategyMetadata(
+        # ====================================================================
+        # TERMINATION OPTIONS
+        # ====================================================================
+        
+        Strategies.OptionDefinition(;
+            name=:tol,
+            type=Real,
+            default=1e-8,
+            description="Desired convergence tolerance (relative). Determines the convergence tolerance for the algorithm. The algorithm terminates successfully, if the (scaled) NLP error becomes smaller than this value, and if the (absolute) criteria according to dual_inf_tol, constr_viol_tol, and compl_inf_tol are met.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid tolerance value",
+                got="tol=$x",
+                expected="positive real number (> 0)",
+                suggestion="Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
+                context="IpoptSolver tol validation"
+            ))
+        ),
+        
         Strategies.OptionDefinition(;
             name=:max_iter,
             type=Integer,
-            default=1000,
-            description="Maximum number of iterations",
+            default=3000,
+            description="Maximum number of iterations. The algorithm terminates with a message if the number of iterations exceeded this number.",
             aliases=(:maxiter, ),
             validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
                 "Invalid max_iter value",
@@ -104,32 +149,67 @@ function Strategies.metadata(::Type{<:IpoptSolver})
                 context="IpoptSolver max_iter validation"
             ))
         ),
+        
         Strategies.OptionDefinition(;
-            name=:tol,
+            name=:max_wall_time,
             type=Real,
-            default=1e-8,
-            description="Convergence tolerance",
+            default=1e20,
+            description="Maximum number of walltime clock seconds. A limit on walltime clock seconds that Ipopt can use to solve one problem.",
             validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid tolerance value",
-                got="tol=$x",
+                "Invalid max_wall_time value",
+                got="max_wall_time=$x",
                 expected="positive real number (> 0)",
-                suggestion="Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
-                context="IpoptSolver tol validation"
+                suggestion="Provide a positive time limit in seconds (e.g., 3600 for 1 hour)",
+                context="IpoptSolver max_wall_time validation"
             ))
         ),
+        
         Strategies.OptionDefinition(;
-            name=:print_level,
-            type=Integer,
-            default=5,
-            description="Ipopt output verbosity (0-12)",
-            validator=x -> (0 <= x <= 12) || throw(Exceptions.IncorrectArgument(
-                "Invalid print_level value",
-                got="print_level=$x",
-                expected="integer between 0 and 12",
-                suggestion="Use 0 for no output, 5 for standard output, or 12 for maximum verbosity",
-                context="IpoptSolver print_level validation"
+            name=:max_cpu_time,
+            type=Real,
+            default=1e20,
+            description="Maximum number of CPU seconds. A limit on CPU seconds that Ipopt can use to solve one problem.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid max_cpu_time value",
+                got="max_cpu_time=$x",
+                expected="positive real number (> 0)",
+                suggestion="Provide a positive CPU time limit in seconds",
+                context="IpoptSolver max_cpu_time validation"
             ))
         ),
+        
+        Strategies.OptionDefinition(;
+            name=:dual_inf_tol,
+            type=Real,
+            default=1.0,
+            description="Desired threshold for the dual infeasibility. Absolute tolerance on the dual infeasibility. Successful termination requires that the max-norm of the (unscaled) dual infeasibility is less than this threshold.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid dual_inf_tol value",
+                got="dual_inf_tol=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use 1.0 for standard tolerance or smaller for stricter convergence",
+                context="IpoptSolver dual_inf_tol validation"
+            ))
+        ),
+        
+        Strategies.OptionDefinition(;
+            name=:constr_viol_tol,
+            type=Real,
+            default=1e-4,
+            description="Desired threshold for the constraint and variable bound violation. Absolute tolerance on the constraint and variable bound violation.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid constr_viol_tol value",
+                got="constr_viol_tol=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use 1e-4 for standard tolerance or smaller for stricter feasibility",
+                context="IpoptSolver constr_viol_tol validation"
+            ))
+        ),
+        
+        # ====================================================================
+        # ALGORITHM OPTIONS
+        # ====================================================================
+        
         Strategies.OptionDefinition(;
             name=:mu_strategy,
             type=String,
@@ -143,6 +223,7 @@ function Strategies.metadata(::Type{<:IpoptSolver})
                 context="IpoptSolver mu_strategy validation"
             ))
         ),
+        
         Strategies.OptionDefinition(;
             name=:linear_solver,
             type=String,
@@ -156,6 +237,67 @@ function Strategies.metadata(::Type{<:IpoptSolver})
                 context="IpoptSolver linear_solver validation"
             ))
         ),
+        
+        # ====================================================================
+        # OUTPUT OPTIONS
+        # ====================================================================
+        
+        Strategies.OptionDefinition(;
+            name=:print_level,
+            type=Integer,
+            default=5,
+            description="Ipopt output verbosity (0-12)",
+            validator=x -> (0 <= x <= 12) || throw(Exceptions.IncorrectArgument(
+                "Invalid print_level value",
+                got="print_level=$x",
+                expected="integer between 0 and 12",
+                suggestion="Use 0 for no output, 5 for standard output, or 12 for maximum verbosity",
+                context="IpoptSolver print_level validation"
+            ))
+        ),
+        
+        Strategies.OptionDefinition(;
+            name=:print_timing_statistics,
+            type=String,
+            default="no",
+            description="Switch to print timing statistics. If selected, the program will print the time spent for selected tasks. This implies timing_statistics=yes.",
+            validator=x -> x in ["yes", "no"] || throw(Exceptions.IncorrectArgument(
+                "Invalid print_timing_statistics value",
+                got="print_timing_statistics='$x'",
+                expected="'yes' or 'no'",
+                suggestion="Use 'yes' to enable timing statistics or 'no' to disable",
+                context="IpoptSolver print_timing_statistics validation"
+            ))
+        ),
+        
+        Strategies.OptionDefinition(;
+            name=:print_frequency_iter,
+            type=Integer,
+            default=1,
+            description="Determines at which iteration frequency the summarizing iteration output line should be printed. Summarizing iteration output is printed every print_frequency_iter iterations, if at least print_frequency_time seconds have passed since last output.",
+            validator=x -> x >= 1 || throw(Exceptions.IncorrectArgument(
+                "Invalid print_frequency_iter value",
+                got="print_frequency_iter=$x",
+                expected="integer >= 1",
+                suggestion="Use 1 for every iteration, or larger values for less frequent output",
+                context="IpoptSolver print_frequency_iter validation"
+            ))
+        ),
+        
+        Strategies.OptionDefinition(;
+            name=:print_frequency_time,
+            type=Real,
+            default=0.0,
+            description="Determines at which time frequency the summarizing iteration output line should be printed. Summarizing iteration output is printed if at least print_frequency_time seconds have passed since last output and the iteration number is a multiple of print_frequency_iter.",
+            validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid print_frequency_time value",
+                got="print_frequency_time=$x",
+                expected="real number >= 0",
+                suggestion="Use 0 for no time-based filtering, or positive value for time-based output control",
+                context="IpoptSolver print_frequency_time validation"
+            ))
+        ),
+        
         Strategies.OptionDefinition(;
             name=:sb,
             type=String,
