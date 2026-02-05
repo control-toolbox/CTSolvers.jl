@@ -5,7 +5,16 @@ using CTSolvers
 using CTSolvers.Solvers
 using CTSolvers.Strategies
 using CTSolvers.Options
-using Main.TestOptions: VERBOSE, SHOWTIMING
+
+const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+
+# Trigger extension loading
+using NLPModelsKnitro
+using NLPModelsIpopt
+using MadNCL
+using MadNLP
+using MadNLPMumps
 
 """
     test_type_stability()
