@@ -54,12 +54,31 @@ function test_madncl_extension()
             Test.@test :linear_solver in keys(meta)
             Test.@test :ncl_options in keys(meta)
             
+            # Test Imported MadNLP Options
+            Test.@test :acceptable_tol in keys(meta)
+            Test.@test :acceptable_iter in keys(meta)
+            Test.@test :max_wall_time in keys(meta)
+            Test.@test :diverging_iterates_tol in keys(meta)
+            Test.@test :nlp_scaling in keys(meta)
+            Test.@test :jacobian_constant in keys(meta)
+            Test.@test :bound_push in keys(meta)
+            Test.@test :kkt_system in keys(meta)
+            Test.@test :hessian_approximation in keys(meta)
+            Test.@test :mu_init in keys(meta)
+
             # Test option types
             Test.@test meta[:max_iter].type == Integer
             Test.@test meta[:tol].type == Real
             Test.@test meta[:print_level].type == MadNLP.LogLevels
             Test.@test meta[:linear_solver].type == Type{<:MadNLP.AbstractLinearSolver}
             Test.@test meta[:ncl_options].type == MadNCL.NCLOptions
+            Test.@test meta[:acceptable_tol].type == Real
+            Test.@test meta[:kkt_system].type == Union{Type{<:MadNLP.AbstractKKTSystem},UnionAll}
+
+            # Check ncl_options description
+            Test.@test occursin("rho_init", meta[:ncl_options].description)
+            Test.@test occursin("max_auglag_iter", meta[:ncl_options].description)
+            Test.@test occursin("opt_tol", meta[:ncl_options].description)
             
             # Test default values
             Test.@test meta[:max_iter].default isa Integer
@@ -137,6 +156,44 @@ function test_madncl_extension()
             Test.@test raw_custom.ncl_options === custom_ncl
         end
         
+        # ====================================================================
+        # UNIT TESTS - Advanced Option Validation
+        # ====================================================================
+
+        Test.@testset "Option Validation" begin
+            # Should behave exactly like MadNLP validation
+            redirect_stderr(devnull) do
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNCLSolver(acceptable_tol=-1.0)
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNCLSolver(max_wall_time=0.0)
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNCLSolver(bound_push=-1.0)
+            end
+
+            # Valid construction
+            Test.@test_nowarn Solvers.MadNCLSolver(acceptable_tol=1e-5, max_wall_time=100.0)
+        end
+
+        # ====================================================================
+        # UNIT TESTS - Pass-through
+        # ====================================================================
+
+        Test.@testset "MadNLP Option Pass-through" begin
+            # Create a simple dummy problem
+            ros = Rosenbrock()
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            nlp = adnlp_builder(ros.init)
+
+            # checking that it runs without error with these options
+            solver = Solvers.MadNCLSolver(
+                max_iter=1,
+                print_level=MadNLP.ERROR,
+                acceptable_tol=1e-2,
+                mu_init=0.1
+            )
+
+            # Just ensure the call works and options are accepted
+            Test.@test_nowarn solver(nlp, display=false)
+        end
+
         # ====================================================================
         # UNIT TESTS - Display Flag Handling (Special for MadNCL)
         # ====================================================================
