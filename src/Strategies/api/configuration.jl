@@ -10,9 +10,11 @@ $(TYPEDSIGNATURES)
 Build StrategyOptions from user kwargs and strategy metadata.
 
 This function creates a StrategyOptions instance by:
-1. Extracting options from kwargs using the Options API
-2. Converting the extracted Dict to NamedTuple
-3. Wrapping in StrategyOptions
+1. Validating the mode parameter (`:strict` or `:permissive`)
+2. Extracting known options from kwargs using the Options API
+3. Handling unknown options based on the mode
+4. Converting the extracted Dict to NamedTuple
+5. Wrapping in StrategyOptions
 
 The Options.extract_options function handles:
 - Alias resolution to primary names
@@ -23,37 +25,77 @@ The Options.extract_options function handles:
 
 # Arguments
 - `strategy_type::Type{<:AbstractStrategy}`: The strategy type to build options for
+- `mode::Symbol = :strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source (unvalidated)
 - `kwargs...`: User-provided option values
 
 # Returns
 - `StrategyOptions`: Validated options with provenance tracking
 
 # Throws
-
-- `Exceptions.IncorrectArgument`: If an unknown option is provided
-- `Exceptions.IncorrectArgument`: If type validation fails
-- `Exceptions.IncorrectArgument`: If custom validation fails
+- `ArgumentError`: If mode is not `:strict` or `:permissive`
+- `Exceptions.IncorrectArgument`: If an unknown option is provided in strict mode
+- `Exceptions.IncorrectArgument`: If type validation fails (both modes)
+- `Exceptions.IncorrectArgument`: If custom validation fails (both modes)
 
 # Example
 ```julia-repl
+# Strict mode (default) - rejects unknown options
 julia> opts = build_strategy_options(MyStrategy; max_iter=200)
+StrategyOptions(...)
+
+# Permissive mode - accepts unknown options with warning
+julia> opts = build_strategy_options(MyStrategy; max_iter=200, custom_opt=123; mode=:permissive)
+┌ Warning: Unrecognized options passed to backend
+│   Unvalidated options: [:custom_opt]
+└ @ CTSolvers.Strategies ...
 StrategyOptions(...)
 
 julia> opts[:max_iter]
 200
+
+julia> opts[:custom_opt]  # Available but unvalidated
+123
 ```
+
+# Notes
+- Known options are always validated (type, custom validators) regardless of mode
+- Unknown options in permissive mode are stored with source `:user` but bypass validation
+- Use permissive mode only when you need to pass backend-specific options not defined in CTSolvers metadata
 
 See also: [`StrategyOptions`](@ref), [`metadata`](@ref), [`Options.extract_options`](@ref)
 """
 function build_strategy_options(
     strategy_type::Type{<:AbstractStrategy};
+    mode::Symbol = :strict,
     kwargs...
 )
+    # Validate mode parameter
+    mode ∉ (:strict, :permissive) && throw(ArgumentError(
+        "Invalid mode: $mode. Expected :strict or :permissive"
+    ))
+    
     meta = metadata(strategy_type)
     defs = collect(values(meta.specs))
     
     # Use Options.extract_options for validation and extraction
-    extracted, _ = Options.extract_options((; kwargs...), defs)
+    # This validates known options (type, custom validators, etc.)
+    extracted, remaining = Options.extract_options((; kwargs...), defs)
+    
+    # Handle unknown options based on mode
+    if !isempty(remaining)
+        if mode == :strict
+            _error_unknown_options_strict(remaining, strategy_type, meta)
+        else  # mode == :permissive
+            _warn_unknown_options_permissive(remaining, strategy_type)
+            # Store unvalidated options with :user source
+            # Note: These options bypass validation but are still user-provided
+            for (key, value) in pairs(remaining)
+                extracted[key] = Options.OptionValue(value, :user)
+            end
+        end
+    end
     
     # Convert Dict to NamedTuple
     nt = (; (k => v for (k, v) in extracted)...)

@@ -30,6 +30,7 @@ include(joinpath(@__DIR__, "api", "builders.jl"))
 include(joinpath(@__DIR__, "api", "configuration.jl"))
 include(joinpath(@__DIR__, "api", "utilities.jl"))
 include(joinpath(@__DIR__, "api", "validation.jl"))
+include(joinpath(@__DIR__, "api", "validation_helpers.jl"))
 
 # ==============================================================================
 # Public API
