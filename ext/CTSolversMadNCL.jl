@@ -18,6 +18,17 @@ using NLPModels
 using SolverCore
 
 # ============================================================================
+# Helper Functions
+# ============================================================================
+
+"""
+    base_type(::MadNCL.NCLOptions{BaseType})
+
+Extract the base floating-point type from NCLOptions type parameter.
+"""
+base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseType
+
+# ============================================================================
 # Metadata Definition
 # ============================================================================
 
@@ -123,7 +134,7 @@ function (solver::Solvers.MadNCLSolver)(
         raw_opts_dict[:print_level] = MadNLP.ERROR
         # Reconstruct ncl_options with verbose=false
         ncl_opts = raw_opts_dict[:ncl_options]
-        BaseType = typeof(ncl_opts).parameters[1]
+        BaseType = base_type(ncl_opts)
         ncl_opts_dict_inner = Dict(field => getfield(ncl_opts, field) for field in fieldnames(MadNCL.NCLOptions))
         ncl_opts_dict_inner[:verbose] = false
         raw_opts_dict[:ncl_options] = MadNCL.NCLOptions{BaseType}(; ncl_opts_dict_inner...)
