@@ -9,7 +9,7 @@ using CTSolvers.Options
 using NLPModels
 using ADNLPModels
 using NLPModelsKnitro
-using Main.TestProblems: Rosenbrock, Elec
+using Main.TestProblems: Rosenbrock, Elec, rosenbrock_objective
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -82,12 +82,12 @@ function test_knitro_extension()
         # ====================================================================
         
         Test.@testset "Options Extraction" begin
-            solver = Solvers.KnitroSolver(maxit=500, feastol_abs=1e-8, outlev=0)
+            solver = Solvers.KnitroSolver(maxit=500, feastol_abs=1e-8)
             opts = Strategies.options(solver)
             
-            # Extract raw options
+            # Extract raw options (returns NamedTuple)
             raw_opts = Options.extract_raw_options(opts.options)
-            Test.@test raw_opts isa Dict
+            Test.@test raw_opts isa NamedTuple
             Test.@test haskey(raw_opts, :maxit)
             Test.@test haskey(raw_opts, :feastol_abs)
             Test.@test haskey(raw_opts, :outlev)
@@ -95,7 +95,7 @@ function test_knitro_extension()
             # Verify values
             Test.@test raw_opts[:maxit] == 500
             Test.@test raw_opts[:feastol_abs] == 1e-8
-            Test.@test raw_opts[:outlev] == 0
+            Test.@test raw_opts[:outlev] == 3
         end
         
         # ====================================================================
@@ -118,8 +118,12 @@ function test_knitro_extension()
         # INTEGRATION TESTS - Solving Problems (if license available)
         # ====================================================================
         
-        Test.@testset "Rosenbrock Problem" begin
+        Test.@testset "Rosenbrock Problem - ADNLPModels" begin
             ros = Rosenbrock()
+            
+            # Build NLP model from problem
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            nlp = adnlp_builder(ros.init)
             
             # Create solver with appropriate options
             solver = Solvers.KnitroSolver(
@@ -129,42 +133,33 @@ function test_knitro_extension()
                 outlev=0
             )
             
-            # Try to solve - may fail if no license
-            try
-                stats = solver(ros.nlp; display=false)
-                
-                # If we get here, license is available
-                Test.@test stats.status in (:first_order, :acceptable)
-                Test.@test stats.solution ≈ ros.sol atol=1e-4
-            catch e
-                if occursin("license", lowercase(string(e))) || occursin("knitro", lowercase(string(e)))
-                    @test_skip "Knitro license not available"
-                else
-                    rethrow(e)
-                end
-            end
+            # Solve the problem
+            stats = solver(nlp; display=false)
+            
+            # Check convergence
+            Test.@test stats.status == :first_order
+            Test.@test stats.solution ≈ ros.sol atol=1e-6
+            Test.@test stats.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
         end
         
-        Test.@testset "Elec Problem" begin
+        Test.@testset "Elec Problem - ADNLPModels" begin
             elec = Elec()
+            
+            # Build NLP model
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
+            nlp = adnlp_builder(elec.init)
             
             solver = Solvers.KnitroSolver(
                 maxit=1000,
                 feastol_abs=1e-6,
+                opttol_abs=1e-6,
                 outlev=0
             )
             
-            # Try to solve - may fail if no license
-            try
-                stats = solver(elec.nlp; display=false)
-                Test.@test stats.status in (:first_order, :acceptable)
-            catch e
-                if occursin("license", lowercase(string(e))) || occursin("knitro", lowercase(string(e)))
-                    @test_skip "Knitro license not available"
-                else
-                    rethrow(e)
-                end
-            end
+            stats = solver(nlp; display=false)
+            
+            # Just check it converges
+            Test.@test stats.status == :first_order
         end
         
         # ====================================================================

@@ -205,9 +205,11 @@ function (solver::Solvers.KnitroSolver)(
     opts = Strategies.options(solver)
     raw_opts = Options.extract_raw_options(opts.options)
     
-    # Handle display flag
+    # Handle display flag - convert to Dict for modification
     if !display
-        raw_opts[:outlev] = 0
+        raw_opts_dict = Dict(pairs(raw_opts))
+        raw_opts_dict[:outlev] = 0
+        return solve_with_knitro(nlp; raw_opts_dict...)
     end
     
     return solve_with_knitro(nlp; raw_opts...)
