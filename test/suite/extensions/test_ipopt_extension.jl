@@ -8,11 +8,11 @@ using CTSolvers.Strategies
 using CTSolvers.Options
 using NLPModels
 using ADNLPModels
+using NLPModelsIpopt
+using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
-
-# NLPModelsIpopt availability will be checked at test runtime
 
 """
     test_ipopt_extension()
@@ -26,20 +26,6 @@ options handling, display flag, and problem solving.
 """
 function test_ipopt_extension()
     Test.@testset "Ipopt Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
-        
-        # Check if NLPModelsIpopt is available
-        ipopt_available = try
-            @eval using NLPModelsIpopt
-            @eval using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2
-            true
-        catch
-            false
-        end
-        
-        if !ipopt_available
-            @test_skip "NLPModelsIpopt not available - install with: using Pkg; Pkg.add(\"NLPModelsIpopt\")"
-            return
-        end
         
         # ====================================================================
         # UNIT TESTS - Metadata and Options
@@ -100,9 +86,9 @@ function test_ipopt_extension()
             solver = Solvers.IpoptSolver(max_iter=500, tol=1e-8, print_level=0)
             opts = Strategies.options(solver)
             
-            # Extract raw options
+            # Extract raw options (returns NamedTuple)
             raw_opts = Options.extract_raw_options(opts.options)
-            Test.@test raw_opts isa Dict
+            Test.@test raw_opts isa NamedTuple
             Test.@test haskey(raw_opts, :max_iter)
             Test.@test haskey(raw_opts, :tol)
             Test.@test haskey(raw_opts, :print_level)
@@ -131,31 +117,41 @@ function test_ipopt_extension()
         end
         
         # ====================================================================
-        # INTEGRATION TESTS - Solving Problems
+        # INTEGRATION TESTS - Solving Problems with ADNLPModels
         # ====================================================================
         
-        Test.@testset "Rosenbrock Problem" begin
+        Test.@testset "Rosenbrock Problem - ADNLPModels" begin
             ros = Rosenbrock()
+            
+            # Build NLP model from problem
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            nlp = adnlp_builder(ros.init)
             
             # Create solver with appropriate options
             solver = Solvers.IpoptSolver(
                 max_iter=1000,
                 tol=1e-6,
                 print_level=0,
-                mu_strategy="adaptive"
+                mu_strategy="adaptive",
+                linear_solver="mumps",
+                sb="yes"
             )
             
             # Solve the problem
-            stats = solver(ros.nlp; display=false)
+            stats = solver(nlp; display=false)
             
             # Check convergence
             Test.@test stats.status == :first_order
-            Test.@test stats.solution ≈ ros.sol atol=1e-4
-            Test.@test stats.objective ≈ 0.0 atol=1e-6
+            Test.@test stats.solution ≈ ros.sol atol=1e-6
+            Test.@test stats.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
         end
         
-        Test.@testset "Elec Problem" begin
+        Test.@testset "Elec Problem - ADNLPModels" begin
             elec = Elec()
+            
+            # Build NLP model
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
+            nlp = adnlp_builder(elec.init)
             
             solver = Solvers.IpoptSolver(
                 max_iter=1000,
@@ -163,25 +159,32 @@ function test_ipopt_extension()
                 print_level=0
             )
             
-            stats = solver(elec.nlp; display=false)
+            stats = solver(nlp; display=false)
             
             # Just check it converges
             Test.@test stats.status == :first_order
         end
         
-        Test.@testset "Max1MinusX2 Problem" begin
+        Test.@testset "Max1MinusX2 Problem - ADNLPModels" begin
             max_prob = Max1MinusX2()
             
+            # Build NLP model
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(max_prob.prob)
+            nlp = adnlp_builder(max_prob.init)
+            
             solver = Solvers.IpoptSolver(
-                max_iter=100,
+                max_iter=1000,
                 tol=1e-6,
                 print_level=0
             )
             
-            stats = solver(max_prob.nlp; display=false)
+            stats = solver(nlp; display=false)
             
             # Check convergence
             Test.@test stats.status == :first_order
+            Test.@test length(stats.solution) == 1
+            Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
+            Test.@test stats.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
         end
         
         # ====================================================================
@@ -209,17 +212,40 @@ function test_ipopt_extension()
         # ====================================================================
         
         Test.@testset "Multiple Solves" begin
-            solver = Solvers.IpoptSolver(max_iter=100, tol=1e-6, print_level=0)
+            solver = Solvers.IpoptSolver(max_iter=1000, tol=1e-6, print_level=0)
             
             # Solve different problems with same solver
             ros = Rosenbrock()
             max_prob = Max1MinusX2()
             
-            stats1 = solver(ros.nlp; display=false)
-            stats2 = solver(max_prob.nlp; display=false)
+            # Build NLP models
+            nlp1 = CTSolvers.get_adnlp_model_builder(ros.prob)(ros.init)
+            nlp2 = CTSolvers.get_adnlp_model_builder(max_prob.prob)(max_prob.init)
+            
+            stats1 = solver(nlp1; display=false)
+            stats2 = solver(nlp2; display=false)
             
             Test.@test stats1.status == :first_order
             Test.@test stats2.status == :first_order
+        end
+        
+        # ====================================================================
+        # INTEGRATION TESTS - Initial Guess (max_iter=0)
+        # ====================================================================
+        
+        Test.@testset "Initial Guess - max_iter=0" begin
+            ros = Rosenbrock()
+            
+            # Build NLP starting at the solution
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            nlp = adnlp_builder(ros.sol)
+            
+            # Solver with max_iter=0 should return initial guess
+            solver = Solvers.IpoptSolver(max_iter=0, print_level=0)
+            stats = solver(nlp; display=false)
+            
+            # Should return the initial guess (which is the solution)
+            Test.@test stats.solution ≈ ros.sol atol=1e-10
         end
     end
 end

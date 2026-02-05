@@ -8,11 +8,21 @@ using CTSolvers.Strategies
 using CTSolvers.Options
 using NLPModels
 using ADNLPModels
+using MadNCL
+using MadNLP
+using MadNLPMumps
+using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2
+
+# CUDA for GPU tests (optional)
+const CUDA_AVAILABLE = try
+    using CUDA
+    true
+catch
+    false
+end
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
-
-# MadNCL availability will be checked at test runtime
 
 """
     test_madncl_extension()
@@ -27,21 +37,6 @@ options handling (including ncl_options), display flag, and problem solving.
 function test_madncl_extension()
     Test.@testset "MadNCL Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
         
-        # Check if MadNCL packages are available
-        madncl_available = try
-            @eval using MadNCL
-            @eval using MadNLP
-            @eval using MadNLPMumps
-            @eval using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2
-            true
-        catch
-            false
-        end
-        
-        if !madncl_available
-            @test_skip "MadNCL/MadNLP/MadNLPMumps not available - install with: using Pkg; Pkg.add([\"MadNCL\", \"MadNLP\", \"MadNLPMumps\"])"
-            return
-        end
         
         # ====================================================================
         # UNIT TESTS - Metadata and Options
@@ -226,10 +221,8 @@ function test_madncl_extension()
         # ====================================================================
         
         Test.@testset "GPU Tests" begin
-            # Check if CUDA is available
-            using CUDA
-            
-            if CUDA.functional()
+            # Check if CUDA is available and functional
+            if CUDA_AVAILABLE && CUDA.functional()
                 Test.@testset "Rosenbrock Problem - GPU" begin
                     ros = Rosenbrock()
                     

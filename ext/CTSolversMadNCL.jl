@@ -117,15 +117,17 @@ function (solver::Solvers.MadNCLSolver)(
     opts = Strategies.options(solver)
     raw_opts = Options.extract_raw_options(opts.options)
     
-    # Handle display flag
+    # Handle display flag - convert to Dict for modification
     if !display
-        raw_opts[:print_level] = MadNLP.ERROR
+        raw_opts_dict = Dict(pairs(raw_opts))
+        raw_opts_dict[:print_level] = MadNLP.ERROR
         # Reconstruct ncl_options with verbose=false
-        ncl_opts = raw_opts[:ncl_options]
+        ncl_opts = raw_opts_dict[:ncl_options]
         BaseType = typeof(ncl_opts).parameters[1]
-        ncl_opts_dict = Dict(field => getfield(ncl_opts, field) for field in fieldnames(MadNCL.NCLOptions))
-        ncl_opts_dict[:verbose] = false
-        raw_opts[:ncl_options] = MadNCL.NCLOptions{BaseType}(; ncl_opts_dict...)
+        ncl_opts_dict_inner = Dict(field => getfield(ncl_opts, field) for field in fieldnames(MadNCL.NCLOptions))
+        ncl_opts_dict_inner[:verbose] = false
+        raw_opts_dict[:ncl_options] = MadNCL.NCLOptions{BaseType}(; ncl_opts_dict_inner...)
+        return solve_with_madncl(nlp; raw_opts_dict...)
     end
     
     return solve_with_madncl(nlp; raw_opts...)
