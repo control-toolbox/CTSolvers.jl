@@ -1,14 +1,25 @@
-# Unit tests for package-wide quality checks using Aqua.jl (API, dependencies, ambiguities).
+module TestAqua
+
+using Test
+using CTSolvers
+using Aqua
+const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+
 function test_aqua()
-    @testset "Aqua.jl" begin
+    Test.@testset "Aqua.jl" verbose = VERBOSE showtiming = SHOWTIMING begin
         Aqua.test_all(
             CTSolvers;
             ambiguities=false,
             #stale_deps=(ignore=[:SomePackage],),
             deps_compat=(ignore=[:LinearAlgebra, :Unicode],),
-            piracies=(treat_as_own=[CommonSolve.solve],),
+            piracies=true,
         )
         # do not warn about ambiguities in dependencies
         Aqua.test_ambiguities(CTSolvers)
     end
 end
+
+end # module
+
+test_aqua() = TestAqua.test_aqua()
