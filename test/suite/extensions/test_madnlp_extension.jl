@@ -14,6 +14,7 @@ using NLPModels
 using ADNLPModels
 using MadNLP
 using MadNLPMumps
+using ExaModels
 using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
 
 # Trigger extension loading
@@ -34,8 +35,7 @@ options handling, display flag, and problem solving on CPU (and GPU if available
 """
 function test_madnlp_extension()
     Test.@testset "MadNLP Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
-        
-        
+
         # ====================================================================
         # UNIT TESTS - Metadata and Options
         # ====================================================================
@@ -52,17 +52,74 @@ function test_madnlp_extension()
             Test.@test :print_level in keys(meta)
             Test.@test :linear_solver in keys(meta)
             
+            # Test termination options are defined
+            Test.@test :acceptable_tol in keys(meta)
+            Test.@test :acceptable_iter in keys(meta)
+            Test.@test :max_wall_time in keys(meta)
+            Test.@test :diverging_iterates_tol in keys(meta)
+
+            # Test scaling and structure options
+            Test.@test :nlp_scaling in keys(meta)
+            Test.@test :nlp_scaling_max_gradient in keys(meta)
+            Test.@test :jacobian_constant in keys(meta)
+            Test.@test :hessian_constant in keys(meta)
+
+            # Test initialization options
+            Test.@test :bound_push in keys(meta)
+            Test.@test :bound_fac in keys(meta)
+            Test.@test :constr_mult_init_max in keys(meta)
+            Test.@test :fixed_variable_treatment in keys(meta)
+            Test.@test :equality_treatment in keys(meta)
+
             # Test option types
             Test.@test meta[:max_iter].type == Integer
             Test.@test meta[:tol].type == Real
             Test.@test meta[:print_level].type == MadNLP.LogLevels
             Test.@test meta[:linear_solver].type == Type{<:MadNLP.AbstractLinearSolver}
             
+            # Test termination option types
+            Test.@test meta[:acceptable_tol].type == Real
+            Test.@test meta[:acceptable_iter].type == Integer
+            Test.@test meta[:max_wall_time].type == Real
+            Test.@test meta[:diverging_iterates_tol].type == Real
+
+            # Test scaling and structure types
+            Test.@test meta[:nlp_scaling].type == Bool
+            Test.@test meta[:nlp_scaling_max_gradient].type == Real
+            Test.@test meta[:jacobian_constant].type == Bool
+            Test.@test meta[:hessian_constant].type == Bool
+
+            # Test initialization types
+            Test.@test meta[:bound_push].type == Real
+            Test.@test meta[:bound_fac].type == Real
+            Test.@test meta[:constr_mult_init_max].type == Real
+            Test.@test meta[:fixed_variable_treatment].type == MadNLP.FixedVariableTreatment
+            Test.@test meta[:equality_treatment].type == MadNLP.EqualityTreatment
+
             # Test default values
             Test.@test meta[:max_iter].default isa Integer
             Test.@test meta[:tol].default isa Real
             Test.@test meta[:print_level].default isa MadNLP.LogLevels
             Test.@test meta[:linear_solver].default == MadNLPMumps.MumpsSolver
+
+            # Test termination option defaults - all use NotProvided to let MadNLP use its own defaults
+            Test.@test meta[:acceptable_iter].default isa Options.NotProvidedType
+            Test.@test meta[:acceptable_tol].default isa Options.NotProvidedType
+            Test.@test meta[:max_wall_time].default isa Options.NotProvidedType
+            Test.@test meta[:diverging_iterates_tol].default isa Options.NotProvidedType
+
+            # Test scaling and structure defaults - all use NotProvided
+            Test.@test meta[:nlp_scaling].default isa Options.NotProvidedType
+            Test.@test meta[:nlp_scaling_max_gradient].default isa Options.NotProvidedType
+            Test.@test meta[:jacobian_constant].default isa Options.NotProvidedType
+            Test.@test meta[:hessian_constant].default isa Options.NotProvidedType
+
+            # Test initialization defaults
+            Test.@test meta[:bound_push].default isa Options.NotProvidedType
+            Test.@test meta[:bound_fac].default isa Options.NotProvidedType
+            Test.@test meta[:constr_mult_init_max].default isa Options.NotProvidedType
+            Test.@test meta[:fixed_variable_treatment].default isa Options.NotProvidedType
+            Test.@test meta[:equality_treatment].default isa Options.NotProvidedType
         end
         
         # ====================================================================
@@ -71,12 +128,12 @@ function test_madnlp_extension()
         
         Test.@testset "Constructor" begin
             # Default constructor
-            solver = Solvers.MadNLPSolver()
+            solver = Solvers.MadNLPSolver(print_level=MadNLP.ERROR)
             Test.@test solver isa Solvers.MadNLPSolver
             Test.@test solver isa Solvers.AbstractOptimizationSolver
             
             # Constructor with options
-            solver_custom = Solvers.MadNLPSolver(max_iter=100, tol=1e-6)
+            solver_custom = Solvers.MadNLPSolver(max_iter=100, tol=1e-6, print_level=MadNLP.ERROR)
             Test.@test solver_custom isa Solvers.MadNLPSolver
             
             # Test Strategies.options() returns StrategyOptions
@@ -89,7 +146,7 @@ function test_madnlp_extension()
         # ====================================================================
         
         Test.@testset "Options Extraction" begin
-            solver = Solvers.MadNLPSolver(max_iter=500, tol=1e-8)
+            solver = Solvers.MadNLPSolver(max_iter=500, tol=1e-8, print_level=MadNLP.ERROR)
             opts = Strategies.options(solver)
             
             # Extract raw options (returns NamedTuple)
@@ -102,7 +159,7 @@ function test_madnlp_extension()
             # Verify values
             Test.@test raw_opts.max_iter == 500
             Test.@test raw_opts.tol == 1e-8
-            Test.@test raw_opts.print_level == MadNLP.INFO
+            Test.@test raw_opts.print_level == MadNLP.ERROR
         end
         
         # ====================================================================
@@ -121,7 +178,9 @@ function test_madnlp_extension()
             
             # Verify the solver accepts the display parameter
             Test.@test_nowarn solver_verbose(nlp; display=false)
-            Test.@test_nowarn solver_verbose(nlp; display=true)
+            redirect_stdout(devnull) do
+                Test.@test_nowarn solver_verbose(nlp; display=true)
+            end
         end
         
         # ====================================================================
@@ -223,9 +282,9 @@ function test_madnlp_extension()
         # ====================================================================
         
         Test.@testset "Option Aliases" begin
-            # Test that aliases work
-            solver1 = Solvers.MadNLPSolver(max_iter=100)
-            solver2 = Solvers.MadNLPSolver(maxiter=100)
+            # Test that aliases work for max_iter
+            solver1 = Solvers.MadNLPSolver(max_iter=100, print_level=MadNLP.ERROR)
+            solver2 = Solvers.MadNLPSolver(maxiter=100, print_level=MadNLP.ERROR)
             
             opts1 = Strategies.options(solver1)
             opts2 = Strategies.options(solver2)
@@ -236,6 +295,78 @@ function test_madnlp_extension()
             # Both should set max_iter
             Test.@test raw1[:max_iter] == 100
             Test.@test raw2[:max_iter] == 100
+
+            # Test aliases for termination options
+            solver_acc = Solvers.MadNLPSolver(acc_tol=1e-5, print_level=MadNLP.ERROR)
+            solver_time = Solvers.MadNLPSolver(max_time=100.0, print_level=MadNLP.ERROR)
+
+            raw_acc = Options.extract_raw_options(Strategies.options(solver_acc).options)
+            raw_time = Options.extract_raw_options(Strategies.options(solver_time).options)
+
+            Test.@test raw_acc[:acceptable_tol] == 1e-5
+            Test.@test raw_time[:max_wall_time] == 100.0
+        end
+
+        # ====================================================================
+        # UNIT TESTS - Option Validation
+        # ====================================================================
+
+        Test.@testset "Termination Options Validation" begin
+            # Test invalid values throw IncorrectArgument (suppress error messages)
+            redirect_stderr(devnull) do
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(acceptable_tol=-1.0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(acceptable_tol=0.0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(acceptable_iter=0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(max_wall_time=-1.0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(max_wall_time=0.0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(diverging_iterates_tol=-1.0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(diverging_iterates_tol=0.0)
+            end
+
+            # Test valid values work (suppress solver output)
+            Test.@test_nowarn Solvers.MadNLPSolver(acceptable_tol=1e-5, acceptable_iter=10, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(max_wall_time=60.0, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(diverging_iterates_tol=1e10, print_level=MadNLP.ERROR)
+        end
+
+        Test.@testset "NLP Scaling Options Validation" begin
+            # Test valid values
+            Test.@test_nowarn Solvers.MadNLPSolver(nlp_scaling=true, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(nlp_scaling_max_gradient=100.0, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(jacobian_constant=true, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(hessian_constant=true, print_level=MadNLP.ERROR)
+
+            # Test aliases
+            Test.@test_nowarn Solvers.MadNLPSolver(jacobian_cst=true, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(hessian_cst=true, print_level=MadNLP.ERROR)
+
+            # Test invalid values (suppress error messages)
+            redirect_stderr(devnull) do
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(nlp_scaling_max_gradient=-1.0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(nlp_scaling_max_gradient=0.0)
+            end
+        end
+
+        Test.@testset "Initialization Options Validation" begin
+            # Test valid values
+            Test.@test_nowarn Solvers.MadNLPSolver(bound_push=0.01, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(bound_fac=0.01, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(constr_mult_init_max=1000.0, print_level=MadNLP.ERROR)
+
+            # Test Enum values
+            Test.@test_nowarn Solvers.MadNLPSolver(fixed_variable_treatment=MadNLP.MAKE_PARAMETER, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(equality_treatment=MadNLP.RELAX_BOUNDS, print_level=MadNLP.ERROR)
+
+            # Test invalid values (suppress error messages)
+            redirect_stderr(devnull) do
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(bound_push=-1.0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(bound_push=0.0)
+
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(bound_fac=-1.0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(bound_fac=0.0)
+
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(constr_mult_init_max=-1.0)
+            end
         end
         
         # ====================================================================

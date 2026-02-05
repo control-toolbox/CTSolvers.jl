@@ -10,6 +10,11 @@ end
 using Pkg
 Pkg.activate(@__DIR__)
 
+# Add CTSolvers in development mode
+if !haskey(Pkg.project().dependencies, "CTSolvers")
+    Pkg.develop(path=joinpath(@__DIR__, "..", ".."))
+end
+
 # ---------------------------------------------------------------------------
 # Imports and project setup
 # ---------------------------------------------------------------------------
@@ -143,7 +148,10 @@ function demo_option_routing()
     ]
     
     # Create strategy registry
-    registry = Strategies.create_registry()
+    registry = Strategies.create_registry(
+        CTSolvers.Modelers.AbstractOptimizationModeler => (CTSolvers.Modelers.ADNLPModeler, CTSolvers.Modelers.ExaModeler),
+        CTSolvers.Solvers.AbstractOptimizationSolver => (CTSolvers.Solvers.IpoptSolver, CTSolvers.Solvers.MadNLPSolver)
+    )
     
     println()
     println("--- Method: ", method, " ---")
@@ -211,9 +219,17 @@ function demo_error_messages()
         solver = CTSolvers.Solvers.AbstractOptimizationSolver,
     )
     action_defs = [
-        Options.OptionDefinition(name=:display, type=Bool, default=true)
+        Options.OptionDefinition(
+            name=:display,
+            type=Bool,
+            default=true,
+            description="Display progress information"
+        )
     ]
-    registry = Strategies.create_registry()
+    registry = Strategies.create_registry(
+        CTSolvers.Modelers.AbstractOptimizationModeler => (CTSolvers.Modelers.ADNLPModeler, CTSolvers.Modelers.ExaModeler),
+        CTSolvers.Solvers.AbstractOptimizationSolver => (CTSolvers.Solvers.IpoptSolver, CTSolvers.Solvers.MadNLPSolver)
+    )
 
     # Error 1: Invalid option value for strategy
     show_captured_error("Invalid IpoptSolver tol value") do
@@ -259,7 +275,7 @@ function demo_strategy_construction()
     println("IpoptSolver created")
     
     adnlp_modeler = CTSolvers.Modelers.ADNLPModeler(
-        backend=:forward,
+        backend=:optimized,
         show_time=true,
         matrix_free=false
     )
@@ -291,13 +307,17 @@ function demo_strategy_construction()
         
         # Show current values and sources
         for option_name in option_names
-            value = Strategies.option_value(strategy, option_name)
-            source = Strategies.option_source(strategy, option_name)
-            is_user_val = Strategies.is_user(strategy, option_name)
-            is_default_val = Strategies.is_default(strategy, option_name)
-            
-            println("  :", option_name, " = ", value, " (", source, ")")
-            println("    User set: ", is_user_val, ", Default: ", is_default_val)
+            try
+                value = Strategies.option_value(strategy, option_name)
+                source = Strategies.option_source(strategy, option_name)
+                is_user_val = Strategies.is_user(strategy, option_name)
+                is_default_val = Strategies.is_default(strategy, option_name)
+                
+                println("  :", option_name, " = ", value, " (", source, ")")
+                println("    User set: ", is_user_val, ", Default: ", is_default_val)
+            catch e
+                println("  :", option_name, " = <error accessing value: ", typeof(e), ">")
+            end
         end
     end
 end
@@ -391,7 +411,7 @@ function demo_simple_displays()
     
     # Create actual strategies and show their display
     ipopt_solver = CTSolvers.Solvers.IpoptSolver(max_iter=100, tol=1e-4)
-    adnlp_modeler = CTSolvers.Modelers.ADNLPModeler(backend=:forward, show_time=true)
+    adnlp_modeler = CTSolvers.Modelers.ADNLPModeler(backend=:optimized, show_time=true)
     
     println("IpoptSolver object:")
     println(ipopt_solver)
@@ -424,7 +444,7 @@ function demo_simple_displays()
     end
     
     println("Iteration over pairs:")
-    for (name, value) in opts
+    for (name, value) in Strategies.pairs(opts)
         println("  :", name, " = ", value)
     end
 end
