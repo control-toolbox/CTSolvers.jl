@@ -17,14 +17,14 @@
 ```julia
 function build_strategy_options(
     strategy_type::Type{<:AbstractStrategy};
-    strict::Bool = true,  # ← Défaut strict
+    mode::Symbol = :strict,  # ← Défaut strict
     kwargs...
 )
 ```
 
 #### Principe 2 : Propagation Explicite
 
-**Décision** : Le paramètre `strict` se propage explicitement à travers la chaîne d'appels.
+**Décision** : Le paramètre `mode` se propage explicitement à travers la chaîne d'appels.
 
 **Justification** :
 - Traçabilité claire
@@ -33,15 +33,15 @@ function build_strategy_options(
 
 **Implémentation** :
 ```julia
-solve(...; strict=false)
+solve(...; mode=:permissive)
     ↓
-route_all_options(...; strict=false)
+route_all_options(...; mode=:permissive)
     ↓
-build_strategy_from_method(...; strict=false)
+build_strategy_from_method(...; mode=:permissive)
     ↓
-build_strategy(...; strict=false)
+build_strategy(...; mode=:permissive)
     ↓
-build_strategy_options(...; strict=false)
+build_strategy_options(...; mode=:permissive)
 ```
 
 #### Principe 3 : Validation Partielle
@@ -75,13 +75,13 @@ extracted, remaining = Options.extract_options(kwargs, defs)
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    API Utilisateur                          │
-│  solve(ocp, method; options..., strict=true/false)         │
+│  solve(ocp, method; options..., mode=:strict/false)         │
 └─────────────────────┬───────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              Orchestration Layer                            │
-│  route_all_options(method, families, kwargs; strict)        │
+│  route_all_options(method, families, kwargs; mode)        │
 │    ├─ Extract action options                                │
 │    ├─ Build option ownership map                            │
 │    └─ Route to families                                     │
@@ -90,8 +90,8 @@ extracted, remaining = Options.extract_options(kwargs, defs)
                       ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              Strategy Builders                              │
-│  build_strategy_from_method(method, family, opts; strict)   │
-│    └─ build_strategy(id, opts, registry; strict)            │
+│  build_strategy_from_method(method, family, opts; mode)   │
+│    └─ build_strategy(id, opts, registry; mode)            │
 └─────────────────────┬───────────────────────────────────────┘
                       │
                       ▼
@@ -140,28 +140,34 @@ end
 ```julia
 function build_strategy_options(
     strategy_type::Type{<:AbstractStrategy};
-    strict::Bool = true,
+    mode::Symbol = :strict,
     kwargs...
 )
+    # Validate mode
+    mode ∉ (:strict, :permissive) && throw(ArgumentError(
+        "Invalid mode: $mode. Expected :strict or :permissive"
+    ))
+    
     meta = metadata(strategy_type)
     defs = collect(values(meta.specs))
     
-    # Extract known options
+    # Extract known options (always validated)
     extracted, remaining = Options.extract_options((; kwargs...), defs)
     
     # Handle unknown options based on mode
     if !isempty(remaining)
-        if strict
+        if mode == :strict
             # STRICT MODE: Error with suggestions
             _error_unknown_options_strict(
                 remaining, strategy_type, meta
             )
-        else
+        else  # mode == :permissive
             # PERMISSIVE MODE: Warning and store
             _warn_unknown_options_permissive(
                 remaining, strategy_type
             )
-            # Add unvalidated options with special source
+            # Add unvalidated options with special source :user_unvalidated
+            # This allows tracking which options were not validated
             for (key, value) in pairs(remaining)
                 extracted[key] = Options.OptionValue(value, :user_unvalidated)
             end
@@ -217,7 +223,7 @@ function _error_unknown_options_strict(
     
     msg *= "Si vous êtes certain que ces options existent pour le backend,\n"
     msg *= "utilisez le mode permissif :\n"
-    msg *= "  $strategy_name(...; strict=false)"
+    msg *= "  $strategy_name(...; mode=:permissive)"
     
     throw(Exceptions.IncorrectArgument(
         "Options inconnues fournies",
@@ -277,7 +283,7 @@ Les options non validées sont stockées avec source `:user_unvalidated` dans le
 
 **Modifications** :
 
-1. Ajouter paramètre `strict::Bool = true`
+1. Ajouter paramètre `mode::Symbol = true`
 2. Modifier la gestion des options avec 0 owners
 3. Accepter les options disambiguées même si inconnues en mode permissif
 
@@ -291,7 +297,7 @@ function route_all_options(
     kwargs::NamedTuple,
     registry::Strategies.StrategyRegistry;
     source_mode::Symbol = :description,
-    strict::Bool = true,  # ← Nouveau paramètre
+    mode::Symbol = true,  # ← Nouveau paramètre
 )
     # Step 1: Extract action options FIRST
     action_options, remaining_kwargs = Options.extract_options(
@@ -452,7 +458,7 @@ function build_strategy_from_method(
     family_type::Type{<:AbstractStrategy},
     options::NamedTuple,
     registry::Strategies.StrategyRegistry;
-    strict::Bool = true  # ← Nouveau paramètre
+    mode::Symbol = true  # ← Nouveau paramètre
 )
     strategy_id = Strategies.extract_id_from_method(method, family_type, registry)
     return Strategies.build_strategy(strategy_id, options, registry; strict=strict)
@@ -472,7 +478,7 @@ function build_strategy(
     strategy_id::Symbol,
     options::NamedTuple,
     registry::Strategies.StrategyRegistry;
-    strict::Bool = true  # ← Nouveau paramètre
+    mode::Symbol = true  # ← Nouveau paramètre
 )
     strategy_type = registry[strategy_id]
     return build_strategy_options(strategy_type; strict=strict, options...)
@@ -489,7 +495,7 @@ function build_strategy_from_method(
     family_type::Type{<:AbstractStrategy},
     options::NamedTuple,
     registry::Strategies.StrategyRegistry;
-    strict::Bool = true  # ← Nouveau paramètre
+    mode::Symbol = true  # ← Nouveau paramètre
 )
     strategy_id = Strategies.extract_id_from_method(method, family_type, registry)
     return build_strategy(strategy_id, options, registry; strict=strict)
@@ -524,7 +530,7 @@ end
 **Alternative plus simple** (recommandée) :
 
 ```julia
-function Solvers.build_ipopt_solver(::Solvers.IpoptTag; strict::Bool=true, kwargs...)
+function Solvers.build_ipopt_solver(::Solvers.IpoptTag; mode::Symbol=true, kwargs...)
     opts = Strategies.build_strategy_options(
         Solvers.IpoptSolver; 
         strict=strict,
@@ -545,7 +551,7 @@ end
 **Exemple pour ADNLPModeler** :
 
 ```julia
-function ADNLPModeler(; strict::Bool=true, kwargs...)
+function ADNLPModeler(; mode::Symbol=true, kwargs...)
     opts = Strategies.build_strategy_options(
         ADNLPModeler; 
         strict=strict,
@@ -615,9 +621,9 @@ end
 ```
 IpoptSolver(max_iter=1000, unknown=123)
     ↓
-build_ipopt_solver(IpoptTag(); max_iter=1000, unknown=123, strict=true)
+build_ipopt_solver(IpoptTag(); max_iter=1000, unknown=123, mode=:strict)
     ↓
-build_strategy_options(IpoptSolver; strict=true, max_iter=1000, unknown=123)
+build_strategy_options(IpoptSolver; mode=:strict, max_iter=1000, unknown=123)
     ↓
 Options.extract_options((max_iter=1000, unknown=123), defs)
     ↓
@@ -633,11 +639,11 @@ _error_unknown_options_strict(remaining, IpoptSolver, meta)
 ### 4.2 Constructeur Direct - Mode Permissif
 
 ```
-IpoptSolver(max_iter=1000, unknown=123; strict=false)
+IpoptSolver(max_iter=1000, unknown=123; mode=:permissive)
     ↓
-build_ipopt_solver(IpoptTag(); max_iter=1000, unknown=123, strict=false)
+build_ipopt_solver(IpoptTag(); max_iter=1000, unknown=123, mode=:permissive)
     ↓
-build_strategy_options(IpoptSolver; strict=false, max_iter=1000, unknown=123)
+build_strategy_options(IpoptSolver; mode=:permissive, max_iter=1000, unknown=123)
     ↓
 Options.extract_options((max_iter=1000, unknown=123), defs)
     ↓
@@ -659,9 +665,9 @@ StrategyOptions({max_iter: 1000 (user), unknown: 123 (user_unvalidated)})
 ### 4.3 Via solve() - Mode Strict
 
 ```
-solve(ocp, :collocation, :adnlp, :ipopt; max_iter=1000, unknown=123, strict=true)
+solve(ocp, :collocation, :adnlp, :ipopt; max_iter=1000, unknown=123, mode=:strict)
     ↓
-route_all_options(method, families, action_defs, kwargs, registry; strict=true)
+route_all_options(method, families, action_defs, kwargs, registry; mode=:strict)
     ↓
 Options.extract_options(kwargs, action_defs)  # Extract action options
     ↓
@@ -685,10 +691,10 @@ _error_unknown_option(unknown, method, families, ...)
 solve(ocp, :collocation, :adnlp, :ipopt; 
     max_iter=1000, 
     unknown=(123, :ipopt), 
-    strict=false
+    mode=:permissive
 )
     ↓
-route_all_options(method, families, action_defs, kwargs, registry; strict=false)
+route_all_options(method, families, action_defs, kwargs, registry; mode=:permissive)
     ↓
 Options.extract_options(kwargs, action_defs)
     ↓
@@ -710,9 +716,9 @@ For unknown:
     ↓
 strategy_options = (solver=(max_iter=1000, unknown=123), ...)
     ↓
-build_strategy_from_method(:ipopt, solver_options; strict=false)
+build_strategy_from_method(:ipopt, solver_options; mode=:permissive)
     ↓
-build_strategy_options(IpoptSolver; strict=false, max_iter=1000, unknown=123)
+build_strategy_options(IpoptSolver; mode=:permissive, max_iter=1000, unknown=123)
     ↓
 [Même flux que 4.2]
     ↓
@@ -723,17 +729,17 @@ build_strategy_options(IpoptSolver; strict=false, max_iter=1000, unknown=123)
 
 ### 5.1 Type Stability
 
-**Question** : Le paramètre `strict::Bool` affecte-t-il la stabilité de type ?
+**Question** : Le paramètre `mode::Symbol` affecte-t-il la stabilité de type ?
 
 **Réponse** : Non, car :
-- `strict` est un paramètre de fonction, pas un champ de type
+- `mode` est un paramètre de fonction, pas un champ de type
 - La valeur est connue à la compilation dans la plupart des cas
 - Le type de retour (`StrategyOptions`) est le même dans les deux modes
 
 **Vérification** :
 ```julia
-@inferred build_strategy_options(IpoptSolver; strict=true, max_iter=1000)
-@inferred build_strategy_options(IpoptSolver; strict=false, max_iter=1000)
+@inferred build_strategy_options(IpoptSolver; mode=:strict, max_iter=1000)
+@inferred build_strategy_options(IpoptSolver; mode=:permissive, max_iter=1000)
 # Les deux doivent passer
 ```
 
@@ -755,7 +761,7 @@ using BenchmarkTools
 @benchmark IpoptSolver(max_iter=1000)
 
 # Mode permissif
-@benchmark IpoptSolver(max_iter=1000, custom=123; strict=false)
+@benchmark IpoptSolver(max_iter=1000, custom=123; mode=:permissive)
 
 # Différence attendue : < 1%
 ```
@@ -774,8 +780,8 @@ using BenchmarkTools
 **Question** : Les extensions existantes fonctionnent-elles sans modification ?
 
 **Réponse** : Oui, car :
-- Le paramètre `strict` a une valeur par défaut
-- Les extensions peuvent ignorer `strict` si elles ne l'utilisent pas
+- Le paramètre `mode` a une valeur par défaut (`:strict`)
+- Les extensions peuvent ignorer `mode` si elles ne l'utilisent pas
 - La transmission d'options reste identique
 
 **Migration progressive** :
@@ -789,26 +795,70 @@ using BenchmarkTools
 
 | Fichier | Fonction | Modification |
 |---------|----------|--------------|
-| `src/Strategies/api/configuration.jl` | `build_strategy_options()` | Ajouter `strict`, gérer `remaining` |
+| `src/Strategies/api/configuration.jl` | `build_strategy_options()` | Ajouter `mode`, gérer `remaining` |
 | `src/Strategies/api/configuration.jl` | `_error_unknown_options_strict()` | Nouvelle fonction |
 | `src/Strategies/api/configuration.jl` | `_warn_unknown_options_permissive()` | Nouvelle fonction |
-| `src/Orchestration/routing.jl` | `route_all_options()` | Ajouter `strict`, gérer options disambiguées |
+| `src/Orchestration/routing.jl` | `route_all_options()` | Ajouter `mode`, gérer options disambiguées |
 | `src/Orchestration/routing.jl` | `_error_unknown_option_permissive()` | Nouvelle fonction |
-| `src/Orchestration/method_builders.jl` | `build_strategy_from_method()` | Propager `strict` |
-| `src/Strategies/api/builders.jl` | `build_strategy()` | Propager `strict` |
-| `src/Strategies/api/builders.jl` | `build_strategy_from_method()` | Propager `strict` |
-| `ext/CTSolversIpopt.jl` | `build_ipopt_solver()` | Propager `strict` |
-| `ext/CTSolversMadNLP.jl` | `build_madnlp_solver()` | Propager `strict` |
-| `ext/CTSolversKnitro.jl` | `build_knitro_solver()` | Propager `strict` |
-| `ext/CTSolversMadNCL.jl` | `build_madncl_solver()` | Propager `strict` |
-| `src/Modelers/adnlp_modeler.jl` | `ADNLPModeler()` | Ajouter `strict` |
-| `src/Modelers/exa_modeler.jl` | `ExaModeler()` | Ajouter `strict` |
+| `src/Orchestration/method_builders.jl` | `build_strategy_from_method()` | Propager `mode` |
+| `src/Strategies/api/builders.jl` | `build_strategy()` | Propager `mode` |
+| `src/Strategies/api/builders.jl` | `build_strategy_from_method()` | Propager `mode` |
+| `ext/CTSolversIpopt.jl` | `build_ipopt_solver()` | Propager `mode` |
+| `ext/CTSolversMadNLP.jl` | `build_madnlp_solver()` | Propager `mode` |
+| `ext/CTSolversKnitro.jl` | `build_knitro_solver()` | Propager `mode` |
+| `ext/CTSolversMadNCL.jl` | `build_madncl_solver()` | Propager `mode` |
+| `src/Modelers/adnlp_modeler.jl` | `ADNLPModeler()` | Ajouter `mode` |
+| `src/Modelers/exa_modeler.jl` | `ExaModeler()` | Ajouter `mode` |
+| `src/Strategies/api/utilities.jl` | `route_to()` | Nouvelle fonction helper (optionnel) |
 
 ### Nouvelles Fonctions
 
 - `_error_unknown_options_strict()` : Gestion d'erreur mode strict (constructeur)
 - `_warn_unknown_options_permissive()` : Gestion warning mode permissif (constructeur)
 - `_error_unknown_option_permissive()` : Gestion d'erreur mode permissif (routage)
+- `route_to(strategy::Symbol, value)` : Helper optionnel pour disambiguation (export optionnel)
+
+### Helper Optionnel : `route_to()`
+
+**Fichier** : `src/Strategies/api/utilities.jl` (ou nouveau fichier)
+
+**Signature** :
+```julia
+"""
+    route_to(strategy::Symbol, value) -> Tuple{Any, Symbol}
+
+Helper function for disambiguating options in permissive mode.
+
+Returns a tuple `(value, strategy)` that can be used to explicitly
+route an option to a specific strategy.
+
+# Examples
+```julia
+# Instead of tuple syntax
+solve(ocp, method; backend=(:sparse, :adnlp), mode=:permissive)
+
+# Use helper for clarity
+solve(ocp, method; backend=route_to(:adnlp, :sparse), mode=:permissive)
+```
+
+# See Also
+- Disambiguation syntax in OptimalControl package
+"""
+route_to(strategy::Symbol, value) = (value, strategy)
+```
+
+**Export** : Optionnel (à décider lors de l'implémentation)
+
+**Avantages** :
+- Syntaxe plus lisible que les tuples bruts
+- Auto-documentation via le nom de la fonction
+- Facilite la découverte de la fonctionnalité
+
+**Inconvénients** :
+- Nécessite un import/using supplémentaire
+- Peut être considéré comme redondant
+
+**Recommandation** : Implémenter mais ne pas exporter par défaut. Documenter dans les exemples.
 
 ### Aucune Modification
 

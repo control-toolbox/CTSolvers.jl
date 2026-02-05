@@ -33,6 +33,7 @@ Implémenter le mode strict/permissif au niveau des constructeurs de stratégies
 **Livrables** :
 - ✅ `build_strategy_options()` modifié
 - ✅ Fonctions helper pour messages
+- ✅ Helper optionnel `route_to()` pour disambiguation
 - ✅ Tests unitaires complets
 - ✅ Documentation inline
 
@@ -43,10 +44,11 @@ Implémenter le mode strict/permissif au niveau des constructeurs de stratégies
 **Fichier** : `src/Strategies/api/configuration.jl`
 
 **Actions** :
-1. Ajouter paramètre `strict::Bool = true`
-2. Récupérer `remaining` de `Options.extract_options()`
-3. Implémenter logique strict/permissif
-4. Ajouter docstring
+1. Ajouter paramètre `mode::Symbol = :strict`
+2. Valider le mode (`:strict` ou `:permissive`)
+3. Récupérer `remaining` de `Options.extract_options()`
+4. Implémenter logique strict/permissif
+5. Ajouter docstring
 
 **Estimation** : 2-3 heures
 
@@ -54,19 +56,26 @@ Implémenter le mode strict/permissif au niveau des constructeurs de stratégies
 ```julia
 function build_strategy_options(
     strategy_type::Type{<:AbstractStrategy};
-    strict::Bool = true,
+    mode::Symbol = :strict,
     kwargs...
 )
+    # Validate mode
+    mode ∉ (:strict, :permissive) && throw(ArgumentError(
+        "Invalid mode: $mode. Expected :strict or :permissive"
+    ))
+    
     meta = metadata(strategy_type)
     defs = collect(values(meta.specs))
     
+    # Extract known options (always validated)
     extracted, remaining = Options.extract_options((; kwargs...), defs)
     
     if !isempty(remaining)
-        if strict
+        if mode == :strict
             _error_unknown_options_strict(remaining, strategy_type, meta)
-        else
+        else  # mode == :permissive
             _warn_unknown_options_permissive(remaining, strategy_type)
+            # Store with special source :user_unvalidated
             for (key, value) in pairs(remaining)
                 extracted[key] = Options.OptionValue(value, :user_unvalidated)
             end
@@ -161,7 +170,7 @@ Implémenter le mode strict/permissif au niveau du routage d'options.
 **Fichier** : `src/Orchestration/routing.jl`
 
 **Actions** :
-1. Ajouter paramètre `strict::Bool = true`
+1. Ajouter paramètre `mode::Symbol = true`
 2. Modifier gestion des options avec 0 owners
 3. Accepter options disambiguées en mode permissif
 4. Ajouter warnings appropriés
@@ -241,7 +250,7 @@ Propager le paramètre `strict` à travers toute la chaîne d'appels.
 **Fichier** : `src/Orchestration/method_builders.jl`
 
 **Actions** :
-1. Ajouter paramètre `strict::Bool = true`
+1. Ajouter paramètre `mode::Symbol = true`
 2. Propager à `build_strategy()`
 
 **Estimation** : 30 minutes
@@ -251,7 +260,7 @@ Propager le paramètre `strict` à travers toute la chaîne d'appels.
 **Fichier** : `src/Strategies/api/builders.jl`
 
 **Actions** :
-1. Ajouter paramètre `strict::Bool = true`
+1. Ajouter paramètre `mode::Symbol = true`
 2. Propager à `build_strategy_options()`
 
 **Estimation** : 30 minutes
@@ -265,7 +274,7 @@ Propager le paramètre `strict` à travers toute la chaîne d'appels.
 - `ext/CTSolversMadNCL.jl`
 
 **Actions** :
-1. Ajouter paramètre `strict::Bool = true` aux constructeurs
+1. Ajouter paramètre `mode::Symbol = true` aux constructeurs
 2. Propager à `build_strategy_options()`
 
 **Estimation** : 1-2 heures (4 fichiers)
@@ -277,7 +286,7 @@ Propager le paramètre `strict` à travers toute la chaîne d'appels.
 - `src/Modelers/exa_modeler.jl`
 
 **Actions** :
-1. Ajouter paramètre `strict::Bool = true` aux constructeurs
+1. Ajouter paramètre `mode::Symbol = true` aux constructeurs
 2. Propager à `build_strategy_options()`
 
 **Estimation** : 1 heure (2 fichiers)

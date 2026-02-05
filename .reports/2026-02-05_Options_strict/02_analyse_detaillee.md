@@ -119,7 +119,7 @@ solver = IpoptSolver(
 solver = IpoptSolver(
     max_iter = 1000,
     experimental_option = value;
-    strict = false  # Mode permissif
+    mode = :permissive  # Mode permissif
 )
 ```
 
@@ -142,7 +142,7 @@ solve(ocp, :collocation, :adnlp, :ipopt;
     mu_strategy = ("adaptive", :ipopt),
     alpha_for_y = ("primal", :ipopt);
     
-    strict = false
+    mode = :permissive
 )
 ```
 
@@ -160,7 +160,7 @@ solver = IpoptSolver(
     print_timing_statistics = "yes",
     timing_statistics = "yes",
     debug_option = true;  # Option de debug non documentée
-    strict = false
+    mode = :permissive
 )
 ```
 
@@ -191,8 +191,8 @@ solver = IpoptSolver(unknown_opt = 123)  # ❌ Erreur
 
 **Critère d'acceptation** :
 ```julia
-# Avec strict=false, accepte les options inconnues
-solver = IpoptSolver(unknown_opt = 123; strict = false)  # ✅ Warning + OK
+# Avec mode=:permissive, accepte les options inconnues
+solver = IpoptSolver(unknown_opt = 123; mode = :permissive)  # ✅ Warning + OK
 ```
 
 #### EF3 : Validation Partielle en Mode Permissif
@@ -204,7 +204,7 @@ solver = IpoptSolver(unknown_opt = 123; strict = false)  # ✅ Warning + OK
 **Critère d'acceptation** :
 ```julia
 # Option connue avec mauvais type → Erreur même en mode permissif
-solver = IpoptSolver(max_iter = "1000"; strict = false)  # ❌ Erreur de type
+solver = IpoptSolver(max_iter = "1000"; mode = :permissive)  # ❌ Erreur de type
 ```
 
 #### EF4 : Transmission Automatique
@@ -215,7 +215,7 @@ solver = IpoptSolver(max_iter = "1000"; strict = false)  # ❌ Erreur de type
 
 **Critère d'acceptation** :
 ```julia
-solver = IpoptSolver(custom_opt = 123; strict = false)
+solver = IpoptSolver(custom_opt = 123; mode = :permissive)
 options = Strategies.options_dict(solver)
 @test options[:custom_opt] == 123  # ✅ Présent dans le dict
 ```
@@ -229,10 +229,10 @@ options = Strategies.options_dict(solver)
 **Critère d'acceptation** :
 ```julia
 # Sans disambiguation → Erreur
-solve(ocp, method; unknown_opt = 123, strict = false)  # ❌ Erreur
+solve(ocp, method; unknown_opt = 123, mode = :permissive)  # ❌ Erreur
 
 # Avec disambiguation → OK
-solve(ocp, method; unknown_opt = (123, :ipopt), strict = false)  # ✅ OK
+solve(ocp, method; unknown_opt = (123, :ipopt), mode = :permissive)  # ✅ OK
 ```
 
 ### 2.2 Exigences Non Fonctionnelles
@@ -286,7 +286,7 @@ ERROR: KeyError: unknown_opt
 ERROR: Option inconnue 'unknown_opt'
 Cette option n'est pas définie dans les metadata de IpoptSolver.
 Suggestions : max_iter, max_wall_time
-Pour utiliser une option backend non documentée : strict=false
+Pour utiliser une option backend non documentée : mode=:permissive
 ```
 
 #### Principe 2 : Guidance
@@ -551,7 +551,7 @@ solver = IpoptSolver(
 
 ### Alternative 4 : Mode Strict/Permissif (Retenu)
 
-**Description** : Paramètre `strict::Bool` pour contrôler le mode.
+**Description** : Paramètre `mode::Symbol` pour contrôler le mode.
 
 **Avantages** :
 - Simple et clair

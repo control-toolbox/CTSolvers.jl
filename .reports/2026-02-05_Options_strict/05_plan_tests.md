@@ -87,10 +87,10 @@ function test_validation_strict()
         end
         
         # ================================================================
-        # UNIT TESTS - Options Inconnues Rejetées
+        # UNIT TESTS - Unknown Options Rejected
         # ================================================================
         
-        @testset "Option inconnue rejetée" begin
+        @testset "Unknown option rejected" begin
             using NLPModelsIpopt
             
             @test_throws Exceptions.IncorrectArgument begin
@@ -98,7 +98,7 @@ function test_validation_strict()
             end
         end
         
-        @testset "Plusieurs options inconnues rejetées" begin
+        @testset "Multiple unknown options rejected" begin
             using NLPModelsIpopt
             
             @test_throws Exceptions.IncorrectArgument begin
@@ -115,10 +115,10 @@ function test_validation_strict()
         end
         
         # ================================================================
-        # UNIT TESTS - Qualité des Messages d'Erreur
+        # UNIT TESTS - Error Message Quality
         # ================================================================
         
-        @testset "Message contient option inconnue" begin
+        @testset "Error message contains unknown option" begin
             using NLPModelsIpopt
             
             try
@@ -128,7 +128,7 @@ function test_validation_strict()
                 @test e isa Exceptions.IncorrectArgument
                 msg = string(e)
                 @test occursin("unknown_option", msg)
-                @test occursin("Options non reconnues", msg)
+                @test occursin("Unrecognized options", msg)
             end
         end
         
@@ -142,7 +142,7 @@ function test_validation_strict()
                 @test e isa Exceptions.IncorrectArgument
                 msg = string(e)
                 @test occursin("max_iter", msg)  # Suggestion
-                @test occursin("strict=false", msg)  # Solution alternative
+                @test occursin("mode=:permissive", msg)  # Solution alternative
             end
         end
         
@@ -187,11 +187,11 @@ function test_validation_strict()
         # UNIT TESTS - Mode Strict Explicite
         # ================================================================
         
-        @testset "strict=true explicite identique au défaut" begin
+        @testset "mode=:strict explicite identique au défaut" begin
             using NLPModelsIpopt
             
             @test_throws Exceptions.IncorrectArgument begin
-                Solvers.IpoptSolver(unknown=123; strict=true)
+                Solvers.IpoptSolver(unknown=123; mode=:strict)
             end
         end
         
@@ -228,7 +228,7 @@ function test_validation_permissive()
         @testset "Options connues fonctionnent normalement" begin
             using NLPModelsIpopt
             
-            solver = Solvers.IpoptSolver(max_iter=1000; strict=false)
+            solver = Solvers.IpoptSolver(max_iter=1000; mode=:permissive)
             @test Strategies.option_value(solver, :max_iter) == 1000
             @test Strategies.option_source(solver, :max_iter) == :user
         end
@@ -238,7 +238,7 @@ function test_validation_permissive()
             
             # Type incorrect rejeté même en mode permissif
             @test_throws Exception begin
-                Solvers.IpoptSolver(max_iter="1000"; strict=false)
+                Solvers.IpoptSolver(max_iter="1000"; mode=:permissive)
             end
         end
         
@@ -247,34 +247,34 @@ function test_validation_permissive()
             
             # Validation custom rejetée même en mode permissif
             @test_throws Exceptions.IncorrectArgument begin
-                Solvers.IpoptSolver(tol=-1.0; strict=false)
+                Solvers.IpoptSolver(tol=-1.0; mode=:permissive)
             end
         end
         
         # ================================================================
-        # UNIT TESTS - Options Inconnues Acceptées avec Warning
+        # UNIT TESTS - Unknown Options Accepted with Warning
         # ================================================================
         
-        @testset "Option inconnue acceptée avec warning" begin
+        @testset "Unknown option accepted with warning" begin
             using NLPModelsIpopt
             
             # Capture warning
-            @test_logs (:warn, r"Options non reconnues") begin
-                solver = Solvers.IpoptSolver(unknown_option=123; strict=false)
+            @test_logs (:warn, r"Unrecognized options") begin
+                solver = Solvers.IpoptSolver(unknown_option=123; mode=:permissive)
                 opts = Strategies.options_dict(solver)
                 @test haskey(opts, :unknown_option)
                 @test opts[:unknown_option] == 123
             end
         end
         
-        @testset "Plusieurs options inconnues acceptées" begin
+        @testset "Multiple unknown options accepted" begin
             using NLPModelsIpopt
             
-            @test_logs (:warn, r"Options non reconnues") begin
+            @test_logs (:warn, r"Unrecognized options") begin
                 solver = Solvers.IpoptSolver(
                     unknown1=123, 
                     unknown2=456; 
-                    strict=false
+                    mode=:permissive
                 )
                 opts = Strategies.options_dict(solver)
                 @test opts[:unknown1] == 123
@@ -285,11 +285,11 @@ function test_validation_permissive()
         @testset "Mix options connues/inconnues accepté" begin
             using NLPModelsIpopt
             
-            @test_logs (:warn, r"Options non reconnues") begin
+            @test_logs (:warn, r"Unrecognized options") begin
                 solver = Solvers.IpoptSolver(
                     max_iter=1000,
                     unknown=123;
-                    strict=false
+                    mode=:permissive
                 )
                 opts = Strategies.options_dict(solver)
                 @test opts[:max_iter] == 1000
@@ -305,7 +305,7 @@ function test_validation_permissive()
             using NLPModelsIpopt
             
             @test_logs (:warn,) begin
-                solver = Solvers.IpoptSolver(unknown=123; strict=false)
+                solver = Solvers.IpoptSolver(unknown=123; mode=:permissive)
                 opts = Strategies.options(solver)
                 # Vérifier la source si accessible
                 # (dépend de l'implémentation finale)
@@ -316,13 +316,13 @@ function test_validation_permissive()
         # UNIT TESTS - Transmission aux Backends
         # ================================================================
         
-        @testset "Options non validées transmises au backend" begin
+        @testset "Options non validées transmitted au backend" begin
             using NLPModelsIpopt
             
             @test_logs (:warn,) begin
                 solver = Solvers.IpoptSolver(
                     custom_ipopt_opt=456; 
-                    strict=false
+                    mode=:permissive
                 )
                 opts = Strategies.options_dict(solver)
                 @test haskey(opts, :custom_ipopt_opt)
@@ -341,7 +341,7 @@ function test_validation_permissive()
             using NLPModelsIpopt
             
             logs = Test.@test_logs (:warn,) match_mode=:any begin
-                Solvers.IpoptSolver(unknown1=1, unknown2=2; strict=false)
+                Solvers.IpoptSolver(unknown1=1, unknown2=2; mode=:permissive)
             end
             
             # Vérifier le contenu du warning
@@ -396,14 +396,14 @@ function test_routing_strict()
             
             routed = Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry;
-                strict=true
+                mode=:strict
             )
             
             @test haskey(routed.strategies.solver, :max_iter)
             @test routed.strategies.solver.max_iter == 1000
         end
         
-        @testset "Option disambiguée routée correctement" begin
+        @testset "Option disambiguated routée correctement" begin
             using NLPModelsIpopt
             
             # backend existe dans modeler et solver
@@ -411,7 +411,7 @@ function test_routing_strict()
             
             routed = Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry;
-                strict=true
+                mode=:strict
             )
             
             @test haskey(routed.strategies.modeler, :backend)
@@ -422,7 +422,7 @@ function test_routing_strict()
         # UNIT TESTS - Options Inconnues Rejetées
         # ================================================================
         
-        @testset "Option inconnue (0 owners) rejetée" begin
+        @testset "Unknown option (0 owners) rejetée" begin
             using NLPModelsIpopt
             
             kwargs = (unknown_option=123,)
@@ -430,12 +430,12 @@ function test_routing_strict()
             @test_throws Exceptions.IncorrectArgument begin
                 Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
-                    strict=true
+                    mode=:strict
                 )
             end
         end
         
-        @testset "Option ambiguë sans disambiguation rejetée" begin
+        @testset "Ambiguous option sans disambiguation rejetée" begin
             using NLPModelsIpopt
             
             # backend ambiguë
@@ -444,7 +444,7 @@ function test_routing_strict()
             @test_throws Exceptions.IncorrectArgument begin
                 Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
-                    strict=true
+                    mode=:strict
                 )
             end
         end
@@ -461,7 +461,7 @@ function test_routing_strict()
             try
                 Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
-                    strict=true
+                    mode=:strict
                 )
                 @test false
             catch e
@@ -480,7 +480,7 @@ function test_routing_strict()
             try
                 Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
-                    strict=true
+                    mode=:strict
                 )
                 @test false
             catch e
@@ -539,14 +539,14 @@ function test_routing_permissive()
             
             routed = Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry;
-                strict=false
+                mode=:permissive
             )
             
             @test haskey(routed.strategies.solver, :max_iter)
             @test routed.strategies.solver.max_iter == 1000
         end
         
-        @testset "Option ambiguë toujours rejetée" begin
+        @testset "Ambiguous option toujours rejetée" begin
             using NLPModelsIpopt
             
             # Ambiguïté doit être résolue même en mode permissif
@@ -555,7 +555,7 @@ function test_routing_permissive()
             @test_throws Exceptions.IncorrectArgument begin
                 Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
-                    strict=false
+                    mode=:permissive
                 )
             end
         end
@@ -564,7 +564,7 @@ function test_routing_permissive()
         # UNIT TESTS - Options Inconnues Sans Disambiguation
         # ================================================================
         
-        @testset "Option inconnue sans disambiguation rejetée" begin
+        @testset "Unknown option sans disambiguation rejetée" begin
             using NLPModelsIpopt
             
             kwargs = (unknown_option=123,)
@@ -572,7 +572,7 @@ function test_routing_permissive()
             @test_throws Exceptions.IncorrectArgument begin
                 Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
-                    strict=false
+                    mode=:permissive
                 )
             end
         end
@@ -585,13 +585,13 @@ function test_routing_permissive()
             try
                 Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
-                    strict=false
+                    mode=:permissive
                 )
                 @test false
             catch e
                 @test e isa Exceptions.IncorrectArgument
                 msg = string(e)
-                @test occursin("disambiguée", msg)
+                @test occursin("disambiguated", msg)
                 @test occursin("(value, :strategy_id)", msg)
             end
         end
@@ -600,7 +600,7 @@ function test_routing_permissive()
         # UNIT TESTS - Options Inconnues Avec Disambiguation
         # ================================================================
         
-        @testset "Option inconnue disambiguée acceptée avec warning" begin
+        @testset "Unknown option disambiguated acceptée avec warning" begin
             using NLPModelsIpopt
             
             kwargs = (unknown_option=(123, :ipopt),)
@@ -608,7 +608,7 @@ function test_routing_permissive()
             @test_logs (:warn, r"Option non reconnue") begin
                 routed = Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
-                    strict=false
+                    mode=:permissive
                 )
                 
                 @test haskey(routed.strategies.solver, :unknown_option)
@@ -616,7 +616,7 @@ function test_routing_permissive()
             end
         end
         
-        @testset "Plusieurs options inconnues disambiguées acceptées" begin
+        @testset "Plusieurs options inconnues disambiguateds acceptées" begin
             using NLPModelsIpopt
             
             kwargs = (
@@ -627,7 +627,7 @@ function test_routing_permissive()
             @test_logs (:warn,) (:warn,) match_mode=:any begin
                 routed = Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
-                    strict=false
+                    mode=:permissive
                 )
                 
                 @test routed.strategies.modeler.unknown1 == 111
@@ -646,7 +646,7 @@ function test_routing_permissive()
             @test_logs (:warn,) match_mode=:any begin
                 routed = Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
-                    strict=false
+                    mode=:permissive
                 )
                 
                 @test routed.strategies.solver.max_iter == 1000
@@ -667,7 +667,7 @@ function test_routing_permissive()
             @test_throws Exceptions.IncorrectArgument begin
                 Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
-                    strict=false
+                    mode=:permissive
                 )
             end
         end
@@ -709,7 +709,7 @@ function test_strict_permissive_integration()
             sol = solve(ros.prob, :adnlp, :ipopt;
                 max_iter=100,
                 tol=1e-6,
-                strict=true
+                mode=:strict
             )
             
             @test sol isa Solution
@@ -724,7 +724,7 @@ function test_strict_permissive_integration()
                 solve(ros.prob, :adnlp, :ipopt;
                     max_iter=100,
                     unknown_option=123,
-                    strict=true
+                    mode=:strict
                 )
             end
         end
@@ -733,7 +733,7 @@ function test_strict_permissive_integration()
         # INTEGRATION TESTS - End-to-End Mode Permissif
         # ================================================================
         
-        @testset "solve() mode permissif - option inconnue disambiguée" begin
+        @testset "solve() mode permissif - option inconnue disambiguated" begin
             using NLPModelsIpopt
             
             ros = Rosenbrock()
@@ -742,7 +742,7 @@ function test_strict_permissive_integration()
                 sol = solve(ros.prob, :adnlp, :ipopt;
                     max_iter=100,
                     custom_ipopt_option=(456, :ipopt),
-                    strict=false
+                    mode=:permissive
                 )
                 
                 @test sol isa Solution
@@ -758,7 +758,7 @@ function test_strict_permissive_integration()
                 solve(ros.prob, :adnlp, :ipopt;
                     max_iter=100,
                     unknown_option=123,  # Pas de disambiguation
-                    strict=false
+                    mode=:permissive
                 )
             end
         end
@@ -777,7 +777,7 @@ function test_strict_permissive_integration()
                 solve(ros.prob, :adnlp, :ipopt;
                     max_iter=100,
                     unknown=(123, :ipopt),  # Disambiguée au routage
-                    strict=true  # Mais strict au constructeur
+                    mode=:strict  # Mais strict au constructeur
                 )
             end
         end
@@ -791,7 +791,7 @@ function test_strict_permissive_integration()
                 sol = solve(ros.prob, :adnlp, :ipopt;
                     max_iter=100,
                     unknown=(123, :ipopt),
-                    strict=false
+                    mode=:permissive
                 )
                 
                 @test sol isa Solution
@@ -832,8 +832,8 @@ function test_strict_permissive_performance()
             # Baseline
             t_baseline = @belapsed Solvers.IpoptSolver(max_iter=1000)
             
-            # Avec strict=true explicite
-            t_strict = @belapsed Solvers.IpoptSolver(max_iter=1000; strict=true)
+            # Avec mode=:strict explicite
+            t_strict = @belapsed Solvers.IpoptSolver(max_iter=1000; mode=:strict)
             
             # Overhead doit être négligeable (< 1%)
             overhead = (t_strict - t_baseline) / t_baseline
@@ -847,7 +847,7 @@ function test_strict_permissive_performance()
             # Mode permissif avec option inconnue
             t_permissive = @belapsed begin
                 # Supprimer le warning pour le benchmark
-                Solvers.IpoptSolver(max_iter=1000, custom=123; strict=false)
+                Solvers.IpoptSolver(max_iter=1000, custom=123; mode=:permissive)
             end
             
             # Overhead doit être < 5%
@@ -872,7 +872,7 @@ function test_strict_permissive_performance()
             # Benchmark
             t = @belapsed Orchestration.route_all_options(
                 $method, $families, $action_defs, $kwargs, $registry;
-                strict=true
+                mode=:strict
             )
             
             # Doit être rapide (< 1ms)
@@ -894,7 +894,7 @@ test_strict_permissive_performance() = TestStrictPermissivePerformance.test_stri
 - [x] Options connues acceptées
 - [x] Options avec aliases acceptées
 - [x] Options par défaut utilisées
-- [x] Option inconnue rejetée
+- [x] Unknown option rejetée
 - [x] Plusieurs options inconnues rejetées
 - [x] Mix options connues/inconnues rejeté
 - [x] Message contient option inconnue
@@ -902,37 +902,37 @@ test_strict_permissive_performance() = TestStrictPermissivePerformance.test_stri
 - [x] Message contient options disponibles
 - [x] Type incorrect détecté
 - [x] Validation custom appliquée
-- [x] strict=true explicite identique au défaut
+- [x] mode=:strict explicite identique au défaut
 
 ### 8.2 Constructeur - Mode Permissif
 
 - [x] Options connues fonctionnent normalement
 - [x] Validation type toujours appliquée
 - [x] Validation custom toujours appliquée
-- [x] Option inconnue acceptée avec warning
+- [x] Unknown option acceptée avec warning
 - [x] Plusieurs options inconnues acceptées
 - [x] Mix options connues/inconnues accepté
 - [x] Options non validées ont source :user_unvalidated
-- [x] Options non validées transmises au backend
+- [x] Options non validées transmitted au backend
 - [x] Warning contient liste des options
 
 ### 8.3 Routage - Mode Strict
 
 - [x] Option non ambiguë routée automatiquement
-- [x] Option disambiguée routée correctement
-- [x] Option inconnue (0 owners) rejetée
-- [x] Option ambiguë sans disambiguation rejetée
+- [x] Option disambiguated routée correctement
+- [x] Unknown option (0 owners) rejetée
+- [x] Ambiguous option sans disambiguation rejetée
 - [x] Message erreur option inconnue contient suggestions
 - [x] Message erreur ambiguïté contient syntaxe disambiguation
 
 ### 8.4 Routage - Mode Permissif
 
 - [x] Options connues routées normalement
-- [x] Option ambiguë toujours rejetée
-- [x] Option inconnue sans disambiguation rejetée
+- [x] Ambiguous option toujours rejetée
+- [x] Unknown option sans disambiguation rejetée
 - [x] Message erreur explique requirement disambiguation
-- [x] Option inconnue disambiguée acceptée avec warning
-- [x] Plusieurs options inconnues disambiguées acceptées
+- [x] Unknown option disambiguated acceptée avec warning
+- [x] Plusieurs options inconnues disambiguateds acceptées
 - [x] Mix options connues/inconnues accepté
 - [x] Option connue routée vers mauvaise stratégie rejetée
 
@@ -940,7 +940,7 @@ test_strict_permissive_performance() = TestStrictPermissivePerformance.test_stri
 
 - [x] solve() mode strict - options connues
 - [x] solve() mode strict - option inconnue rejetée
-- [x] solve() mode permissif - option inconnue disambiguée
+- [x] solve() mode permissif - option inconnue disambiguated
 - [x] solve() mode permissif - option inconnue sans disambiguation rejetée
 - [x] Mode strict se propage à travers la chaîne
 - [x] Mode permissif se propage à travers la chaîne

@@ -38,35 +38,35 @@
 **Message** :
 
 ```
-ERROR: Exceptions.IncorrectArgument: Options inconnues fournies
+ERROR: Exceptions.IncorrectArgument: Unknown options provided
 
-Options non reconnues : [:unknown_opt, :another_opt]
+Unrecognized options: [:unknown_opt, :another_opt]
 
-Ces options ne sont pas définies dans les metadata de IpoptSolver.
+These options are not defined in the metadata of IpoptSolver.
 
-Options disponibles :
+Available options:
   :max_iter, :tol, :print_level, :linear_solver, :mu_strategy,
   :dual_inf_tol, :constr_viol_tol, :max_wall_time, :max_cpu_time,
   :timing_statistics, :print_timing_statistics, :print_frequency_iter,
   :print_frequency_time, :sb
 
-Suggestions pour :unknown_opt :
-  - :max_iter (distance Levenshtein: 5)
+Suggestions for :unknown_opt:
+  - :max_iter (Levenshtein distance: 5)
   - :max_wall_time (distance: 7)
 
-Si vous êtes certain que ces options existent pour le backend Ipopt,
-utilisez le mode permissif :
-  IpoptSolver(...; strict=false)
+If you are certain these options exist for the Ipopt backend,
+use permissive mode:
+  IpoptSolver(...; mode=:permissive)
 
 Context: build_strategy_options - strict validation
 ```
 
 **Éléments clés** :
-- ✅ Liste des options inconnues
-- ✅ Options disponibles complètes
-- ✅ Suggestions basées sur similarité
-- ✅ Solution (mode permissif)
-- ✅ Contexte technique
+- ✅ List of unknown options
+- ✅ Complete available options
+- ✅ Similarity-based suggestions
+- ✅ Solution (permissive mode)
+- ✅ Technical context
 
 ### 2.2 Erreur : Type Incorrect (même en mode permissif)
 
@@ -75,25 +75,25 @@ Context: build_strategy_options - strict validation
 **Message** :
 
 ```
-ERROR: Exceptions.IncorrectArgument: Type incorrect pour l'option
+ERROR: Exceptions.IncorrectArgument: Incorrect type for option
 
-Option :max_iter a la valeur "1000" de type String.
+Option :max_iter has value "1000" of type String.
 
-Type attendu : Integer
+Expected type: Integer
 
-Cette option est validée même en mode permissif car elle est définie
-dans les metadata de IpoptSolver.
+This option is validated even in permissive mode because it is defined
+in the metadata of IpoptSolver.
 
-Suggestion : Utilisez un entier : max_iter=1000
+Suggestion: Use an integer: max_iter=1000
 
 Context: Options.extract_option - type validation
 ```
 
 **Éléments clés** :
-- ✅ Option concernée
-- ✅ Valeur et type fournis
-- ✅ Type attendu
-- ✅ Explication du comportement
+- ✅ Concerned option
+- ✅ Provided value and type
+- ✅ Expected type
+- ✅ Behavior explanation
 - ✅ Solution
 
 ### 2.3 Erreur : Validation Échouée
@@ -103,24 +103,24 @@ Context: Options.extract_option - type validation
 **Message** :
 
 ```
-ERROR: Exceptions.IncorrectArgument: Validation échouée pour l'option
+ERROR: Exceptions.IncorrectArgument: Validation failed for option
 
-Option :tol a la valeur -0.001
+Option :tol has value -0.001
 
-Erreur de validation : tol doit être positif (> 0)
+Validation error: tol must be positive (> 0)
 
-Les validateurs custom sont appliqués même en mode permissif pour
-les options définies dans les metadata.
+Custom validators are applied even in permissive mode for
+options defined in the metadata.
 
-Suggestion : Utilisez une valeur positive, par exemple : tol=1e-6
+Suggestion: Use a positive value, e.g., : tol=1e-6
 
 Context: Options.extract_option - custom validation
 ```
 
 **Éléments clés** :
-- ✅ Option et valeur
-- ✅ Message du validateur
-- ✅ Explication
+- ✅ Option and value
+- ✅ Validator message
+- ✅ Explanation
 - ✅ Suggestion
 
 ## 3. Messages Constructeur - Mode Permissif
@@ -132,22 +132,22 @@ Context: Options.extract_option - custom validation
 **Message** :
 
 ```
-┌ Warning: Options non reconnues transmises au backend
+┌ Warning: Unrecognized options passed to backend
 │ 
-│ Options non validées : [:unknown_opt, :another_opt]
+│ Unvalidated options: [:unknown_opt, :another_opt]
 │ 
-│ Ces options seront transmises directement au backend de IpoptSolver
-│ sans validation par CTSolvers. Assurez-vous qu'elles sont correctes.
+│ These options will be passed directly to the IpoptSolver backend
+│ without validation by CTSolvers. Ensure they are correct.
 │ 
-│ Pour désactiver cet avertissement, définissez ces options dans les metadata.
+│ To disable this warning, define these options in the metadata.
 └ @ CTSolvers.Strategies ~/.julia/dev/CTSolvers/src/Strategies/api/configuration.jl:XX
 ```
 
 **Éléments clés** :
-- ⚠️ Nature du warning (non bloquant)
-- ⚠️ Liste des options non validées
-- ⚠️ Explication de la transmission
-- ⚠️ Comment désactiver (ajouter aux metadata)
+- ⚠️ Warning nature (non-blocking)
+- ⚠️ List of unvalidated options
+- ⚠️ Transmission explanation
+- ⚠️ How to disable (add to metadata)
 
 ### 3.2 Info : Options Validées et Non Validées
 
@@ -156,12 +156,12 @@ Context: Options.extract_option - custom validation
 **Message** (optionnel, via logging) :
 
 ```
-┌ Info: IpoptSolver créé avec succès
+┌ Info: IpoptSolver created successfully
 │ 
-│ Options validées : [:max_iter, :tol, :print_level]
-│ Options non validées : [:unknown_opt] (mode permissif)
+│ Validated options: [:max_iter, :tol, :print_level]
+│ Unvalidated options: [:unknown_opt] (permissive mode)
 │ 
-│ Les options non validées seront transmises au backend Ipopt.
+│ Unvalidated options will be passed to the Ipopt backend.
 └ @ CTSolvers.Solvers ~/.julia/dev/CTSolvers/ext/CTSolversIpopt.jl:XX
 ```
 
@@ -176,12 +176,12 @@ Context: Options.extract_option - custom validation
 **Message** :
 
 ```
-ERROR: Exceptions.IncorrectArgument: Option inconnue fournie
+ERROR: Exceptions.IncorrectArgument: Unknown option provided
 
-Option :unknown_opt n'appartient à aucune stratégie dans la méthode
+Option :unknown_opt belongs to no strategy in the method
 (:collocation, :adnlp, :ipopt).
 
-Options disponibles :
+Available options:
   discretizer (:collocation):
     :grid_size, :time_grid, :init_type
   modeler (:adnlp):
@@ -189,9 +189,9 @@ Options disponibles :
   solver (:ipopt):
     :max_iter, :tol, :print_level, :linear_solver, :mu_strategy
 
-Si vous êtes certain que cette option existe pour une stratégie spécifique,
-utilisez le mode permissif avec disambiguation :
-  solve(...; unknown_opt=(value, :ipopt), strict=false)
+If you are certain this option exists for a specific strategy,
+use permissive mode with disambiguation:
+  solve(...; unknown_opt=(value, :ipopt), mode=:permissive)
 
 Context: route_options - unknown option validation
 ```
@@ -209,16 +209,16 @@ Context: route_options - unknown option validation
 **Message** :
 
 ```
-ERROR: Exceptions.IncorrectArgument: Option ambiguë nécessite disambiguation
+ERROR: Exceptions.IncorrectArgument: Ambiguous option requires disambiguation
 
-Option :backend est ambiguë entre les stratégies : :adnlp, :ipopt
+Option :backend is ambiguous between strategies: :adnlp, :ipopt
 
-Disambiguez en spécifiant l'ID de la stratégie :
+Disambiguate by specifying the strategy ID:
 
-  backend = (:sparse, :adnlp)    # Router vers modeler
-  backend = (:cpu, :ipopt)       # Router vers solver
+  backend = (:sparse, :adnlp)    # Route to modeler
+  backend = (:cpu, :ipopt)       # Route to solver
 
-Ou définissez pour plusieurs stratégies :
+Or define for multiple strategies:
   backend = ((:sparse, :adnlp), (:cpu, :ipopt))
 
 Context: route_options - ambiguous option resolution
@@ -238,22 +238,22 @@ Context: route_options - ambiguous option resolution
 **Message** :
 
 ```
-ERROR: Exceptions.IncorrectArgument: Routage d'option invalide
+ERROR: Exceptions.IncorrectArgument: Invalid option routing
 
-Option :backend routée vers :ipopt mais cette option n'appartient pas
-à cette stratégie.
+Option :backend routed to :ipopt but this option does not belong
+to this strategy.
 
-Stratégies valides pour :backend : [:adnlp]
+Valid strategies for :backend: [:adnlp]
 
-Utilisez la bonne stratégie :
+Use the correct strategy:
   backend = (:sparse, :adnlp)
 
 Context: route_options - validating strategy-specific option routing
 ```
 
 **Éléments clés** :
-- ✅ Option et stratégie incorrecte
-- ✅ Stratégies valides
+- ✅ Incorrect option and strategy
+- ✅ Valid strategies
 - ✅ Correction
 
 ## 5. Messages Routage - Mode Permissif
@@ -265,20 +265,19 @@ Context: route_options - validating strategy-specific option routing
 **Message** :
 
 ```
-ERROR: Exceptions.IncorrectArgument: Option inconnue doit être disambiguée
+ERROR: Exceptions.IncorrectArgument: Unknown option must be disambiguated
 
-Option :unknown_opt n'est pas reconnue et n'est pas disambiguée.
+Option :unknown_opt is not recognized and is not disambiguated.
 
-En mode permissif, les options inconnues doivent utiliser la syntaxe
-de disambiguation :
+In permissive mode, unknown options must use disambiguation syntax:
   unknown_opt = (value, :strategy_id)
 
-Exemples pour votre méthode (:collocation, :adnlp, :ipopt) :
-  unknown_opt = (123, :collocation)  # Router vers discretizer
-  unknown_opt = (123, :adnlp)        # Router vers modeler
-  unknown_opt = (123, :ipopt)        # Router vers solver
+Examples for your method (:collocation, :adnlp, :ipopt):
+  unknown_opt = (123, :collocation)  # Route to discretizer
+  unknown_opt = (123, :adnlp)        # Route to modeler
+  unknown_opt = (123, :ipopt)        # Route to solver
 
-Options disponibles :
+Available options:
   discretizer (:collocation): :grid_size, :time_grid, :init_type
   modeler (:adnlp): :backend, :show_time, :matrix_free, :name
   solver (:ipopt): :max_iter, :tol, :print_level, :linear_solver
@@ -287,11 +286,11 @@ Context: route_options - permissive mode requires disambiguation
 ```
 
 **Éléments clés** :
-- ✅ Option non disambiguée
-- ✅ Explication du requirement
-- ✅ Syntaxe de disambiguation
-- ✅ Exemples pour chaque stratégie
-- ✅ Options disponibles pour référence
+- ✅ Undisambiguated option
+- ✅ Requirement explanation
+- ✅ Disambiguation syntax
+- ✅ Examples for each strategy
+- ✅ Available options for reference
 
 ### 5.2 Warning : Option Inconnue Disambiguée Acceptée
 
@@ -300,23 +299,23 @@ Context: route_options - permissive mode requires disambiguation
 **Message** :
 
 ```
-┌ Warning: Option non reconnue routée vers la stratégie
+┌ Warning: Unrecognized option routed to strategy
 │ 
-│ Option :unknown_opt n'est pas dans les metadata de :ipopt
-│ mais sera transmise au backend.
+│ Option :unknown_opt is not in the metadata of :ipopt
+│ but will be passed to the backend.
 │ 
-│ Assurez-vous que cette option est valide pour Ipopt.
+│ Ensure this option is valid for Ipopt.
 │ 
-│ Pour supprimer cet avertissement, ajoutez cette option aux metadata
-│ de IpoptSolver.
+│ To remove this warning, add this option to the metadata
+│ of IpoptSolver.
 └ @ CTSolvers.Orchestration ~/.julia/dev/CTSolvers/src/Orchestration/routing.jl:XX
 ```
 
 **Éléments clés** :
-- ⚠️ Option et stratégie cible
-- ⚠️ Confirmation de transmission
-- ⚠️ Responsabilité utilisateur
-- ⚠️ Comment supprimer le warning
+- ⚠️ Option and target strategy
+- ⚠️ Transmission confirmation
+- ⚠️ User responsibility
+- ⚠️ How to remove warning
 
 ### 5.3 Erreur : Option Ambiguë (même en mode permissif)
 
@@ -332,93 +331,94 @@ Context: route_options - permissive mode requires disambiguation
 
 **Contexte** : L'utilisateur demande de l'aide sur les modes.
 
-**Commande** : `?strict` ou dans la documentation
+**Command** : `?strict` or in the documentation
 
 **Message** :
 
 ```
-Modes de Validation des Options
-================================
+Option Validation Modes
+======================
 
-CTSolvers propose deux modes de validation des options :
+CTSolvers provides two option validation modes:
 
-MODE STRICT (par défaut)
-------------------------
-- Rejette les options inconnues des metadata
-- Détecte les erreurs de typo
-- Recommandé pour la plupart des utilisateurs
+STRICT MODE (default)
+---------------------
+- Rejects unknown options from metadata
+- Detects typo errors
+- Recommended for most users
 
-Exemple :
+Example:
   solver = IpoptSolver(max_iter=1000)  # OK
-  solver = IpoptSolver(unknown=123)    # ❌ Erreur
+  solver = IpoptSolver(unknown=123)    # ❌ Error
 
-MODE PERMISSIF
---------------
-- Accepte les options inconnues avec warning
-- Transmet les options au backend sans validation
-- Pour utilisateurs avancés uniquement
+PERMISSIVE MODE
+----------------
+- Accepts unknown options with warning
+- Passes options to backend without validation
+- For advanced users only
 
-Exemple :
+Example:
   solver = IpoptSolver(
       max_iter=1000,
       custom_ipopt_option=123;
-      strict=false  # Active le mode permissif
-  )  # ⚠️ Warning mais accepté
+      mode=:permissive  # Enable permissive mode
+  )  # ⚠️ Warning but accepted
 
-QUAND UTILISER LE MODE PERMISSIF ?
------------------------------------
-- Options backend non documentées dans CTSolvers
-- Options expérimentales récentes
-- Debugging avec options de log backend
-- Recherche académique avec options spéciales
+WHEN TO USE PERMISSIVE MODE?
+-------------------------------
+- Backend options not documented in CTSolvers
+- Recent experimental options
+- Debugging with backend log options
+- Academic research with special options
 
-ATTENTION
----------
-En mode permissif, CTSolvers ne valide pas les options inconnues.
-Des erreurs peuvent survenir au niveau du backend.
+CAUTION
+--------
+In permissive mode, CTSolvers does not validate unknown options.
+Errors may occur at the backend level.
 
-Pour plus d'informations : https://control-toolbox.org/docs/options
+For more information: https://control-toolbox.org/docs/options
 ```
 
-### 6.2 Message d'Aide : Disambiguation
+### 6.2 Help Message : Disambiguation
 
+**Context** : The user requests help on disambiguation.
 **Contexte** : L'utilisateur demande de l'aide sur la disambiguation.
 
 **Message** :
 
 ```
-Syntaxe de Disambiguation des Options
-======================================
+Option Disambiguation Syntax
+=============================
 
-Quand une option existe dans plusieurs stratégies, vous devez
-spécifier explicitement quelle stratégie doit la recevoir.
+When an option exists in multiple strategies, you must
+explicitly specify which strategy should receive it.
 
-SYNTAXE DE BASE
----------------
+BASIC SYNTAX
+------------
   option_name = (value, :strategy_id)
 
-EXEMPLES
+EXAMPLES
 --------
-# Option backend existe dans modeler et solver
+# Backend option exists in modeler and solver
 solve(ocp, :collocation, :adnlp, :ipopt;
-    backend = (:sparse, :adnlp)  # Pour le modeler uniquement
+    backend = (:sparse, :adnlp)  # For modeler only
 )
 
-# Définir pour plusieurs stratégies
+# Define for multiple strategies
 solve(ocp, :collocation, :adnlp, :ipopt;
     backend = ((:sparse, :adnlp), (:cpu, :ipopt))
 )
 
-MODE PERMISSIF
---------------
-En mode permissif, les options inconnues DOIVENT être disambiguées :
+PERMISSIVE MODE
+---------------
+In permissive mode, unknown options MUST be disambiguated:
 
 solve(ocp, :collocation, :adnlp, :ipopt;
-    custom_option = (value, :ipopt);  # Obligatoire
-    strict = false
+    custom_option = (value, :ipopt);  # Mandatory
+    mode = :permissive
 )
 
-Pour plus d'informations : https://control-toolbox.org/docs/disambiguation
+For more information: https://control-toolbox.org/docs/disambiguation
 ```
 
 ## 7. Exemples Complets de Scénarios
@@ -434,26 +434,26 @@ solver = IpoptSolver(max_it=1000)  # Typo: max_it au lieu de max_iter
 **Message** :
 
 ```
-ERROR: Exceptions.IncorrectArgument: Options inconnues fournies
+ERROR: Exceptions.IncorrectArgument: Unknown options provided
 
-Options non reconnues : [:max_it]
+Unrecognized options: [:max_it]
 
-Ces options ne sont pas définies dans les metadata de IpoptSolver.
+These options are not defined in the metadata of IpoptSolver.
 
-Options disponibles :
+Available options:
   :max_iter, :tol, :print_level, ...
 
-Suggestions pour :max_it :
-  - :max_iter (distance: 2) ← Probablement ce que vous vouliez
+Suggestions for :max_it:
+  - :max_iter (distance: 2) ← Probably what you wanted
 
-Si vous êtes certain que cette option existe pour le backend Ipopt,
-utilisez le mode permissif :
-  IpoptSolver(...; strict=false)
+If you are certain this option exists for the Ipopt backend,
+use permissive mode:
+  IpoptSolver(...; mode=:permissive)
 
 Context: build_strategy_options - strict validation
 ```
 
-**Résolution** : Corriger le typo → `max_iter=1000`
+**Résolution** : Fix typo → `max_iter=1000`
 
 ### 7.2 Scénario : Option Backend Avancée (Mode Permissif)
 
@@ -463,19 +463,19 @@ Context: build_strategy_options - strict validation
 solver = IpoptSolver(
     max_iter=1000,
     mehrotra_algorithm="yes";  # Option Ipopt non documentée
-    strict=false
+    mode=:permissive
 )
 ```
 
 **Messages** :
 
 ```
-┌ Warning: Options non reconnues transmises au backend
+┌ Warning: Unrecognized options passed to backend
 │ 
-│ Options non validées : [:mehrotra_algorithm]
+│ Unvalidated options: [:mehrotra_algorithm]
 │ 
-│ Ces options seront transmises directement au backend de IpoptSolver
-│ sans validation par CTSolvers. Assurez-vous qu'elles sont correctes.
+│ These options will be passed directly to the IpoptSolver backend
+│ without validation by CTSolvers. Ensure they are correct.
 └ @ CTSolvers.Strategies ...
 ```
 
@@ -494,18 +494,18 @@ solve(ocp, :collocation, :adnlp, :ipopt;
 **Message** :
 
 ```
-ERROR: Exceptions.IncorrectArgument: Option ambiguë nécessite disambiguation
+ERROR: Exceptions.IncorrectArgument: Ambiguous option requires disambiguation
 
-Option :backend est ambiguë entre les stratégies : :adnlp, :ipopt
+Option :backend is ambiguous between strategies: :adnlp, :ipopt
 
-Disambiguez en spécifiant l'ID de la stratégie :
-  backend = (:sparse, :adnlp)    # Router vers modeler
-  backend = (:cpu, :ipopt)       # Router vers solver
+Disambiguate by specifying the strategy ID:
+  backend = (:sparse, :adnlp)    # Route to modeler
+  backend = (:cpu, :ipopt)       # Route to solver
 
 Context: route_options - ambiguous option resolution
 ```
 
-**Résolution** : Ajouter disambiguation → `backend=(:sparse, :adnlp)`
+**Résolution** : Add disambiguation → `backend=(:sparse, :adnlp)`
 
 ### 7.4 Scénario : Option Inconnue avec Disambiguation (Mode Permissif)
 
@@ -514,19 +514,19 @@ Context: route_options - ambiguous option resolution
 ```julia
 solve(ocp, :collocation, :adnlp, :ipopt;
     custom_ipopt_debug=(true, :ipopt);
-    strict=false
+    mode=:permissive
 )
 ```
 
 **Messages** :
 
 ```
-┌ Warning: Option non reconnue routée vers la stratégie
+┌ Warning: Unrecognized option routed to strategy
 │ 
-│ Option :custom_ipopt_debug n'est pas dans les metadata de :ipopt
-│ mais sera transmise au backend.
+│ Option :custom_ipopt_debug is not in the metadata of :ipopt
+│ but will be passed to the backend.
 │ 
-│ Assurez-vous que cette option est valide pour Ipopt.
+│ Ensure this option is valid for Ipopt.
 └ @ CTSolvers.Orchestration ...
 ```
 
@@ -539,28 +539,27 @@ solve(ocp, :collocation, :adnlp, :ipopt;
 ```julia
 solve(ocp, :collocation, :adnlp, :ipopt;
     custom_option=123;  # Pas de disambiguation
-    strict=false
+    mode=:permissive
 )
 ```
 
 **Message** :
 
 ```
-ERROR: Exceptions.IncorrectArgument: Option inconnue doit être disambiguée
+ERROR: Exceptions.IncorrectArgument: Unknown option must be disambiguated
 
-Option :custom_option n'est pas reconnue et n'est pas disambiguée.
+Option :custom_option is not recognized and is not disambiguated.
 
-En mode permissif, les options inconnues doivent utiliser la syntaxe
-de disambiguation :
+In permissive mode, unknown options must use disambiguation syntax:
   custom_option = (value, :strategy_id)
 
-Exemples pour votre méthode (:collocation, :adnlp, :ipopt) :
-  custom_option = (123, :ipopt)  # Router vers solver
+Examples for your method (:collocation, :adnlp, :ipopt):
+  custom_option = (123, :ipopt)  # Route to solver
 
 Context: route_options - permissive mode requires disambiguation
 ```
 
-**Résolution** : Ajouter disambiguation → `custom_option=(123, :ipopt)`
+**Résolution** : Add disambiguation → `custom_option=(123, :ipopt)`
 
 ## 8. Checklist de Qualité des Messages
 
@@ -585,11 +584,11 @@ Tous les messages d'erreur utilisent l'exception enrichie :
 
 ```julia
 throw(Exceptions.IncorrectArgument(
-    "Titre court de l'erreur",
-    got="ce que l'utilisateur a fourni",
-    expected="ce qui était attendu",
-    suggestion="message détaillé avec solution",
-    context="fonction - contexte technique"
+    "Short error title",
+    got="what the user provided",
+    expected="what was expected",
+    suggestion="detailed message with solution",
+    context="function - technical context"
 ))
 ```
 
@@ -599,33 +598,33 @@ Les warnings utilisent le système de logging Julia :
 
 ```julia
 @warn """
-Titre du warning
+Warning title
 
-Corps du message
-avec plusieurs lignes
-si nécessaire.
+Message body
+with multiple lines
+if necessary.
 """
 ```
 
 ### 9.3 Formatage des Messages
 
-**Conventions** :
-- Utiliser des listes à puces pour les énumérations
-- Indenter les exemples de code
-- Séparer les sections avec des lignes vides
-- Utiliser des émojis sparingly (✅, ❌, ⚠️) pour la clarté visuelle
-- Limiter la largeur des lignes à ~80 caractères
+**Conventions**:
+- Use bullet points for enumerations
+- Indent code examples
+- Separate sections with blank lines
+- Use emojis sparingly (✅, ❌, ⚠️) for visual clarity
+- Limit line width to ~80 characters
 
 ## 10. Internationalisation (Future)
 
-**Note** : Les messages sont actuellement en français. Pour l'internationalisation future :
+**Note**: Messages are currently in English. For future internationalization:
 
-- Extraire les messages dans des fichiers de ressources
-- Utiliser des clés symboliques
-- Supporter anglais et français au minimum
-- Détecter la locale de l'utilisateur
+- Extract messages to resource files
+- Use symbolic keys
+- Support English and French at minimum
+- Detect user locale
 
-**Exemple de structure** :
+**Example structure**:
 
 ```julia
 const MESSAGES = Dict(
@@ -640,4 +639,4 @@ const MESSAGES = Dict(
 )
 ```
 
-Cette fonctionnalité n'est pas prioritaire pour la v1 mais doit être considérée dans le design.
+This feature is not a priority for v1 but should be considered in the design.
