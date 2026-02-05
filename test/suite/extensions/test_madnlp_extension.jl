@@ -10,7 +10,7 @@ using NLPModels
 using ADNLPModels
 using MadNLP
 using MadNLPMumps
-using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2
+using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
 
 # CUDA for GPU tests (optional)
 const CUDA_AVAILABLE = try
@@ -90,24 +90,20 @@ function test_madnlp_extension()
         # ====================================================================
         
         Test.@testset "Options Extraction" begin
-            solver = Solvers.MadNLPSolver(
-                max_iter=500,
-                tol=1e-8,
-                print_level=MadNLP.ERROR
-            )
+            solver = Solvers.MadNLPSolver(max_iter=500, tol=1e-8)
             opts = Strategies.options(solver)
             
-            # Extract raw options
+            # Extract raw options (returns NamedTuple)
             raw_opts = Options.extract_raw_options(opts.options)
-            Test.@test raw_opts isa Dict
+            Test.@test raw_opts isa NamedTuple
             Test.@test haskey(raw_opts, :max_iter)
             Test.@test haskey(raw_opts, :tol)
             Test.@test haskey(raw_opts, :print_level)
             
             # Verify values
-            Test.@test raw_opts[:max_iter] == 500
-            Test.@test raw_opts[:tol] == 1e-8
-            Test.@test raw_opts[:print_level] == MadNLP.ERROR
+            Test.@test raw_opts.max_iter == 500
+            Test.@test raw_opts.tol == 1e-8
+            Test.@test raw_opts.print_level == MadNLP.INFO
         end
         
         # ====================================================================
@@ -136,16 +132,18 @@ function test_madnlp_extension()
         Test.@testset "Rosenbrock Problem - CPU" begin
             ros = Rosenbrock()
             
-            # Create solver with appropriate options
+            # Build NLP model
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            nlp = adnlp_builder(ros.init)
+            
             solver = Solvers.MadNLPSolver(
-                max_iter=3000,
+                max_iter=1000,
                 tol=1e-6,
                 print_level=MadNLP.ERROR,
                 linear_solver=MadNLPMumps.MumpsSolver
             )
             
-            # Solve the problem
-            stats = solver(ros.nlp; display=false)
+            stats = solver(nlp; display=false)
             
             # Check convergence
             Test.@test stats isa MadNLP.MadNLPExecutionStats
@@ -156,13 +154,17 @@ function test_madnlp_extension()
         Test.@testset "Elec Problem - CPU" begin
             elec = Elec()
             
+            # Build NLP model
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
+            nlp = adnlp_builder(elec.init)
+            
             solver = Solvers.MadNLPSolver(
-                max_iter=3000,
+                max_iter=1000,
                 tol=1e-6,
                 print_level=MadNLP.ERROR
             )
             
-            stats = solver(elec.nlp; display=false)
+            stats = solver(nlp; display=false)
             
             # Just check it converges
             Test.@test Symbol(stats.status) in (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)
@@ -171,16 +173,23 @@ function test_madnlp_extension()
         Test.@testset "Max1MinusX2 Problem - CPU" begin
             max_prob = Max1MinusX2()
             
+            # Build NLP model
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(max_prob.prob)
+            nlp = adnlp_builder(max_prob.init)
+            
             solver = Solvers.MadNLPSolver(
                 max_iter=1000,
                 tol=1e-6,
                 print_level=MadNLP.ERROR
             )
             
-            stats = solver(max_prob.nlp; display=false)
+            stats = solver(nlp; display=false)
             
             # Check convergence
             Test.@test Symbol(stats.status) in (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)
+            Test.@test length(stats.solution) == 1
+            Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
+            Test.@test stats.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
         end
         
         # ====================================================================
