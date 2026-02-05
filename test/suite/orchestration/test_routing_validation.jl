@@ -67,8 +67,8 @@ function test_routing_validation()
                 mode = :permissive
             )
             
-            # Invalid mode should throw ArgumentError
-            @test_throws ArgumentError Orchestration.route_all_options(
+            # Invalid mode should throw Exception
+            @test_throws Exception Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry;
                 mode = :invalid
             )

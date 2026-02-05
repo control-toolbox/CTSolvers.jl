@@ -108,9 +108,15 @@ function route_all_options(
     mode::Symbol = :strict,
 )
     # Validate mode parameter
-    mode ∉ (:strict, :permissive) && throw(ArgumentError(
-        "Invalid mode: $mode. Expected :strict or :permissive"
-    ))
+    if mode ∉ (:strict, :permissive)
+        throw(Exceptions.IncorrectArgument(
+            "Invalid validation mode",
+            got="mode=$mode",
+            expected=":strict or :permissive",
+            suggestion="Use mode=:strict for strict validation (default) or mode=:permissive to accept unknown disambiguated options",
+            context="route_all_options - validating mode parameter"
+        ))
+    end
     
     # Step 1: Extract action options FIRST
     action_options, remaining_kwargs = Options.extract_options(

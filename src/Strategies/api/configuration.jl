@@ -34,7 +34,7 @@ The Options.extract_options function handles:
 - `StrategyOptions`: Validated options with provenance tracking
 
 # Throws
-- `ArgumentError`: If mode is not `:strict` or `:permissive`
+- `Exceptions.IncorrectArgument`: If mode is not `:strict` or `:permissive`
 - `Exceptions.IncorrectArgument`: If an unknown option is provided in strict mode
 - `Exceptions.IncorrectArgument`: If type validation fails (both modes)
 - `Exceptions.IncorrectArgument`: If custom validation fails (both modes)
@@ -72,9 +72,15 @@ function build_strategy_options(
     kwargs...
 )
     # Validate mode parameter
-    mode ∉ (:strict, :permissive) && throw(ArgumentError(
-        "Invalid mode: $mode. Expected :strict or :permissive"
-    ))
+    if mode ∉ (:strict, :permissive)
+        throw(Exceptions.IncorrectArgument(
+            "Invalid validation mode",
+            got="mode=$mode",
+            expected=":strict or :permissive",
+            suggestion="Use mode=:strict for strict validation (default) or mode=:permissive to accept unknown options with warnings",
+            context="build_strategy_options - validating mode parameter"
+        ))
+    end
     
     meta = metadata(strategy_type)
     defs = collect(values(meta.specs))
