@@ -93,8 +93,14 @@ function test_madnlp_extension()
             Test.@test meta[:bound_push].type == Real
             Test.@test meta[:bound_fac].type == Real
             Test.@test meta[:constr_mult_init_max].type == Real
-            Test.@test meta[:fixed_variable_treatment].type == MadNLP.FixedVariableTreatment
-            Test.@test meta[:equality_treatment].type == MadNLP.EqualityTreatment
+            Test.@test meta[:fixed_variable_treatment].type == Type{<:MadNLP.AbstractFixedVariableTreatment}
+            Test.@test meta[:equality_treatment].type == Type{<:MadNLP.AbstractEqualityTreatment}
+            Test.@test meta[:kkt_system].type == Union{Type{<:MadNLP.AbstractKKTSystem},UnionAll}
+            Test.@test meta[:hessian_approximation].type == Union{Type{<:MadNLP.AbstractHessian},UnionAll}
+            Test.@test meta[:inertia_correction_method].type == Type{<:MadNLP.AbstractInertiaCorrector}
+            Test.@test meta[:mu_init].type == Real
+            Test.@test meta[:mu_min].type == Real
+            Test.@test meta[:tau_min].type == Real
 
             # Test default values
             Test.@test meta[:max_iter].default isa Integer
@@ -353,9 +359,9 @@ function test_madnlp_extension()
             Test.@test_nowarn Solvers.MadNLPSolver(bound_fac=0.01, print_level=MadNLP.ERROR)
             Test.@test_nowarn Solvers.MadNLPSolver(constr_mult_init_max=1000.0, print_level=MadNLP.ERROR)
 
-            # Test Enum values
-            Test.@test_nowarn Solvers.MadNLPSolver(fixed_variable_treatment=MadNLP.MAKE_PARAMETER, print_level=MadNLP.ERROR)
-            Test.@test_nowarn Solvers.MadNLPSolver(equality_treatment=MadNLP.RELAX_BOUNDS, print_level=MadNLP.ERROR)
+            # Test Type values
+            Test.@test_nowarn Solvers.MadNLPSolver(fixed_variable_treatment=MadNLP.MakeParameter, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(equality_treatment=MadNLP.RelaxEquality, print_level=MadNLP.ERROR)
 
             # Test invalid values (suppress error messages)
             redirect_stderr(devnull) do
@@ -369,6 +375,34 @@ function test_madnlp_extension()
             end
         end
         
+        Test.@testset "Advanced Options Validation" begin
+            # Test valid type values
+            Test.@test_nowarn Solvers.MadNLPSolver(kkt_system=MadNLP.SparseKKTSystem, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(hessian_approximation=MadNLP.BFGS, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(inertia_correction_method=MadNLP.InertiaAuto, print_level=MadNLP.ERROR)
+
+            # Test valid real values
+            Test.@test_nowarn Solvers.MadNLPSolver(mu_init=1e-3, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(mu_min=1e-9, print_level=MadNLP.ERROR)
+            Test.@test_nowarn Solvers.MadNLPSolver(tau_min=0.99, print_level=MadNLP.ERROR)
+
+            # Test invalid values (suppress error messages)
+            redirect_stderr(devnull) do
+                Test.@test_logs (:warn, r"Option kkt_system has value 1") Solvers.MadNLPSolver(kkt_system=1)
+                Test.@test_logs (:warn, r"Option hessian_approximation has value 1.0") Solvers.MadNLPSolver(hessian_approximation=1.0)
+                Test.@test_logs (:warn, r"Option inertia_correction_method has value invalid") Solvers.MadNLPSolver(inertia_correction_method="invalid")
+
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(mu_init=-1.0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(mu_init=0.0)
+
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(mu_min=-1.0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(mu_min=0.0)
+
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(tau_min=-0.1)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(tau_min=1.1)
+            end
+        end
+
         # ====================================================================
         # INTEGRATION TESTS - Multiple Solves
         # ====================================================================

@@ -11,10 +11,10 @@
 | `bound_push` | `Real` | `NotProvided` | Pousse le point initial à l'intérieur des bornes (valeur absolue) |
 | `bound_fac` | `Real` | `NotProvided` | Pousse le point initial à l'intérieur des bornes (facteur) |
 | `constr_mult_init_max` | `Real` | `NotProvided` | Valeur max pour l'initialisation des multiplicateurs |
-| `fixed_variable_treatment` | `Enum` | `NotProvided` | Traitement des variables fixes (ex: `MAKE_PARAMETER`) |
-| `equality_treatment` | `Enum` | `NotProvided` | Traitement des contraintes d'égalité (ex: `RELAX_BOUNDS`) |
+| `fixed_variable_treatment` | `Type{<:AbstractFixedVariableTreatment}` | `NotProvided` | Traitement des variables fixes (ex: `MakeParameter`) |
+| `equality_treatment` | `Type{<:AbstractEqualityTreatment}` | `NotProvided` | Traitement des contraintes d'égalité (ex: `RelaxEquality`) |
 
-> **Types Enum** : Les options `fixed_variable_treatment` et `equality_treatment` utilisent les énumérations `MadNLP.FixedVariableTreatments` et `MadNLP.EqualityTreatments` respectivement.
+> **Types Abstraits** : Ces options attendent des types concrets héritant de `MadNLP.AbstractFixedVariableTreatment` ou `MadNLP.AbstractEqualityTreatment` (ex: `MadNLP.MakeParameter`, `MadNLP.RelaxEquality`).
 
 ### Fichiers modifiés
 

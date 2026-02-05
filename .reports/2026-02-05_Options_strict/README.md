@@ -64,6 +64,28 @@ Roadmap d'implémentation :
 - Gestion des risques
 - Checklist de déploiement
 
+### 7. Décisions de Design (Validées)
+
+Toutes les décisions de design ont été validées le 5 février 2026 :
+
+| # | Question | Décision Validée |
+|---|----------|------------------|
+| 1 | Nom du paramètre | `mode::Symbol` avec `:strict` (défaut) / `:permissive` |
+| 2 | Stockage options | Tout dans `options` avec source `:user_unvalidated` |
+| 3 | Validation partielle | Valider complètement les options connues même en mode permissif |
+| 4 | Propagation | Explicite à chaque niveau (pas d'état global) |
+| 5 | Warnings | Warning à chaque fois (désactivable par l'utilisateur) |
+| 6 | Disambiguation | Tuple `(value, :strategy_id)` + helper `route_to(strategy, value)` |
+| 7 | Priorité | Options validées prioritaires (cas théorique) |
+| 8 | Langue | Anglais uniquement pour tous les messages |
+| 9 | Config globale | Paramètre local uniquement (v1.0, YAGNI) |
+| 10 | Défaut | Mode strict par défaut (sécurité) |
+
+**Helper optionnel** (export optionnel dans CTSolvers ou OptimalControl) :
+```julia
+route_to(strategy::Symbol, value) = (value, strategy)
+```
+
 ## Résumé Technique
 
 ### Modifications Principales
@@ -124,6 +146,61 @@ Roadmap d'implémentation :
 
 ✅ **Système extensible** - Architecture claire et testée
 
+## Exemples d'Utilisation Finaux
+
+### CTSolvers - Mode Strict (Défaut)
+
+```julia
+using CTSolvers
+
+# OK - options connues
+solver = Solvers.IpoptSolver(max_iter=1000, tol=1e-6)
+
+# Erreur - option inconnue
+solver = Solvers.IpoptSolver(max_iter=1000, unknown_opt=123)
+# IncorrectArgument: Unknown options provided: [:unknown_opt]
+# Did you mean: :max_iter, :tol ?
+# Use mode=:permissive to pass undocumented backend options.
+```
+
+### CTSolvers - Mode Permissif
+
+```julia
+using CTSolvers
+
+# OK avec warning
+solver = Solvers.IpoptSolver(
+    max_iter=1000,
+    custom_ipopt_option=123;
+    mode=:permissive
+)
+# Warning: Unrecognized options passed to backend: [:custom_ipopt_option]
+
+# Erreur - type incorrect même en mode permissif
+solver = Solvers.IpoptSolver(max_iter="1000"; mode=:permissive)
+# IncorrectArgument: max_iter must be Integer, got String
+```
+
+### OptimalControl - Avec Disambiguation (Futur)
+
+```julia
+using OptimalControl
+
+# Avec tuple
+sol = solve(ocp, :collocation, :adnlp, :ipopt;
+    max_iter=100,
+    backend=(:sparse, :adnlp);
+    mode=:permissive
+)
+
+# Avec helper (plus lisible)
+sol = solve(ocp, :collocation, :adnlp, :ipopt;
+    max_iter=100,
+    backend=route_to(:adnlp, :sparse);
+    mode=:permissive
+)
+```
+
 ## Recommandation
 
 **✅ APPROUVER** l'implémentation selon l'architecture détaillée dans ce rapport.
@@ -134,6 +211,7 @@ Roadmap d'implémentation :
 - Risques maîtrisés
 - Implémentation faisable
 - Rétrocompatibilité garantie
+- Toutes les décisions de design validées
 
 ## Prochaines Étapes
 

@@ -379,12 +379,12 @@ test_madnlp_extension() = TestMadNLPExtension.test_madnlp_extension()
 
 ## Résumé des livrables par phase
 
-| Phase | Options ajoutées | Fichiers modifiés | Tests ajoutés |
-|-------|-----------------|-------------------|---------------|
-| 1 | 4 (terminaison) | `CTSolversMadNLP.jl` | Metadata + Validation + Integration |
-| 2 | 4 (NLP) | `CTSolversMadNLP.jl` | Metadata + Integration |
-| 3 | 3 (initialisation) | `CTSolversMadNLP.jl` | Metadata + Integration |
-| 4 | 3 (barrière) | `CTSolversMadNLP.jl` | Metadata + Validation + Integration |
-| 5 | 3 (avancées) | `CTSolversMadNLP.jl` | Metadata + Compatibility + Integration |
+| Phase | Options ajoutées | Fichiers modifiés | Tests ajoutés | Statut |
+|-------|-----------------|-------------------|---------------|--------|
+| 1 | 4 (terminaison) | `CTSolversMadNLP.jl` | Metadata + Validation + Integration | ✅ Complété |
+| 2 | 4 (NLP) | `CTSolversMadNLP.jl` | Metadata + Integration | ✅ Complété |
+| 3 | 3 (initialisation) | `CTSolversMadNLP.jl` | Metadata + Integration | ✅ Complété |
+| 4 | 3 (barrière) | `CTSolversMadNLP.jl` | Metadata + Validation + Integration | ✅ Complété |
+| 5 | 3 (avancées) | `CTSolversMadNLP.jl` | Metadata + Compatibility + Integration | ✅ Complété |
 
-**Total : 17 nouvelles options** (+ amélioration de 2 existantes)
+**Total : 17 nouvelles options** (+ amélioration de 2 existantes) - **PROJET TERMINÉ**

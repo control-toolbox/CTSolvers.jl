@@ -199,15 +199,73 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
         ),
         Strategies.OptionDefinition(;
             name=:fixed_variable_treatment,
-            type=MadNLP.FixedVariableTreatment,
+            type=Type{<:MadNLP.AbstractFixedVariableTreatment},
             default=Options.NotProvided,
-            description="Method to handle fixed variables. Options are from MadNLP.FixedVariableTreatment enum (e.g., MAKE_PARAMETER, RELAX_BOUNDS)."
+            description="Method to handle fixed variables. Options: MadNLP.MakeParameter, MadNLP.RelaxBound, MadNLP.NoFixedVariables."
         ),
         Strategies.OptionDefinition(;
             name=:equality_treatment,
-            type=MadNLP.EqualityTreatment,
+            type=Type{<:MadNLP.AbstractEqualityTreatment},
             default=Options.NotProvided,
-            description="Method to handle equality constraints. Options are from MadNLP.EqualityTreatment enum (e.g., RELAX_BOUNDS)."
+            description="Method to handle equality constraints. Options: MadNLP.EnforceEquality, MadNLP.RelaxEquality."
+        ),
+        # ---- Advanced Options ----
+        Strategies.OptionDefinition(;
+            name=:kkt_system,
+            type=Union{Type{<:MadNLP.AbstractKKTSystem},UnionAll},
+            default=Options.NotProvided,
+            description="KKT system solver type (e.g., MadNLP.SparseKKTSystem, MadNLP.DenseKKTSystem)."
+        ),
+        Strategies.OptionDefinition(;
+            name=:hessian_approximation,
+            type=Union{Type{<:MadNLP.AbstractHessian},UnionAll},
+            default=Options.NotProvided,
+            description="Hessian approximation method (e.g., MadNLP.ExactHessian, MadNLP.CompactLBFGS, MadNLP.BFGS)."
+        ),
+        Strategies.OptionDefinition(;
+            name=:inertia_correction_method,
+            type=Type{<:MadNLP.AbstractInertiaCorrector},
+            default=Options.NotProvided,
+            description="Method for assumption of inertia correction (e.g., MadNLP.InertiaAuto, MadNLP.InertiaBased)."
+        ),
+        Strategies.OptionDefinition(;
+            name=:mu_init,
+            type=Real,
+            default=Options.NotProvided,
+            description="Initial value for the barrier parameter mu.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid mu_init value",
+                got="mu_init=$x",
+                expected="positive real number (> 0)",
+                suggestion="Provide a positive value (e.g., 1e-1)",
+                context="MadNLPSolver mu_init validation"
+            ))
+        ),
+        Strategies.OptionDefinition(;
+            name=:mu_min,
+            type=Real,
+            default=Options.NotProvided,
+            description="Minimum value for the barrier parameter mu.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid mu_min value",
+                got="mu_min=$x",
+                expected="positive real number (> 0)",
+                suggestion="Provide a positive value (e.g., 1e-11)",
+                context="MadNLPSolver mu_min validation"
+            ))
+        ),
+        Strategies.OptionDefinition(;
+            name=:tau_min,
+            type=Real,
+            default=Options.NotProvided,
+            description="Lower bound for the fraction-to-the-boundary parameter tau.",
+            validator=x -> x > 0 && x < 1 || throw(Exceptions.IncorrectArgument(
+                "Invalid tau_min value",
+                got="tau_min=$x",
+                expected="real number between 0 and 1 (exclusive)",
+                suggestion="Provide a value between 0 and 1 (e.g., 0.99)",
+                context="MadNLPSolver tau_min validation"
+            ))
         )
     )
 end
