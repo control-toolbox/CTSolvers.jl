@@ -8,6 +8,8 @@ using CTSolvers.Solvers
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
+struct DummyTag <: Solvers.AbstractTag end
+
 """
     test_extension_stubs()
 
@@ -27,12 +29,12 @@ function test_extension_stubs()
         
         Test.@testset "IpoptSolver stub" begin
             # Test that build_ipopt_solver throws ExtensionError with IpoptTag
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(Solvers.IpoptTag())
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(DummyTag())
             
             # Capture the error and verify its content
             err = nothing
             try
-                Solvers.build_ipopt_solver(Solvers.IpoptTag())
+                Solvers.build_ipopt_solver(DummyTag())
             catch e
                 err = e
             end
@@ -51,11 +53,11 @@ function test_extension_stubs()
         # ====================================================================
         
         Test.@testset "KnitroSolver stub" begin
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_knitro_solver(Solvers.KnitroTag())
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_knitro_solver(DummyTag())
             
             err = nothing
             try
-                Solvers.build_knitro_solver(Solvers.KnitroTag())
+                Solvers.build_knitro_solver(DummyTag())
             catch e
                 err = e
             end
@@ -73,11 +75,11 @@ function test_extension_stubs()
         # ====================================================================
         
         Test.@testset "MadNLPSolver stub" begin
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(Solvers.MadNLPTag())
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(DummyTag())
             
             err = nothing
             try
-                Solvers.build_madnlp_solver(Solvers.MadNLPTag())
+                Solvers.build_madnlp_solver(DummyTag())
             catch e
                 err = e
             end
@@ -95,11 +97,11 @@ function test_extension_stubs()
         # ====================================================================
         
         Test.@testset "MadNCLSolver stub" begin
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(Solvers.MadNCLTag())
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(DummyTag())
             
             err = nothing
             try
-                Solvers.build_madncl_solver(Solvers.MadNCLTag())
+                Solvers.build_madncl_solver(DummyTag())
             catch e
                 err = e
             end
@@ -119,10 +121,10 @@ function test_extension_stubs()
         Test.@testset "All stubs throw ExtensionError" begin
             # Verify that all build_*_solver stubs throw ExtensionError
             stubs = [
-                () -> Solvers.build_ipopt_solver(Solvers.IpoptTag()),
-                () -> Solvers.build_knitro_solver(Solvers.KnitroTag()),
-                () -> Solvers.build_madnlp_solver(Solvers.MadNLPTag()),
-                () -> Solvers.build_madncl_solver(Solvers.MadNCLTag())
+                () -> Solvers.build_ipopt_solver(DummyTag()),
+                () -> Solvers.build_knitro_solver(DummyTag()),
+                () -> Solvers.build_madnlp_solver(DummyTag()),
+                () -> Solvers.build_madncl_solver(DummyTag())
             ]
             
             for stub in stubs
