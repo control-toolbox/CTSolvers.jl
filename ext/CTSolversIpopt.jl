@@ -47,7 +47,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
         Strategies.OptionDefinition(;
             name=:max_iter,
             type=Integer,
-            default=3000,
+            default=1000,
             description="Maximum number of iterations. The algorithm terminates with a message if the number of iterations exceeded this number.",
             aliases=(:maxiter, ),
             validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
@@ -62,7 +62,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
         Strategies.OptionDefinition(;
             name=:max_wall_time,
             type=Real,
-            default=1e20,
+            default=Options.NotProvided,
             description="Maximum number of walltime clock seconds. A limit on walltime clock seconds that Ipopt can use to solve one problem.",
             validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
                 "Invalid max_wall_time value",
@@ -76,7 +76,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
         Strategies.OptionDefinition(;
             name=:max_cpu_time,
             type=Real,
-            default=1e20,
+            default=Options.NotProvided,
             description="Maximum number of CPU seconds. A limit on CPU seconds that Ipopt can use to solve one problem.",
             validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
                 "Invalid max_cpu_time value",
@@ -90,7 +90,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
         Strategies.OptionDefinition(;
             name=:dual_inf_tol,
             type=Real,
-            default=1.0,
+            default=Options.NotProvided,
             description="Desired threshold for the dual infeasibility. Absolute tolerance on the dual infeasibility. Successful termination requires that the max-norm of the (unscaled) dual infeasibility is less than this threshold.",
             validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
                 "Invalid dual_inf_tol value",
@@ -104,7 +104,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
         Strategies.OptionDefinition(;
             name=:constr_viol_tol,
             type=Real,
-            default=1e-4,
+            default=Options.NotProvided,
             description="Desired threshold for the constraint and variable bound violation. Absolute tolerance on the constraint and variable bound violation.",
             validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
                 "Invalid constr_viol_tol value",
@@ -114,7 +114,159 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 context="IpoptSolver constr_viol_tol validation"
             ))
         ),
-        
+
+        Strategies.OptionDefinition(;
+            name=:acceptable_tol,
+            type=Real,
+            default=Options.NotProvided,
+            description="Acceptable convergence tolerance (relative). Determines which (scaled) optimality error is considered close enough.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid acceptable_tol value",
+                got="acceptable_tol=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use roughly 10 orders of magnitude larger than tol",
+                context="IpoptSolver acceptable_tol validation"
+            ))
+        ), Strategies.OptionDefinition(;
+            name=:acceptable_iter,
+            type=Integer,
+            default=Options.NotProvided,
+            description="Number of \"acceptable\" iterations required to trigger termination. If the algorithm encounters this many consecutive iterations that are acceptable, it terminates.",
+            validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid acceptable_iter value",
+                got="acceptable_iter=$x",
+                expected="non-negative integer (>= 0)",
+                suggestion="Use 15 (default) or 0 to disable acceptable termination",
+                context="IpoptSolver acceptable_iter validation"
+            ))
+        ), Strategies.OptionDefinition(;
+            name=:diverging_iterates_tol,
+            type=Real,
+            default=Options.NotProvided,
+            description="Threshold for maximal value of primal iterates. If any component of the primal iterates exceeds this value (in absolute terms), the optimization is aborted.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid diverging_iterates_tol value",
+                got="diverging_iterates_tol=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use a very large number like 1e20",
+                context="IpoptSolver diverging_iterates_tol validation"
+            ))
+        ),
+
+        # ====================================================================
+        # DEBUGGING OPTIONS
+        # ====================================================================
+
+        Strategies.OptionDefinition(;
+            name=:derivative_test,
+            type=String,
+            default=Options.NotProvided,
+            description="Enable derivative check. If enabled, performs a finite difference check of the derivatives.",
+            validator=x -> x in ["none", "first-order", "second-order", "only-second-order"] || throw(Exceptions.IncorrectArgument(
+                "Invalid derivative_test value",
+                got="derivative_test='$x'",
+                expected="'none', 'first-order', 'second-order', or 'only-second-order'",
+                suggestion="Use 'first-order' to check gradients, or 'none' for normal operation",
+                context="IpoptSolver derivative_test validation"
+            ))
+        ), Strategies.OptionDefinition(;
+            name=:derivative_test_tol,
+            type=Real,
+            default=Options.NotProvided,
+            description="Threshold for identifying incorrect derivatives. If the relative error of the finite difference approximation exceeds this value, an error is reported.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid derivative_test_tol value",
+                got="derivative_test_tol=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use 1e-4 or similar",
+                context="IpoptSolver derivative_test_tol validation"
+            ))
+        ), Strategies.OptionDefinition(;
+            name=:derivative_test_print_all,
+            type=String,
+            default=Options.NotProvided,
+            description="Indicates whether information for all estimated derivatives should be printed.",
+            validator=x -> x in ["yes", "no"] || throw(Exceptions.IncorrectArgument(
+                "Invalid derivative_test_print_all value",
+                got="derivative_test_print_all='$x'",
+                expected="'yes' or 'no'",
+                suggestion="Use 'yes' for verbose derivative debugging",
+                context="IpoptSolver derivative_test_print_all validation"
+            ))
+        ),
+
+        # ====================================================================
+        # HESSIAN OPTIONS
+        # ====================================================================
+
+        Strategies.OptionDefinition(;
+            name=:hessian_approximation,
+            type=String,
+            default=Options.NotProvided,
+            description="Indicates what Hessian information regarding the Lagrangian function is to be used.",
+            validator=x -> x in ["exact", "limited-memory"] || throw(Exceptions.IncorrectArgument(
+                "Invalid hessian_approximation value",
+                got="hessian_approximation='$x'",
+                expected="'exact' or 'limited-memory'",
+                suggestion="Use 'exact' if derivatives are available, 'limited-memory' otherwise",
+                context="IpoptSolver hessian_approximation validation"
+            ))
+        ), Strategies.OptionDefinition(;
+            name=:limited_memory_update_type,
+            type=String,
+            default=Options.NotProvided,
+            description="Quasi-Newton update method for the limited memory approximation.",
+            validator=x -> x in ["bfgs", "sr1"] || throw(Exceptions.IncorrectArgument(
+                "Invalid limited_memory_update_type value",
+                got="limited_memory_update_type='$x'",
+                expected="'bfgs' or 'sr1'",
+                suggestion="Use 'bfgs' for typical problems",
+                context="IpoptSolver limited_memory_update_type validation"
+            ))
+        ),
+
+        # ====================================================================
+        # WARM START OPTIONS
+        # ====================================================================
+
+        Strategies.OptionDefinition(;
+            name=:warm_start_init_point,
+            type=String,
+            default=Options.NotProvided,
+            description="Indicates whether specific warm start values should be used for the primal and dual variables.",
+            validator=x -> x in ["yes", "no"] || throw(Exceptions.IncorrectArgument(
+                "Invalid warm_start_init_point value",
+                got="warm_start_init_point='$x'",
+                expected="'yes' or 'no'",
+                suggestion="Use 'yes' if you provide good initial guesses for all variables",
+                context="IpoptSolver warm_start_init_point validation"
+            ))
+        ), Strategies.OptionDefinition(;
+            name=:warm_start_bound_push,
+            type=Real,
+            default=Options.NotProvided,
+            description="Indicates how much the primal variables should be pushed inside the bounds for the warm start.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid warm_start_bound_push value",
+                got="warm_start_bound_push=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use a small positive value like 1e-9",
+                context="IpoptSolver warm_start_bound_push validation"
+            ))
+        ), Strategies.OptionDefinition(;
+            name=:warm_start_mult_bound_push,
+            type=Real,
+            default=Options.NotProvided,
+            description="Indicates how much the dual variables should be pushed inside the bounds for the warm start.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid warm_start_mult_bound_push value",
+                got="warm_start_mult_bound_push=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use a small positive value like 1e-9",
+                context="IpoptSolver warm_start_mult_bound_push validation"
+            ))
+        ),
+
         # ====================================================================
         # ALGORITHM OPTIONS
         # ====================================================================
@@ -132,11 +284,61 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 context="IpoptSolver mu_strategy validation"
             ))
         ),
+
+        Strategies.OptionDefinition(;
+            name=:mu_init,
+            type=Real,
+            default=Options.NotProvided,
+            description="Initial value for the barrier parameter.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid mu_init value",
+                got="mu_init=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use 0.1 (default) or smaller for closer start",
+                context="IpoptSolver mu_init validation"
+            ))
+        ), Strategies.OptionDefinition(;
+            name=:mu_max_fact,
+            type=Real,
+            default=Options.NotProvided,
+            description="Factor for maximal barrier parameter. This factor determines the upper bound on the barrier parameter.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid mu_max_fact value",
+                got="mu_max_fact=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use 1000.0 (default)",
+                context="IpoptSolver mu_max_fact validation"
+            ))
+        ), Strategies.OptionDefinition(;
+            name=:mu_max,
+            type=Real,
+            default=Options.NotProvided,
+            description="Maximal value for barrier parameter. This option overrides the factor setting.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid mu_max value",
+                got="mu_max=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use 1e5 (default)",
+                context="IpoptSolver mu_max validation"
+            ))
+        ), Strategies.OptionDefinition(;
+            name=:mu_min,
+            type=Real,
+            default=Options.NotProvided,
+            description="Minimal value for barrier parameter.",
+            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
+                "Invalid mu_min value",
+                got="mu_min=$x",
+                expected="positive real number (> 0)",
+                suggestion="Use 1e-11 (default)",
+                context="IpoptSolver mu_min validation"
+            ))
+        ),
         
         Strategies.OptionDefinition(;
             name=:timing_statistics,
             type=String,
-            default="no",
+            default=Options.NotProvided,
             description="Indicates whether to measure time spent in components of Ipopt and NLP evaluation. The overall algorithm time is unaffected by this option.",
             validator=x -> x in ["yes", "no"] || throw(Exceptions.IncorrectArgument(
                 "Invalid timing_statistics value",
@@ -182,7 +384,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
         Strategies.OptionDefinition(;
             name=:print_timing_statistics,
             type=String,
-            default="no",
+            default=Options.NotProvided,
             description="Switch to print timing statistics. If selected, the program will print the time spent for selected tasks. This implies timing_statistics=yes.",
             validator=x -> x in ["yes", "no"] || throw(Exceptions.IncorrectArgument(
                 "Invalid print_timing_statistics value",
@@ -196,7 +398,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
         Strategies.OptionDefinition(;
             name=:print_frequency_iter,
             type=Integer,
-            default=1,
+            default=Options.NotProvided,
             description="Determines at which iteration frequency the summarizing iteration output line should be printed. Summarizing iteration output is printed every print_frequency_iter iterations, if at least print_frequency_time seconds have passed since last output.",
             validator=x -> x >= 1 || throw(Exceptions.IncorrectArgument(
                 "Invalid print_frequency_iter value",
@@ -210,7 +412,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
         Strategies.OptionDefinition(;
             name=:print_frequency_time,
             type=Real,
-            default=0.0,
+            default=Options.NotProvided,
             description="Determines at which time frequency the summarizing iteration output line should be printed. Summarizing iteration output is printed if at least print_frequency_time seconds have passed since last output and the iteration number is a multiple of print_frequency_iter.",
             validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
                 "Invalid print_frequency_time value",

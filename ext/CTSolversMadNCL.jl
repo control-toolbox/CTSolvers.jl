@@ -42,7 +42,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
         Strategies.OptionDefinition(;
             name=:max_iter,
             type=Integer,
-            default=3000,
+            default=1000,
             description="Maximum number of augmented Lagrangian iterations",
             aliases=(:maxiter,),
             validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(

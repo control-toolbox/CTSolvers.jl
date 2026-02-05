@@ -114,7 +114,7 @@ function test_ipopt_extension()
             nlp = ADNLPModels.ADNLPModel(x -> sum(x.^2), [1.0, 2.0])
             
             # Test with display=false sets print_level=0
-            solver_verbose = Solvers.IpoptSolver(max_iter=10, print_level=5)
+            solver_verbose = Solvers.IpoptSolver(max_iter=10, print_level=0)
             
             # Note: We can't easily test the internal behavior without actually solving,
             # but we can verify the solver accepts the display parameter
@@ -404,6 +404,107 @@ function test_ipopt_extension()
                     end
                 end
             end
+        end
+
+        # ====================================================================
+        # UNIT TESTS - Additional Options Metadata
+        # ====================================================================
+
+        Test.@testset "Additional Options Metadata" begin
+            meta = Strategies.metadata(Solvers.IpoptSolver)
+
+            # Debugging
+            Test.@test :derivative_test in keys(meta)
+            Test.@test :derivative_test_tol in keys(meta)
+            Test.@test :derivative_test_print_all in keys(meta)
+
+            # Hessian
+            Test.@test :hessian_approximation in keys(meta)
+            Test.@test :limited_memory_update_type in keys(meta)
+
+            # Warm Start
+            Test.@test :warm_start_init_point in keys(meta)
+            Test.@test :warm_start_bound_push in keys(meta)
+            Test.@test :warm_start_mult_bound_push in keys(meta)
+
+            # Advanced Termination
+            Test.@test :acceptable_tol in keys(meta)
+            Test.@test :acceptable_iter in keys(meta)
+            Test.@test :diverging_iterates_tol in keys(meta)
+
+            # Barrier
+            Test.@test :mu_init in keys(meta)
+            Test.@test :mu_max_fact in keys(meta)
+            Test.@test :mu_max in keys(meta)
+            Test.@test :mu_min in keys(meta)
+
+            # Timing
+            Test.@test :timing_statistics in keys(meta)
+            Test.@test :print_timing_statistics in keys(meta)
+            Test.@test :print_frequency_iter in keys(meta)
+            Test.@test :print_frequency_time in keys(meta)
+        end
+
+        # ====================================================================
+        # UNIT TESTS - Option Validation
+        # ====================================================================
+
+        Test.@testset "Additional Options Validation" begin
+            redirect_stderr(devnull) do
+                # Derivative Test
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.IpoptSolver(derivative_test="invalid")
+
+                # Hessian
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.IpoptSolver(hessian_approximation="invalid")
+
+                # Warm Start
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.IpoptSolver(warm_start_init_point="invalid")
+
+                # Barrier
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.IpoptSolver(mu_strategy="invalid")
+            end
+
+            # Valid cases
+            Test.@test_nowarn Solvers.IpoptSolver(derivative_test="first-order")
+            Test.@test_nowarn Solvers.IpoptSolver(hessian_approximation="limited-memory")
+            Test.@test_nowarn Solvers.IpoptSolver(warm_start_init_point="yes")
+            Test.@test_nowarn Solvers.IpoptSolver(mu_strategy="monotone")
+        end
+
+        # ====================================================================
+        # INTEGRATION TESTS - Pass-through verify
+        # ====================================================================
+
+        Test.@testset "Pass-through Verification" begin
+            ros = Rosenbrock()
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            nlp = adnlp_builder(ros.init)
+
+            # Test derivative_test="first-order"
+            # It should run without error (might print output, suppression handled if needed)
+            solver = Solvers.IpoptSolver(
+                max_iter=1,
+                derivative_test="first-order",
+                print_level=0,
+                sb="yes"
+            )
+
+            # We use redirect_stderr/stdout to suppress potential verbose output from derivative checker if it bypasses print_level
+            redirect_stdout(devnull) do
+                redirect_stderr(devnull) do
+                    # Just check it runs
+                    Test.@test_nowarn solver(nlp; display=false)
+                end
+            end
+
+            # Test hessian_approximation="limited-memory"
+            solver_lbfgs = Solvers.IpoptSolver(
+                max_iter=10,
+                hessian_approximation="limited-memory",
+                print_level=0,
+                sb="yes"
+            )
+            Test.@test_nowarn solver_lbfgs(nlp; display=false)
         end
     end
 end

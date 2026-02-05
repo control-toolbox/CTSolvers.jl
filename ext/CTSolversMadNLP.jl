@@ -31,7 +31,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
         Strategies.OptionDefinition(;
             name=:max_iter,
             type=Integer,
-            default=3000,
+            default=1000,
             description="Maximum number of interior-point iterations before termination. Set to 0 to evaluate initial point only.",
             aliases=(:maxiter,),
             validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
