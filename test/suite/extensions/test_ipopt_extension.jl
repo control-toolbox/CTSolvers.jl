@@ -506,6 +506,54 @@ function test_ipopt_extension()
             )
             Test.@test_nowarn solver_lbfgs(nlp; display=false)
         end
+
+        # ====================================================================
+        # INTEGRATION TESTS - Exhaustive Options Validation
+        # ====================================================================
+
+        Test.@testset "Exhaustive Options Validation" begin
+            ros = Rosenbrock()
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            nlp = adnlp_builder(ros.init)
+
+            # Define all options with valid values to check for typos in names
+            exhaustive_options = Dict(
+                :tol => 1e-8,
+                :dual_inf_tol => 1e-5,
+                :constr_viol_tol => 1e-4,
+                :acceptable_tol => 1e-2,
+                :diverging_iterates_tol => 1e20,
+                :max_iter => 1,
+                :max_wall_time => 100.0,
+                :max_cpu_time => 100.0,
+                :acceptable_iter => 15,
+                :derivative_test => "none",
+                :derivative_test_tol => 1e-4,
+                :derivative_test_print_all => "no",
+                :hessian_approximation => "exact",
+                :limited_memory_update_type => "bfgs",
+                :warm_start_init_point => "no",
+                :warm_start_bound_push => 1e-9,
+                :warm_start_mult_bound_push => 1e-9,
+                :mu_strategy => "adaptive",
+                :mu_init => 0.1,
+                :mu_max_fact => 1000.0,
+                :mu_max => 1e5,
+                :mu_min => 1e-11,
+                :print_level => 0,
+                :sb => "yes",
+                :timing_statistics => "no",
+                :print_timing_statistics => "no",
+                :print_frequency_iter => 1,
+                :print_frequency_time => 0.0,
+                :linear_solver => "mumps"
+            )
+
+            solver = Solvers.IpoptSolver(; exhaustive_options...)
+
+            # This should NOT throw any ErrorException about unknown options
+            Test.@test_nowarn solver(nlp; display=false)
+        end
     end
 end
 
