@@ -27,6 +27,9 @@ disambiguation syntax for options that appear in multiple strategies.
 - `registry::Strategies.StrategyRegistry`: Strategy registry
 - `source_mode::Symbol=:description`: Controls error verbosity (`:description`
   for user-facing, `:explicit` for internal)
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with error
+  - `:permissive`: Accepts unknown disambiguated options with warning
 
 # Returns
 NamedTuple with two fields:
@@ -102,7 +105,13 @@ function route_all_options(
     kwargs::NamedTuple,
     registry::Strategies.StrategyRegistry;
     source_mode::Symbol = :description,
+    mode::Symbol = :strict,
 )
+    # Validate mode parameter
+    mode ∉ (:strict, :permissive) && throw(ArgumentError(
+        "Invalid mode: $mode. Expected :strict or :permissive"
+    ))
+    
     # Step 1: Extract action options FIRST
     action_options, remaining_kwargs = Options.extract_options(
         kwargs, action_defs
@@ -134,18 +143,32 @@ function route_all_options(
                 # Validate that this family owns this option
                 if family_name in owners
                     push!(routed[family_name], key => value)
+                elseif isempty(owners) && mode == :permissive
+                    # Permissive mode: accept unknown option with warning
+                    _warn_unknown_option_permissive(
+                        key, strategy_id, family_name
+                    )
+                    push!(routed[family_name], key => value)
                 else
-                    # Error: trying to route to wrong strategy
-                    valid_strategies = [
-                        id for (id, fam) in strategy_to_family if fam in owners
-                    ]
-                    throw(Exceptions.IncorrectArgument(
-                        "Invalid option routing",
-                        got="option :$key to strategy :$strategy_id",
-                        expected="option to be routed to one of: $valid_strategies",
-                        suggestion="Check option ownership or use correct strategy identifier",
-                        context="route_options - validating strategy-specific option routing"
-                    ))
+                    # Error: trying to route to wrong strategy or unknown in strict mode
+                    if isempty(owners)
+                        # Unknown option in strict mode
+                        _error_unknown_option(
+                            key, method, families, strategy_to_family, registry
+                        )
+                    else
+                        # Invalid routing
+                        valid_strategies = [
+                            id for (id, fam) in strategy_to_family if fam in owners
+                        ]
+                        throw(Exceptions.IncorrectArgument(
+                            "Invalid option routing",
+                            got="option :$key to strategy :$strategy_id",
+                            expected="option to be routed to one of: $valid_strategies",
+                            suggestion="Check option ownership or use correct strategy identifier",
+                            context="route_options - validating strategy-specific option routing"
+                        ))
+                    end
                 end
             end
         else
@@ -259,4 +282,21 @@ function _error_ambiguous_option(
             context="route_options - explicit mode ambiguity validation"
         ))
     end
+end
+
+function _warn_unknown_option_permissive(
+    key::Symbol,
+    strategy_id::Symbol,
+    family_name::Symbol
+)
+    @warn """
+    Unknown option routed in permissive mode
+    
+    Option :$key is not defined in the metadata of strategy :$strategy_id ($family_name).
+    
+    This option will be passed directly to the strategy backend without validation.
+    Ensure the option name and value are correct for the backend.
+    
+    To disable this warning, define this option in the strategy metadata.
+    """
 end
