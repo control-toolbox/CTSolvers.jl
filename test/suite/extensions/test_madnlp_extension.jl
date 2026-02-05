@@ -6,14 +6,13 @@ using CTSolvers
 using CTSolvers.Solvers
 using CTSolvers.Strategies
 using CTSolvers.Options
-using MadNLP
-using MadNLPMumps
 using NLPModels
 using ADNLPModels
-using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+
+# MadNLP availability will be checked at test runtime
 
 """
     test_madnlp_extension()
@@ -27,6 +26,21 @@ options handling, display flag, and problem solving on CPU (and GPU if available
 """
 function test_madnlp_extension()
     Test.@testset "MadNLP Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
+        
+        # Check if MadNLP packages are available
+        madnlp_available = try
+            @eval using MadNLP
+            @eval using MadNLPMumps
+            @eval using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2
+            true
+        catch
+            false
+        end
+        
+        if !madnlp_available
+            @test_skip "MadNLP/MadNLPMumps not available - install with: using Pkg; Pkg.add([\"MadNLP\", \"MadNLPMumps\"])"
+            return
+        end
         
         # ====================================================================
         # UNIT TESTS - Metadata and Options

@@ -6,13 +6,13 @@ using CTSolvers
 using CTSolvers.Solvers
 using CTSolvers.Strategies
 using CTSolvers.Options
-using NLPModelsIpopt  # Charge l'extension
 using NLPModels
 using ADNLPModels
-using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+
+# NLPModelsIpopt availability will be checked at test runtime
 
 """
     test_ipopt_extension()
@@ -26,6 +26,20 @@ options handling, display flag, and problem solving.
 """
 function test_ipopt_extension()
     Test.@testset "Ipopt Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
+        
+        # Check if NLPModelsIpopt is available
+        ipopt_available = try
+            @eval using NLPModelsIpopt
+            @eval using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2
+            true
+        catch
+            false
+        end
+        
+        if !ipopt_available
+            @test_skip "NLPModelsIpopt not available - install with: using Pkg; Pkg.add(\"NLPModelsIpopt\")"
+            return
+        end
         
         # ====================================================================
         # UNIT TESTS - Metadata and Options

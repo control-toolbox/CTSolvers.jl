@@ -6,13 +6,13 @@ using CTSolvers
 using CTSolvers.Solvers
 using CTSolvers.Strategies
 using CTSolvers.Options
-using NLPModelsKnitro  # Charge l'extension
 using NLPModels
 using ADNLPModels
-using Main.TestProblems: Rosenbrock, Elec
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+
+# NLPModelsKnitro availability will be checked at test runtime
 
 """
     test_knitro_extension()
@@ -26,6 +26,20 @@ and problem solving. Note: Knitro is a commercial solver requiring a license.
 """
 function test_knitro_extension()
     Test.@testset "Knitro Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
+        
+        # Check if NLPModelsKnitro is available
+        knitro_available = try
+            @eval using NLPModelsKnitro
+            @eval using Main.TestProblems: Rosenbrock, Elec
+            true
+        catch
+            false
+        end
+        
+        if !knitro_available
+            @test_skip "NLPModelsKnitro not available - install with: using Pkg; Pkg.add(\"NLPModelsKnitro\")"
+            return
+        end
         
         # ====================================================================
         # UNIT TESTS - Metadata and Options
