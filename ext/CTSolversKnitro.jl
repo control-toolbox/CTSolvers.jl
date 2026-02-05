@@ -202,17 +202,9 @@ function (solver::Solvers.KnitroSolver)(
     nlp::NLPModels.AbstractNLPModel;
     display::Bool=true
 )::SolverCore.GenericExecutionStats
-    opts = Strategies.options(solver)
-    raw_opts = Options.extract_raw_options(opts.options)
-    
-    # Handle display flag - convert to Dict for modification
-    if !display
-        raw_opts_dict = Dict(pairs(raw_opts))
-        raw_opts_dict[:outlev] = 0
-        return solve_with_knitro(nlp; raw_opts_dict...)
-    end
-    
-    return solve_with_knitro(nlp; raw_opts...)
+    options = Strategies.options_dict(solver)
+    options[:outlev] = display ? options[:outlev] : 0
+    return solve_with_knitro(nlp; options...)
 end
 
 # ============================================================================

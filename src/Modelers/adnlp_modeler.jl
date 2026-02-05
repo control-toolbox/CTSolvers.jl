@@ -252,16 +252,14 @@ function (modeler::ADNLPModeler)(
     prob::AbstractOptimizationProblem,
     initial_guess
 )::ADNLPModels.ADNLPModel
-    opts = Strategies.options(modeler)
-    
     # Get the appropriate builder for this problem type
     builder = get_adnlp_model_builder(prob)
     
-    # Extract raw values from OptionValue wrappers and filter out nothing values
-    raw_opts = Options.extract_raw_options(opts.options)
+    # Extract options as Dict
+    options = Strategies.options_dict(modeler)
     
     # Build the ADNLP model passing all options generically
-    return builder(initial_guess; raw_opts...)
+    return builder(initial_guess; options...)
 end
 
 # Solution building interface

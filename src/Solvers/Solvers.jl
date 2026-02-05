@@ -52,6 +52,14 @@ using ..CTSolvers.Options
 using ..CTSolvers.Optimization
 using ..CTSolvers.Modelers
 
+# Tag Dispatch Infrastructure
+"""
+    AbstractTag
+
+Abstract type for tag dispatch pattern used to handle extension-dependent implementations.
+"""
+abstract type AbstractTag end
+
 # Include submodules
 include(joinpath(@__DIR__, "abstract_solver.jl"))
 include(joinpath(@__DIR__, "validation.jl"))

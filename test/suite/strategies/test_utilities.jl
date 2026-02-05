@@ -191,6 +191,52 @@ function test_utilities()
         end
         
         # ====================================================================
+        # options_dict
+        # ====================================================================
+        
+        Test.@testset "options_dict" begin
+            # Create a strategy with options
+            strategy = TestUtilStrategy(
+                Strategies.build_strategy_options(
+                    TestUtilStrategy;
+                    max_iter=500,
+                    tolerance=1e-8,
+                    verbose=true
+                )
+            )
+            
+            # Extract options as Dict
+            options = Strategies.options_dict(strategy)
+            
+            # Verify it's a Dict
+            Test.@test options isa Dict{Symbol, Any}
+            
+            # Verify all options are present
+            Test.@test haskey(options, :max_iter)
+            Test.@test haskey(options, :tolerance)
+            Test.@test haskey(options, :verbose)
+            
+            # Verify values are correct (unwrapped from OptionValue)
+            Test.@test options[:max_iter] == 500
+            Test.@test options[:tolerance] == 1e-8
+            Test.@test options[:verbose] == true
+            
+            # Verify it's mutable (can modify)
+            options[:max_iter] = 1000
+            Test.@test options[:max_iter] == 1000
+            
+            # Verify can add new keys
+            options[:new_option] = :test
+            Test.@test options[:new_option] == :test
+            
+            # Verify can delete keys
+            delete!(options, :verbose)
+            Test.@test !haskey(options, :verbose)
+            Test.@test haskey(options, :max_iter)
+            Test.@test haskey(options, :tolerance)
+        end
+        
+        # ====================================================================
         # Integration: Utilities pipeline
         # ====================================================================
         
@@ -209,6 +255,36 @@ function test_utilities()
             # Verify distance calculation
             dist = Strategies.levenshtein_distance("max_itr", "max_iter")
             Test.@test dist == 1  # One character difference
+        end
+        
+        # ====================================================================
+        # Integration: options_dict workflow
+        # ====================================================================
+        
+        Test.@testset "Integration: options_dict workflow" begin
+            # Create strategy
+            strategy = TestUtilStrategy(
+                Strategies.build_strategy_options(
+                    TestUtilStrategy;
+                    max_iter=100,
+                    tolerance=1e-6
+                )
+            )
+            
+            # Extract and modify options (typical solver extension pattern)
+            options = Strategies.options_dict(strategy)
+            options[:verbose] = true  # Modify
+            options[:max_iter] = 200  # Override
+            
+            # Verify modifications
+            Test.@test options[:verbose] == true
+            Test.@test options[:max_iter] == 200
+            Test.@test options[:tolerance] == 1e-6
+            
+            # Original strategy options unchanged
+            orig_opts = Strategies.options(strategy)
+            Test.@test orig_opts[:max_iter] == 100
+            Test.@test orig_opts[:verbose] == false
         end
     end
 end

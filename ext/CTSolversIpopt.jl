@@ -271,17 +271,9 @@ function (solver::Solvers.IpoptSolver)(
     nlp::NLPModels.AbstractNLPModel;
     display::Bool=true
 )::SolverCore.GenericExecutionStats
-    opts = Strategies.options(solver)
-    raw_opts = Options.extract_raw_options(opts.options)
-    
-    # Handle display flag - convert to Dict for modification
-    if !display
-        raw_opts_dict = Dict(pairs(raw_opts))
-        raw_opts_dict[:print_level] = 0
-        return solve_with_ipopt(nlp; raw_opts_dict...)
-    end
-    
-    return solve_with_ipopt(nlp; raw_opts...)
+    options = Strategies.options_dict(solver)
+    options[:print_level] = display ? options[:print_level] : 0
+    return solve_with_ipopt(nlp; options...)
 end
 
 # ============================================================================

@@ -63,6 +63,53 @@ end
 """
 $(TYPEDSIGNATURES)
 
+Extract strategy options as a mutable Dict, ready for modification.
+
+This is a convenience method that combines three steps into one:
+1. Getting `StrategyOptions` from the strategy
+2. Extracting raw values (unwrapping `OptionValue`)
+3. Converting to `Dict` for modification
+
+# Arguments
+- `strategy::AbstractStrategy`: Strategy instance (solver, modeler, etc.)
+
+# Returns
+- `Dict{Symbol, Any}`: Mutable dictionary of option values
+
+# Example
+```julia-repl
+julia> using CTSolvers
+
+julia> solver = Solvers.IpoptSolver(max_iter=1000, tol=1e-8)
+
+julia> options = Strategies.options_dict(solver)
+Dict{Symbol, Any} with 6 entries:
+  :max_iter => 1000
+  :tol => 1.0e-8
+  ...
+
+julia> options[:print_level] = 0  # Modify as needed
+0
+
+julia> solve_with_ipopt(nlp; options...)
+```
+
+# Notes
+This function is particularly useful in solver extensions and modelers where
+you need to extract options and potentially modify them before passing to
+backend solvers or model builders.
+
+See also: [`options`](@ref), [`Options.extract_raw_options`](@ref)
+"""
+function options_dict(strategy::AbstractStrategy)
+    opts = options(strategy)
+    raw_opts = Options.extract_raw_options(opts.options)
+    return Dict{Symbol, Any}(pairs(raw_opts))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
 Suggest similar option names for an unknown key using Levenshtein distance.
 
 This function helps provide helpful error messages by suggesting option names

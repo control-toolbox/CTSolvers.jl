@@ -3,13 +3,6 @@
 # ============================================================================
 
 """
-    AbstractTag
-
-Abstract type for tag dispatch pattern used to handle extension-dependent implementations.
-"""
-abstract type AbstractTag end
-
-"""
     IpoptTag <: AbstractTag
 
 Tag type for Ipopt-specific implementation dispatch.

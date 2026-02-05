@@ -106,22 +106,18 @@ function (modeler::ExaModeler)(
     prob::AbstractOptimizationProblem,
     initial_guess
 )::ExaModels.ExaModel
-    opts = Strategies.options(modeler)
-    
     # Get the appropriate builder for this problem type
     builder = get_exa_model_builder(prob)
     
-    # Extract BaseType from options
-    BaseType = opts[:base_type]
+    # Extract options as Dict
+    options = Strategies.options_dict(modeler)
     
-    # Extract raw values from OptionValue wrappers and filter out nothing values
-    raw_opts = Options.extract_raw_options(opts.options)
-    
-    # Filter out base_type from raw_opts to avoid passing it as named argument
-    filtered_opts = Strategies.filter_options(raw_opts, :base_type)
+    # Extract BaseType and remove it from options to avoid passing it as named argument
+    BaseType = options[:base_type]
+    delete!(options, :base_type)
     
     # Build the ExaModel passing BaseType as first argument and remaining options as named arguments
-    return builder(BaseType, initial_guess; filtered_opts...)
+    return builder(BaseType, initial_guess; options...)
 end
 
 # Solution building interface

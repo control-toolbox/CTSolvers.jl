@@ -189,7 +189,8 @@ function test_madnlp_extension()
             Test.@test Symbol(stats.status) in (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)
             Test.@test length(stats.solution) == 1
             Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
-            Test.@test stats.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
+            # Note: MadNLP 0.8 inverts the sign for maximization problems
+            Test.@test -stats.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
         end
         
         # ====================================================================
@@ -253,8 +254,15 @@ function test_madnlp_extension()
             ros = Rosenbrock()
             max_prob = Max1MinusX2()
             
-            stats1 = solver(ros.nlp; display=false)
-            stats2 = solver(max_prob.nlp; display=false)
+            # Build NLP models
+            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            nlp1 = adnlp_builder(ros.init)
+            
+            adnlp_builder2 = CTSolvers.get_adnlp_model_builder(max_prob.prob)
+            nlp2 = adnlp_builder2(max_prob.init)
+            
+            stats1 = solver(nlp1; display=false)
+            stats2 = solver(nlp2; display=false)
             
             Test.@test Symbol(stats1.status) in (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)
             Test.@test Symbol(stats2.status) in (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)

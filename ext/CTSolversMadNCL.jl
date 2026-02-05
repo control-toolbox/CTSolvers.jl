@@ -125,23 +125,19 @@ function (solver::Solvers.MadNCLSolver)(
     nlp::NLPModels.AbstractNLPModel;
     display::Bool=true
 )::MadNCL.NCLStats
-    opts = Strategies.options(solver)
-    raw_opts = Options.extract_raw_options(opts.options)
+    options = Strategies.options_dict(solver)
+    options[:print_level] = display ? options[:print_level] : MadNLP.ERROR
     
-    # Handle display flag - convert to Dict for modification
+    # Handle ncl_options verbose flag
     if !display
-        raw_opts_dict = Dict(pairs(raw_opts))
-        raw_opts_dict[:print_level] = MadNLP.ERROR
-        # Reconstruct ncl_options with verbose=false
-        ncl_opts = raw_opts_dict[:ncl_options]
+        ncl_opts = options[:ncl_options]
         BaseType = base_type(ncl_opts)
-        ncl_opts_dict_inner = Dict(field => getfield(ncl_opts, field) for field in fieldnames(MadNCL.NCLOptions))
-        ncl_opts_dict_inner[:verbose] = false
-        raw_opts_dict[:ncl_options] = MadNCL.NCLOptions{BaseType}(; ncl_opts_dict_inner...)
-        return solve_with_madncl(nlp; raw_opts_dict...)
+        ncl_opts_dict = Dict(field => getfield(ncl_opts, field) for field in fieldnames(MadNCL.NCLOptions))
+        ncl_opts_dict[:verbose] = false
+        options[:ncl_options] = MadNCL.NCLOptions{BaseType}(; ncl_opts_dict...)
     end
     
-    return solve_with_madncl(nlp; raw_opts...)
+    return solve_with_madncl(nlp; options...)
 end
 
 # ============================================================================
