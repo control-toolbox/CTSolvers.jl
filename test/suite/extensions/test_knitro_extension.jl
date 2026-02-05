@@ -6,13 +6,40 @@ using CTSolvers
 using CTSolvers.Solvers
 using CTSolvers.Strategies
 using CTSolvers.Options
+using CTSolvers.Modelers
+using CTSolvers.Optimization
+using CommonSolve
 using NLPModels
 using ADNLPModels
-using NLPModelsKnitro
 using Main.TestProblems: Rosenbrock, Elec, rosenbrock_objective
+
+# Trigger extension loading
+using NLPModelsKnitro
+const CTSolversKnitro = Base.get_extension(CTSolvers, :CTSolversKnitro)
+
+# Import KNITRO for license checking
+using KNITRO
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+
+"""
+Helper function to check if Knitro license is available.
+Returns true if license is available, false otherwise.
+"""
+function check_knitro_license()
+    try
+        kc = KNITRO.KN_new()
+        KNITRO.KN_free(kc)
+        return true
+    catch e
+        if occursin("license", lowercase(string(e))) || occursin("-520", string(e))
+            return false
+        else
+            rethrow(e)
+        end
+    end
+end
 
 """
     test_knitro_extension()
@@ -22,7 +49,7 @@ Tests for KnitroSolver extension.
 🧪 **Applying Testing Rule**: Unit Tests + Integration Tests
 
 Tests the complete KnitroSolver functionality including metadata, constructor,
-and problem solving. Note: Knitro is a commercial solver requiring a license.
+options handling, display flag, and problem solving (requires Knitro license).
 """
 function test_knitro_extension()
     Test.@testset "Knitro Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -209,6 +236,144 @@ function test_knitro_extension()
             # Both should set maxit
             Test.@test raw1[:maxit] == 100
             Test.@test raw2[:maxit] == 100
+        end
+        
+        # ====================================================================
+        # INTEGRATION TESTS - Initial Guess (maxit=0) - Requires License
+        # ====================================================================
+        
+        Test.@testset "Initial Guess - maxit=0" begin
+            if !check_knitro_license()
+                @warn "Knitro license not available, skipping Initial Guess tests"
+                Test.@test_skip "Knitro license required"
+            else
+                modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler()]
+                modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+                
+                # Rosenbrock: start at the known solution and enforce maxit=0
+                Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    ros = Rosenbrock()
+                    for (modeler, modeler_name) in zip(modelers, modelers_names)
+                        Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                            local opts = Dict(:maxit => 0, :outlev => 0)
+                            sol = CommonSolve.solve(
+                                ros.prob, ros.sol, modeler, Solvers.KnitroSolver(; opts...)
+                            )
+                            Test.@test sol.solution ≈ ros.sol atol=1e-6
+                        end
+                    end
+                end
+                
+                # Elec: expect solution to remain equal to the initial guess vector
+                Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    elec = Elec()
+                    for (modeler, modeler_name) in zip(modelers, modelers_names)
+                        Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                            local opts = Dict(:maxit => 0, :outlev => 0)
+                            sol = CommonSolve.solve(
+                                elec.prob, elec.init, modeler, Solvers.KnitroSolver(; opts...)
+                            )
+                            Test.@test sol.solution ≈ vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
+                        end
+                    end
+                end
+            end
+        end
+        
+        # ====================================================================
+        # INTEGRATION TESTS - solve_with_knitro - Requires License
+        # ====================================================================
+        
+        Test.@testset "solve_with_knitro Function" begin
+            if !check_knitro_license()
+                @warn "Knitro license not available, skipping solve_with_knitro tests"
+                Test.@test_skip "Knitro license required"
+            else
+                modelers = [Modelers.ADNLPModeler()]
+                modelers_names = ["ADNLPModeler"]
+                knitro_options = Dict(
+                    :maxit => 1000,
+                    :feastol_abs => 1e-6,
+                    :opttol_abs => 1e-6,
+                    :outlev => 0
+                )
+                
+                Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    ros = Rosenbrock()
+                    for (modeler, modeler_name) in zip(modelers, modelers_names)
+                        Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                            nlp = Optimization.build_model(ros.prob, ros.init, modeler)
+                            sol = CTSolversKnitro.solve_with_knitro(nlp; knitro_options...)
+                            Test.@test sol.status == :first_order
+                            Test.@test sol.solution ≈ ros.sol atol=1e-6
+                            Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+                        end
+                    end
+                end
+                
+                Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    elec = Elec()
+                    for (modeler, modeler_name) in zip(modelers, modelers_names)
+                        Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                            nlp = Optimization.build_model(elec.prob, elec.init, modeler)
+                            sol = CTSolversKnitro.solve_with_knitro(nlp; knitro_options...)
+                            Test.@test sol.status == :first_order
+                        end
+                    end
+                end
+            end
+        end
+        
+        # ====================================================================
+        # INTEGRATION TESTS - CommonSolve.solve - Requires License
+        # ====================================================================
+        
+        Test.@testset "CommonSolve.solve with Knitro" begin
+            if !check_knitro_license()
+                @warn "Knitro license not available, skipping CommonSolve.solve tests"
+                Test.@test_skip "Knitro license required"
+            else
+                modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler()]
+                modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+                knitro_options = Dict(
+                    :maxit => 1000,
+                    :feastol_abs => 1e-6,
+                    :opttol_abs => 1e-6,
+                    :outlev => 0
+                )
+                
+                Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    ros = Rosenbrock()
+                    for (modeler, modeler_name) in zip(modelers, modelers_names)
+                        Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                            sol = CommonSolve.solve(
+                                ros.prob,
+                                ros.init,
+                                modeler,
+                                Solvers.KnitroSolver(; knitro_options...),
+                            )
+                            Test.@test sol.status == :first_order
+                            Test.@test sol.solution ≈ ros.sol atol=1e-6
+                            Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+                        end
+                    end
+                end
+                
+                Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    elec = Elec()
+                    for (modeler, modeler_name) in zip(modelers, modelers_names)
+                        Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                            sol = CommonSolve.solve(
+                                elec.prob,
+                                elec.init,
+                                modeler,
+                                Solvers.KnitroSolver(; knitro_options...),
+                            )
+                            Test.@test sol.status == :first_order
+                        end
+                    end
+                end
+            end
         end
     end
 end
