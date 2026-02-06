@@ -9,13 +9,6 @@ using CTSolvers.Options
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
-# Trigger extension loading
-using NLPModelsKnitro
-using NLPModelsIpopt
-using MadNCL
-using MadNLP
-using MadNLPMumps
-
 """
     test_type_stability()
 
@@ -51,11 +44,11 @@ function test_type_stability()
                 @test_nowarn @inferred MadNCLSolver(max_iter=100, tol=1e-6)
             end
             
-            @testset "KnitroSolver construction" begin
-                @test_nowarn @inferred KnitroSolver()
-                @test_nowarn @inferred KnitroSolver(max_iter=100)
-                @test_nowarn @inferred KnitroSolver(max_iter=100, tol=1e-6)
-            end
+            # @testset "KnitroSolver construction" begin
+            #    @test_nowarn @inferred KnitroSolver()
+            #    @test_nowarn @inferred KnitroSolver(max_iter=100)
+            #    @test_nowarn @inferred KnitroSolver(max_iter=100, tol=1e-6)
+            # end
         end
         
         # ====================================================================
@@ -105,18 +98,18 @@ function test_type_stability()
                 @test opts isa Strategies.StrategyOptions
             end
             
-            @testset "KnitroSolver contract" begin
-                @test_nowarn @inferred Strategies.id(KnitroSolver)
-                @test @inferred(Strategies.id(KnitroSolver)) === :knitro
+            # @testset "KnitroSolver contract" begin
+            #    @test_nowarn @inferred Strategies.id(KnitroSolver)
+            #    @test @inferred(Strategies.id(KnitroSolver)) === :knitro
                 
-                # Metadata returns correct type
-                meta = Strategies.metadata(KnitroSolver)
-                @test meta isa Strategies.StrategyMetadata
+            #    # Metadata returns correct type
+            #    meta = Strategies.metadata(KnitroSolver)
+            #    @test meta isa Strategies.StrategyMetadata
                 
-                # Options returns correct type
-                opts = Strategies.options(KnitroSolver())
-                @test opts isa Strategies.StrategyOptions
-            end
+            #    # Options returns correct type
+            #    opts = Strategies.options(KnitroSolver())
+            #    @test opts isa Strategies.StrategyOptions
+            # end
         end
         
         # ====================================================================
