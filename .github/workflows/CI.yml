@@ -12,10 +12,11 @@ jobs:
   test-github:
     uses: control-toolbox/CTActions/.github/workflows/ci.yml@main
     with:
-      versions: '["1.10", "1.12"]'
-      runs_on: '["ubuntu-latest", "windows-latest"]'
-      archs: '["x64"]'
+      runs_on: '["ubuntu-latest", "macos-latest"]'
       runner_type: 'github'
+      use_ct_registry: true
+    secrets:
+      SSH_KEY: ${{ secrets.SSH_KEY }}
 
   # # Job pour le runner self-hosted moonshot (GPU/CUDA)
   # test-moonshot:

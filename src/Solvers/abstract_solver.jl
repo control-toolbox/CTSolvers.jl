@@ -1,0 +1,67 @@
+"""
+    AbstractOptimizationSolver
+
+Abstract base type for optimization solvers in the Control Toolbox.
+
+All concrete solver types must:
+1. Be a subtype of `AbstractOptimizationSolver`
+2. Implement the `AbstractStrategy` contract:
+   - `Strategies.id(::Type{<:MySolver})` - Return unique Symbol identifier
+   - `Strategies.metadata(::Type{<:MySolver})` - Return StrategyMetadata with options
+   - Have an `options::Strategies.StrategyOptions` field
+3. Implement the callable interface:
+   - `(solver::MySolver)(nlp; display=Bool)` - Solve the NLP problem
+
+# Solver Types
+- `IpoptSolver` - Interior point optimizer (Ipopt backend)
+- `MadNLPSolver` - Matrix-free augmented Lagrangian (MadNLP backend)
+- `MadNCLSolver` - NCL variant of MadNLP
+- `KnitroSolver` - Commercial solver (Knitro backend)
+
+# Example
+```julia
+# Create solver with options
+solver = IpoptSolver(max_iter=1000, tol=1e-8)
+
+# Solve an NLP problem
+nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
+stats = solver(nlp, display=true)
+```
+
+See also: [`IpoptSolver`](@ref), [`MadNLPSolver`](@ref), [`MadNCLSolver`](@ref), [`KnitroSolver`](@ref)
+"""
+abstract type AbstractOptimizationSolver <: Strategies.AbstractStrategy end
+
+"""
+    (solver::AbstractOptimizationSolver)(nlp; display=Bool)
+
+Callable interface for optimization solvers.
+
+Solves the given NLP problem and returns execution statistics.
+
+# Arguments
+- `nlp`: NLP problem to solve (typically `NLPModels.AbstractNLPModel`)
+- `display::Bool`: Whether to display solver output (default: true)
+
+# Returns
+- `SolverCore.AbstractExecutionStats`: Solver execution statistics
+
+# Implementation
+Concrete solver types must implement this method. The default implementation
+throws a `NotImplemented` error with helpful guidance.
+
+# Example
+```julia
+solver = IpoptSolver(max_iter=100)
+nlp = ADNLPModel(x -> sum(x.^2), zeros(5))
+stats = solver(nlp, display=false)
+```
+"""
+function (solver::AbstractOptimizationSolver)(nlp; display::Bool=true)
+    throw(Exceptions.NotImplemented(
+        "Solver callable not implemented",
+        required_method="(solver::$(typeof(solver)))(nlp; display=Bool)",
+        suggestion="Implement the callable method for $(typeof(solver))",
+        context="AbstractOptimizationSolver - required method"
+    ))
+end
