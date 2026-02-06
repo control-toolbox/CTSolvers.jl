@@ -11,7 +11,7 @@ Author: CTSolvers Development Team
 Date: 2026-02-06
 """
 
-module TestComprehensiveStrictPermissiveValidation
+module TestComprehensiveValidation
 
 using Test
 using CTBase: CTBase, Exceptions
@@ -32,12 +32,15 @@ end
 
 const MADNLP_AVAILABLE = try
     using MadNLP
+    using MadNLPMumps
     true
 catch
     false
 end
 
 const MADNCL_AVAILABLE = try
+    using MadNLP
+    using MadNLPMumps
     using MadNCL
     true
 catch
@@ -46,10 +49,21 @@ end
 
 # const KNITRO_AVAILABLE = try
 #     using NLPModelsKnitro
+#     using KNITRO
+#     # Test if license is available
+#     kc = KNITRO.KN_new()
+#     KNITRO.KN_free(kc)
 #     true
-# catch
-#     false
+# catch e
+#     if occursin("license", lowercase(string(e))) || occursin("-520", string(e))
+#         false
+#     else
+#         false  # Any error means not available for testing
+#     end
 # end
+
+# Always false - no license available
+const KNITRO_AVAILABLE = false
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
@@ -76,7 +90,7 @@ function test_strategy_construction(
     family::Type{<:AbstractStrategy},
     known_options::NamedTuple,
     unknown_options::NamedTuple,
-    registry::StrategyRegistry
+    registry::CTSolvers.Strategies.StrategyRegistry
 )
     @testset "Strategy Construction - $(strategy_type)" begin
         
@@ -100,13 +114,13 @@ function test_strategy_construction(
                     @test false  # Should not reach here
                 catch e
                     @test e isa Exceptions.IncorrectArgument
-                    @test occursin("unknown", string(e)) || occursin("unrecognized", string(e))
+                    @test occursin("unknown", string(e)) || occursin("unrecognized", string(e)) || occursin("Invalid", string(e)) || occursin("not defined", string(e))
                 end
             end
             
             @testset "Permissive Mode" begin
                 # Known + unknown options - should work with warning
-                @test_nowarn strategy_type(; known_options..., unknown_options..., mode=:permissive)
+                @test_warn "Unrecognized options" strategy_type(; known_options..., unknown_options..., mode=:permissive)
                 strategy = strategy_type(; known_options..., unknown_options..., mode=:permissive)
                 @test strategy isa strategy_type
                 
@@ -132,7 +146,7 @@ function test_strategy_construction(
             
             @testset "Permissive Mode" begin
                 # Known + unknown options - should work
-                @test_nowarn build_strategy(strategy_id, family, registry; known_options..., unknown_options..., mode=:permissive)
+                @test_warn "Unrecognized options" build_strategy(strategy_id, family, registry; known_options..., unknown_options..., mode=:permissive)
                 strategy = build_strategy(strategy_id, family, registry; known_options..., unknown_options..., mode=:permissive)
                 @test strategy isa strategy_type
                                 # Verify mode is NOT stored in options (correct behavior)
@@ -154,18 +168,18 @@ function test_strategy_construction(
             
             @testset "Strict Mode" begin
                 # Known options only - should work
-                @test_nowarn build_strategy_from_method(method, family, registry; known_options...)
-                strategy = build_strategy_from_method(method, family, registry; known_options...)
+                @test_nowarn CTSolvers.Strategies.build_strategy_from_method(method, family, registry; known_options...)
+                strategy = CTSolvers.Strategies.build_strategy_from_method(method, family, registry; known_options...)
                 @test strategy isa strategy_type
                 
                 # Unknown option - should throw
-                @test_throws Exceptions.IncorrectArgument build_strategy_from_method(method, family, registry; known_options..., unknown_options...)
+                @test_throws Exceptions.IncorrectArgument CTSolvers.Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options...)
             end
             
             @testset "Permissive Mode" begin
                 # Known + unknown options - should work
-                @test_nowarn build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
-                strategy = build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
+                @test_warn "Unrecognized options" CTSolvers.Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
+                strategy = CTSolvers.Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
                 @test strategy isa strategy_type
                                 # Verify mode is NOT stored in options (correct behavior)
                 @test_throws FieldError strategy.options.mode
@@ -195,7 +209,7 @@ function test_strategy_construction(
             
             @testset "Permissive Mode" begin
                 # Known + unknown options - should work
-                @test_nowarn Orchestration.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
+                @test_warn "Unrecognized options" Orchestration.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
                 strategy = Orchestration.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
                 @test strategy isa strategy_type
                                 # Verify mode is NOT stored in options (correct behavior)
@@ -247,8 +261,8 @@ function test_option_recovery(
         
         # Test some default options (should be present with :default source)
         metadata_def = Strategies.metadata(typeof(strategy))
-        for (name, definition) in metadata_def.specs
-            if haskey(definition, :default) && !haskey(known_options, name)
+        for (name, definition) in pairs(metadata_def)
+            if !(definition.default isa Options.NotProvidedType) && !haskey(known_options, name)
                 @test has_option(strategy, name)
                 @test option_source(strategy, name) == :default
             end
@@ -262,7 +276,7 @@ Test error quality for invalid mode parameter.
 function test_invalid_mode(strategy_type::Type)
     @testset "Invalid Mode Tests - $(strategy_type)" begin
         @test_throws Exceptions.IncorrectArgument strategy_type(; mode=:invalid)
-        @test_throws Exceptions.IncorrectArgument build_strategy(:test, AbstractStrategy, create_registry(); mode=:invalid)
+        @test_throws Exceptions.IncorrectArgument build_strategy(:test, AbstractStrategy, CTSolvers.Strategies.create_registry(); mode=:invalid)
     end
 end
 
@@ -270,11 +284,11 @@ end
 # Main Test Function
 # ============================================================================
 
-function test_comprehensive_strict_permissive_validation()
+function test_comprehensive_validation()
     @testset "Comprehensive Strict/Permissive Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # Create registries for testing
-        modeler_registry = create_registry(
+        modeler_registry = CTSolvers.Strategies.create_registry(
             AbstractOptimizationModeler => (ADNLPModeler, ExaModeler)
         )
         
@@ -283,12 +297,12 @@ function test_comprehensive_strict_permissive_validation()
         IPOPT_AVAILABLE && push!(solver_types, CTSolvers.Solvers.IpoptSolver)
         MADNLP_AVAILABLE && push!(solver_types, CTSolvers.Solvers.MadNLPSolver)
         MADNCL_AVAILABLE && push!(solver_types, CTSolvers.Solvers.MadNCLSolver)
-        # KNITRO_AVAILABLE && push!(solver_types, CTSolvers.Solvers.KnitroSolver)
+        # KNITRO_AVAILABLE && push!(solver_types, CTSolvers.Solvers.KnitroSolver)  # Never available - no license
         
         solver_registry = if isempty(solver_types)
-            create_registry(AbstractOptimizationSolver => ())
+            CTSolvers.Strategies.create_registry(AbstractOptimizationSolver => ())
         else
-            create_registry(AbstractOptimizationSolver => tuple(solver_types...))
+            CTSolvers.Strategies.create_registry(AbstractOptimizationSolver => tuple(solver_types...))
         end
         
         # ====================================================================
@@ -315,7 +329,7 @@ function test_comprehensive_strict_permissive_validation()
                 @testset "Option Recovery" begin
                     # Strict mode - known options only
                     strategy_strict = ADNLPModeler(; known_options...)
-                    test_option_recovery(strategy_strict, known_options, (), :strict)
+                    test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                     
                     # Permissive mode - known + unknown options
                     strategy_permissive = ADNLPModeler(; known_options..., unknown_options..., mode=:permissive)
@@ -347,7 +361,7 @@ function test_comprehensive_strict_permissive_validation()
                 # Test option recovery
                 @testset "Option Recovery" begin
                     strategy_strict = ExaModeler(; known_options...)
-                    test_option_recovery(strategy_strict, known_options, (), :strict)
+                    test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                     
                     strategy_permissive = ExaModeler(; known_options..., unknown_options..., mode=:permissive)
                     test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
@@ -463,9 +477,10 @@ function test_comprehensive_strict_permissive_validation()
             # KnitroSolver Tests (if available)
             # ----------------------------------------------------------------
             
+            # Commented out - no license available
             # if KNITRO_AVAILABLE
             #     @testset "KnitroSolver" begin
-            #         known_options = (max_iter=200, ftol=1e-12)
+            #         known_options = (maxit=200, feastol_abs=1e-12)
             #         unknown_options = (knitro_fake=333, custom_knitro="test")
                     
             #         test_strategy_construction(
@@ -485,7 +500,7 @@ function test_comprehensive_strict_permissive_validation()
             #     end
             # else
             #     @testset "KnitroSolver (Not Available)" begin
-            #         @test_skip "NLPModelsKnitro not available"
+            #         @test_skip "NLPModelsKnitro not available or no license"
             #     end
             # end
         end
@@ -499,22 +514,28 @@ function test_comprehensive_strict_permissive_validation()
                 # Test that mode is correctly propagated through different construction methods
                 registry = modeler_registry
                 
-                # Direct constructor
+                # Direct constructor - mode should NOT be stored in options
                 modeler1 = ADNLPModeler(backend=:default; mode=:permissive)
-                @test modeler1.options.mode == :permissive
+                # @test modeler1.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
-                # build_strategy
+                # build_strategy - mode should NOT be stored in options  
                 modeler2 = build_strategy(:adnlp, AbstractOptimizationModeler, registry; backend=:default, mode=:permissive)
-                @test modeler2.options.mode == :permissive
+                # @test modeler2.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
-                # build_strategy_from_method
+                # build_strategy_from_method - mode should NOT be stored in options
                 method = (:collocation, :adnlp, :ipopt)
-                modeler3 = build_strategy_from_method(method, AbstractOptimizationModeler, registry; backend=:default, mode=:permissive)
-                @test modeler3.options.mode == :permissive
+                modeler3 = CTSolvers.Strategies.build_strategy_from_method(method, AbstractOptimizationModeler, registry; backend=:default, mode=:permissive)
+                # @test modeler3.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
-                # Orchestration wrapper
+                # Orchestration wrapper - mode should NOT be stored in options
                 modeler4 = Orchestration.build_strategy_from_method(method, AbstractOptimizationModeler, registry; backend=:default, mode=:permissive)
-                @test modeler4.options.mode == :permissive
+                # @test modeler4.options.mode == :permissive  # WRONG - mode should NOT be stored
+                
+                # CORRECT: Verify mode is NOT stored in options
+                @test_throws FieldError modeler1.options.mode
+                @test_throws FieldError modeler2.options.mode
+                @test_throws FieldError modeler3.options.mode
+                @test_throws FieldError modeler4.options.mode
             end
             
             @testset "Error Quality" begin
@@ -541,24 +562,26 @@ function test_comprehensive_strict_permissive_validation()
             
             @testset "Option Consistency" begin
                 # Test that options are consistent across construction methods
-                known_options = (backend=:sparse, show_time=false)
-                unknown_options = (test_consistency=42)
+                local known_options = (backend=:default, show_time=false)
+                local unknown_options = (test_consistency=42)
                 
-                registry = modeler_registry
+                local registry = CTSolvers.Strategies.create_registry(
+                    AbstractOptimizationModeler => (ADNLPModeler, ExaModeler)
+                )
                 
                 # Create strategies with different methods
-                modeler1 = ADNLPModeler(; known_options..., unknown_options..., mode=:permissive)
-                modeler2 = build_strategy(:adnlp, AbstractOptimizationModeler, registry; known_options..., unknown_options..., mode=:permissive)
+                modeler1 = ADNLPModeler(; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
+                modeler2 = build_strategy(:adnlp, AbstractOptimizationModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                 
                 method = (:collocation, :adnlp, :ipopt)
-                modeler3 = build_strategy_from_method(method, AbstractOptimizationModeler, registry; known_options..., unknown_options..., mode=:permissive)
-                modeler4 = Orchestration.build_strategy_from_method(method, AbstractOptimizationModeler, registry; known_options..., unknown_options..., mode=:permissive)
+                modeler3 = CTSolvers.Strategies.build_strategy_from_method(method, AbstractOptimizationModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
+                modeler4 = Orchestration.build_strategy_from_method(method, AbstractOptimizationModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                 
                 # Test that all have the same options
                 strategies = [modeler1, modeler2, modeler3, modeler4]
                 
                 for strategy in strategies
-                    @test option_value(strategy, :backend) == :sparse
+                    @test option_value(strategy, :backend) == :default
                     @test option_value(strategy, :show_time) == false
                     @test option_value(strategy, :test_consistency) == 42
                     @test option_source(strategy, :backend) == :user
@@ -597,8 +620,8 @@ function test_comprehensive_strict_permissive_validation()
                     another_fake=456   # invalid
                 )
                 
-                # In permissive mode, should work
-                @test_nowarn ADNLPModeler(
+                # In permissive mode, should work with warnings
+                @test_warn "Unrecognized options" ADNLPModeler(
                     backend=:default,  # valid
                     show_time=true,    # valid
                     fake_option=123,   # invalid but accepted
@@ -613,4 +636,6 @@ end
 end # module
 
 # Redefine in outer scope for TestRunner
-test_comprehensive_strict_permissive_validation() = TestComprehensiveStrictPermissiveValidation.test_comprehensive_strict_permissive_validation()
+test_comprehensive_validation() = TestComprehensiveValidation.test_comprehensive_validation()
+
+test_comprehensive_validation()

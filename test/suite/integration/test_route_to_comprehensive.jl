@@ -23,19 +23,23 @@ using CTSolvers.Orchestration
 using CTSolvers.Options
 
 # Load extensions if available for real strategy testing
-try
+const IPOPT_AVAILABLE = try
     using NLPModelsIpopt
     println("✅ NLPModelsIpopt loaded for real strategy tests")
+    true
 catch
     println("❌ NLPModelsIpopt not available - skipping real solver tests")
+    false
 end
 
-try
+const MADNLP_AVAILABLE = try
     using MadNLP
     using MadNLPMumps
     println("✅ MadNLP loaded for real strategy tests")
+    true
 catch
     println("❌ MadNLP not available - skipping real solver tests")
+    false
 end
 
 # Test options for verbose output
@@ -48,8 +52,8 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 
 # Abstract strategy types for testing
 abstract type RouteTestDiscretizer <: Strategies.AbstractStrategy end
-abstract type RouteTestModeler <: Strategies.AbstractStrategy end
-abstract type RouteTestSolver <: Strategies.AbstractStrategy end
+abstract type RouteTestModeler <: CTSolvers.Modelers.AbstractOptimizationModeler end
+abstract type RouteTestSolver <: CTSolvers.Solvers.AbstractOptimizationSolver end
 
 # Mock discretizer (no option conflicts)
 struct RouteCollocation <: RouteTestDiscretizer
@@ -498,7 +502,7 @@ function test_route_to_comprehensive()
             end
             
             # Test with real IpoptSolver (if available)
-            if isdefined(Main, :NLPModelsIpopt)
+            if IPOPT_AVAILABLE
                 @testset "Real IpoptSolver" begin
                     real_registry = Strategies.create_registry(
                         RouteTestDiscretizer => (RouteCollocation,),

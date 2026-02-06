@@ -41,12 +41,11 @@ struct RoutedOption
     
     function RoutedOption(routes::NamedTuple)
         if isempty(routes)
-            throw(Exceptions.IncorrectArgument(
+            throw(Exceptions.PreconditionError(
                 "RoutedOption requires at least one route",
-                got="empty routes NamedTuple",
-                expected="at least one strategy_id => value pair",
+                reason="empty routes NamedTuple provided",
                 suggestion="Use route_to(strategy=value) to create a routed option",
-                context="RoutedOption constructor"
+                context="RoutedOption constructor precondition"
             ))
         end
         new(routes)

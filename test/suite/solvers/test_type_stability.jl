@@ -51,6 +51,7 @@ function test_type_stability()
                 @test_nowarn @inferred CTSolvers.Solvers.MadNCLSolver(max_iter=100, tol=1e-6)
             end
             
+            # Commented out - no Knitro license available
             # @testset "KnitroSolver construction" begin
             #     @test_nowarn @inferred CTSolvers.Solvers.KnitroSolver()
             #     @test_nowarn @inferred CTSolvers.Solvers.KnitroSolver(max_iter=100)
@@ -105,6 +106,7 @@ function test_type_stability()
                 @test opts isa Strategies.StrategyOptions
             end
             
+            # Commented out - no Knitro license available
             # @testset "KnitroSolver contract" begin
             #     @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.KnitroSolver)
             #     @test @inferred(Strategies.id(CTSolvers.Solvers.KnitroSolver)) === :knitro

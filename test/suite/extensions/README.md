@@ -12,12 +12,12 @@ using Pkg
 Pkg.add("NLPModelsIpopt")
 ```
 
-### Knitro Extension (`test_knitro_extension.jl`)
+### Knitro Extension (`test_knitro_extension.jl`) - COMMENTED OUT
 ```julia
-using Pkg
-Pkg.add("NLPModelsKnitro")
+# using Pkg
+# Pkg.add("NLPModelsKnitro")
 ```
-**Note**: Knitro is a commercial solver requiring a license.
+**Note**: Knitro is a commercial solver requiring a license - NOT AVAILABLE
 
 ### MadNLP Extension (`test_madnlp_extension.jl`)
 ```julia
@@ -38,7 +38,7 @@ If the required packages are not installed, the tests will be skipped with a hel
 To run all extension tests (with packages installed):
 ```bash
 julia --project=@. test/runtests.jl suite/extensions/test_ipopt_extension
-julia --project=@. test/runtests.jl suite/extensions/test_knitro_extension
+# julia --project=@. test/runtests.jl suite/extensions/test_knitro_extension  # COMMENTED OUT - no license
 julia --project=@. test/runtests.jl suite/extensions/test_madnlp_extension
 julia --project=@. test/runtests.jl suite/extensions/test_madncl_extension
 ```
