@@ -398,7 +398,7 @@ function test_comprehensive_validation()
                     # Test option recovery
                     @testset "Option Recovery" begin
                         strategy_strict = CTSolvers.Solvers.IpoptSolver(; known_options...)
-                        test_option_recovery(strategy_strict, known_options, (), :strict)
+                        test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                         
                         strategy_permissive = CTSolvers.Solvers.IpoptSolver(; known_options..., unknown_options..., mode=:permissive)
                         test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
@@ -429,7 +429,7 @@ function test_comprehensive_validation()
                     
                     @testset "Option Recovery" begin
                         strategy_strict = CTSolvers.Solvers.MadNLPSolver(; known_options...)
-                        test_option_recovery(strategy_strict, known_options, (), :strict)
+                        test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                         
                         strategy_permissive = CTSolvers.Solvers.MadNLPSolver(; known_options..., unknown_options..., mode=:permissive)
                         test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
@@ -459,7 +459,7 @@ function test_comprehensive_validation()
                     
                     @testset "Option Recovery" begin
                         strategy_strict = CTSolvers.Solvers.MadNCLSolver(; known_options...)
-                        test_option_recovery(strategy_strict, known_options, (), :strict)
+                        test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                         
                         strategy_permissive = CTSolvers.Solvers.MadNCLSolver(; known_options..., unknown_options..., mode=:permissive)
                         test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
@@ -490,7 +490,7 @@ function test_comprehensive_validation()
                     
             #         @testset "Option Recovery" begin
             #             strategy_strict = CTSolvers.Solvers.KnitroSolver(; known_options...)
-            #             test_option_recovery(strategy_strict, known_options, (), :strict)
+            #             test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                         
             #             strategy_permissive = CTSolvers.Solvers.KnitroSolver(; known_options..., unknown_options..., mode=:permissive)
             #             test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
