@@ -23,7 +23,7 @@ returns the default value with `:default` source.
 - If a validator is provided in the definition, it will be called on the extracted value.
 - Validators should follow the pattern `x -> condition || throw(ArgumentError("message"))`.
 - If validation fails, the original exception is rethrown after logging context with `@error`.
-- Type mismatches generate warnings but do not prevent extraction.
+- Type mismatches throw `Exceptions.IncorrectArgument` exceptions.
 - The function removes the found option from the returned kwargs.
 
 # Example
@@ -70,7 +70,13 @@ function extract_option(kwargs::NamedTuple, def::OptionDefinition)
             
             # Type check
             if !isa(value, def.type)
-                @warn "Option $(def.name) has value $value of type $(typeof(value)), expected $(def.type)"
+                throw(Exceptions.IncorrectArgument(
+                    "Invalid option type",
+                    got="value $value of type $(typeof(value))",
+                    expected="$(def.type)",
+                    suggestion="Ensure the option value matches the expected type",
+                    context="Option extraction for $(def.name)"
+                ))
             end
             
             # Remove from kwargs
