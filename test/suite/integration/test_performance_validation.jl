@@ -99,9 +99,9 @@ function test_performance_validation()
             println("   Permissive mode overhead: $(round(overhead_permissive, digits=3))%")
             println("   Permissive + unknown overhead: $(round(overhead_unknown, digits=3))%")
             
-            # Assertions
-            @test overhead_permissive < 50.0 # Permissive mode overhead should be < 50%
-            @test overhead_unknown < 300.0 # Permissive mode with unknown options overhead should be < 200%
+            # Assertions - stricter but realistic with NamedTuple performance
+            @test overhead_permissive < 10.0 # Permissive mode overhead should be < 10% (stricter)
+            @test overhead_unknown < 300.0 # Permissive mode with unknown options overhead should be < 300%
             
             # Memory allocation check
             strict_alloc = @allocated Solvers.IpoptSolver(; known_options...)
@@ -150,10 +150,10 @@ function test_performance_validation()
             println("   Multiple strategies: $(multi_alloc) bytes")
             println("   Complex values: $(complex_alloc) bytes")
             
-            # Assertions
-            @test single_alloc < 100 # Single strategy routing should allocate < 100 bytes
-            @test multi_alloc < 200 # Multiple strategy routing should allocate < 200 bytes
-            @test complex_alloc < 300 # Complex value routing should allocate < 300 bytes
+            # Assertions - much stricter with NamedTuple performance
+            @test single_alloc == 0 # Single strategy routing should allocate 0 bytes
+            @test multi_alloc == 0 # Multiple strategies routing should allocate 0 bytes  
+            @test complex_alloc == 0 # Complex value routing should allocate 0 bytes
         end
         
         # ====================================================================
@@ -165,7 +165,7 @@ function test_performance_validation()
             
             # Test RoutedOption creation
             println("   Testing RoutedOption creation...")
-            routed_time = @benchmark Strategies.RoutedOption(Pair{Symbol, Any}[:solver => 1000, :modeler => 500]) samples=10000 evals=1
+            routed_time = @benchmark Strategies.RoutedOption((solver=1000, modeler=500)) samples=10000 evals=1
             println("   RoutedOption median: $(BenchmarkTools.prettytime(median(routed_time.times)))")
             
             # Test route_to() wrapper
@@ -179,7 +179,7 @@ function test_performance_validation()
             println("\n📈 route_to() Overhead:")
             println("   Wrapper overhead: $(round(wrapper_overhead, digits=3))%")
             
-            @test wrapper_overhead < 50 # route_to() wrapper overhead should be < 50%
+            @test wrapper_overhead < 5 # route_to() wrapper overhead should be < 5% (much stricter)
         end
         
         # ====================================================================
