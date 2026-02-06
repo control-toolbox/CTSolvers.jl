@@ -304,7 +304,7 @@ end
 Strategies.id(::Type{SymbolOptionStrategy}) = :symbol_option
 Strategies.metadata(::Type{SymbolOptionStrategy}) = Strategies.StrategyMetadata(
     OptionDefinition(
-        name = :mode,
+        name=:op_mode,
         type = Symbol,
         default = :default,
         description = "Operation mode"

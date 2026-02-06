@@ -238,14 +238,14 @@ function validate_strategy_contract(strategy_type::Type{T}) where {T<:AbstractSt
         default_value = first_spec.default
         
         # Try to create instance with a different value (if possible)
-        test_value = if default_value isa Number
+        test_value = if default_value isa Bool
+            !default_value
+        elseif default_value isa Real
             default_value + 1
         elseif default_value isa Symbol
             Symbol(string(default_value) * "_test")
         elseif default_value isa String
             default_value * "_test"
-        elseif default_value isa Bool
-            !default_value
         else
             # Cannot test with this type, skip this check
             nothing

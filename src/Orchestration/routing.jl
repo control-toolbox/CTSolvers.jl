@@ -101,7 +101,7 @@ See also: [`extract_strategy_ids`](@ref),
 function route_all_options(
     method::Tuple{Vararg{Symbol}},
     families::NamedTuple,
-    action_defs::Vector{Options.OptionDefinition},
+    action_defs::Vector{<:Options.OptionDefinition},
     kwargs::NamedTuple,
     registry::Strategies.StrategyRegistry;
     source_mode::Symbol = :description,
@@ -206,7 +206,10 @@ function route_all_options(
         for (family_name, pairs) in routed
     )
 
-    return (action=action_options, strategies=strategy_options)
+    # Convert action options (Dict) to NamedTuple
+    action_nt = (; (k => v for (k, v) in action_options)...)
+
+    return (action=action_nt, strategies=strategy_options)
 end
 
 # ----------------------------------------------------------------------------

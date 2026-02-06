@@ -284,6 +284,45 @@ end
 """
 $(TYPEDSIGNATURES)
 
+Check if an option exists in a strategy instance.
+
+Returns `true` if the option is present in the strategy's options,
+`false` otherwise. This is useful for checking if unknown options
+were stored in permissive mode.
+
+# Arguments
+- `strategy::AbstractStrategy`: The strategy instance
+- `key::Symbol`: The option name
+
+# Returns
+- `Bool`: `true` if the option exists
+
+# Example
+```julia-repl
+julia> using CTSolvers.Strategies
+
+julia> strategy = MyStrategy(max_iter=200; mode=:permissive, custom_opt=123)
+julia> has_option(strategy, :max_iter)
+true
+
+julia> has_option(strategy, :custom_opt)
+true
+
+julia> has_option(strategy, :nonexistent)
+false
+```
+
+See also: [`option_value`](@ref), [`option_source`](@ref)
+"""
+function has_option(strategy::AbstractStrategy, key::Symbol)
+    opts = options(strategy)
+    return haskey(opts.options, key)
+end
+
+
+"""
+$(TYPEDSIGNATURES)
+
 Check if an option value was provided by the user.
 
 Returns `true` if the option was explicitly set by the user during construction,

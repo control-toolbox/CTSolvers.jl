@@ -20,15 +20,35 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 # Helper: Create test registry and families
 # ============================================================================
 
+# Define mock types for testing
+abstract type TestDiscretizerFamily <: Strategies.AbstractStrategy end
+struct MyDiscretizer <: TestDiscretizerFamily end
+Strategies.id(::Type{MyDiscretizer}) = :test_discretizer
+Strategies.metadata(::Type{MyDiscretizer}) = Strategies.StrategyMetadata()
+
+abstract type TestModelerFamily <: Strategies.AbstractStrategy end
+struct MyModeler <: TestModelerFamily end
+Strategies.id(::Type{MyModeler}) = :test_modeler
+Strategies.metadata(::Type{MyModeler}) = Strategies.StrategyMetadata()
+
+abstract type TestSolverFamily <: Strategies.AbstractStrategy end
+struct MySolver <: TestSolverFamily end
+Strategies.id(::Type{MySolver}) = :test_solver
+Strategies.metadata(::Type{MySolver}) = Strategies.StrategyMetadata()
+
 function create_test_setup()
     # Create a simple registry with test strategies
-    registry = Strategies.create_registry()
+    registry = Strategies.create_registry(
+        TestDiscretizerFamily => (MyDiscretizer,),
+        TestModelerFamily => (MyModeler,),
+        TestSolverFamily => (MySolver,)
+    )
     
     # Define families
     families = (
-        discretizer = Strategies.AbstractStrategy,
-        modeler = Strategies.AbstractStrategy,
-        solver = Strategies.AbstractStrategy
+        discretizer = TestDiscretizerFamily,
+        modeler = TestModelerFamily,
+        solver = TestSolverFamily
     )
     
     # Define action options
@@ -182,7 +202,7 @@ function test_routing_validation()
                 mode = :permissive
             )
             
-            @test result.action.display == true
+            @test result.action[:display].value == true
         end
         
         # ====================================================================

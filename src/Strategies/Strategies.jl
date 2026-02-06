@@ -52,7 +52,7 @@ export create_registry, strategy_ids, type_from_id
 
 # Introspection functions
 export option_names, option_type, option_description, option_default, option_defaults
-export option_value, option_source
+export option_value, option_source, has_option
 export is_user, is_default, is_computed
 
 # Builder functions
