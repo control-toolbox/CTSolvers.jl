@@ -19,7 +19,7 @@ in multiple strategies. It wraps one or more (strategy_id => value) pairs,
 allowing the orchestration layer to route each value to its intended strategy.
 
 # Fields
-- `routes::Vector{Pair{Symbol, Any}}`: Vector of strategy_id => value pairs
+- `routes::NamedTuple`: NamedTuple of strategy_id => value mappings
 
 # Example
 ```julia-repl
@@ -27,23 +27,23 @@ julia> using CTSolvers.Strategies
 
 julia> # Single strategy
 julia> opt = route_to(solver=100)
-RoutedOption([:solver => 100])
+RoutedOption((solver = 100,))
 
 julia> # Multiple strategies
 julia> opt = route_to(solver=100, modeler=50)
-RoutedOption([:solver => 100, :modeler => 50])
+RoutedOption((solver = 100, modeler = 50))
 ```
 
 See also: [`route_to`](@ref)
 """
 struct RoutedOption
-    routes::Vector{Pair{Symbol, Any}}
+    routes::NamedTuple
     
-    function RoutedOption(routes::Vector{Pair{Symbol, Any}})
+    function RoutedOption(routes::NamedTuple)
         if isempty(routes)
             throw(Exceptions.IncorrectArgument(
                 "RoutedOption requires at least one route",
-                got="empty routes vector",
+                got="empty routes NamedTuple",
                 expected="at least one strategy_id => value pair",
                 suggestion="Use route_to(strategy=value) to create a routed option",
                 context="RoutedOption constructor"
@@ -79,11 +79,11 @@ julia> using CTSolvers.Strategies
 
 julia> # Single strategy
 julia> route_to(solver=100)
-RoutedOption([:solver => 100])
+RoutedOption((solver = 100,))
 
 julia> # Multiple strategies with different values
 julia> route_to(solver=100, modeler=50)
-RoutedOption([:solver => 100, :modeler => 50])
+RoutedOption((solver = 100, modeler = 50))
 ```
 
 # Usage in solve()
@@ -119,6 +119,6 @@ function route_to(; kwargs...)
         ))
     end
     
-    routes = Pair{Symbol, Any}[strategy => value for (strategy, value) in pairs(kwargs)]
-    return RoutedOption(routes)
+    # Convert Base.Pairs to NamedTuple - super clean!
+    return RoutedOption(NamedTuple(kwargs))
 end

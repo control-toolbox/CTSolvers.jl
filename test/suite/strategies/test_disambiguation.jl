@@ -23,13 +23,13 @@ function test_disambiguation()
         
         @testset "RoutedOption Type" begin
             # Create RoutedOption directly
-            routes = Pair{Symbol, Any}[:solver => 100]
+            routes = (solver=100,)
             opt = Strategies.RoutedOption(routes)
             @test opt isa Strategies.RoutedOption
             @test opt.routes == routes
             
             # Empty routes should throw
-            @test_throws Exception Strategies.RoutedOption(Pair{Symbol, Any}[])
+            @test_throws Exception Strategies.RoutedOption(NamedTuple())
         end
         
         # ====================================================================
@@ -40,15 +40,15 @@ function test_disambiguation()
             result = Strategies.route_to(solver=100)
             @test result isa Strategies.RoutedOption
             @test length(result.routes) == 1
-            @test result.routes[1] == (:solver => 100)
+            @test result.routes.solver == 100
         end
         
         @testset "route_to() Multiple Strategies" begin
             result = Strategies.route_to(solver=100, modeler=50)
             @test result isa Strategies.RoutedOption
             @test length(result.routes) == 2
-            @test (:solver => 100) in result.routes
-            @test (:modeler => 50) in result.routes
+            @test result.routes.solver == 100
+            @test result.routes.modeler == 50
         end
         
         @testset "route_to() No Arguments Error" begin
@@ -62,31 +62,31 @@ function test_disambiguation()
         @testset "Different Value Types" begin
             # Integer value
             result = Strategies.route_to(modeler=42)
-            @test result.routes[1] == (:modeler => 42)
+            @test result.routes.modeler == 42
             
             # Float value
             result = Strategies.route_to(solver=1.5e-6)
-            @test result.routes[1] == (:solver => 1.5e-6)
+            @test result.routes.solver == 1.5e-6
             
             # String value
             result = Strategies.route_to(optimizer="ipopt")
-            @test result.routes[1] == (:optimizer => "ipopt")
+            @test result.routes.optimizer == "ipopt"
             
             # Boolean value
             result = Strategies.route_to(solver=true)
-            @test result.routes[1] == (:solver => true)
+            @test result.routes.solver == true
             
             # Symbol value
             result = Strategies.route_to(modeler=:auto)
-            @test result.routes[1] == (:modeler => :auto)
+            @test result.routes.modeler == :auto
         end
         
         @testset "Different Strategy Identifiers" begin
             # Common strategy identifiers
-            @test Strategies.route_to(solver=100).routes[1] == (:solver => 100)
-            @test Strategies.route_to(modeler=100).routes[1] == (:modeler => 100)
-            @test Strategies.route_to(optimizer=100).routes[1] == (:optimizer => 100)
-            @test Strategies.route_to(discretizer=100).routes[1] == (:discretizer => 100)
+            @test Strategies.route_to(solver=100).routes.solver == 100
+            @test Strategies.route_to(modeler=100).routes.modeler == 100
+            @test Strategies.route_to(optimizer=100).routes.optimizer == 100
+            @test Strategies.route_to(discretizer=100).routes.discretizer == 100
         end
         
         # ====================================================================
@@ -96,15 +96,15 @@ function test_disambiguation()
         @testset "Complex Value Types" begin
             # Array value
             result = Strategies.route_to(solver=[1, 2, 3])
-            @test result.routes[1] == (:solver => [1, 2, 3])
+            @test result.routes.solver == [1, 2, 3]
             
             # Tuple value
             result = Strategies.route_to(modeler=(1, 2))
-            @test result.routes[1] == (:modeler => (1, 2))
+            @test result.routes.modeler == (1, 2)
             
             # NamedTuple value
             result = Strategies.route_to(solver=(a=1, b=2))
-            @test result.routes[1] == (:solver => (a=1, b=2))
+            @test result.routes.solver == (a=1, b=2)
         end
         
         # ====================================================================
@@ -115,9 +115,9 @@ function test_disambiguation()
             # Different values for different strategies
             result = Strategies.route_to(solver=100, modeler=50, discretizer=200)
             @test length(result.routes) == 3
-            @test (:solver => 100) in result.routes
-            @test (:modeler => 50) in result.routes
-            @test (:discretizer => 200) in result.routes
+            @test result.routes.solver == 100
+            @test result.routes.modeler == 50
+            @test result.routes.discretizer == 200
         end
         
         # ====================================================================
@@ -127,12 +127,11 @@ function test_disambiguation()
         @testset "Edge Cases" begin
             # Nothing value
             result = Strategies.route_to(solver=nothing)
-            @test result.routes[1] == (:solver => nothing)
+            @test result.routes.solver === nothing
             
             # Missing value
             result = Strategies.route_to(solver=missing)
-            @test result.routes[1].first == :solver
-            @test result.routes[1].second === missing
+            @test result.routes.solver === missing
         end
     end
 end

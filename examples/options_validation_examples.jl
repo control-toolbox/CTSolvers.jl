@@ -105,8 +105,6 @@ println("-" ^ 30)
 
 # Example 4: Single Strategy Routing
 println("\n4️⃣  Single Strategy Routing")
-
-# Create a RoutedOption for single strategy
 routed_single = route_to(solver=1000)
 println("   route_to(solver=1000) = $routed_single")
 println("   Type: $(typeof(routed_single))")
@@ -114,8 +112,6 @@ println("   Routes: $(routed_single.routes)")
 
 # Example 5: Multiple Strategy Routing
 println("\n5️⃣  Multiple Strategy Routing")
-
-# Create a RoutedOption for multiple strategies
 routed_multi = route_to(solver=1000, modeler=500, discretizer=100)
 println("   route_to(solver=1000, modeler=500, discretizer=100) = $routed_multi")
 println("   Type: $(typeof(routed_multi))")

@@ -224,9 +224,9 @@ function test_strict_permissive_integration()
                 
                 @test routed isa Strategies.RoutedOption
                 @test length(routed.routes) == 3
-                @test (:solver => 3000) in routed.routes
-                @test (:modeler => 1500) in routed.routes
-                @test (:discretizer => 250) in routed.routes
+                @test routed.routes.solver == 3000
+                @test routed.routes.modeler == 1500
+                @test routed.routes.discretizer == 250
             end
         end
         
