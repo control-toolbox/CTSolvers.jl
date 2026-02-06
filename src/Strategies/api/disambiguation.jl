@@ -3,55 +3,123 @@
 # ============================================================================
 
 using DocStringExtensions
+using CTBase: Exceptions
+
+# ----------------------------------------------------------------------------
+# Routed Option Type
+# ----------------------------------------------------------------------------
 
 """
-$(TYPEDSIGNATURES)
+    RoutedOption
 
-Create a disambiguated option value by tagging it with a target strategy identifier.
+Routed option value with explicit strategy targeting.
 
-This helper function is used to resolve ambiguity when the same option name exists
-in multiple strategies (e.g., modeler and solver both have `max_iter`). By wrapping
-the value with its target strategy, the orchestration layer can route the option
-to the correct strategy.
+This type is created by [`route_to`](@ref) to disambiguate options that exist
+in multiple strategies. It wraps one or more (strategy_id => value) pairs,
+allowing the orchestration layer to route each value to its intended strategy.
 
-# Arguments
-- `strategy::Symbol`: Target strategy identifier (e.g., `:modeler`, `:solver`)
-- `value`: The option value to route to the specified strategy
-
-# Returns
-- `Tuple{Any, Symbol}`: A tuple `(value, strategy)` that can be passed as an option value
+# Fields
+- `routes::Vector{Pair{Symbol, Any}}`: Vector of strategy_id => value pairs
 
 # Example
 ```julia-repl
 julia> using CTSolvers.Strategies
 
-julia> Strategies.route_to(:solver, 100)
-(100, :solver)
+julia> # Single strategy
+julia> opt = route_to(solver=100)
+RoutedOption([:solver => 100])
 
-julia> Strategies.route_to(:modeler, 1e-6)
-(1.0e-6, :modeler)
+julia> # Multiple strategies
+julia> opt = route_to(solver=100, modeler=50)
+RoutedOption([:solver => 100, :modeler => 50])
 ```
 
-# Notes
-- This is a convenience function equivalent to manually creating a tuple `(value, strategy)`
-- The tuple format is recognized by the orchestration layer for option routing
-- Use this when you need to pass the same option name to different strategies with different values
-- The strategy identifier must match a registered strategy ID in the system
+See also: [`route_to`](@ref)
+"""
+struct RoutedOption
+    routes::Vector{Pair{Symbol, Any}}
+    
+    function RoutedOption(routes::Vector{Pair{Symbol, Any}})
+        if isempty(routes)
+            throw(Exceptions.IncorrectArgument(
+                "RoutedOption requires at least one route",
+                got="empty routes vector",
+                expected="at least one strategy_id => value pair",
+                suggestion="Use route_to(strategy=value) to create a routed option",
+                context="RoutedOption constructor"
+            ))
+        end
+        new(routes)
+    end
+end
 
-# Example with Multiple Strategies
+"""
+$(TYPEDSIGNATURES)
+
+Create a disambiguated option value by explicitly routing it to specific strategies.
+
+This function resolves ambiguity when the same option name exists in multiple
+strategies (e.g., both modeler and solver have `max_iter`). It creates a
+[`RoutedOption`](@ref) that tells the orchestration layer exactly which strategy
+should receive which value.
+
+# Arguments
+- `kwargs...`: Named arguments where keys are strategy identifiers (`:solver`, `:modeler`, etc.)
+  and values are the option values to route to those strategies
+
+# Returns
+- `RoutedOption`: A routed option containing the strategy => value mappings
+
+# Throws
+- `Exceptions.IncorrectArgument`: If no strategies are provided
+
+# Example
+```julia-repl
+julia> using CTSolvers.Strategies
+
+julia> # Single strategy
+julia> route_to(solver=100)
+RoutedOption([:solver => 100])
+
+julia> # Multiple strategies with different values
+julia> route_to(solver=100, modeler=50)
+RoutedOption([:solver => 100, :modeler => 50])
+```
+
+# Usage in solve()
 ```julia
-# Without disambiguation - ambiguous which strategy gets max_iter
-solve(ocp; max_iter=100)
+# Without disambiguation - error if max_iter exists in multiple strategies
+solve(ocp, method; max_iter=100)  # ❌ Ambiguous!
 
 # With disambiguation - explicit routing
-solve(ocp; 
-    max_iter=route_to(:solver, 100),    # Solver gets 100 iterations
-    max_iter=route_to(:modeler, 50)     # Modeler gets 50 iterations
+solve(ocp, method; 
+    max_iter = route_to(solver=100)              # Only solver gets 100
+)
+
+solve(ocp, method; 
+    max_iter = route_to(solver=100, modeler=50)  # Different values for each
 )
 ```
 
-See also: [`build_strategy_options`](@ref), [`StrategyOptions`](@ref)
+# Notes
+- Strategy identifiers must match the actual strategy IDs in your method tuple
+- You can route to one or multiple strategies in a single call
+- This is the recommended way to disambiguate options
+- The orchestration layer will validate that the strategy IDs exist
+
+See also: [`RoutedOption`](@ref), [`route_all_options`](@ref)
 """
-function route_to(strategy::Symbol, value)
-    return (value, strategy)
+function route_to(; kwargs...)
+    if isempty(kwargs)
+        throw(Exceptions.IncorrectArgument(
+            "route_to requires at least one strategy",
+            got="no strategy arguments",
+            expected="at least one strategy=value pair",
+            suggestion="Use route_to(solver=100) or route_to(solver=100, modeler=50)",
+            context="route_to - validating arguments"
+        ))
+    end
+    
+    routes = Pair{Symbol, Any}[strategy => value for (strategy, value) in pairs(kwargs)]
+    return RoutedOption(routes)
 end

@@ -39,6 +39,7 @@ include(joinpath(@__DIR__, "api", "disambiguation.jl"))
 
 # Core types
 export AbstractStrategy, StrategyRegistry, StrategyMetadata, StrategyOptions, OptionDefinition
+export RoutedOption
 
 # Type-level contract methods
 export id, metadata

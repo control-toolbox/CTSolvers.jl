@@ -12,19 +12,22 @@ $(TYPEDSIGNATURES)
 Extract strategy IDs from disambiguation syntax.
 
 This function detects whether an option value uses disambiguation syntax to
-explicitly route the option to specific strategies. It supports both single
-and multi-strategy disambiguation.
+explicitly route the option to specific strategies. It supports the modern
+[`RoutedOption`](@ref) type created by [`route_to`](@ref), as well as legacy
+tuple-based syntax for backward compatibility.
 
 # Disambiguation Syntax
 
-**Single strategy**:
+**Recommended (RoutedOption)**:
 ```julia
-value = (:sparse, :adnlp)  # Route to :adnlp strategy
+value = route_to(solver=100)                    # Single strategy
+value = route_to(solver=100, modeler=50)        # Multiple strategies
 ```
 
-**Multiple strategies**:
+**Legacy (tuples, for backward compatibility)**:
 ```julia
-value = ((:sparse, :adnlp), (:cpu, :ipopt))  # Route to both
+value = (:sparse, :adnlp)                       # Single strategy
+value = ((:sparse, :adnlp), (:cpu, :ipopt))     # Multiple strategies
 ```
 
 # Arguments
@@ -43,27 +46,46 @@ value = ((:sparse, :adnlp), (:cpu, :ipopt))  # Route to both
 
 # Examples
 ```julia-repl
-julia> # Single strategy disambiguation
-julia> extract_strategy_ids((:sparse, :adnlp), (:collocation, :adnlp, :ipopt))
-[(:sparse, :adnlp)]
+julia> # RoutedOption (recommended)
+julia> extract_strategy_ids(route_to(solver=100), (:collocation, :adnlp, :ipopt))
+[(100, :solver)]
 
-julia> # Multi-strategy disambiguation
-julia> extract_strategy_ids(((:sparse, :adnlp), (:cpu, :ipopt)), (:collocation, :adnlp, :ipopt))
-[(:sparse, :adnlp), (:cpu, :ipopt)]
+julia> # Multiple strategies
+julia> extract_strategy_ids(route_to(solver=100, modeler=50), (:collocation, :adnlp, :ipopt))
+[(100, :solver), (50, :modeler)]
 
 julia> # No disambiguation
 julia> extract_strategy_ids(:sparse, (:collocation, :adnlp, :ipopt))
 nothing
 ```
 
-See also: [`route_all_options`](@ref), [`build_strategy_to_family_map`](@ref)
+See also: [`route_to`](@ref), [`RoutedOption`](@ref), [`route_all_options`](@ref)
 """
 function extract_strategy_ids(
     raw,
     method::Tuple{Vararg{Symbol}}
 )::Union{Nothing, Vector{Tuple{Any, Symbol}}}
     
-    # Single strategy: (value, :id)
+    # Modern syntax: RoutedOption (recommended)
+    if raw isa Strategies.RoutedOption
+        results = Tuple{Any, Symbol}[]
+        for (strategy_id, value) in raw.routes
+            if strategy_id in method
+                push!(results, (value, strategy_id))
+            else
+                throw(Exceptions.IncorrectArgument(
+                    "Strategy ID not found in method tuple",
+                    got="strategy ID :$strategy_id",
+                    expected="one of available strategy IDs: $method",
+                    suggestion="Use a valid strategy ID from your method tuple",
+                    context="extract_strategy_ids - validating RoutedOption strategy ID"
+                ))
+            end
+        end
+        return results
+    end
+    
+    # Legacy syntax: Single strategy tuple (value, :id)
     # Must be a 2-tuple where second element is Symbol and first is NOT a tuple
     # (to distinguish from multi-strategy syntax)
     if raw isa Tuple && length(raw) == 2 && raw[2] isa Symbol && !(raw[1] isa Tuple)
@@ -75,13 +97,13 @@ function extract_strategy_ids(
                 "Strategy ID not found in method tuple",
                 got="strategy ID :$id",
                 expected="one of available strategy IDs: $method",
-                suggestion="Use a valid strategy ID from your method tuple",
-                context="extract_strategy_ids - validating strategy ID in disambiguation"
+                suggestion="Use route_to($id=$value) for clearer syntax",
+                context="extract_strategy_ids - validating strategy ID in tuple disambiguation"
             ))
         end
     end
     
-    # Multiple strategies: ((v1, :id1), (v2, :id2), ...)
+    # Legacy syntax: Multiple strategies ((v1, :id1), (v2, :id2), ...)
     if raw isa Tuple && length(raw) > 0
         # First pass: check if ALL elements have the right structure
         # Each element must be a Tuple (not just any value) with exactly 2 elements
@@ -105,8 +127,8 @@ function extract_strategy_ids(
                         "Strategy ID not found in method tuple",
                         got="strategy ID :$id",
                         expected="one of available strategy IDs: $method",
-                        suggestion="Use a valid strategy ID from your method tuple",
-                        context="extract_strategy_ids - validating multi-strategy disambiguation"
+                        suggestion="Use route_to() for clearer syntax",
+                        context="extract_strategy_ids - validating multi-strategy tuple disambiguation"
                     ))
                 end
             end
