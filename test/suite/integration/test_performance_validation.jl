@@ -170,7 +170,7 @@ function test_performance_validation()
         
         # ====================================================================
         # PERFORMANCE TESTS - Scalability
-        ====================================================================
+        # ====================================================================
         
         @testset "Scalability Performance" begin
             println("\n📈 Scalability Performance:")
@@ -180,7 +180,7 @@ function test_performance_validation()
             
             for n in option_counts
                 # Generate options
-                test_options = NamedTuple{(:($([Symbol("opt$i") for i in 1:n]...))}(
+                test_options = NamedTuple(
                     (Symbol("opt$i") => rand(1:1000) for i in 1:n)...
                 )
                 
@@ -209,7 +209,7 @@ function test_performance_validation()
         
         # ====================================================================
         # PERFORMANCE TESTS - Type Stability
-        ====================================================================
+        # ====================================================================
         
         @testset "Type Stability Performance" begin
             println("\n🔍 Type Stability Performance:")
@@ -233,7 +233,7 @@ function test_performance_validation()
         
         # ====================================================================
         # PERFORMANCE TESTS - Memory Efficiency
-        ====================================================================
+        # ====================================================================
         
         @testset "Memory Efficiency" begin
             println("\n💾 Memory Efficiency:")
@@ -265,7 +265,7 @@ function test_performance_validation()
         
         # ====================================================================
         # PERFORMANCE TESTS - Comparison with Baseline
-        ====================================================================
+        # ====================================================================
         
         @testset "Baseline Comparison" begin
             println("\n📊 Baseline Comparison:")

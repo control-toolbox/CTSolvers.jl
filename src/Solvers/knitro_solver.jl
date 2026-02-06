@@ -94,23 +94,31 @@ Strategies.id(::Type{<:KnitroSolver}) = :knitro
 # ============================================================================
 
 """
-    KnitroSolver(; kwargs...)
+    KnitroSolver(; mode::Symbol=:strict, kwargs...)
 
 Create a KnitroSolver with specified options.
 
 Requires the CTSolversKnitro extension to be loaded.
 
 # Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Solver options (see extension documentation for available options)
 
-# Example
+# Examples
 ```julia
 using NLPModelsKnitro
+
+# Strict mode (default) - rejects unknown options
 solver = KnitroSolver(maxit=1000, outlev=2)
+
+# Permissive mode - accepts unknown options with warning
+solver = KnitroSolver(maxit=1000, custom_option=123; mode=:permissive)
 ```
 """
-function KnitroSolver(; kwargs...)
-    return build_knitro_solver(KnitroTag(); kwargs...)
+function KnitroSolver(; mode::Symbol=:strict, kwargs...)
+    return build_knitro_solver(KnitroTag(); mode=mode, kwargs...)
 end
 
 """

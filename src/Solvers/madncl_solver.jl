@@ -92,23 +92,31 @@ Strategies.id(::Type{<:MadNCLSolver}) = :madncl
 # ============================================================================
 
 """
-    MadNCLSolver(; kwargs...)
+    MadNCLSolver(; mode::Symbol=:strict, kwargs...)
 
 Create a MadNCLSolver with specified options.
 
 Requires the CTSolversMadNCL extension to be loaded.
 
 # Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Solver options (see extension documentation for available options)
 
-# Example
+# Examples
 ```julia
 using MadNCL, MadNLP, MadNLPMumps
+
+# Strict mode (default) - rejects unknown options
 solver = MadNCLSolver(max_iter=1000, tol=1e-6)
+
+# Permissive mode - accepts unknown options with warning
+solver = MadNCLSolver(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 """
-function MadNCLSolver(; kwargs...)
-    return build_madncl_solver(MadNCLTag(); kwargs...)
+function MadNCLSolver(; mode::Symbol=:strict, kwargs...)
+    return build_madncl_solver(MadNCLTag(); mode=mode, kwargs...)
 end
 
 """

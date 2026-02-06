@@ -91,23 +91,31 @@ Strategies.id(::Type{<:IpoptSolver}) = :ipopt
 # ============================================================================
 
 """
-    IpoptSolver(; kwargs...)
+    IpoptSolver(; mode::Symbol=:strict, kwargs...)
 
 Create an IpoptSolver with specified options.
 
 Requires the CTSolversIpopt extension to be loaded.
 
 # Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Solver options (see extension documentation for available options)
 
-# Example
+# Examples
 ```julia
 using NLPModelsIpopt
+
+# Strict mode (default) - rejects unknown options
 solver = IpoptSolver(max_iter=1000, tol=1e-6)
+
+# Permissive mode - accepts unknown options with warning
+solver = IpoptSolver(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 """
-function IpoptSolver(; kwargs...)
-    return build_ipopt_solver(IpoptTag(); kwargs...)
+function IpoptSolver(; mode::Symbol=:strict, kwargs...)
+    return build_ipopt_solver(IpoptTag(); mode=mode, kwargs...)
 end
 
 """

@@ -92,23 +92,31 @@ Strategies.id(::Type{<:MadNLPSolver}) = :madnlp
 # ============================================================================
 
 """
-    MadNLPSolver(; kwargs...)
+    MadNLPSolver(; mode::Symbol=:strict, kwargs...)
 
 Create a MadNLPSolver with specified options.
 
 Requires the CTSolversMadNLP extension to be loaded.
 
 # Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Solver options (see extension documentation for available options)
 
-# Example
+# Examples
 ```julia
 using MadNLP, MadNLPMumps
+
+# Strict mode (default) - rejects unknown options
 solver = MadNLPSolver(max_iter=1000, tol=1e-6)
+
+# Permissive mode - accepts unknown options with warning
+solver = MadNLPSolver(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 """
-function MadNLPSolver(; kwargs...)
-    return build_madnlp_solver(MadNLPTag(); kwargs...)
+function MadNLPSolver(; mode::Symbol=:strict, kwargs...)
+    return build_madnlp_solver(MadNLPTag(); mode=mode, kwargs...)
 end
 
 """

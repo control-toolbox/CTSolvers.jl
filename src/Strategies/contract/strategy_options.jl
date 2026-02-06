@@ -6,6 +6,20 @@ Wrapper for strategy option values with provenance tracking.
 This type stores options as a collection of `OptionValue` objects, each containing
 both the value and its source (`:user`, `:default`, or `:computed`).
 
+## Validation Modes
+
+Strategy options are built using `build_strategy_options()` which supports two validation modes:
+
+- **Strict Mode (default)**: Only known options are accepted
+  - Unknown options trigger detailed error messages with suggestions
+  - Type validation and custom validators are enforced
+  - Provides early error detection and safety
+
+- **Permissive Mode**: Unknown options are accepted with warnings
+  - Unknown options are stored with `:user` source
+  - Type validation and custom validators still apply to known options
+  - Allows backend-specific options without breaking changes
+
 # Fields
 - `options::NamedTuple`: NamedTuple of OptionValue objects with provenance
 
@@ -21,6 +35,18 @@ julia> opts = StrategyOptions(
 StrategyOptions with 2 options:
   max_iter = 200  [user]
   tol = 1.0e-6  [default]
+```
+
+# Building Options with Validation
+
+```julia-repl
+# Strict mode (default) - rejects unknown options
+julia> opts = build_strategy_options(MyStrategy; max_iter=200)
+StrategyOptions(...)
+
+# Permissive mode - accepts unknown options with warning
+julia> opts = build_strategy_options(MyStrategy; max_iter=200, custom_opt=123; mode=:permissive)
+StrategyOptions(...)  # with warning about custom_opt
 ```
 
 # Access patterns

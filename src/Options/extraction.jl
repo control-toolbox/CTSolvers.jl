@@ -70,7 +70,13 @@ function extract_option(kwargs::NamedTuple, def::OptionDefinition)
             
             # Type check
             if !isa(value, def.type)
-                @warn "Option $(def.name) has value $value of type $(typeof(value)), expected $(def.type)"
+                throw(Exceptions.IncorrectArgument(
+                    "Invalid option type",
+                    got="value $value of type $(typeof(value))",
+                    expected="$(def.type)",
+                    suggestion="Ensure the option value matches the expected type",
+                    context="Option extraction for $(def.name)"
+                ))
             end
             
             # Remove from kwargs

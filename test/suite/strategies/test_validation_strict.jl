@@ -11,6 +11,8 @@ using CTSolvers
 using CTSolvers.Strategies
 using CTSolvers.Solvers
 using CTSolvers.Options
+using NLPModelsIpopt
+using CTBase: CTBase, Exceptions
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
@@ -27,7 +29,7 @@ function test_validation_strict()
             # Test with single known option
             opts = Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=100)
             @test opts[:max_iter] == 100
-            @test Strategies.option_source(opts, :max_iter) == :user
+            @test Strategies.source(opts, :max_iter) == :user
             
             # Test with multiple known options
             opts = Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=200, tol=1e-6)
@@ -45,8 +47,8 @@ function test_validation_strict()
         
         @testset "Default Options Used" begin
             opts = Strategies.build_strategy_options(Solvers.IpoptSolver)
-            @test Strategies.option_source(opts, :max_iter) == :default
-            @test Strategies.option_source(opts, :tol) == :default
+            @test Strategies.source(opts, :max_iter) == :default
+            @test Strategies.source(opts, :tol) == :default
         end
         
         # ====================================================================
@@ -126,7 +128,7 @@ function test_validation_strict()
         
         @testset "Type Validation Enforced" begin
             # This should fail type validation (max_iter expects Integer)
-            @test_throws Exception begin
+            @test_throws Exceptions.IncorrectArgument begin
                 Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=1.5)
             end
         end
@@ -137,7 +139,7 @@ function test_validation_strict()
         
         @testset "Custom Validation Enforced" begin
             # tol must be positive
-            @test_throws Exception begin
+            @test_throws Exceptions.IncorrectArgument begin
                 Strategies.build_strategy_options(Solvers.IpoptSolver; tol=-1.0)
             end
         end
@@ -148,7 +150,7 @@ function test_validation_strict()
         
         @testset "Explicit Strict Mode" begin
             # mode=:strict should behave identically to default
-            @test_throws Exception begin
+            @test_throws Exceptions.IncorrectArgument begin
                 Strategies.build_strategy_options(Solvers.IpoptSolver; unknown=123, mode=:strict)
             end
             

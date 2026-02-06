@@ -275,12 +275,29 @@ end
 # ============================================================================
 
 """
-    Solvers.build_madnlp_solver(::Solvers.MadNLPTag; kwargs...)
+    Solvers.build_madnlp_solver(::Solvers.MadNLPTag; mode::Symbol=:strict, kwargs...)
 
 Build a MadNLPSolver with validated options.
+
+# Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
+- `kwargs...`: Options to pass to the MadNLPSolver constructor
+
+# Examples
+```julia-repl
+# Strict mode (default) - rejects unknown options
+julia> solver = Solvers.build_madnlp_solver(Solvers.MadNLPTag; max_iter=1000)
+MadNLPSolver(...)
+
+# Permissive mode - accepts unknown options with warning
+julia> solver = Solvers.build_madnlp_solver(Solvers.MadNLPTag; max_iter=1000, custom_option=123; mode=:permissive)
+MadNLPSolver(...)  # with warning about custom_option
+```
 """
-function Solvers.build_madnlp_solver(::Solvers.MadNLPTag; kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.MadNLPSolver; kwargs...)
+function Solvers.build_madnlp_solver(::Solvers.MadNLPTag; mode::Symbol=:strict, kwargs...)
+    opts = Strategies.build_strategy_options(Solvers.MadNLPSolver; mode=mode, kwargs...)
     return Solvers.MadNLPSolver(opts)
 end
 

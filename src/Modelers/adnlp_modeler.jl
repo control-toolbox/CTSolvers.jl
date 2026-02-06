@@ -53,13 +53,27 @@ automatic differentiation support. It provides configurable options for
 timing information, AD backend selection, memory optimization, and model
 identification.
 
+# Constructor
+
+```julia
+ADNLPModeler(; mode::Symbol=:strict, kwargs...)
+```
+
+# Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
+- `kwargs...`: Modeler options (see Options section)
+
 # Options
+
+## Basic Options
 - `show_time::Bool`: Enable timing information for model building (default: `false`)
 - `backend::Symbol`: AD backend to use (default: `:optimized`)
 - `matrix_free::Bool`: Enable matrix-free mode (default: `false`)
 - `name::String`: Model name for identification (default: `"CTSolvers-ADNLP"`)
 
-# Advanced Backend Overrides (expert users)
+## Advanced Backend Overrides (expert users)
 - `gradient_backend::Union{Nothing, Type}`: Override backend for gradient computation
 - `hprod_backend::Union{Nothing, Type}`: Override backend for Hessian-vector product
 - `jprod_backend::Union{Nothing, Type}`: Override backend for Jacobian-vector product
@@ -67,7 +81,7 @@ identification.
 - `jacobian_backend::Union{Nothing, Type}`: Override backend for Jacobian matrix computation
 - `hessian_backend::Union{Nothing, Type}`: Override backend for Hessian matrix computation
 
-# Advanced Backend Overrides for NLS (expert users)
+## Advanced Backend Overrides for NLS (expert users)
 - `ghjvprod_backend::Union{Nothing, Type}`: Override backend for g^T ∇²c(x)v computation
 - `hprod_residual_backend::Union{Nothing, Type}`: Override backend for Hessian-vector product of residuals
 - `jprod_residual_backend::Union{Nothing, Type}`: Override backend for Jacobian-vector product of residuals
@@ -75,26 +89,65 @@ identification.
 - `jacobian_residual_backend::Union{Nothing, Type}`: Override backend for Jacobian matrix of residuals
 - `hessian_residual_backend::Union{Nothing, Type}`: Override backend for Hessian matrix of residuals
 
-# Example
+# Examples
+
+## Basic Usage
 ```julia
-# Basic usage
+# Default modeler
 modeler = ADNLPModeler()
 
-# With options
+# With custom options
 modeler = ADNLPModeler(
     backend=:optimized,
     matrix_free=true,
     name="MyOptimizationProblem"
 )
+```
 
-# Advanced backend overrides
+## Advanced Backend Configuration
+```julia
+# Override specific backends
 modeler = ADNLPModeler(
     gradient_backend=nothing,  # Use default gradient backend
     hessian_backend=nothing   # Use default Hessian backend
 )
 ```
 
-See also: [`ExaModeler`](@ref), [`build_model`](@ref), [`solve!`](@ref)
+## Validation Modes
+```julia
+# Strict mode (default) - rejects unknown options
+modeler = ADNLPModeler(backend=:optimized)
+
+# Permissive mode - accepts unknown options with warning
+modeler = ADNLPModeler(
+    backend=:optimized,
+    custom_option=123;
+    mode=:permissive
+)
+```
+
+# Throws
+
+- `CTBase.Exceptions.IncorrectArgument`: If option validation fails
+- `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
+
+# See also
+
+- [`ExaModeler`](@ref): Alternative modeler using ExaModels
+- [`build_model`](@ref): Build model from problem and modeler
+- [`solve!`](@ref): Solve optimization problem
+
+# Notes
+
+- The `backend` option supports: `:default`, `:optimized`, `:generic`, `:enzyme`, `:zygote`
+- Advanced backend overrides are for expert users only
+- Matrix-free mode reduces memory usage but may increase computation time
+- Model name is used for identification in solver output
+
+# References
+
+- ADNLPModels.jl: [https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl)
+- Automatic Differentiation in Julia: [https://github.com/JuliaDiff/](https://github.com/JuliaDiff/)
 """
 struct ADNLPModeler <: AbstractOptimizationModeler
     options::Strategies.StrategyOptions
@@ -237,9 +290,45 @@ function Strategies.metadata(::Type{<:ADNLPModeler})
 end
 
 # Constructor with option validation
-function ADNLPModeler(; kwargs...)
+"""
+    ADNLPModeler(; mode::Symbol=:strict, kwargs...)
+
+Create an ADNLPModeler with validated options.
+
+# Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
+- `kwargs...`: Modeler options (see [`ADNLPModeler`](@ref) documentation)
+
+# Returns
+- `ADNLPModeler`: Configured modeler instance
+
+# Examples
+```julia
+# Default modeler
+modeler = ADNLPModeler()
+
+# With custom options
+modeler = ADNLPModeler(backend=:optimized, matrix_free=true)
+
+# With permissive mode
+modeler = ADNLPModeler(backend=:optimized, custom_option=123; mode=:permissive)
+```
+
+# Throws
+
+- `CTBase.Exceptions.IncorrectArgument`: If option validation fails
+- `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
+
+# See also
+
+- [`ADNLPModeler`](@ref): Type documentation
+- [`Strategies.build_strategy_options`](@ref): Option validation function
+"""
+function ADNLPModeler(; mode::Symbol=:strict, kwargs...)
     opts = Strategies.build_strategy_options(
-        ADNLPModeler; kwargs...
+        ADNLPModeler; mode=mode, kwargs...
     )
     return ADNLPModeler(opts)
 end
@@ -248,6 +337,37 @@ end
 Strategies.options(m::ADNLPModeler) = m.options
 
 # Model building interface
+"""
+    (modeler::ADNLPModeler)(prob, initial_guess)
+
+Build an ADNLPModel from a discretized optimal control problem.
+
+# Arguments
+- `modeler::ADNLPModeler`: Configured modeler instance
+- `prob::AbstractOptimizationProblem`: Discretized optimal control problem
+- `initial_guess`: Initial guess for optimization variables
+
+# Returns
+- `ADNLPModels.ADNLPModel`: Built NLP model
+
+# Examples
+```julia
+# Create modeler
+modeler = ADNLPModeler(backend=:optimized)
+
+# Build model from problem
+nlp = modeler(problem, initial_guess)
+
+# Solve the model
+stats = solve(nlp, solver)
+```
+
+# See also
+
+- [`ADNLPModeler`](@ref): Type documentation
+- [`build_model`](@ref): Generic model building interface
+- [`ADNLPModels.ADNLPModel`](@ref): NLP model type
+"""
 function (modeler::ADNLPModeler)(
     prob::AbstractOptimizationProblem,
     initial_guess
@@ -263,6 +383,36 @@ function (modeler::ADNLPModeler)(
 end
 
 # Solution building interface
+"""
+    (modeler::ADNLPModeler)(prob, nlp_solution)
+
+Build a solution object from NLP solver statistics.
+
+# Arguments
+- `modeler::ADNLPModeler`: Configured modeler instance
+- `prob::AbstractOptimizationProblem`: Original optimization problem
+- `nlp_solution::SolverCore.AbstractExecutionStats`: NLP solver statistics
+
+# Returns
+- Solution object appropriate for the problem type
+
+# Examples
+```julia
+# Create modeler and solve
+modeler = ADNLPModeler()
+nlp = modeler(problem, initial_guess)
+stats = solve(nlp, solver)
+
+# Build solution object
+solution = modeler(problem, stats)
+```
+
+# See also
+
+- [`ADNLPModeler`](@ref): Type documentation
+- [`SolverCore.AbstractExecutionStats`](@ref): Solver statistics type
+- [`solve`](@ref): Generic solve interface
+"""
 function (modeler::ADNLPModeler)(
     prob::AbstractOptimizationProblem,
     nlp_solution::SolverCore.AbstractExecutionStats

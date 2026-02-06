@@ -173,12 +173,29 @@ end
 # ============================================================================
 
 """
-    Solvers.build_knitro_solver(::Solvers.KnitroTag; kwargs...)
+    Solvers.build_knitro_solver(::Solvers.KnitroTag; mode::Symbol=:strict, kwargs...)
 
 Build a KnitroSolver with validated options.
+
+# Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
+- `kwargs...`: Options to pass to the KnitroSolver constructor
+
+# Examples
+```julia-repl
+# Strict mode (default) - rejects unknown options
+julia> solver = Solvers.build_knitro_solver(Solvers.KnitroTag; max_iter=1000)
+KnitroSolver(...)
+
+# Permissive mode - accepts unknown options with warning
+julia> solver = Solvers.build_knitro_solver(Solvers.KnitroTag; max_iter=1000, custom_option=123; mode=:permissive)
+KnitroSolver(...)  # with warning about custom_option
+```
 """
-function Solvers.build_knitro_solver(::Solvers.KnitroTag; kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.KnitroSolver; kwargs...)
+function Solvers.build_knitro_solver(::Solvers.KnitroTag; mode::Symbol=:strict, kwargs...)
+    opts = Strategies.build_strategy_options(Solvers.KnitroSolver; mode=mode, kwargs...)
     return Solvers.KnitroSolver(opts)
 end
 

@@ -39,6 +39,30 @@ Every concrete strategy must provide:
 3. **Constructor** accepting keyword arguments (uses `build_strategy_options`)
 4. **Instance-level access** to configured options
 
+## Validation Modes
+
+The strategy system supports two validation modes for option handling:
+
+- **Strict Mode (default)**: Rejects unknown options with detailed error messages
+  - Provides early error detection and safety
+  - Suggests corrections for typos using Levenshtein distance
+  - Ideal for development and production environments
+
+- **Permissive Mode**: Accepts unknown options with warnings
+  - Allows backend-specific options without breaking changes
+  - Maintains validation for known options (types, custom validators)
+  - Ideal for advanced users and experimental features
+
+The validation mode is controlled by the `mode` parameter in constructors:
+
+```julia-repl
+# Strict mode (default) - rejects unknown options
+julia> MyStrategy(unknown_option=123)  # ERROR
+
+# Permissive mode - accepts unknown options with warning
+julia> MyStrategy(unknown_option=123; mode=:permissive)  # WARNING but works
+```
+
 ## API Methods
 
 The Strategies module provides these methods for working with strategies:
@@ -46,7 +70,7 @@ The Strategies module provides these methods for working with strategies:
 - `id(strategy_type)` - Get the unique identifier
 - `metadata(strategy_type)` - Get option specifications  
 - `options(strategy)` - Get current configuration
-- `build_strategy_options(Type; kwargs...)` - Validate and merge options
+- `build_strategy_options(Type; mode=:strict, kwargs...)` - Validate and merge options
 
 # Example
 
@@ -63,15 +87,18 @@ julia> metadata(::Type{<:MyStrategy}) = StrategyMetadata(
        )
 
 # Implement constructor (required)
-julia> function MyStrategy(; kwargs...)
-           options = build_strategy_options(MyStrategy; kwargs...)
+julia> function MyStrategy(; mode::Symbol=:strict, kwargs...)
+           options = build_strategy_options(MyStrategy; mode=mode, kwargs...)
            return MyStrategy(options)
        end
 
 # Use the strategy
-julia> strategy = MyStrategy(max_iter=200)  # Instance with custom config
+julia> strategy = MyStrategy(max_iter=200)  # Instance with custom config (strict mode)
 julia> id(typeof(strategy))                 # => :mystrategy (type-level)
 julia> options(strategy)                    # => StrategyOptions (instance-level)
+
+# Use with permissive mode for unknown options
+julia> strategy = MyStrategy(max_iter=200, custom_option=123; mode=:permissive)
 ```
 
 # Notes

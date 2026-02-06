@@ -12,6 +12,7 @@ using CTSolvers
 using CTSolvers.Strategies
 using CTSolvers.Solvers
 using CTSolvers.Options
+using NLPModelsIpopt
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
@@ -27,7 +28,7 @@ function test_validation_permissive()
         @testset "Known Options Work Normally" begin
             opts = Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=100, mode=:permissive)
             @test opts[:max_iter] == 100
-            @test Strategies.option_source(opts, :max_iter) == :user
+            @test Strategies.source(opts, :max_iter) == :user
         end
         
         # ====================================================================
@@ -99,7 +100,7 @@ function test_validation_permissive()
             opts = @test_logs (:warn,) begin
                 Strategies.build_strategy_options(Solvers.IpoptSolver; custom_opt=123, mode=:permissive)
             end
-            @test Strategies.option_source(opts, :custom_opt) == :user
+            @test Strategies.source(opts, :custom_opt) == :user
         end
         
         # ====================================================================
@@ -124,7 +125,7 @@ function test_validation_permissive()
             
             @test opts_strict[:max_iter] == opts_permissive[:max_iter]
             @test opts_strict[:tol] == opts_permissive[:tol]
-            @test Strategies.option_source(opts_strict, :max_iter) == Strategies.option_source(opts_permissive, :max_iter)
+            @test Strategies.source(opts_strict, :max_iter) == Strategies.source(opts_permissive, :max_iter)
         end
         
         # ====================================================================

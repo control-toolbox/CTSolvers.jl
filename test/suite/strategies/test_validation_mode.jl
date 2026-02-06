@@ -9,6 +9,7 @@ using Test
 using CTSolvers
 using CTSolvers.Strategies
 using CTSolvers.Solvers
+using NLPModelsIpopt
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true

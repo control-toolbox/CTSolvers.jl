@@ -303,12 +303,29 @@ end
 # ============================================================================
 
 """
-    Solvers.build_madncl_solver(::Solvers.MadNCLTag; kwargs...)
+    Solvers.build_madncl_solver(::Solvers.MadNCLTag; mode::Symbol=:strict, kwargs...)
 
 Build a MadNCLSolver with validated options.
+
+# Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
+- `kwargs...`: Options to pass to the MadNCLSolver constructor
+
+# Examples
+```julia-repl
+# Strict mode (default) - rejects unknown options
+julia> solver = Solvers.build_madncl_solver(Solvers.MadNCLTag; max_iter=1000)
+MadNCLSolver(...)
+
+# Permissive mode - accepts unknown options with warning
+julia> solver = Solvers.build_madncl_solver(Solvers.MadNCLTag; max_iter=1000, custom_option=123; mode=:permissive)
+MadNCLSolver(...)  # with warning about custom_option
+```
 """
-function Solvers.build_madncl_solver(::Solvers.MadNCLTag; kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.MadNCLSolver; kwargs...)
+function Solvers.build_madncl_solver(::Solvers.MadNCLTag; mode::Symbol=:strict, kwargs...)
+    opts = Strategies.build_strategy_options(Solvers.MadNCLSolver; mode=mode, kwargs...)
     return Solvers.MadNCLSolver(opts)
 end
 
