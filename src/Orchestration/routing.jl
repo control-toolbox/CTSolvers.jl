@@ -259,23 +259,23 @@ function _error_ambiguous_option(
     ]
 
     if source_mode === :description
-        # User-friendly error message
+        # User-friendly error message with route_to() syntax
         msg = "Option :$key is ambiguous between strategies: " *
               "$(join(strategies, ", ")).\n\n" *
-              "Disambiguate by specifying the strategy ID:\n"
+              "Disambiguate using route_to():\n"
         for id in strategies
             fam = strategy_to_family[id]
-            msg *= "  $key = ($value, :$id)    # Route to $fam\n"
+            msg *= "  $key = route_to($id=$value)    # Route to $fam\n"
         end
         msg *= "\nOr set for multiple strategies:\n" *
-               "  $key = (" *
-               join(["($value, :$id)" for id in strategies], ", ") *
+               "  $key = route_to(" *
+               join(["$id=$value" for id in strategies], ", ") *
                ")"
         throw(Exceptions.IncorrectArgument(
             "Ambiguous option requires disambiguation",
             got="option :$key between strategies: $(join(strategies, ", "))",
-            expected="strategy-specific routing using (value, :strategy_id) syntax",
-            suggestion="Use disambiguation syntax like $key = ($value, :$id) to specify target strategy",
+            expected="strategy-specific routing using route_to()",
+            suggestion="Use route_to() like $key = route_to($(first(strategies))=$value) to specify target strategy",
             context="route_options - ambiguous option resolution"
         ))
     else
@@ -284,7 +284,7 @@ function _error_ambiguous_option(
             "Ambiguous option in explicit mode",
             got="option :$key between families: $owners",
             expected="unambiguous option routing in explicit mode",
-            suggestion="Use strategy-specific routing or switch to description mode for ambiguous options",
+            suggestion="Use route_to() for disambiguation or switch to description mode",
             context="route_options - explicit mode ambiguity validation"
         ))
     end

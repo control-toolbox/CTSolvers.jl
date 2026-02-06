@@ -71,7 +71,7 @@ should receive which value.
 - `RoutedOption`: A routed option containing the strategy => value mappings
 
 # Throws
-- `Exceptions.IncorrectArgument`: If no strategies are provided
+- `Exceptions.PreconditionError`: If no strategies are provided
 
 # Example
 ```julia-repl
@@ -111,12 +111,11 @@ See also: [`RoutedOption`](@ref), [`route_all_options`](@ref)
 """
 function route_to(; kwargs...)
     if isempty(kwargs)
-        throw(Exceptions.IncorrectArgument(
-            "route_to requires at least one strategy",
-            got="no strategy arguments",
-            expected="at least one strategy=value pair",
+        throw(Exceptions.PreconditionError(
+            "route_to requires at least one strategy argument",
+            reason="no strategy arguments provided",
             suggestion="Use route_to(solver=100) or route_to(solver=100, modeler=50)",
-            context="route_to - validating arguments"
+            context="route_to - function call precondition"
         ))
     end
     
