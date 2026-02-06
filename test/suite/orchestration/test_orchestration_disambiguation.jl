@@ -67,7 +67,7 @@ const TEST_FAMILIES = (
 # Test function
 # ============================================================================
 
-function test_disambiguation()
+function test_orchestration_disambiguation()
     Test.@testset "Orchestration Disambiguation" verbose = VERBOSE showtiming = SHOWTIMING begin
         
         # ====================================================================
@@ -198,4 +198,4 @@ end
 
 end # module
 
-test_disambiguation() = TestOrchestrationDisambiguation.test_disambiguation()
+test_orchestration_disambiguation() = TestOrchestrationDisambiguation.test_orchestration_disambiguation()

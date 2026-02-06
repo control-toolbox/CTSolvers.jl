@@ -138,8 +138,6 @@ Context: Options.extract_option - custom validation
 │ 
 │ These options will be passed directly to the IpoptSolver backend
 │ without validation by CTSolvers. Ensure they are correct.
-│ 
-│ To disable this warning, define these options in the metadata.
 └ @ CTSolvers.Strategies ~/.julia/dev/CTSolvers/src/Strategies/api/configuration.jl:XX
 ```
 

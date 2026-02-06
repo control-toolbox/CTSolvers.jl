@@ -68,7 +68,7 @@ function extract_option(kwargs::NamedTuple, def::OptionDefinition)
                 end
             end
             
-            # Type check
+            # Type check - strict validation with exceptions
             if !isa(value, def.type)
                 throw(Exceptions.IncorrectArgument(
                     "Invalid option type",

@@ -116,7 +116,7 @@ function test_extraction_api()
         end
 
         Test.@testset "extract_option - Type checking" begin
-            # Test type mismatch (should warn but still extract)
+            # Test type mismatch (should throw IncorrectArgument)
             def = Options.OptionDefinition(
                 name=:grid_size,
                 type=Int,
@@ -125,14 +125,7 @@ function test_extraction_api()
             )
             kwargs = (grid_size="200",)  # String instead of Int
 
-            # This should generate a warning but still work (redirect stderr to hide warning)
-            opt_value, remaining = redirect_stderr(devnull) do
-                Options.extract_option(kwargs, def)
-            end
-
-            Test.@test opt_value.value == "200"
-            Test.@test opt_value.source == :user
-            Test.@test remaining == NamedTuple()  # Empty NamedTuple
+            Test.@test_throws CTBase.Exceptions.IncorrectArgument Options.extract_option(kwargs, def)
         end
 
         Test.@testset "extract_options - Vector version" begin

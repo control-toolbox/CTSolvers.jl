@@ -305,7 +305,5 @@ function _warn_unknown_option_permissive(
     
     This option will be passed directly to the strategy backend without validation.
     Ensure the option name and value are correct for the backend.
-    
-    To disable this warning, define this option in the strategy metadata.
     """
 end

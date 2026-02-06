@@ -112,7 +112,5 @@ function _warn_unknown_options_permissive(
     
     These options will be passed directly to the $strategy_name backend
     without validation by CTSolvers. Ensure they are correct.
-    
-    To disable this warning, define these options in the metadata.
     """
 end

@@ -386,11 +386,11 @@ function test_madnlp_extension()
             Test.@test_nowarn Solvers.MadNLPSolver(mu_min=1e-9, print_level=MadNLP.ERROR)
             Test.@test_nowarn Solvers.MadNLPSolver(tau_min=0.99, print_level=MadNLP.ERROR)
 
-            # Test invalid values (suppress error messages)
+            # Test invalid values (expect exceptions for type mismatches)
             redirect_stderr(devnull) do
-                Test.@test_logs (:warn, r"Option kkt_system has value 1") Solvers.MadNLPSolver(kkt_system=1)
-                Test.@test_logs (:warn, r"Option hessian_approximation has value 1.0") Solvers.MadNLPSolver(hessian_approximation=1.0)
-                Test.@test_logs (:warn, r"Option inertia_correction_method has value invalid") Solvers.MadNLPSolver(inertia_correction_method="invalid")
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(kkt_system=1)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(hessian_approximation=1.0)
+                Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(inertia_correction_method="invalid")
 
                 Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(mu_init=-1.0)
                 Test.@test_throws CTBase.Exceptions.IncorrectArgument Solvers.MadNLPSolver(mu_init=0.0)

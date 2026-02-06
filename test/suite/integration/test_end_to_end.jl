@@ -93,8 +93,8 @@ function test_end_to_end()
             ros = Rosenbrock()
             prob = ros.prob
             
-            # Step 2: Create modeler with Exa backend
-            modeler = Modelers.ExaModeler(base_type=Float64, minimize=true)
+            # Step 2: Create modeler with Exa backend (permissive mode for minimize option)
+            modeler = Modelers.ExaModeler(base_type=Float64, minimize=true; mode=:permissive)
             Test.@test modeler isa Modelers.AbstractOptimizationModeler
             Test.@test typeof(modeler) == Modelers.ExaModeler
             
@@ -127,7 +127,7 @@ function test_end_to_end()
             prob = ros.prob
             
             Test.@testset "Float32 workflow" begin
-                modeler = Modelers.ExaModeler(base_type=Float32, minimize=true)
+                modeler = Modelers.ExaModeler(base_type=Float32, minimize=true; mode=:permissive)
                 nlp = modeler(prob, ros.init)
                 
                 Test.@test nlp isa ExaModels.ExaModel
@@ -139,7 +139,7 @@ function test_end_to_end()
             end
             
             Test.@testset "Float64 workflow" begin
-                modeler = Modelers.ExaModeler(base_type=Float64, minimize=true)
+                modeler = Modelers.ExaModeler(base_type=Float64, minimize=true; mode=:permissive)
                 nlp = modeler(prob, ros.init)
                 
                 Test.@test nlp isa ExaModels.ExaModel
@@ -197,11 +197,12 @@ function test_end_to_end()
             end
             
             Test.@testset "ExaModeler - With Options" begin
-                # Test with multiple options
+                # Test with multiple options (permissive mode for minimize option)
                 modeler = Modelers.ExaModeler(
                     base_type=Float64,
                     minimize=true,
-                    backend=nothing
+                    backend=nothing;
+                    mode=:permissive
                 )
                 nlp = modeler(prob, ros.init)
                 
@@ -224,8 +225,8 @@ function test_end_to_end()
             nlp_adnlp = modeler_adnlp(prob, ros.init)
             obj_adnlp = NLPModels.obj(nlp_adnlp, ros.init)
             
-            # Build with Exa
-            modeler_exa = Modelers.ExaModeler(base_type=Float64, minimize=true)
+            # Build with Exa (permissive mode for minimize option)
+            modeler_exa = Modelers.ExaModeler(base_type=Float64, minimize=true; mode=:permissive)
             nlp_exa = modeler_exa(prob, ros.init)
             obj_exa = NLPModels.obj(nlp_exa, Float64.(ros.init))
             

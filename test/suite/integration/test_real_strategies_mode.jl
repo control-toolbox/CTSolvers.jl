@@ -11,6 +11,15 @@ using CTSolvers
 using CTSolvers.Strategies
 using CTSolvers.Options
 
+# Load extensions if available for testing
+try
+    using NLPModelsIpopt
+    using MadNLP
+    using MadNLPMumps
+catch
+    # Extension packages might not be available in standard test environment
+end
+
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -31,14 +40,14 @@ function test_real_strategies_mode()
             @testset "Strict mode rejects unknown options" begin
                 # Should throw error for unknown option
                 @test_throws Exception CTSolvers.Modelers.ADNLPModeler(
-                    backend=:sparse,
+                    backend=:default,
                     unknown_option=123
                 )
                 
                 # Verify it's the right kind of error
                 try
                     CTSolvers.Modelers.ADNLPModeler(
-                        backend=:sparse,
+                        backend=:default,
                         unknown_option=123
                     )
                     @test false  # Should not reach here
@@ -50,20 +59,20 @@ function test_real_strategies_mode()
             @testset "Strict mode accepts known options" begin
                 # Should work with known options
                 modeler = CTSolvers.Modelers.ADNLPModeler(
-                    backend=:sparse,
-                    max_iter=1000
+                    backend=:default,
+                    show_time=true
                 )
                 @test modeler isa CTSolvers.Modelers.ADNLPModeler
-                @test Strategies.option_value(modeler, :backend) == :sparse
-                @test Strategies.option_value(modeler, :max_iter) == 1000
+                @test Strategies.option_value(modeler, :backend) == :default
+                @test Strategies.option_value(modeler, :show_time) == true
                 @test Strategies.option_source(modeler, :backend) == :user
-                @test Strategies.option_source(modeler, :max_iter) == :user
+                @test Strategies.option_source(modeler, :show_time) == :user
             end
             
             @testset "Permissive mode accepts unknown options" begin
                 # Should work with warning
                 modeler = CTSolvers.Modelers.ADNLPModeler(
-                    backend=:sparse,
+                    backend=:default,
                     unknown_option=123;
                     mode=:permissive
                 )
@@ -78,8 +87,8 @@ function test_real_strategies_mode()
             @testset "Permissive mode validates known options" begin
                 # Type validation should still work
                 @test_throws Exception CTSolvers.Modelers.ADNLPModeler(
-                    backend=:sparse,
-                    max_iter="invalid";
+                    backend=:default,
+                    show_time="invalid";
                     mode=:permissive
                 )
             end
@@ -98,12 +107,10 @@ function test_real_strategies_mode()
             @testset "Strict mode accepts known options" begin
                 # Should work with known options
                 modeler = CTSolvers.Modelers.ExaModeler(
-                    backend=nothing,
-                    operation_mode=:strict
+                    backend=nothing
                 )
                 @test modeler isa CTSolvers.Modelers.ExaModeler
                 @test Strategies.option_value(modeler, :backend) === nothing
-                @test Strategies.option_value(modeler, :operation_mode) == :strict
             end
             
             @testset "Permissive mode accepts unknown options" begin
@@ -192,7 +199,7 @@ function test_real_strategies_mode()
             @testset "Default mode is strict" begin
                 # Without specifying mode, should be strict
                 @test_throws Exception CTSolvers.Modelers.ADNLPModeler(
-                    backend=:sparse,
+                    backend=:default,
                     unknown_option=123
                 )
             end
@@ -204,7 +211,7 @@ function test_real_strategies_mode()
                 
                 try
                     CTSolvers.Modelers.ADNLPModeler(
-                        backend=:sparse,
+                        backend=:default,
                         unknown_option=123
                     )
                 catch e
@@ -213,7 +220,7 @@ function test_real_strategies_mode()
                 
                 try
                     CTSolvers.Modelers.ADNLPModeler(
-                        backend=:sparse,
+                        backend=:default,
                         unknown_option=123;
                         mode=:strict
                     )
@@ -229,7 +236,7 @@ function test_real_strategies_mode()
             @testset "Mode parameter validation" begin
                 # Invalid mode should throw error
                 @test_throws Exception CTSolvers.Modelers.ADNLPModeler(
-                    backend=:sparse;
+                    backend=:default;
                     mode=:invalid
                 )
             end
@@ -243,16 +250,16 @@ function test_real_strategies_mode()
             
             @testset "Known options have :user source" begin
                 modeler = CTSolvers.Modelers.ADNLPModeler(
-                    backend=:sparse,
-                    max_iter=1000
+                    backend=:default,
+                    show_time=true
                 )
                 @test Strategies.option_source(modeler, :backend) == :user
-                @test Strategies.option_source(modeler, :max_iter) == :user
+                @test Strategies.option_source(modeler, :show_time) == :user
             end
             
             @testset "Unknown options have :user source in permissive" begin
                 modeler = CTSolvers.Modelers.ADNLPModeler(
-                    backend=:sparse,
+                    backend=:default,
                     unknown_option=123;
                     mode=:permissive
                 )
@@ -274,8 +281,8 @@ function test_real_strategies_mode()
             @testset "Strict mode rejects mix" begin
                 # Should throw even with known options present
                 @test_throws Exception CTSolvers.Modelers.ADNLPModeler(
-                    backend=:sparse,
-                    max_iter=1000,
+                    backend=:default,
+                    show_time=true,
                     unknown_option=123
                 )
             end
@@ -283,15 +290,15 @@ function test_real_strategies_mode()
             @testset "Permissive mode accepts mix" begin
                 # Should work with both known and unknown
                 modeler = CTSolvers.Modelers.ADNLPModeler(
-                    backend=:sparse,
-                    max_iter=1000,
+                    backend=:default,
+                    show_time=true,
                     unknown_option=123,
                     another_unknown="test";
                     mode=:permissive
                 )
                 @test modeler isa CTSolvers.Modelers.ADNLPModeler
-                @test Strategies.option_value(modeler, :backend) == :sparse
-                @test Strategies.option_value(modeler, :max_iter) == 1000
+                @test Strategies.option_value(modeler, :backend) == :default
+                @test Strategies.option_value(modeler, :show_time) == true
                 @test Strategies.option_value(modeler, :unknown_option) == 123
                 @test Strategies.option_value(modeler, :another_unknown) == "test"
             end
@@ -299,8 +306,8 @@ function test_real_strategies_mode()
             @testset "Known options still validated in permissive" begin
                 # Type validation should still work for known options
                 @test_throws Exception CTSolvers.Modelers.ADNLPModeler(
-                    backend=:sparse,
-                    max_iter="invalid",  # Wrong type
+                    backend=:default,
+                    show_time="invalid",  # Wrong type (Bool expected)
                     unknown_option=123;
                     mode=:permissive
                 )
