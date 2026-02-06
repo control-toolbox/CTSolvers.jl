@@ -24,6 +24,7 @@ the given family, then constructs the strategy with the provided options.
 - `family::Type{<:Strategies.AbstractStrategy}`: Abstract family type to
   search for
 - `registry::Strategies.StrategyRegistry`: Strategy registry
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
 - `kwargs...`: Options to pass to the strategy constructor
 
 # Returns
@@ -45,6 +46,15 @@ julia> modeler = build_strategy_from_method(
            backend=:sparse
        )
 ADNLPModeler(options=StrategyOptions{...})
+
+julia> modeler = build_strategy_from_method(
+           method, 
+           AbstractOptimizationModeler, 
+           registry; 
+           backend=:sparse,
+           mode=:permissive
+       )
+ADNLPModeler(options=StrategyOptions{...})
 ```
 
 See also: [`Strategies.build_strategy_from_method`](@ref),
@@ -54,10 +64,11 @@ function build_strategy_from_method(
     method::Tuple{Vararg{Symbol}},
     family::Type{<:Strategies.AbstractStrategy},
     registry::Strategies.StrategyRegistry;
+    mode::Symbol = :strict,
     kwargs...
 )
     return Strategies.build_strategy_from_method(
-        method, family, registry; kwargs...
+        method, family, registry; mode=mode, kwargs...
     )
 end
 

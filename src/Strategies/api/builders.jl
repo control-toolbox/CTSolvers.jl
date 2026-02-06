@@ -15,6 +15,7 @@ This function creates a concrete strategy instance by:
 - `id::Symbol`: Strategy identifier (e.g., `:adnlp`, `:ipopt`)
 - `family::Type{<:AbstractStrategy}`: Abstract family type to search within
 - `registry::StrategyRegistry`: Registry containing strategy mappings
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
 - `kwargs...`: Options to pass to the strategy constructor
 
 # Returns
@@ -31,6 +32,10 @@ julia> registry = create_registry(
 
 julia> modeler = build_strategy(:adnlp, AbstractOptimizationModeler, registry; backend=:sparse)
 ADNLPModeler(options=StrategyOptions{...})
+
+julia> modeler = build_strategy(:adnlp, AbstractOptimizationModeler, registry; 
+           backend=:sparse, mode=:permissive)
+ADNLPModeler(options=StrategyOptions{...})
 ```
 
 See also: [`type_from_id`](@ref), [`build_strategy_from_method`](@ref)
@@ -39,10 +44,11 @@ function build_strategy(
     id::Symbol,
     family::Type{<:AbstractStrategy},
     registry::StrategyRegistry;
+    mode::Symbol = :strict,
     kwargs...
 )
     T = type_from_id(id, family, registry)
-    return T(; kwargs...)
+    return T(; mode=mode, kwargs...)
 end
 
 """
@@ -160,6 +166,7 @@ This is a high-level convenience function that:
 - `method::Tuple{Vararg{Symbol}}`: Tuple of strategy IDs
 - `family::Type{<:AbstractStrategy}`: Abstract family type to search for
 - `registry::StrategyRegistry`: Registry containing strategy mappings
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
 - `kwargs...`: Options to pass to the strategy constructor
 
 # Returns
@@ -176,6 +183,15 @@ julia> modeler = build_strategy_from_method(
            backend=:sparse
        )
 ADNLPModeler(options=StrategyOptions{...})
+
+julia> modeler = build_strategy_from_method(
+           method, 
+           AbstractOptimizationModeler, 
+           registry; 
+           backend=:sparse,
+           mode=:permissive
+       )
+ADNLPModeler(options=StrategyOptions{...})
 ```
 
 See also: [`extract_id_from_method`](@ref), [`build_strategy`](@ref)
@@ -184,8 +200,9 @@ function build_strategy_from_method(
     method::Tuple{Vararg{Symbol}},
     family::Type{<:AbstractStrategy},
     registry::StrategyRegistry;
+    mode::Symbol = :strict,
     kwargs...
 )
     id = extract_id_from_method(method, family, registry)
-    return build_strategy(id, family, registry; kwargs...)
+    return build_strategy(id, family, registry; mode=mode, kwargs...)
 end
