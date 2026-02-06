@@ -21,40 +21,51 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 # TOP-LEVEL: Fake types for integration testing
 # ============================================================================
 
+# Define distinct abstract families for testing
+# This allows proper routing and disambiguation tests
+"""Abstract family for test solvers."""
+abstract type AbstractTestSolver <: Strategies.AbstractStrategy end
+
+"""Abstract family for test modelers."""
+abstract type AbstractTestModeler <: Strategies.AbstractStrategy end
+
+"""Abstract family for test discretizers."""
+abstract type AbstractTestDiscretizer <: Strategies.AbstractStrategy end
+
 """Fake solver strategy for testing."""
-struct FakeSolver <: Strategies.AbstractStrategy
+struct FakeSolver <: AbstractTestSolver
     options::Strategies.StrategyOptions
 end
 
 """Fake modeler strategy for testing."""
-struct FakeModeler <: Strategies.AbstractStrategy
+struct FakeModeler <: AbstractTestModeler
     options::Strategies.StrategyOptions
 end
 
 """Fake discretizer strategy for testing."""
-struct FakeDiscretizer <: Strategies.AbstractStrategy
+struct FakeDiscretizer <: AbstractTestDiscretizer
     options::Strategies.StrategyOptions
 end
+
+# Strategy IDs
+Strategies.id(::Type{FakeSolver}) = :fake_solver
+Strategies.id(::Type{FakeModeler}) = :fake_modeler
+Strategies.id(::Type{FakeDiscretizer}) = :fake_discretizer
 
 # Metadata for FakeSolver
 function Strategies.metadata(::Type{FakeSolver})
     return Strategies.StrategyMetadata(
-        :fake_solver,
-        "FakeSolver",
-        "A fake solver for testing",
-        Dict(
-            :max_iter => Options.OptionDefinition(
-                :max_iter,
-                Int,
-                1000,
-                "Maximum iterations"
-            ),
-            :tol => Options.OptionDefinition(
-                :tol,
-                Float64,
-                1e-6,
-                "Tolerance"
-            )
+        Options.OptionDefinition(
+            name=:max_iter,
+            type=Int,
+            default=1000,
+            description="Maximum iterations"
+        ),
+        Options.OptionDefinition(
+            name=:tol,
+            type=Float64,
+            default=1e-6,
+            description="Tolerance"
         )
     )
 end
@@ -62,22 +73,17 @@ end
 # Metadata for FakeModeler
 function Strategies.metadata(::Type{FakeModeler})
     return Strategies.StrategyMetadata(
-        :fake_modeler,
-        "FakeModeler",
-        "A fake modeler for testing",
-        Dict(
-            :backend => Options.OptionDefinition(
-                :backend,
-                Symbol,
-                :sparse,
-                "Backend type"
-            ),
-            :max_iter => Options.OptionDefinition(
-                :max_iter,
-                Int,
-                500,
-                "Maximum iterations"
-            )
+        Options.OptionDefinition(
+            name=:backend,
+            type=Symbol,
+            default=:sparse,
+            description="Backend type"
+        ),
+        Options.OptionDefinition(
+            name=:max_iter,
+            type=Int,
+            default=500,
+            description="Maximum iterations"
         )
     )
 end
@@ -85,16 +91,11 @@ end
 # Metadata for FakeDiscretizer
 function Strategies.metadata(::Type{FakeDiscretizer})
     return Strategies.StrategyMetadata(
-        :fake_discretizer,
-        "FakeDiscretizer",
-        "A fake discretizer for testing",
-        Dict(
-            :grid_size => Options.OptionDefinition(
-                :grid_size,
-                Int,
-                100,
-                "Grid size"
-            )
+        Options.OptionDefinition(
+            name=:grid_size,
+            type=Int,
+            default=100,
+            description="Grid size"
         )
     )
 end
@@ -234,16 +235,17 @@ function test_strict_permissive_integration()
         # ====================================================================
         
         @testset "Registry-Based Workflows" begin
-            # Create registry
-            registry = Strategies.StrategyRegistry()
-            Strategies.register!(registry, Strategies.AbstractStrategy, :fake_solver, FakeSolver)
-            Strategies.register!(registry, Strategies.AbstractStrategy, :fake_modeler, FakeModeler)
-            Strategies.register!(registry, Strategies.AbstractStrategy, :fake_discretizer, FakeDiscretizer)
+            # Create registry with distinct families
+            registry = Strategies.create_registry(
+                AbstractTestSolver => (FakeSolver,),
+                AbstractTestModeler => (FakeModeler,),
+                AbstractTestDiscretizer => (FakeDiscretizer,)
+            )
             
             @testset "Build from ID in strict mode" begin
                 solver = Strategies.build_strategy(
                     :fake_solver,
-                    Strategies.AbstractStrategy,
+                    AbstractTestSolver,
                     registry;
                     max_iter=2000
                 )
@@ -254,7 +256,7 @@ function test_strict_permissive_integration()
             @testset "Build from ID in permissive mode" begin
                 solver = Strategies.build_strategy(
                     :fake_solver,
-                    Strategies.AbstractStrategy,
+                    AbstractTestSolver,
                     registry;
                     max_iter=2000,
                     custom_option=123,
@@ -267,10 +269,10 @@ function test_strict_permissive_integration()
             @testset "Build from method tuple" begin
                 method = (:fake_solver, :fake_modeler, :fake_discretizer)
                 
-                # Build solver from method
+                # Build solver from method (first family in tuple)
                 solver = Strategies.build_strategy_from_method(
                     method,
-                    Strategies.AbstractStrategy,
+                    AbstractTestSolver,
                     registry;
                     max_iter=2000
                 )
@@ -283,25 +285,26 @@ function test_strict_permissive_integration()
         # ====================================================================
         
         @testset "Option Routing Workflows" begin
-            registry = Strategies.StrategyRegistry()
-            Strategies.register!(registry, Strategies.AbstractStrategy, :fake_solver, FakeSolver)
-            Strategies.register!(registry, Strategies.AbstractStrategy, :fake_modeler, FakeModeler)
+            registry = Strategies.create_registry(
+                AbstractTestSolver => (FakeSolver,),
+                AbstractTestModeler => (FakeModeler,)
+            )
             
             method = (:fake_solver, :fake_modeler)
             
             @testset "Routing with strict mode" begin
-                # Create families map
-                families = Dict(
-                    :solver => Strategies.AbstractStrategy,
-                    :modeler => Strategies.AbstractStrategy
+                # Create families map (must be NamedTuple, not Dict)
+                families = (
+                    solver=AbstractTestSolver,
+                    modeler=AbstractTestModeler
                 )
                 
                 # Action definitions (empty for this test)
                 action_defs = Options.OptionDefinition[]
                 
-                # Options with disambiguation
+                # Options with disambiguation (use strategy IDs, not family names)
                 kwargs = (
-                    max_iter = Strategies.route_to(solver=3000, modeler=1500),
+                    max_iter=Strategies.route_to(fake_solver=3000, fake_modeler=1500),
                     tol = 0.5e-6,
                     backend = :dense
                 )
@@ -316,22 +319,23 @@ function test_strict_permissive_integration()
                     mode=:strict
                 )
                 
-                @test haskey(routed, :solver)
-                @test haskey(routed, :modeler)
+                @test haskey(routed.strategies, :solver)
+                @test haskey(routed.strategies, :modeler)
             end
             
             @testset "Routing with permissive mode" begin
-                families = Dict(
-                    :solver => Strategies.AbstractStrategy,
-                    :modeler => Strategies.AbstractStrategy
+                # Create families map (must be NamedTuple, not Dict)
+                families = (
+                    solver=AbstractTestSolver,
+                    modeler=AbstractTestModeler
                 )
                 
                 action_defs = Options.OptionDefinition[]
                 
-                # Options with unknown option disambiguated
+                # Options with unknown option disambiguated (use strategy IDs, not family names)
                 kwargs = (
-                    max_iter = Strategies.route_to(solver=3000),
-                    custom_solver_option = Strategies.route_to(solver="advanced"),
+                    max_iter=Strategies.route_to(fake_solver=3000),
+                    custom_solver_option=Strategies.route_to(fake_solver="advanced"),
                 )
                 
                 # Route options in permissive mode
@@ -344,7 +348,7 @@ function test_strict_permissive_integration()
                     mode=:permissive
                 )
                 
-                @test haskey(routed, :solver)
+                @test haskey(routed.strategies, :solver)
             end
         end
         

@@ -7,6 +7,13 @@ using CTSolvers.Strategies
 using CTSolvers.Options
 using Main.TestOptions: VERBOSE, SHOWTIMING
 
+# Load extensions to trigger dependencies
+using NLPModelsIpopt
+using MadNLP
+using MadNLPMumps
+using MadNCL
+using NLPModelsKnitro
+
 """
     test_type_stability()
 
@@ -25,27 +32,27 @@ function test_type_stability()
         @testset "Solver Construction Type Stability" begin
             @testset "IpoptSolver construction" begin
                 # Test that constructor returns correct type
-                @test_nowarn @inferred IpoptSolver()
-                @test_nowarn @inferred IpoptSolver(max_iter=100)
-                @test_nowarn @inferred IpoptSolver(max_iter=100, tol=1e-6)
+                @test_nowarn @inferred CTSolvers.Solvers.IpoptSolver()
+                @test_nowarn @inferred CTSolvers.Solvers.IpoptSolver(max_iter=100)
+                @test_nowarn @inferred CTSolvers.Solvers.IpoptSolver(max_iter=100, tol=1e-6)
             end
             
             @testset "MadNLPSolver construction" begin
-                @test_nowarn @inferred MadNLPSolver()
-                @test_nowarn @inferred MadNLPSolver(max_iter=100)
-                @test_nowarn @inferred MadNLPSolver(max_iter=100, tol=1e-6)
+                @test_nowarn @inferred CTSolvers.Solvers.MadNLPSolver()
+                @test_nowarn @inferred CTSolvers.Solvers.MadNLPSolver(max_iter=100)
+                @test_nowarn @inferred CTSolvers.Solvers.MadNLPSolver(max_iter=100, tol=1e-6)
             end
             
             @testset "MadNCLSolver construction" begin
-                @test_nowarn @inferred MadNCLSolver()
-                @test_nowarn @inferred MadNCLSolver(max_iter=100)
-                @test_nowarn @inferred MadNCLSolver(max_iter=100, tol=1e-6)
+                @test_nowarn @inferred CTSolvers.Solvers.MadNCLSolver()
+                @test_nowarn @inferred CTSolvers.Solvers.MadNCLSolver(max_iter=100)
+                @test_nowarn @inferred CTSolvers.Solvers.MadNCLSolver(max_iter=100, tol=1e-6)
             end
             
             @testset "KnitroSolver construction" begin
-                @test_nowarn @inferred KnitroSolver()
-                @test_nowarn @inferred KnitroSolver(max_iter=100)
-                @test_nowarn @inferred KnitroSolver(max_iter=100, tol=1e-6)
+                @test_nowarn @inferred CTSolvers.Solvers.KnitroSolver()
+                @test_nowarn @inferred CTSolvers.Solvers.KnitroSolver(max_iter=100)
+                @test_nowarn @inferred CTSolvers.Solvers.KnitroSolver(max_iter=100, ftol=1e-6)
             end
         end
         
@@ -56,56 +63,56 @@ function test_type_stability()
         @testset "Strategy Contract Type Stability" begin
             @testset "IpoptSolver contract" begin
                 # Test id() type stability - simple Symbol return
-                @test_nowarn @inferred Strategies.id(IpoptSolver)
-                @test @inferred(Strategies.id(IpoptSolver)) === :ipopt
+                @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.IpoptSolver)
+                @test @inferred(Strategies.id(CTSolvers.Solvers.IpoptSolver)) === :ipopt
                 
                 # Test metadata() returns correct type
-                meta = Strategies.metadata(IpoptSolver)
+                meta = Strategies.metadata(CTSolvers.Solvers.IpoptSolver)
                 @test meta isa Strategies.StrategyMetadata
                 
                 # Test options() returns correct type
                 # Note: @inferred is too strict for parametric types, we verify concrete type
-                solver = IpoptSolver()
+                solver = CTSolvers.Solvers.IpoptSolver()
                 opts = Strategies.options(solver)
                 @test opts isa Strategies.StrategyOptions
             end
             
             @testset "MadNLPSolver contract" begin
-                @test_nowarn @inferred Strategies.id(MadNLPSolver)
-                @test @inferred(Strategies.id(MadNLPSolver)) === :madnlp
+                @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.MadNLPSolver)
+                @test @inferred(Strategies.id(CTSolvers.Solvers.MadNLPSolver)) === :madnlp
                 
                 # Metadata returns correct type
-                meta = Strategies.metadata(MadNLPSolver)
+                meta = Strategies.metadata(CTSolvers.Solvers.MadNLPSolver)
                 @test meta isa Strategies.StrategyMetadata
                 
                 # Options returns correct type
-                opts = Strategies.options(MadNLPSolver())
+                opts = Strategies.options(CTSolvers.Solvers.MadNLPSolver())
                 @test opts isa Strategies.StrategyOptions
             end
             
             @testset "MadNCLSolver contract" begin
-                @test_nowarn @inferred Strategies.id(MadNCLSolver)
-                @test @inferred(Strategies.id(MadNCLSolver)) === :madncl
+                @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.MadNCLSolver)
+                @test @inferred(Strategies.id(CTSolvers.Solvers.MadNCLSolver)) === :madncl
                 
                 # Metadata returns correct type
-                meta = Strategies.metadata(MadNCLSolver)
+                meta = Strategies.metadata(CTSolvers.Solvers.MadNCLSolver)
                 @test meta isa Strategies.StrategyMetadata
                 
                 # Options returns correct type
-                opts = Strategies.options(MadNCLSolver())
+                opts = Strategies.options(CTSolvers.Solvers.MadNCLSolver())
                 @test opts isa Strategies.StrategyOptions
             end
             
             @testset "KnitroSolver contract" begin
-                @test_nowarn @inferred Strategies.id(KnitroSolver)
-                @test @inferred(Strategies.id(KnitroSolver)) === :knitro
+                @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.KnitroSolver)
+                @test @inferred(Strategies.id(CTSolvers.Solvers.KnitroSolver)) === :knitro
                 
                 # Metadata returns correct type
-                meta = Strategies.metadata(KnitroSolver)
+                meta = Strategies.metadata(CTSolvers.Solvers.KnitroSolver)
                 @test meta isa Strategies.StrategyMetadata
                 
                 # Options returns correct type
-                opts = Strategies.options(KnitroSolver())
+                opts = Strategies.options(CTSolvers.Solvers.KnitroSolver())
                 @test opts isa Strategies.StrategyOptions
             end
         end
@@ -116,7 +123,7 @@ function test_type_stability()
         
         @testset "Options Extraction Type Stability" begin
             @testset "IpoptSolver options extraction" begin
-                solver = IpoptSolver(max_iter=100, tol=1e-6)
+                solver = CTSolvers.Solvers.IpoptSolver(max_iter=100, tol=1e-6)
                 opts = Strategies.options(solver)
                 
                 # Test that extract_raw_options returns correct type
@@ -128,7 +135,7 @@ function test_type_stability()
             end
             
             @testset "MadNLPSolver options extraction" begin
-                solver = MadNLPSolver(max_iter=100, tol=1e-6)
+                solver = CTSolvers.Solvers.MadNLPSolver(max_iter=100, tol=1e-6)
                 opts = Strategies.options(solver)
                 
                 # Test that extract_raw_options returns correct type
