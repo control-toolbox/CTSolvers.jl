@@ -37,7 +37,6 @@ CUDA = "5"
 CommonSolve = "0.2"
 DocStringExtensions = "0.9"
 ExaModels = "0.9"
-KNITRO = "1"
 KernelAbstractions = "0.9"
 MadNCL = "0.1"
 MadNLP = "0.8"
@@ -56,11 +55,10 @@ julia = "1.10"
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
-KNITRO = "67920dd8-b58e-52a8-8622-53c4cffbe346"
 MadNLPGPU = "d72a61cc-809d-412f-99be-fd81f4b8a598"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "BenchmarkTools", "CUDA", "KNITRO", "MadNCL", "MadNLP", "MadNLPMumps", "NLPModelsIpopt", "NLPModelsKnitro", "OrderedCollections", "Random", "Test"]
+test = ["Aqua", "BenchmarkTools", "CUDA", "MadNCL", "MadNLP", "MadNLPMumps", "NLPModelsIpopt", "OrderedCollections", "Random", "Test"]

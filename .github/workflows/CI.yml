@@ -12,7 +12,7 @@ jobs:
   test-github:
     uses: control-toolbox/CTActions/.github/workflows/ci.yml@main
     with:
-      runs_on: '["ubuntu-latest","macos-latest"]'
+      runs_on: '["ubuntu-latest", "macos-latest"]'
       runner_type: 'github'
       use_ct_registry: true
     secrets:

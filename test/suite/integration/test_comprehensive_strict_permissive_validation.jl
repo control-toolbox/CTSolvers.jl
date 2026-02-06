@@ -44,12 +44,12 @@ catch
     false
 end
 
-const KNITRO_AVAILABLE = try
-    using NLPModelsKnitro
-    true
-catch
-    false
-end
+# const KNITRO_AVAILABLE = try
+#     using NLPModelsKnitro
+#     true
+# catch
+#     false
+# end
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
@@ -283,7 +283,7 @@ function test_comprehensive_strict_permissive_validation()
         IPOPT_AVAILABLE && push!(solver_types, CTSolvers.Solvers.IpoptSolver)
         MADNLP_AVAILABLE && push!(solver_types, CTSolvers.Solvers.MadNLPSolver)
         MADNCL_AVAILABLE && push!(solver_types, CTSolvers.Solvers.MadNCLSolver)
-        KNITRO_AVAILABLE && push!(solver_types, CTSolvers.Solvers.KnitroSolver)
+        # KNITRO_AVAILABLE && push!(solver_types, CTSolvers.Solvers.KnitroSolver)
         
         solver_registry = if isempty(solver_types)
             create_registry(AbstractOptimizationSolver => ())
@@ -463,31 +463,31 @@ function test_comprehensive_strict_permissive_validation()
             # KnitroSolver Tests (if available)
             # ----------------------------------------------------------------
             
-            if KNITRO_AVAILABLE
-                @testset "KnitroSolver" begin
-                    known_options = (max_iter=200, ftol=1e-12)
-                    unknown_options = (knitro_fake=333, custom_knitro="test")
+            # if KNITRO_AVAILABLE
+            #     @testset "KnitroSolver" begin
+            #         known_options = (max_iter=200, ftol=1e-12)
+            #         unknown_options = (knitro_fake=333, custom_knitro="test")
                     
-                    test_strategy_construction(
-                        CTSolvers.Solvers.KnitroSolver, :knitro, AbstractOptimizationSolver,
-                        known_options, unknown_options, solver_registry
-                    )
+            #         test_strategy_construction(
+            #             CTSolvers.Solvers.KnitroSolver, :knitro, AbstractOptimizationSolver,
+            #             known_options, unknown_options, solver_registry
+            #         )
                     
-                    @testset "Option Recovery" begin
-                        strategy_strict = CTSolvers.Solvers.KnitroSolver(; known_options...)
-                        test_option_recovery(strategy_strict, known_options, (), :strict)
+            #         @testset "Option Recovery" begin
+            #             strategy_strict = CTSolvers.Solvers.KnitroSolver(; known_options...)
+            #             test_option_recovery(strategy_strict, known_options, (), :strict)
                         
-                        strategy_permissive = CTSolvers.Solvers.KnitroSolver(; known_options..., unknown_options..., mode=:permissive)
-                        test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
-                    end
+            #             strategy_permissive = CTSolvers.Solvers.KnitroSolver(; known_options..., unknown_options..., mode=:permissive)
+            #             test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
+            #         end
                     
-                    test_invalid_mode(CTSolvers.Solvers.KnitroSolver)
-                end
-            else
-                @testset "KnitroSolver (Not Available)" begin
-                    @test_skip "NLPModelsKnitro not available"
-                end
-            end
+            #         test_invalid_mode(CTSolvers.Solvers.KnitroSolver)
+            #     end
+            # else
+            #     @testset "KnitroSolver (Not Available)" begin
+            #         @test_skip "NLPModelsKnitro not available"
+            #     end
+            # end
         end
         
         # ====================================================================

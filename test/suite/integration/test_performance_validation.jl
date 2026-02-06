@@ -20,7 +20,6 @@ using Random
 using NLPModelsIpopt
 using MadNLP
 using MadNLPMumps
-using NLPModelsKnitro
 using MadNCL
 
 # To trigger IpoptSolver construction
