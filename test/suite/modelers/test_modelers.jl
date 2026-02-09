@@ -35,13 +35,13 @@ function test_modelers_basic()
         # Test strategy metadata structure
         adnlp_meta = Strategies.metadata(Modelers.ADNLPModeler)
         Test.@test adnlp_meta isa Strategies.StrategyMetadata
-        Test.@test haskey(adnlp_meta.specs, :show_time)
-        Test.@test haskey(adnlp_meta.specs, :backend)
+        Test.@test haskey(adnlp_meta, :show_time)
+        Test.@test haskey(adnlp_meta, :backend)
         
         exa_meta = Strategies.metadata(Modelers.ExaModeler)
         Test.@test exa_meta isa Strategies.StrategyMetadata
-        Test.@test haskey(exa_meta.specs, :base_type)
-        Test.@test haskey(exa_meta.specs, :backend)
+        Test.@test haskey(exa_meta, :base_type)
+        Test.@test haskey(exa_meta, :backend)
     end
 end
 

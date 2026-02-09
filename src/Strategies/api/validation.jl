@@ -204,8 +204,8 @@ function validate_strategy_contract(strategy_type::Type{T}) where {T<:AbstractSt
     # 6. Metadata-Options consistency check
     # Verify that instance options match the metadata specification
     meta = metadata(strategy_type)
-    meta_keys = Set(keys(meta.specs))
-    opts_keys = Set(keys(opts.options))
+    meta_keys = Set(keys(meta))
+    opts_keys = Set(keys(opts))
     
     if meta_keys != opts_keys
         missing_keys = setdiff(meta_keys, opts_keys)
@@ -231,10 +231,10 @@ function validate_strategy_contract(strategy_type::Type{T}) where {T<:AbstractSt
     # 7. Constructor behavior check
     # Verify that constructor with custom kwargs produces different options
     # This indirectly checks that build_strategy_options is being used
-    if !isempty(meta.specs)
+    if !isempty(meta)
         # Get the first option name and its default value
-        first_key = first(keys(meta.specs))
-        first_spec = meta.specs[first_key]
+        first_key = first(keys(meta))
+        first_spec = meta[first_key]
         default_value = first_spec.default
         
         # Try to create instance with a different value (if possible)

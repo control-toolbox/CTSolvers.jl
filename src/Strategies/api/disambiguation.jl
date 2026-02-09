@@ -21,6 +21,16 @@ allowing the orchestration layer to route each value to its intended strategy.
 # Fields
 - `routes::NamedTuple`: NamedTuple of strategy_id => value mappings
 
+# Iteration
+`RoutedOption` implements the collection interface and can be iterated like a dictionary:
+- `keys(opt)`: Strategy IDs
+- `values(opt)`: Option values  
+- `pairs(opt)`: (strategy_id, value) pairs
+- `for (id, val) in opt`: Direct iteration over pairs
+- `opt[:strategy]`: Index by strategy ID
+- `haskey(opt, :strategy)`: Check if strategy exists
+- `length(opt)`: Number of routes
+
 # Example
 ```julia-repl
 julia> using CTSolvers.Strategies
@@ -32,6 +42,13 @@ RoutedOption((solver = 100,))
 julia> # Multiple strategies
 julia> opt = route_to(solver=100, modeler=50)
 RoutedOption((solver = 100, modeler = 50))
+
+julia> # Iterate over routes
+julia> for (id, val) in opt
+           println("\$id => \$val")
+       end
+solver => 100
+modeler => 50
 ```
 
 See also: [`route_to`](@ref)
@@ -121,3 +138,122 @@ function route_to(; kwargs...)
     # Convert Base.Pairs to NamedTuple - super clean!
     return RoutedOption(NamedTuple(kwargs))
 end
+
+# ============================================================================
+# Collection Interface for RoutedOption
+# ============================================================================
+
+"""
+    Base.keys(r::RoutedOption)
+
+Return an iterator over the strategy IDs in the routed option.
+
+# Example
+```julia-repl
+julia> opt = route_to(solver=100, modeler=50)
+julia> collect(keys(opt))
+2-element Vector{Symbol}:
+ :solver
+ :modeler
+```
+"""
+Base.keys(r::RoutedOption) = keys(r.routes)
+
+"""
+    Base.values(r::RoutedOption)
+
+Return an iterator over the values in the routed option.
+
+# Example
+```julia-repl
+julia> opt = route_to(solver=100, modeler=50)
+julia> collect(values(opt))
+2-element Vector{Int64}:
+ 100
+  50
+```
+"""
+Base.values(r::RoutedOption) = values(r.routes)
+
+"""
+    Base.pairs(r::RoutedOption)
+
+Return an iterator over (strategy_id => value) pairs.
+
+# Example
+```julia-repl
+julia> opt = route_to(solver=100, modeler=50)
+julia> for (id, val) in pairs(opt)
+           println("\$id => \$val")
+       end
+solver => 100
+modeler => 50
+```
+"""
+Base.pairs(r::RoutedOption) = pairs(r.routes)
+
+"""
+    Base.iterate(r::RoutedOption, [state])
+
+Iterate over (strategy_id => value) pairs.
+
+This allows direct iteration: `for (id, val) in routed_option`.
+
+# Example
+```julia-repl
+julia> opt = route_to(solver=100, modeler=50)
+julia> for (id, val) in opt
+           println("\$id => \$val")
+       end
+solver => 100
+modeler => 50
+```
+"""
+Base.iterate(r::RoutedOption, state...) = iterate(pairs(r.routes), state...)
+
+"""
+    Base.length(r::RoutedOption)
+
+Return the number of routes in the routed option.
+
+# Example
+```julia-repl
+julia> opt = route_to(solver=100, modeler=50)
+julia> length(opt)
+2
+```
+"""
+Base.length(r::RoutedOption) = length(r.routes)
+
+"""
+    Base.haskey(r::RoutedOption, key::Symbol)
+
+Check if a strategy ID exists in the routed option.
+
+# Example
+```julia-repl
+julia> opt = route_to(solver=100)
+julia> haskey(opt, :solver)
+true
+julia> haskey(opt, :modeler)
+false
+```
+"""
+Base.haskey(r::RoutedOption, key::Symbol) = haskey(r.routes, key)
+
+"""
+    Base.getindex(r::RoutedOption, key::Symbol)
+
+Get the value for a specific strategy ID.
+
+# Example
+```julia-repl
+julia> opt = route_to(solver=100, modeler=50)
+julia> opt[:solver]
+100
+julia> opt[:modeler]
+50
+```
+"""
+Base.getindex(r::RoutedOption, key::Symbol) = r.routes[key]
+

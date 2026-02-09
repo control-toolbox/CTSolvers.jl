@@ -146,7 +146,7 @@ function suggest_options(
     
     # Collect all available keys (primary names + aliases)
     all_keys = Symbol[]
-    for (primary_key, spec) in pairs(meta.specs)
+    for (primary_key, spec) in pairs(meta)
         push!(all_keys, primary_key)
         append!(all_keys, spec.aliases)
     end

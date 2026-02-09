@@ -62,7 +62,7 @@ function extract_strategy_ids(
     # Modern syntax: RoutedOption (recommended)
     if raw isa Strategies.RoutedOption
         results = Tuple{Any, Symbol}[]
-        for (strategy_id, value) in pairs(raw.routes)
+        for (strategy_id, value) in pairs(raw)
             if strategy_id in method
                 push!(results, (value, strategy_id))
             else

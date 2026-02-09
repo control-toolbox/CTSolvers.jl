@@ -200,15 +200,15 @@ function test_metadata()
             Test.@test meta isa Strategies.StrategyMetadata{<:NamedTuple}
             
             # Verify that the NamedTuple preserves concrete types
-            Test.@test meta.specs.max_iter isa Options.OptionDefinition{Int64}
-            Test.@test meta.specs.tol isa Options.OptionDefinition{Float64}
+            Test.@test meta[:max_iter] isa Options.OptionDefinition{Int64}
+            Test.@test meta[:tol] isa Options.OptionDefinition{Float64}
             
             # Test direct access to specs (type-stable)
             function get_max_iter_spec(m::Strategies.StrategyMetadata)
-                return m.specs.max_iter
+                return m[:max_iter]
             end
             function get_tol_spec(m::Strategies.StrategyMetadata)
-                return m.specs.tol
+                return m[:tol]
             end
             
             Test.@inferred get_max_iter_spec(meta)

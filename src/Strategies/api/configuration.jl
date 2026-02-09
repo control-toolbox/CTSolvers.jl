@@ -83,7 +83,7 @@ function build_strategy_options(
     end
     
     meta = metadata(strategy_type)
-    defs = collect(values(meta.specs))
+    defs = collect(values(meta))
     
     # Use Options.extract_options for validation and extraction
     # This validates known options (type, custom validators, etc.)
@@ -142,12 +142,12 @@ See also: [`StrategyMetadata`](@ref), [`OptionDefinition`](@ref)
 """
 function resolve_alias(meta::StrategyMetadata, key::Symbol)
     # Check if key is a primary name
-    if haskey(meta.specs, key)
+    if haskey(meta, key)
         return key
     end
     
     # Check if key is an alias
-    for (primary_key, spec) in pairs(meta.specs)
+    for (primary_key, spec) in pairs(meta)
         if key in spec.aliases
             return primary_key
         end

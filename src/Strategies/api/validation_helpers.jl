@@ -40,7 +40,7 @@ function _error_unknown_options_strict(
     strategy_name = string(nameof(strategy_type))
     
     # Build list of available options
-    available_keys = sort(collect(keys(meta.specs)))
+    available_keys = sort(collect(keys(meta)))
     available_str = join(["  :$k" for k in available_keys], ", ")
     
     # Generate suggestions for each unknown key

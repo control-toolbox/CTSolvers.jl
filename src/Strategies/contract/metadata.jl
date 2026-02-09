@@ -343,7 +343,7 @@ Base.haskey(meta::StrategyMetadata, key::Symbol) = haskey(meta.specs, key)
 # Display
 function Base.show(io::IO, ::MIME"text/plain", meta::StrategyMetadata)
     println(io, "StrategyMetadata with $(length(meta)) options:")
-    for (key, def) in pairs(meta.specs)
+    for (key, def) in pairs(meta)
         println(io, "  $def")
     end
 end

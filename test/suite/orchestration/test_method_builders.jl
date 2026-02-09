@@ -54,7 +54,7 @@ Strategies.options(s::BuilderADNLP) = s.options
 # Constructors
 function BuilderCollocation(; kwargs...)
     meta = Strategies.metadata(BuilderCollocation)
-    defs = collect(values(meta.specs))
+    defs = collect(values(meta))
     extracted, _ = Options.extract_options((; kwargs...), defs)
     opts = Strategies.StrategyOptions(NamedTuple(extracted))
     return BuilderCollocation(opts)
@@ -62,7 +62,7 @@ end
 
 function BuilderADNLP(; kwargs...)
     meta = Strategies.metadata(BuilderADNLP)
-    defs = collect(values(meta.specs))
+    defs = collect(values(meta))
     extracted, _ = Options.extract_options((; kwargs...), defs)
     opts = Strategies.StrategyOptions(NamedTuple(extracted))
     return BuilderADNLP(opts)

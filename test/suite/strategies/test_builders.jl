@@ -92,7 +92,7 @@ end
 # Constructors with kwargs
 function TestModelerA(; kwargs...)
     meta = Strategies.metadata(TestModelerA)
-    defs = collect(values(meta.specs))
+    defs = collect(values(meta))
     extracted, _ = Options.extract_options((; kwargs...), defs)
     opts = Strategies.StrategyOptions(dict_to_namedtuple(extracted))
     return TestModelerA(opts)
@@ -100,7 +100,7 @@ end
 
 function TestModelerB(; kwargs...)
     meta = Strategies.metadata(TestModelerB)
-    defs = collect(values(meta.specs))
+    defs = collect(values(meta))
     extracted, _ = Options.extract_options((; kwargs...), defs)
     opts = Strategies.StrategyOptions(dict_to_namedtuple(extracted))
     return TestModelerB(opts)
@@ -108,7 +108,7 @@ end
 
 function TestSolverX(; kwargs...)
     meta = Strategies.metadata(TestSolverX)
-    defs = collect(values(meta.specs))
+    defs = collect(values(meta))
     extracted, _ = Options.extract_options((; kwargs...), defs)
     opts = Strategies.StrategyOptions(dict_to_namedtuple(extracted))
     return TestSolverX(opts)
@@ -116,7 +116,7 @@ end
 
 function TestSolverY(; kwargs...)
     meta = Strategies.metadata(TestSolverY)
-    defs = collect(values(meta.specs))
+    defs = collect(values(meta))
     extracted, _ = Options.extract_options((; kwargs...), defs)
     opts = Strategies.StrategyOptions(dict_to_namedtuple(extracted))
     return TestSolverY(opts)
