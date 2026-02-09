@@ -17,7 +17,7 @@ CTSolvers is organized into specialized modules, each with clear responsibilitie
   - Option extraction API
   - NotProvided sentinel for optional parameters
 
-## Planned Modules
+## Implemented Modules
 
 - **DOCP**: Discretized Optimal Control Problem types and operations
 - **Modelers**: Backend modeler implementations (ADNLPModeler, ExaModeler)
