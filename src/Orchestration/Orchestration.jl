@@ -31,7 +31,6 @@ using ..Strategies
 
 include(joinpath(@__DIR__, "disambiguation.jl"))
 include(joinpath(@__DIR__, "routing.jl"))
-include(joinpath(@__DIR__, "method_builders.jl"))
 
 # ---------------------------------------------------------------------------
 # Public API re-exports (populated incrementally)
@@ -39,6 +38,6 @@ include(joinpath(@__DIR__, "method_builders.jl"))
 
 export route_all_options
 export extract_strategy_ids, build_strategy_to_family_map, build_option_ownership_map
-export build_strategy_from_method, option_names_from_method
+#export build_strategy_from_method, option_names_from_method # no need to reexport
 
 end # module Orchestration
