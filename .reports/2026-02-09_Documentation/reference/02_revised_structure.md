@@ -27,7 +27,8 @@ docs/src/
 │   ├── implementing_a_solver.md
 │   ├── implementing_a_modeler.md
 │   ├── implementing_an_optimization_problem.md
-│   └── orchestration_and_routing.md
+│   ├── orchestration_and_routing.md
+│   └── error_messages.md
 └── api/                                    [généré par api_reference.jl]
     ├── options/
     │   ├── options_public.md
@@ -59,7 +60,7 @@ docs/src/
         └── knitro.md
 ```
 
-**Total** : 8 pages rédigées manuellement + ~22 pages API générées automatiquement.
+**Total** : 9 pages rédigées manuellement + ~22 pages API générées automatiquement.
 
 ---
 
@@ -98,11 +99,14 @@ AbstractStrategy
 ├── AbstractOptimizationModeler
 │   ├── ADNLPModeler
 │   └── ExaModeler
-└── AbstractOptimizationSolver
-    ├── IpoptSolver
-    ├── MadNLPSolver
-    ├── MadNCLSolver
-    └── KnitroSolver
+├── AbstractOptimizationSolver
+│   ├── IpoptSolver
+│   ├── MadNLPSolver
+│   ├── MadNCLSolver
+│   └── KnitroSolver
+└── AbstractOptimalControlDiscretizer    (défini dans CTDirect)
+    ├── Collocation
+    └── DirectShooting
 
 AbstractOptimizationProblem
 └── DiscretizedOptimalControlProblem
@@ -212,74 +216,67 @@ OptimalControlProblem (CTModels)
 
 **Objectif** : Permettre à un développeur d'implémenter une stratégie complète et fonctionnelle.
 
+**Exemple concret** : Le tutoriel utilise la famille `AbstractOptimalControlDiscretizer` avec deux stratégies concrètes — `Collocation` et `DirectShooting` — au lieu d'un `MyStrategy` abstrait. Ce sont de vraies stratégies de l'écosystème control-toolbox (CTDirect). Voir `06_discretizer_tutorial.md` pour le détail complet.
+
 **Contenu** :
 
-**Section 1 — Le two-level contract**
+**Section 1 — The Two-Level Contract**
 
-Explication détaillée avec diagramme :
+Explication détaillée avec diagramme Mermaid (cf. `04_mermaid_diagrams.md`, section 2.1) :
 - Type-level : `id(::Type)`, `metadata(::Type)` — introspection sans instanciation.
 - Instance-level : `options(strategy)` — configuration de l'instance.
 - Pourquoi cette séparation (routing, validation avant construction, introspection).
 
-**Section 2 — Implémentation minimale (pas à pas)**
+**Section 2 — Defining a Strategy Family**
 
-Étape 1 : Définir le struct avec champ `options::StrategyOptions`.
-
-```julia
-struct MyStrategy <: AbstractStrategy
-    options::StrategyOptions
-end
-```
-
-Étape 2 : Implémenter `id` (type-level).
+Définir un type abstrait intermédiaire pour regrouper des stratégies apparentées :
 
 ```julia
-Strategies.id(::Type{<:MyStrategy}) = :my_strategy
+abstract type AbstractOptimalControlDiscretizer <: AbstractStrategy end
 ```
 
-Étape 3 : Implémenter `metadata` avec `OptionDefinition`.
+Explication du rôle : regroupement dans le registry, dispatch par famille, méthodes communes.
 
-```julia
-Strategies.metadata(::Type{<:MyStrategy}) = StrategyMetadata(
-    OptionDefinition(name=:param, type=Int, default=42, description="...")
-)
-```
+**Section 3 — Implementing a Concrete Strategy: Collocation**
 
-Étape 4 : Implémenter le constructeur avec `build_strategy_options`.
+Pas à pas complet avec affichages `@repl` à chaque étape :
 
-```julia
-function MyStrategy(; mode::Symbol=:strict, kwargs...)
-    options = build_strategy_options(MyStrategy; mode=mode, kwargs...)
-    return MyStrategy(options)
-end
-```
+- Step 1 : Struct avec un seul champ `options::StrategyOptions`.
+- Step 2 : `id(::Type{<:Collocation}) = :collocation`.
+- Step 3 : Default values (`__collocation_grid_size`, `__collocation_scheme`).
+- Step 4 : `metadata` avec `OptionDefinition` pour `:grid_size` et `:scheme`. Affichage `@repl` du résultat.
+- Step 5 : Constructeur avec `build_strategy_options`. Affichages `@repl` : construction par défaut, avec options, mode permissif, erreur avec typo (suggestion Levenshtein).
+- Step 6 : `validate_strategy_contract(Collocation)`.
+- Step 7 : Accès aux options : `option_value`, `option_source`, `is_user`, `is_default`.
 
-Étape 5 : Implémenter `options` (instance-level).
+**Section 4 — Adding a Second Strategy: DirectShooting**
 
-```julia
-Strategies.options(s::MyStrategy) = s.options
-```
+Même pattern, options différentes (`:grid_size` seulement). Point pédagogique : `grid_size` existe dans les deux stratégies avec des defaults et descriptions différents — chaque stratégie a ses propres `OptionDefinition` indépendantes.
 
-**Section 3 — Validation**
+**Section 5 — Registering the Family**
 
-- Utiliser `validate_strategy_contract(MyStrategy)`.
-- Montrer les messages d'erreur quand une méthode manque.
-- Tests unitaires pour chaque méthode du contrat.
+- `create_registry(AbstractOptimalControlDiscretizer => (Collocation, DirectShooting))`.
+- `strategy_ids`, `type_from_id`, `build_strategy`.
+- Affichage `@repl` du registry.
 
-**Section 4 — Enregistrement dans un Registry**
+**Section 6 — Integration with Method Tuples**
 
-- `create_registry` et `strategy_ids`.
-- `build_strategy` et `build_strategy_from_method`.
-- Introspection : `option_names`, `option_type`, `option_description`.
+- Method tuple `(:collocation, :adnlp, :ipopt)` avec 3 familles.
+- `extract_id_from_method`, `build_strategy_from_method`.
+- Lien avec le guide `orchestration_and_routing.md`.
 
-**Section 5 — Patterns avancés**
+**Section 7 — Introspection**
+
+- `option_names`, `option_defaults` pour les deux stratégies.
+- Comparaison côte à côte.
+
+**Section 8 — Advanced Patterns**
 
 - Aliases d'options.
 - Validators personnalisés.
-- Strategy families (types abstraits intermédiaires).
 - Mode permissif pour options backend.
 
-**Longueur cible** : 300-400 lignes.
+**Longueur cible** : 400-500 lignes.
 
 ---
 
@@ -456,6 +453,7 @@ pages=[
         "Implementing a Modeler" => "guides/implementing_a_modeler.md",
         "Implementing an Optimization Problem" => "guides/implementing_an_optimization_problem.md",
         "Orchestration & Routing" => "guides/orchestration_and_routing.md",
+        "Error Messages Reference" => "guides/error_messages.md",
     ],
     "API Reference" => [
         "Public API" => [
@@ -510,7 +508,7 @@ pages=[
 
 | Critère | Plan initial (propal/) | Plan révisé (reference/) |
 | ------- | ---------------------- | ------------------------ |
-| Pages manuelles | 17+ | 8 |
+| Pages manuelles | 17+ | 9 |
 | Pages API | ~7 (tout mélangé) | ~22 (Public/Internal séparés) |
 | Redondance | Interface + Tutoriel séparés | Fusionnés en un document |
 | User Guide | 4 pages (hors cible) | 0 page dédiée (contenu dans index) |
@@ -521,3 +519,5 @@ pages=[
 | Tag Dispatch | Non mentionné | Section dans solver guide |
 | Synopsis par page | Absent | Détaillé pour chaque page |
 | Modèle API | Simplifié | Conforme à la ressource de référence |
+| Exemple concret | `MyStrategy` abstrait | Collocation + DirectShooting (réaliste) |
+| Messages d'erreur | Non documentés | Page dédiée + intégrés dans les guides |

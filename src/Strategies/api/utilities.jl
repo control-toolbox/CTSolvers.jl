@@ -103,7 +103,7 @@ See also: [`options`](@ref), [`Options.extract_raw_options`](@ref)
 """
 function options_dict(strategy::AbstractStrategy)
     opts = options(strategy)
-    raw_opts = Options.extract_raw_options(opts.options)
+    raw_opts = Options.extract_raw_options(_raw_options(opts))
     return Dict{Symbol, Any}(pairs(raw_opts))
 end
 

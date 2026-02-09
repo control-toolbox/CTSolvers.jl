@@ -282,6 +282,28 @@ See also: [`source`](@ref), [`is_user`](@ref), [`is_default`](@ref)
 is_computed(opts::StrategyOptions, key::Symbol) = source(opts, key) === :computed
 
 # ============================================================================
+# Private Helper for Internal Use
+# ============================================================================
+
+"""
+    _raw_options(opts::StrategyOptions)
+
+**Private helper function** - for internal framework use only.
+
+Returns the raw NamedTuple of OptionValue objects from the internal storage.
+This is needed for `Options.extract_raw_options` which requires access to the
+full OptionValue objects, not just their `.value` fields.
+
+!!! warning "Internal Use Only"
+    This function is **not part of the public API** and may change without notice.
+    External code should use the public collection interface (`pairs`, `keys`, `values`, etc.).
+
+# Returns
+- NamedTuple of `(Symbol => OptionValue)` from the internal storage
+"""
+_raw_options(opts::StrategyOptions) = opts.options
+
+# ============================================================================
 # Collection interface
 # ============================================================================
 

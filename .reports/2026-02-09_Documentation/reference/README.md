@@ -69,6 +69,17 @@ Comment exploiter la documentation comme banc de validation visuelle des afficha
 - **Page `error_messages.md`** : nouvelle page de référence regroupant tous les messages d'erreur avec cause/solution
 - **Bénéfices** : validation CI continue, documentation vivante, pédagogie par l'erreur, incitation à améliorer les messages
 
+### [06 — Tutoriel Concret : Famille Discretizer](./06_discretizer_tutorial.md)
+
+Remplacement de l'exemple abstrait `MyStrategy` par un cas d'usage réaliste issu de l'écosystème :
+
+- **Famille `AbstractOptimalControlDiscretizer`** : type abstrait intermédiaire `<: AbstractStrategy`, défini dans CTDirect
+- **Deux stratégies concrètes** : `Collocation` (grid_size, scheme) et `DirectShooting` (grid_size) — montre le pattern avec 2+ membres
+- **Correspondance ancien → nouveau** : table de mapping `CTModels.AbstractOCPTool` → `Strategies.AbstractStrategy`, `_option_specs` → `metadata`, etc.
+- **Synopsis complet** du tutoriel révisé en 8 sections : two-level contract, strategy family, Collocation pas à pas, DirectShooting, registry, method tuples, introspection, patterns avancés
+- **Impact sur les autres documents** : mise à jour de la hiérarchie des types (02), des diagrammes Mermaid (04), et des affichages (05)
+- **Périmètre strict** : pas de détails sur la collocation/tir direct, pas de migration, pas d'implémentation du callable
+
 ---
 
 ## Synthèse des Recommandations

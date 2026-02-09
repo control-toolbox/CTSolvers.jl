@@ -278,7 +278,7 @@ See also: [`option_value`](@ref), [`is_user`](@ref), [`is_default`](@ref)
 """
 function option_source(strategy::AbstractStrategy, key::Symbol)
     opts = options(strategy)
-    return opts.options[key].source
+    return source(opts, key)
 end
 
 """
@@ -316,7 +316,7 @@ See also: [`option_value`](@ref), [`option_source`](@ref)
 """
 function has_option(strategy::AbstractStrategy, key::Symbol)
     opts = options(strategy)
-    return haskey(opts.options, key)
+    return haskey(opts, key)
 end
 
 
