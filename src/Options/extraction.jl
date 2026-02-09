@@ -26,6 +26,10 @@ returns the default value with `:default` source.
 - Type mismatches throw `Exceptions.IncorrectArgument` exceptions.
 - The function removes the found option from the returned kwargs.
 
+# Throws
+- `Exceptions.IncorrectArgument`: If type mismatch between value and definition
+- `Exception`: If validator function fails
+
 # Example
 ```julia-repl
 julia> using CTSolvers.Options

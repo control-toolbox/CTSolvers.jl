@@ -30,6 +30,9 @@ julia> opt.value
 julia> opt.source
 :user
 ```
+
+# Throws
+- `Exceptions.IncorrectArgument`: If source is not one of `:default`, `:user`, or `:computed`
 """
 struct OptionValue{T}
     value::T
@@ -52,7 +55,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Create an `OptionValue` with user-provided source.
+Create an `OptionValue` defaulting to `:user` source.
 
 # Arguments
 - `value`: The option value.

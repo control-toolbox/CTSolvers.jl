@@ -64,6 +64,10 @@ julia> all_names(def)
 (:max_iter, :max, :maxiter)
 ```
 
+# Throws
+- `Exceptions.IncorrectArgument`: If the default value does not match the declared type
+- `Exception`: If the validator function fails when applied to the default value
+
 See also: [`all_names`](@ref), [`extract_option`](@ref), [`extract_options`](@ref)
 """
 struct OptionDefinition{T}

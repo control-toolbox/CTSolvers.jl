@@ -3,7 +3,7 @@
 # ============================================================================
 
 """
-    NotProvidedType
+$(TYPEDEF)
 
 Singleton type representing the absence of a default value for an option.
 
@@ -68,7 +68,7 @@ const NotProvided = NotProvidedType()
 Base.show(io::IO, ::NotProvidedType) = print(io, "NotProvided")
 
 """
-    NotStoredType
+$(TYPEDEF)
 
 Internal sentinel type used by the option extraction system to signal that an option
 should not be stored in the instance.
