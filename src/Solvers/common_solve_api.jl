@@ -8,6 +8,11 @@ Provides unified solve interface for optimization problems at multiple levels:
 """
 
 # Default display setting
+"""
+$(TYPEDSIGNATURES)
+
+Internal helper to define default display behavior.
+"""
 __display() = true
 
 """
