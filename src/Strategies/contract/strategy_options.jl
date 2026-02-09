@@ -286,7 +286,7 @@ is_computed(opts::StrategyOptions, key::Symbol) = source(opts, key) === :compute
 # ============================================================================
 
 """
-    _raw_options(opts::StrategyOptions)
+$(TYPEDSIGNATURES)
 
 **Private helper function** - for internal framework use only.
 
