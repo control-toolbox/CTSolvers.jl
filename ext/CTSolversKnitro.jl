@@ -20,7 +20,7 @@ using SolverCore
 # ============================================================================
 
 """
-    Strategies.metadata(::Type{<:Solvers.KnitroSolver})
+$(TYPEDSIGNATURES)
 
 Return metadata defining KnitroSolver options and their specifications.
 """
@@ -173,7 +173,7 @@ end
 # ============================================================================
 
 """
-    Solvers.build_knitro_solver(::Solvers.KnitroTag; mode::Symbol=:strict, kwargs...)
+$(TYPEDSIGNATURES)
 
 Build a KnitroSolver with validated options.
 
@@ -204,7 +204,7 @@ end
 # ============================================================================
 
 """
-    (solver::Solvers.KnitroSolver)(nlp; display=true)
+$(TYPEDSIGNATURES)
 
 Solve an NLP problem using Knitro.
 
@@ -229,7 +229,7 @@ end
 # ============================================================================
 
 """
-    solve_with_knitro(nlp; kwargs...)
+$(TYPEDSIGNATURES)
 
 Backend interface for Knitro solver.
 

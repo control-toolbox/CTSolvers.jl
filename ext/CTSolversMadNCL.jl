@@ -22,7 +22,7 @@ using SolverCore
 # ============================================================================
 
 """
-    base_type(::MadNCL.NCLOptions{BaseType})
+$(TYPEDSIGNATURES)
 
 Extract the base floating-point type from NCLOptions type parameter.
 """
@@ -33,7 +33,7 @@ base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseT
 # ============================================================================
 
 """
-    Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
+$(TYPEDSIGNATURES)
 
 Return metadata defining MadNCLSolver options and their specifications.
 """
@@ -303,7 +303,7 @@ end
 # ============================================================================
 
 """
-    Solvers.build_madncl_solver(::Solvers.MadNCLTag; mode::Symbol=:strict, kwargs...)
+$(TYPEDSIGNATURES)
 
 Build a MadNCLSolver with validated options.
 
@@ -334,7 +334,7 @@ end
 # ============================================================================
 
 """
-    (solver::Solvers.MadNCLSolver)(nlp; display=true)
+$(TYPEDSIGNATURES)
 
 Solve an NLP problem using MadNCL.
 
@@ -369,7 +369,7 @@ end
 # ============================================================================
 
 """
-    solve_with_madncl(nlp; ncl_options, kwargs...)
+$(TYPEDSIGNATURES)
 
 Backend interface for MadNCL solver.
 

@@ -18,6 +18,7 @@ All modules have been audited and updated, resulting in a cleaner, maintainable,
 | **Options** | ✅ | Standardized definitions, values, and extraction logic options. Checked legacy vs new system. |
 | **Modelers** | ✅ | Applied macros to `ADNLPModeler`, `ExaModeler`, and their validation functions. Fixed exception types in examples. |
 | **Solvers** | ✅ | Standardized `Ipopt`, `Knitro`, `MadNLP`, `MadNCL` and core solver abstractions. Added explicit `# Throws` for extension errors. |
+| **Extensions** | ✅ | Standardized `metadata`, `build_*_solver`, and backend interfaces in `ext/` for all 4 solvers. |
 | **Orchestration** | ✅ | Updated `routing` documentation to use modern `route_to` syntax in examples, fixing mismatch with implementation. |
 | **Optimization** | ✅ | Standardized abstract problem types and builder interfaces. |
 | **DOCP** | ✅ | Verified compliance (was already standardized). |

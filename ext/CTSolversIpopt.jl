@@ -20,7 +20,7 @@ using SolverCore
 # ============================================================================
 
 """
-    Strategies.metadata(::Type{<:Solvers.IpoptSolver})
+$(TYPEDSIGNATURES)
 
 Return metadata defining IpoptSolver options and their specifications.
 """
@@ -444,7 +444,7 @@ end
 # ============================================================================
 
 """
-    Solvers.build_ipopt_solver(::Solvers.IpoptTag; mode::Symbol=:strict, kwargs...)
+$(TYPEDSIGNATURES)
 
 Build an IpoptSolver with validated options.
 
@@ -475,7 +475,7 @@ end
 # ============================================================================
 
 """
-    (solver::Solvers.IpoptSolver)(nlp; display=true)
+$(TYPEDSIGNATURES)
 
 Solve an NLP problem using Ipopt.
 
@@ -500,7 +500,7 @@ end
 # ============================================================================
 
 """
-    solve_with_ipopt(nlp; kwargs...)
+$(TYPEDSIGNATURES)
 
 Backend interface for Ipopt solver.
 

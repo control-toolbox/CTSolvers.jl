@@ -22,7 +22,7 @@ using SolverCore
 # ============================================================================
 
 """
-    Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
+$(TYPEDSIGNATURES)
 
 Return metadata defining MadNLPSolver options and their specifications.
 """
@@ -275,7 +275,7 @@ end
 # ============================================================================
 
 """
-    Solvers.build_madnlp_solver(::Solvers.MadNLPTag; mode::Symbol=:strict, kwargs...)
+$(TYPEDSIGNATURES)
 
 Build a MadNLPSolver with validated options.
 
@@ -306,7 +306,7 @@ end
 # ============================================================================
 
 """
-    (solver::Solvers.MadNLPSolver)(nlp; display=true)
+$(TYPEDSIGNATURES)
 
 Solve an NLP problem using MadNLP.
 
@@ -331,7 +331,7 @@ end
 # ============================================================================
 
 """
-    solve_with_madnlp(nlp; kwargs...)
+$(TYPEDSIGNATURES)
 
 Backend interface for MadNLP solver.
 
