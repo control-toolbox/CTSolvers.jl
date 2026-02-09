@@ -1,5 +1,5 @@
 """
-    AbstractOptimizationSolver
+$(TYPEDEF)
 
 Abstract base type for optimization solvers in the Control Toolbox.
 
@@ -33,7 +33,7 @@ See also: [`IpoptSolver`](@ref), [`MadNLPSolver`](@ref), [`MadNCLSolver`](@ref),
 abstract type AbstractOptimizationSolver <: Strategies.AbstractStrategy end
 
 """
-    (solver::AbstractOptimizationSolver)(nlp; display=Bool)
+$(TYPEDSIGNATURES)
 
 Callable interface for optimization solvers.
 
@@ -45,6 +45,9 @@ Solves the given NLP problem and returns execution statistics.
 
 # Returns
 - `SolverCore.AbstractExecutionStats`: Solver execution statistics
+
+# Throws
+- `Strategies.Exceptions.NotImplemented`: If not implemented by concrete type
 
 # Implementation
 Concrete solver types must implement this method. The default implementation

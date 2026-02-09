@@ -3,7 +3,7 @@
 # ============================================================================
 
 """
-    MadNCLTag <: AbstractTag
+$(TYPEDEF)
 
 Tag type for MadNCL-specific implementation dispatch.
 """
@@ -14,8 +14,6 @@ struct MadNCLTag <: AbstractTag end
 # ============================================================================
 
 """
-    MadNCLSolver
-
 $(TYPEDEF)
 
 NCL (Non-Convex Lagrangian) variant of MadNLP solver.
@@ -81,7 +79,7 @@ end
 # ============================================================================
 
 """
-    Strategies.id(::Type{<:MadNCLSolver})
+$(TYPEDSIGNATURES)
 
 Return the unique identifier for MadNCLSolver.
 """
@@ -92,7 +90,7 @@ Strategies.id(::Type{<:MadNCLSolver}) = :madncl
 # ============================================================================
 
 """
-    MadNCLSolver(; mode::Symbol=:strict, kwargs...)
+$(TYPEDSIGNATURES)
 
 Create a MadNCLSolver with specified options.
 
@@ -114,16 +112,22 @@ solver = MadNCLSolver(max_iter=1000, tol=1e-6)
 # Permissive mode - accepts unknown options with warning
 solver = MadNCLSolver(max_iter=1000, custom_option=123; mode=:permissive)
 ```
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: If the MadNCL extension is not loaded
 """
 function MadNCLSolver(; mode::Symbol=:strict, kwargs...)
     return build_madncl_solver(MadNCLTag(); mode=mode, kwargs...)
 end
 
 """
-    build_madncl_solver(::AbstractTag; kwargs...)
+$(TYPEDSIGNATURES)
 
 Stub function that throws ExtensionError if CTSolversMadNCL extension is not loaded.
 Real implementation provided by the extension.
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
 function build_madncl_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(

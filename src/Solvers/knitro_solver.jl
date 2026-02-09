@@ -3,7 +3,7 @@
 # ============================================================================
 
 """
-    KnitroTag <: AbstractTag
+$(TYPEDEF)
 
 Tag type for Knitro-specific implementation dispatch.
 """
@@ -14,8 +14,6 @@ struct KnitroTag <: AbstractTag end
 # ============================================================================
 
 """
-    KnitroSolver
-
 $(TYPEDEF)
 
 Commercial optimization solver with advanced algorithms.
@@ -83,7 +81,7 @@ end
 # ============================================================================
 
 """
-    Strategies.id(::Type{<:KnitroSolver})
+$(TYPEDSIGNATURES)
 
 Return the unique identifier for KnitroSolver.
 """
@@ -94,7 +92,7 @@ Strategies.id(::Type{<:KnitroSolver}) = :knitro
 # ============================================================================
 
 """
-    KnitroSolver(; mode::Symbol=:strict, kwargs...)
+$(TYPEDSIGNATURES)
 
 Create a KnitroSolver with specified options.
 
@@ -116,16 +114,22 @@ solver = KnitroSolver(maxit=1000, outlev=2)
 # Permissive mode - accepts unknown options with warning
 solver = KnitroSolver(maxit=1000, custom_option=123; mode=:permissive)
 ```
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
 """
 function KnitroSolver(; mode::Symbol=:strict, kwargs...)
     return build_knitro_solver(KnitroTag(); mode=mode, kwargs...)
 end
 
 """
-    build_knitro_solver(::AbstractTag; kwargs...)
+$(TYPEDSIGNATURES)
 
 Stub function that throws ExtensionError if CTSolversKnitro extension is not loaded.
 Real implementation provided by the extension.
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
 function build_knitro_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(

@@ -3,7 +3,7 @@
 # ============================================================================
 
 """
-    MadNLPTag <: AbstractTag
+$(TYPEDEF)
 
 Tag type for MadNLP-specific implementation dispatch.
 """
@@ -14,8 +14,6 @@ struct MadNLPTag <: AbstractTag end
 # ============================================================================
 
 """
-    MadNLPSolver
-
 $(TYPEDEF)
 
 Pure-Julia interior point solver with GPU support.
@@ -81,7 +79,7 @@ end
 # ============================================================================
 
 """
-    Strategies.id(::Type{<:MadNLPSolver})
+$(TYPEDSIGNATURES)
 
 Return the unique identifier for MadNLPSolver.
 """
@@ -92,7 +90,7 @@ Strategies.id(::Type{<:MadNLPSolver}) = :madnlp
 # ============================================================================
 
 """
-    MadNLPSolver(; mode::Symbol=:strict, kwargs...)
+$(TYPEDSIGNATURES)
 
 Create a MadNLPSolver with specified options.
 
@@ -114,16 +112,22 @@ solver = MadNLPSolver(max_iter=1000, tol=1e-6)
 # Permissive mode - accepts unknown options with warning
 solver = MadNLPSolver(max_iter=1000, custom_option=123; mode=:permissive)
 ```
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
 """
 function MadNLPSolver(; mode::Symbol=:strict, kwargs...)
     return build_madnlp_solver(MadNLPTag(); mode=mode, kwargs...)
 end
 
 """
-    build_madnlp_solver(::AbstractTag; kwargs...)
+$(TYPEDSIGNATURES)
 
 Stub function that throws ExtensionError if CTSolversMadNLP extension is not loaded.
 Real implementation provided by the extension.
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
 function build_madnlp_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(

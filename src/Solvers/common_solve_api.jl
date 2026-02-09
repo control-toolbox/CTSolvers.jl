@@ -11,7 +11,7 @@ Provides unified solve interface for optimization problems at multiple levels:
 __display() = true
 
 """
-    CommonSolve.solve(problem, initial_guess, modeler, solver; display=true)
+$(TYPEDSIGNATURES)
 
 High-level solve: Build NLP model, solve it, and build solution.
 
@@ -59,7 +59,7 @@ function CommonSolve.solve(
 end
 
 """
-    CommonSolve.solve(nlp, solver; display=true)
+$(TYPEDSIGNATURES)
 
 Mid-level solve: Solve NLP problem directly.
 
@@ -89,7 +89,7 @@ function CommonSolve.solve(
 end
 
 """
-    CommonSolve.solve(nlp, solver; display=true)
+$(TYPEDSIGNATURES)
 
 Flexible solve: Allow user freedom with any compatible types.
 

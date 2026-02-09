@@ -3,7 +3,7 @@
 # ============================================================================
 
 """
-    IpoptTag <: AbstractTag
+$(TYPEDEF)
 
 Tag type for Ipopt-specific implementation dispatch.
 """
@@ -14,8 +14,6 @@ struct IpoptTag <: AbstractTag end
 # ============================================================================
 
 """
-    IpoptSolver
-
 $(TYPEDEF)
 
 Interior point optimization solver using the Ipopt backend.
@@ -80,7 +78,7 @@ end
 # ============================================================================
 
 """
-    Strategies.id(::Type{<:IpoptSolver})
+$(TYPEDSIGNATURES)
 
 Return the unique identifier for IpoptSolver.
 """
@@ -91,7 +89,7 @@ Strategies.id(::Type{<:IpoptSolver}) = :ipopt
 # ============================================================================
 
 """
-    IpoptSolver(; mode::Symbol=:strict, kwargs...)
+$(TYPEDSIGNATURES)
 
 Create an IpoptSolver with specified options.
 
@@ -113,16 +111,22 @@ solver = IpoptSolver(max_iter=1000, tol=1e-6)
 # Permissive mode - accepts unknown options with warning
 solver = IpoptSolver(max_iter=1000, custom_option=123; mode=:permissive)
 ```
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
 """
 function IpoptSolver(; mode::Symbol=:strict, kwargs...)
     return build_ipopt_solver(IpoptTag(); mode=mode, kwargs...)
 end
 
 """
-    build_ipopt_solver(::AbstractTag; kwargs...)
+$(TYPEDSIGNATURES)
 
 Stub function that throws ExtensionError if CTSolversIpopt extension is not loaded.
 Real implementation provided by the extension.
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
 function build_ipopt_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(

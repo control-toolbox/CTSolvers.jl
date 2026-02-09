@@ -3,7 +3,7 @@ Validation utilities for solver options and configurations.
 """
 
 """
-    validate_solver_options(solver_type::Type{<:AbstractOptimizationSolver}, options::Dict)
+$(TYPEDSIGNATURES)
 
 Validate solver options against the solver's metadata.
 
