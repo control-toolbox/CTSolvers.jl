@@ -216,6 +216,12 @@ end
 # Error Message Helpers (Private)
 # ----------------------------------------------------------------------------
 
+"""
+$(TYPEDSIGNATURES)
+
+Helper to throw an informative error when an option doesn't belong to any strategy.
+Lists all available options for the active strategies to help the user.
+"""
 function _error_unknown_option(
     key::Symbol,
     method::Tuple,
@@ -249,6 +255,12 @@ function _error_unknown_option(
     ))
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Helper to throw an informative error when an option belongs to multiple strategies and needs disambiguation.
+Suggests using `route_to` syntax with specific examples for the conflicting strategies.
+"""
 function _error_ambiguous_option(
     key::Symbol,
     value::Any,
@@ -293,6 +305,11 @@ function _error_ambiguous_option(
     end
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Helper to warn when an unknown option is routed in permissive mode.
+"""
 function _warn_unknown_option_permissive(
     key::Symbol,
     strategy_id::Symbol,
