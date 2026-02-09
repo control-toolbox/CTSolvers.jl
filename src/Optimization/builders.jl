@@ -7,7 +7,7 @@
 # Date: 2026-01-26
 
 """
-AbstractBuilder
+$(TYPEDEF)
 
 Abstract base type for all builders in the optimization system.
 
@@ -17,7 +17,7 @@ that work with optimization problems.
 abstract type AbstractBuilder end
 
 """
-AbstractModelBuilder
+$(TYPEDEF)
 
 Abstract base type for builders that construct NLP back-end models from
 an AbstractOptimizationProblem.
@@ -28,7 +28,7 @@ a model for a specific NLP back-end.
 abstract type AbstractModelBuilder <: AbstractBuilder end
 
 """
-AbstractSolutionBuilder
+$(TYPEDEF)
 
 Abstract base type for builders that transform NLP solutions into other
 representations (for example, solutions of an optimal control problem).
@@ -39,7 +39,7 @@ problem-specific solution formats.
 abstract type AbstractSolutionBuilder <: AbstractBuilder end
 
 """
-AbstractOCPSolutionBuilder
+$(TYPEDEF)
 
 Abstract base type for builders that transform NLP solutions into OCP solutions.
 

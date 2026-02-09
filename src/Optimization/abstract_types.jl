@@ -7,7 +7,7 @@
 # Date: 2026-01-26
 
 """
-AbstractOptimizationProblem
+$(TYPEDEF)
 
 Abstract base type for optimization problems.
 

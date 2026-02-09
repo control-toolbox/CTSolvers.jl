@@ -48,14 +48,14 @@ solve(ocp, :collocation, :adnlp, :ipopt; grid_size=100)
 
 **Single strategy** (disambiguate):
 ```julia
-solve(ocp, :collocation, :adnlp, :ipopt; backend = (:sparse, :adnlp))
+solve(ocp, :collocation, :adnlp, :ipopt; backend = route_to(adnlp=:sparse))
 # backend belongs to both modeler and solver => disambiguate to :adnlp
 ```
 
 **Multi-strategy** (set for multiple):
 ```julia
 solve(ocp, :collocation, :adnlp, :ipopt; 
-    backend = ((:sparse, :adnlp), (:cpu, :ipopt))
+    backend = route_to(adnlp=:sparse, ipopt=:cpu)
 )
 # Set backend to :sparse for modeler AND :cpu for solver
 ```
