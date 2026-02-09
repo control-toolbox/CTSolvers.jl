@@ -62,6 +62,9 @@ See `Kanban/` subdirectory for task tracking:
 
 ## Quality Checklist
 
+⚠️ **CRITICAL: DOCSTRINGS ONLY - NO CODE CHANGES** ⚠️  
+This is a documentation-only review. DO NOT modify any executable code, function signatures, type definitions, or implementation logic. ONLY add or update docstrings (""" ... """).
+
 For each docstring:
 - [ ] Directly above declaration (no blank lines)
 - [ ] Uses `$(TYPEDSIGNATURES)` or `$(TYPEDEF)`

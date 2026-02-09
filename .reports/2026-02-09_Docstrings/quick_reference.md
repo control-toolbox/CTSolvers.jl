@@ -1,5 +1,10 @@
 # Quick Reference - Documentation Standards
 
+⚠️ **CRITICAL: DOCSTRINGS ONLY - NO CODE CHANGES** ⚠️  
+**This is a documentation-only review.**  
+**DO NOT modify any executable code, signatures, or implementations.**  
+**ONLY add or update docstrings (""" ... """).**
+
 ## Core Principles
 
 1. **Accuracy** over marketing

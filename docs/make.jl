@@ -47,6 +47,16 @@ with_api_reference(src_dir, ext_dir) do api_pages
         ),
         pages=[
             "Introduction" => "index.md",
+            "Architecture" => "architecture.md",
+            "Developer Guides" => [
+                "Options System" => "guides/options_system.md",
+                "Implementing a Strategy" => "guides/implementing_a_strategy.md",
+                "Implementing a Solver" => "guides/implementing_a_solver.md",
+                "Implementing a Modeler" => "guides/implementing_a_modeler.md",
+                "Implementing an Optimization Problem" => "guides/implementing_an_optimization_problem.md",
+                "Orchestration & Routing" => "guides/orchestration_and_routing.md",
+                "Error Messages Reference" => "guides/error_messages.md",
+            ],
             "API Reference" => api_pages,
         ],
     )

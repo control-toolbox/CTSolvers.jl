@@ -10,7 +10,7 @@ using CTBase: Exceptions
 # ----------------------------------------------------------------------------
 
 """
-    RoutedOption
+$(TYPEDEF)
 
 Routed option value with explicit strategy targeting.
 
@@ -144,7 +144,7 @@ end
 # ============================================================================
 
 """
-    Base.keys(r::RoutedOption)
+$(TYPEDSIGNATURES)
 
 Return an iterator over the strategy IDs in the routed option.
 
@@ -160,7 +160,7 @@ julia> collect(keys(opt))
 Base.keys(r::RoutedOption) = keys(r.routes)
 
 """
-    Base.values(r::RoutedOption)
+$(TYPEDSIGNATURES)
 
 Return an iterator over the values in the routed option.
 
@@ -176,7 +176,7 @@ julia> collect(values(opt))
 Base.values(r::RoutedOption) = values(r.routes)
 
 """
-    Base.pairs(r::RoutedOption)
+$(TYPEDSIGNATURES)
 
 Return an iterator over (strategy_id => value) pairs.
 
@@ -193,7 +193,7 @@ modeler => 50
 Base.pairs(r::RoutedOption) = pairs(r.routes)
 
 """
-    Base.iterate(r::RoutedOption, [state])
+$(TYPEDSIGNATURES)
 
 Iterate over (strategy_id => value) pairs.
 
@@ -212,7 +212,7 @@ modeler => 50
 Base.iterate(r::RoutedOption, state...) = iterate(pairs(r.routes), state...)
 
 """
-    Base.length(r::RoutedOption)
+$(TYPEDSIGNATURES)
 
 Return the number of routes in the routed option.
 
@@ -226,7 +226,7 @@ julia> length(opt)
 Base.length(r::RoutedOption) = length(r.routes)
 
 """
-    Base.haskey(r::RoutedOption, key::Symbol)
+$(TYPEDSIGNATURES)
 
 Check if a strategy ID exists in the routed option.
 
@@ -242,7 +242,7 @@ false
 Base.haskey(r::RoutedOption, key::Symbol) = haskey(r.routes, key)
 
 """
-    Base.getindex(r::RoutedOption, key::Symbol)
+$(TYPEDSIGNATURES)
 
 Get the value for a specific strategy ID.
 

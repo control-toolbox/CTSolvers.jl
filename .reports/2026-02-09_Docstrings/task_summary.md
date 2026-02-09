@@ -63,6 +63,9 @@ Remaining infrastructure:
 
 ## Workflow for Each Task
 
+⚠️ **CRITICAL RULE: DOCSTRINGS ONLY - NO CODE CHANGES**  
+This is a documentation-only review. DO NOT modify any executable code whatsoever. ONLY add or update docstrings (""" ... """). Verify diffs before committing.
+
 1. **Move task** from `TODO/` to `IN_PROGRESS/`
 2. **Read** `.windsurf/rules/docstrings.md` and `@[/doc-julia]` workflow
 3. **Review** existing docstrings in target file(s)
