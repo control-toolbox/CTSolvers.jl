@@ -81,14 +81,14 @@ function test_orchestration_disambiguation()
             Test.@test Orchestration.extract_strategy_ids("string", TEST_METHOD) === nothing
             
             # Single strategy disambiguation
-            result = Orchestration.extract_strategy_ids((:sparse, :adnlp), TEST_METHOD)
+            result = Orchestration.extract_strategy_ids(Strategies.route_to(adnlp=:sparse), TEST_METHOD)
             Test.@test result isa Vector{Tuple{Any,Symbol}}
             Test.@test length(result) == 1
             Test.@test result[1] == (:sparse, :adnlp)
             
             # Multi-strategy disambiguation
             result = Orchestration.extract_strategy_ids(
-                ((:sparse, :adnlp), (:cpu, :ipopt)),
+                Strategies.route_to(adnlp=:sparse, ipopt=:cpu),
                 TEST_METHOD
             )
             Test.@test result isa Vector{Tuple{Any,Symbol}}
@@ -98,26 +98,26 @@ function test_orchestration_disambiguation()
             
             # Invalid strategy ID in single disambiguation
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.extract_strategy_ids(
-                (:sparse, :unknown),
+                Strategies.route_to(unknown=:sparse),
                 TEST_METHOD
             )
             
             # Invalid strategy ID in multi disambiguation
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.extract_strategy_ids(
-                ((:sparse, :adnlp), (:cpu, :unknown)),
+                Strategies.route_to(adnlp=:sparse, unknown=:cpu),
                 TEST_METHOD
             )
             
-            # Mixed valid/invalid tuples - should return nothing
+            # Non-disambiguated values should return nothing
             result = Orchestration.extract_strategy_ids(
-                ((:sparse, :adnlp), :plain_value),
+                :plain_value,
                 TEST_METHOD
             )
             Test.@test result === nothing
             
-            # Another mixed case
+            # Another non-disambiguated case
             result2 = Orchestration.extract_strategy_ids(
-                ((:sparse, :adnlp), 100),
+                100,
                 TEST_METHOD
             )
             Test.@test result2 === nothing
@@ -177,7 +177,7 @@ function test_orchestration_disambiguation()
             )
             
             # Simulate disambiguation detection
-            disamb = Orchestration.extract_strategy_ids((:sparse, :adnlp), TEST_METHOD)
+            disamb = Orchestration.extract_strategy_ids(Strategies.route_to(adnlp=:sparse), TEST_METHOD)
             Test.@test disamb !== nothing
             Test.@test length(disamb) == 1
             

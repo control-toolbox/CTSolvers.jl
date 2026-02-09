@@ -205,14 +205,10 @@ println("   - Performance impact is minimal in both modes")
 println("\n🔄 MIGRATION EXAMPLES")
 println("-" ^ 25)
 
-# Example 9: From Old to New Syntax
-println("\n10️⃣  Migration: Tuple → route_to()")
+# Example 9: Modern Syntax Only
+println("\n10️⃣  Modern Disambiguation Syntax")
 
-println("   Old syntax (still works for backward compatibility):")
-println("   max_iter = (1000, :solver)")
-println("   max_iter = ((1000, :solver), (500, :modeler))")
-
-println("   New syntax (recommended):")
+println("   Modern syntax (recommended):")
 println("   max_iter = route_to(solver=1000)")
 println("   max_iter = route_to(solver=1000, modeler=500)")
 

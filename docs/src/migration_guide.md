@@ -282,7 +282,6 @@ solver = Solvers.IpoptSolver(
 ❌ **Ignore warnings** in permissive mode  
 ❌ **Rely on unknown options** without testing  
 ❌ **Use permissive mode as default**  
-❌ **Mix old and new syntax** unnecessarily  
 ❌ **Forget to test** after migration  
 
 ---

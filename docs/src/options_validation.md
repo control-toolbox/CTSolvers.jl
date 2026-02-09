@@ -287,20 +287,6 @@ end
 
 **No changes needed!** The default strict mode provides the same safety as before.
 
-### From Manual Tuple Syntax
-
-**Old syntax** (still works for backward compatibility):
-```julia
-max_iter = (1000, :solver)
-max_iter = ((1000, :solver), (500, :modeler))
-```
-
-**New syntax** (recommended):
-```julia
-max_iter = route_to(solver=1000)
-max_iter = route_to(solver=1000, modeler=500)
-```
-
 ### Adding Permissive Mode
 
 **Step 1**: Identify where you need flexibility
@@ -444,6 +430,6 @@ CTSolvers' validation system provides:
 - 🔓 **Flexibility when needed** (permissive mode)
 - 🎯 **Clear disambiguation** (`route_to()`)
 - 📚 **Helpful error messages**
-- 🔄 **Backward compatibility**
+- 🔄 **Modern syntax only**
 
 Start with strict mode for safety, switch to permissive mode when you need advanced features!

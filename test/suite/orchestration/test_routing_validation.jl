@@ -116,7 +116,7 @@ function test_routing_validation()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
             # Unknown option with disambiguation should still fail in strict mode
-            kwargs = (unknown_option = (123, :test_solver),)
+            kwargs = (unknown_option = Strategies.route_to(test_solver=123),)
             
             @test_throws Exception Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry;
@@ -133,7 +133,7 @@ function test_routing_validation()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
             # Unknown option with disambiguation should be accepted with warning
-            kwargs = (custom_option = (123, :test_solver),)
+            kwargs = (custom_option = Strategies.route_to(test_solver=123),)
             
             # Should emit warning but not throw
             result = @test_logs (:warn, r"Unknown option routed in permissive mode") begin
@@ -154,8 +154,8 @@ function test_routing_validation()
             
             # Multiple unknown options with disambiguation
             kwargs = (
-                custom1 = (100, :test_solver),
-                custom2 = (200, :test_modeler)
+                custom1 = Strategies.route_to(test_solver=100),
+                custom2 = Strategies.route_to(test_modeler=200)
             )
             
             result = @test_logs (:warn,) (:warn,) match_mode=:any begin
@@ -214,7 +214,7 @@ function test_routing_validation()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
             # Without mode parameter, should behave as strict
-            kwargs = (unknown_option = (123, :test_solver),)
+            kwargs = (unknown_option = Strategies.route_to(test_solver=123),)
             
             @test_throws Exception Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry

@@ -2,7 +2,7 @@
 Comprehensive tests for route_to() with validation modes and strategy inspection.
 
 This test suite validates that route_to() works correctly with:
-- All syntaxes (RoutedOption vs legacy tuples)
+- RoutedOption syntax
 - All validation modes (strict vs permissive)
 - Mock strategies with option name conflicts
 - Real strategies (modelers and solvers)
@@ -329,14 +329,6 @@ function test_route_to_comprehensive()
             
             @testset "RoutedOption - No Arguments Error" begin
                 @test_throws Exceptions.PreconditionError Strategies.route_to()
-            end
-            
-            @testset "Legacy Tuple Syntax" begin
-                # Test extract_strategy_ids with legacy syntax
-                result = Orchestration.extract_strategy_ids((:default, :adnlp), MOCK_METHOD)
-                @test result isa Vector{Tuple{Any, Symbol}}
-                @test length(result) == 1
-                @test result[1] == (:default, :adnlp)
             end
         end
         

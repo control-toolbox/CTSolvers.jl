@@ -134,7 +134,7 @@ function test_routing()
         
         Test.@testset "Single strategy disambiguation" begin
             kwargs = (
-                backend = (:sparse, :adnlp),
+                backend = Strategies.route_to(adnlp=:sparse),
                 display = true
             )
             
@@ -158,7 +158,7 @@ function test_routing()
         
         Test.@testset "Multi-strategy disambiguation" begin
             kwargs = (
-                backend = ((:sparse, :adnlp), (:cpu, :ipopt)),
+                backend = Strategies.route_to(adnlp=:sparse, ipopt=:cpu),
             )
             
             routed = Orchestration.route_all_options(
@@ -214,7 +214,7 @@ function test_routing()
         
         Test.@testset "Error on invalid disambiguation" begin
             # Try to route max_iter to modeler (wrong family)
-            kwargs = (max_iter = (1000, :adnlp),)
+            kwargs = (max_iter = Strategies.route_to(adnlp=1000),)
             
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 ROUTING_METHOD,
@@ -232,7 +232,7 @@ function test_routing()
         Test.@testset "Integration: Mixed routing" begin
             kwargs = (
                 grid_size = 150,
-                backend = ((:sparse, :adnlp), (:gpu, :ipopt)),
+                backend = Strategies.route_to(adnlp=:sparse, ipopt=:gpu),
                 max_iter = 500,
                 display = false,
                 initial_guess = :warm

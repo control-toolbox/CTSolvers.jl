@@ -13,8 +13,7 @@ Extract strategy IDs from disambiguation syntax.
 
 This function detects whether an option value uses disambiguation syntax to
 explicitly route the option to specific strategies. It supports the modern
-[`RoutedOption`](@ref) type created by [`route_to`](@ref), as well as legacy
-tuple-based syntax for backward compatibility.
+[`RoutedOption`](@ref) type created by [`route_to`](@ref).
 
 # Disambiguation Syntax
 
@@ -22,12 +21,6 @@ tuple-based syntax for backward compatibility.
 ```julia
 value = route_to(solver=100)                    # Single strategy
 value = route_to(solver=100, modeler=50)        # Multiple strategies
-```
-
-**Legacy (tuples, for backward compatibility)**:
-```julia
-value = (:sparse, :adnlp)                       # Single strategy
-value = ((:sparse, :adnlp), (:cpu, :ipopt))     # Multiple strategies
 ```
 
 # Arguments
@@ -83,57 +76,6 @@ function extract_strategy_ids(
             end
         end
         return results
-    end
-    
-    # Legacy syntax: Single strategy tuple (value, :id)
-    # Must be a 2-tuple where second element is Symbol and first is NOT a tuple
-    # (to distinguish from multi-strategy syntax)
-    if raw isa Tuple && length(raw) == 2 && raw[2] isa Symbol && !(raw[1] isa Tuple)
-        value, id = raw
-        if id in method
-            return [(value, id)]
-        else
-            throw(Exceptions.IncorrectArgument(
-                "Strategy ID not found in method tuple",
-                got="strategy ID :$id",
-                expected="one of available strategy IDs: $method",
-                suggestion="Use route_to($id=$value) for clearer syntax",
-                context="extract_strategy_ids - validating strategy ID in tuple disambiguation"
-            ))
-        end
-    end
-    
-    # Legacy syntax: Multiple strategies ((v1, :id1), (v2, :id2), ...)
-    if raw isa Tuple && length(raw) > 0
-        # First pass: check if ALL elements have the right structure
-        # Each element must be a Tuple (not just any value) with exactly 2 elements
-        all_valid_structure = true
-        for item in raw
-            if !(item isa Tuple && length(item) == 2 && item[2] isa Symbol)
-                all_valid_structure = false
-                break
-            end
-        end
-        
-        # If structure is valid, validate IDs and collect results
-        if all_valid_structure
-            results = Tuple{Any, Symbol}[]
-            for item in raw
-                value, id = item
-                if id in method
-                    push!(results, (value, id))
-                else
-                    throw(Exceptions.IncorrectArgument(
-                        "Strategy ID not found in method tuple",
-                        got="strategy ID :$id",
-                        expected="one of available strategy IDs: $method",
-                        suggestion="Use route_to() for clearer syntax",
-                        context="extract_strategy_ids - validating multi-strategy tuple disambiguation"
-                    ))
-                end
-            end
-            return results
-        end
     end
     
     # No disambiguation detected
