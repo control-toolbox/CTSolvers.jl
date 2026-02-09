@@ -1,4 +1,5 @@
 using Documenter
+using DocumenterMermaid
 using CTSolvers
 using CTBase
 using Markdown
