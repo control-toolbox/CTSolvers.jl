@@ -41,22 +41,25 @@ The Options.extract_options function handles:
 
 # Example
 ```julia-repl
+# Define a minimal strategy for demonstration
+julia> struct MyStrategy <: AbstractStrategy end
+julia> Strategies.metadata(::Type{MyStrategy}) = StrategyMetadata(
+           OptionDefinition(name=:max_iter, type=Int, default=100)
+       )
+
 # Strict mode (default) - rejects unknown options
 julia> opts = build_strategy_options(MyStrategy; max_iter=200)
-StrategyOptions(...)
+StrategyOptions with 1 option:
+  max_iter = 200  [user]
 
 # Permissive mode - accepts unknown options with warning
-julia> opts = build_strategy_options(MyStrategy; max_iter=200, custom_opt=123; mode=:permissive)
-┌ Warning: Unrecognized options passed to backend
+julia> opts = build_strategy_options(MyStrategy; max_iter=200, custom_opt=123, mode=:permissive)
+┌ Warning: Unrecognized options passed to MyStrategy
 │   Unvalidated options: [:custom_opt]
-└ @ CTSolvers.Strategies ...
-StrategyOptions(...)
-
-julia> opts[:max_iter]
-200
-
-julia> opts[:custom_opt]  # Available but unvalidated
-123
+└ ...
+StrategyOptions with 2 options:
+  max_iter = 200  [user]
+  custom_opt = 123  [user]
 ```
 
 # Notes
