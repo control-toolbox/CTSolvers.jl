@@ -130,7 +130,7 @@ StrategyOptions(max_iter=200, tol=1.0e-8)
 ```
 
 # Throws
-- `ErrorException`: If duplicate option names are provided
+- `Exceptions.IncorrectArgument`: If duplicate option names are provided
 
 See also: [`OptionDefinition`](@ref), [`AbstractStrategy`](@ref), [`build_strategy_options`](@ref)
 """
