@@ -183,7 +183,7 @@ understanding the baseline behavior.
 julia> using CTSolvers.Strategies
 
 julia> option_defaults(MyStrategy)
-(max_iter = 100, tol = 1.0e-6, backend = :optimized)
+(max_iter = 100, tol = 1.0e-6)
 
 julia> defaults = option_defaults(MyStrategy)
 julia> defaults.max_iter
