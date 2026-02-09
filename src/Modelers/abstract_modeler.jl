@@ -7,7 +7,7 @@
 # Date: 2026-01-25
 
 """
-    AbstractOptimizationModeler
+$(TYPEDEF)
 
 Abstract base type for all modeler strategies.
 
@@ -43,7 +43,7 @@ end
 abstract type AbstractOptimizationModeler <: Strategies.AbstractStrategy end
 
 """
-    (modeler::AbstractOptimizationModeler)(prob::AbstractOptimizationProblem, initial_guess)
+$(TYPEDSIGNATURES)
 
 Build an NLP model from a discretized optimal control problem and initial guess.
 
@@ -56,8 +56,7 @@ Build an NLP model from a discretized optimal control problem and initial guess.
 - An NLP model compatible with the target backend (e.g., ADNLPModel, ExaModel)
 
 # Throws
-
-- `Exceptions.NotImplemented`: If not implemented by concrete type
+- `Strategies.Exceptions.NotImplemented`: If not implemented by concrete type
 """
 function (modeler::AbstractOptimizationModeler)(
     ::AbstractOptimizationProblem, 
@@ -72,7 +71,7 @@ function (modeler::AbstractOptimizationModeler)(
 end
 
 """
-    (modeler::AbstractOptimizationModeler)(prob::AbstractOptimizationProblem, nlp_solution)
+$(TYPEDSIGNATURES)
 
 Build a solution object from a discretized optimal control problem and NLP solution.
 
@@ -85,8 +84,7 @@ Build a solution object from a discretized optimal control problem and NLP solut
 - A solution object appropriate for the problem type
 
 # Throws
-
-- `Exceptions.NotImplemented`: If not implemented by concrete type
+- `Strategies.Exceptions.NotImplemented`: If not implemented by concrete type
 """
 function (modeler::AbstractOptimizationModeler)(
     ::AbstractOptimizationProblem,

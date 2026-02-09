@@ -7,7 +7,7 @@
 # Date: 2026-01-31
 
 """
-    validate_adnlp_backend(backend::Symbol)
+$(TYPEDSIGNATURES)
 
 Validate that the specified ADNLPModels backend is supported and available.
 
@@ -58,7 +58,7 @@ function validate_adnlp_backend(backend::Symbol)
 end
 
 """
-    validate_exa_base_type(T::Type)
+$(TYPEDSIGNATURES)
 
 Validate that the specified base type is appropriate for ExaModels.
 
@@ -102,7 +102,7 @@ function validate_exa_base_type(T::Type)
 end
 
 """
-    validate_gpu_preference(preference::Symbol)
+$(TYPEDSIGNATURES)
 
 Validate the GPU backend preference.
 
@@ -138,7 +138,7 @@ function validate_gpu_preference(preference::Symbol)
 end
 
 """
-    validate_precision_mode(mode::Symbol)
+$(TYPEDSIGNATURES)
 
 Validate the precision mode setting.
 
@@ -154,7 +154,7 @@ julia> validate_precision_mode(:standard)
 :standard
 
 julia> validate_precision_mode(:invalid)
-ERROR: ArgumentError: Invalid precision mode: :invalid. Valid options: (:standard, :high, :mixed)
+ERROR: Exceptions.IncorrectArgument: Invalid precision mode
 ```
 """
 function validate_precision_mode(mode::Symbol)
@@ -181,7 +181,7 @@ function validate_precision_mode(mode::Symbol)
 end
 
 """
-    validate_model_name(name::String)
+$(TYPEDSIGNATURES)
 
 Validate that the model name is appropriate.
 
@@ -197,7 +197,7 @@ julia> validate_model_name("MyProblem")
 "MyProblem"
 
 julia> validate_model_name("")
-ERROR: ArgumentError: Model name cannot be empty
+ERROR: Exceptions.IncorrectArgument: Empty model name
 ```
 """
 function validate_model_name(name::String)
@@ -230,7 +230,7 @@ function validate_model_name(name::String)
 end
 
 """
-    validate_matrix_free(matrix_free::Bool, problem_size::Int = 1000)
+$(TYPEDSIGNATURES)
 
 Validate matrix-free mode setting and provide recommendations.
 
@@ -275,7 +275,7 @@ function validate_matrix_free(matrix_free::Bool, problem_size::Int = 1000)
 end
 
 """
-    validate_optimization_direction(minimize::Bool)
+$(TYPEDSIGNATURES)
 
 Validate that the optimization direction is a boolean value.
 
@@ -308,7 +308,7 @@ function validate_optimization_direction(minimize::Bool)
 end
 
 """
-    validate_backend_override(backend)
+$(TYPEDSIGNATURES)
 
 Validate that a backend override is either nothing or a valid type.
 
@@ -327,7 +327,7 @@ julia> validate_backend_override(ForwardDiffADGradient)
 ForwardDiffADGradient
 
 julia> validate_backend_override("invalid")
-ERROR: IncorrectArgument: Backend override must be a Type or nothing
+ERROR: Exceptions.IncorrectArgument: Backend override must be a Type or nothing
 ```
 """
 function validate_backend_override(backend)

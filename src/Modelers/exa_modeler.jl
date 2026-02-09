@@ -31,7 +31,7 @@ __exa_model_backend() = nothing
 # __exa_model_precision_mode() = :standard
 
 """
-    ExaModeler
+$(TYPEDEF)
 
 Modeler for building ExaModels from discretized optimal control problems.
 
@@ -166,7 +166,7 @@ end
 
 # Simple constructor
 """
-    ExaModeler(; mode::Symbol=:strict, kwargs...)
+$(TYPEDSIGNATURES)
 
 Create an ExaModeler with validated options.
 
@@ -213,7 +213,7 @@ Strategies.options(m::ExaModeler) = m.options
 
 # Model building interface
 """
-    (modeler::ExaModeler)(prob, initial_guess)
+$(TYPEDSIGNATURES)
 
 Build an ExaModel from a discretized optimal control problem.
 
@@ -263,7 +263,7 @@ end
 
 # Solution building interface
 """
-    (modeler::ExaModeler)(prob, nlp_solution)
+$(TYPEDSIGNATURES)
 
 Build a solution object from NLP solver statistics.
 

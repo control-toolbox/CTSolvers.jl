@@ -44,7 +44,7 @@ Default is `"CTSolvers-ADNLP"`.
 __adnlp_model_name() = "CTSolvers-ADNLP"
 
 """
-    ADNLPModeler
+$(TYPEDEF)
 
 Modeler for building ADNLPModels from discretized optimal control problems.
 
@@ -291,7 +291,7 @@ end
 
 # Constructor with option validation
 """
-    ADNLPModeler(; mode::Symbol=:strict, kwargs...)
+$(TYPEDSIGNATURES)
 
 Create an ADNLPModeler with validated options.
 
@@ -338,7 +338,7 @@ Strategies.options(m::ADNLPModeler) = m.options
 
 # Model building interface
 """
-    (modeler::ADNLPModeler)(prob, initial_guess)
+$(TYPEDSIGNATURES)
 
 Build an ADNLPModel from a discretized optimal control problem.
 
@@ -384,7 +384,7 @@ end
 
 # Solution building interface
 """
-    (modeler::ADNLPModeler)(prob, nlp_solution)
+$(TYPEDSIGNATURES)
 
 Build a solution object from NLP solver statistics.
 
