@@ -48,7 +48,7 @@ function TestIpopt(; mode=:strict, kwargs...)
     return TestIpopt(options)
 end
 
-# Métadonnées avec conflit :backend
+# Métadonnées avec conflict :backend
 Strategies.metadata(::Type{TestADNLP}) = Strategies.StrategyMetadata(
     Options.OptionDefinition(
         name = :backend,
@@ -124,7 +124,7 @@ println("   Routes: ", routed_multi.routes)
 println("\n📋 Test 2: Routage Simple (Sans Conflict)")
 println("-" ^ 40)
 
-# Options sans conflit
+# Options sans conflict
 kwargs_simple = (
     show_time = true,    # Seulement dans modeler
     max_iter = 500,     # Seulement dans solver
@@ -158,9 +158,9 @@ end
 println("\n📋 Test 3: Conflict de Noms (:backend)")
 println("-" ^ 40)
 
-# Options avec conflit
+# Options avec conflict
 kwargs_conflict = (
-    backend = Strategies.route_to(adnlp=:sparse),  # Résolution de conflit avec IDs corrects
+    backend = Strategies.route_to(adnlp=:sparse),  # Résolution de conflict avec IDs corrects
     show_time = true,    # Auto-route vers modeler
     max_iter = 1000,     # Auto-route vers solver
     display = false     # Action option
@@ -170,7 +170,7 @@ try
     routed = Orchestration.route_all_options(
         TEST_METHOD, TEST_FAMILIES, TEST_ACTION_DEFS, kwargs_conflict, TEST_REGISTRY; mode=:strict
     )
-    println("✅ Routage avec conflit réussi")
+    println("✅ Routage avec conflict réussi")
     println("   Modeler options: ", routed.strategies.modeler)
     println("   Solver options: ", routed.strategies.solver)
     
@@ -185,7 +185,7 @@ try
     println("   Modeler backend: ", modeler_backend)
     println("   Solver backend: ", solver_backend)
     
-    # Vérifier que le conflit est résolu correctement
+    # Vérifier que le conflict est résolu correctement
     if modeler_backend == :sparse && solver_backend == :cpu
         println("✅ Conflict résolu correctement")
     else
@@ -193,7 +193,7 @@ try
     end
     
 catch e
-    println("❌ Routage avec conflit échoué: ", e)
+    println("❌ Routage avec conflict échoué: ", e)
 end
 
 # ============================================================================

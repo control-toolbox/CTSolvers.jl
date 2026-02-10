@@ -13,11 +13,11 @@ julia --project=test/extras test/extras/mode_strict_permissive/file_name.jl
 ## 📋 **Protocole Systématique de Validation des Tests**
 
 ### **Objectif**
-Valider tous les tests du projet strict/permissive de manière systématique, phase par phase, avec diagnostic et correction ciblée.
+Valider tous les tests du project strict/permissive de manière systématique, phase par phase, avec diagnostic et correction ciblée.
 
 ---
 
-### **🎯 Phase 1 : Priorisation des Tests**
+### **🎯 Phase 1 : Prioritisation des Tests**
 
 #### **Ordre de Priorité (Phase 1 → Phase 4)**
 
@@ -69,7 +69,7 @@ julia --project=@. -e 'using Pkg; Pkg.test(; test_args=["suite/strategies/test_v
 # Script de Diagnostic : <Nom du Test> Issue
 # ========================================
 
-# Configuration de l'environnement
+# Configuration de l'environment
 try
     using Revise
 catch
@@ -175,7 +175,7 @@ println("=" ^ 50)
 - ✅ Tous les tests de la phase passent
 - ✅ Pas de régression dans les phases précédentes
 - ✅ Documentation mise à jour si nécessaire
-- ✅ Code respecte les standards du projet
+- ✅ Code respective les standards du project
 
 ---
 
@@ -183,7 +183,7 @@ println("=" ^ 50)
 
 #### **Métriques de Suivi**
 - **Tests validés** : `<nombre>/<total>`
-- **Phase en cours** : `<Phase X>`
+- **Phase en course** : `<Phase X>`
 - **Fichier actuel** : `<nom_fichier>`
 - **Prochaine étape** : `<action>`
 
