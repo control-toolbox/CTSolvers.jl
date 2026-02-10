@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_strict_permissive_integration Issue
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -153,7 +153,7 @@ end
             registry;
             tol=1e-8
         )
-        println("✅ Build from ID functionne")
+        println("✅ Build from ID fonctionne")
         @test solver isa FakeSolver
         @test Strategies.option_value(solver, :tol) == 1e-8
         
@@ -182,7 +182,7 @@ end
             registry;
             tol=1e-8  # Only options that belong to FakeSolver
         )
-        println("✅ Build from method tuple functionne")
+        println("✅ Build from method tuple fonctionne")
         @test solver isa FakeSolver
         
     catch e

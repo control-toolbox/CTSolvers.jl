@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_validation_strict Remaining Issues
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -51,10 +51,10 @@ end
 # Test 2: Vérifier le validateur de tol
 println("\n📋 Test 2: Vérification du validateur tol")
 @testset "Tol validator check" begin
-    # Test avec valeur positive (devrait functionner)
+    # Test avec valeur positive (devrait fonctionner)
     try
         opts = Strategies.build_strategy_options(Solvers.IpoptSolver; tol=1e-6)
-        println("✅ tol positif functionne: ", opts[:tol])
+        println("✅ tol positif fonctionne: ", opts[:tol])
         @test opts[:tol] == 1e-6
     catch e
         println("❌ tol positif échoue: ", e)

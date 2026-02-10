@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_route_to_comprehensive Final
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 using Pkg
 Pkg.activate(@__DIR__)
 
@@ -55,8 +55,8 @@ for (family_name, family_type) in pairs(families)
                 println("    ❌ first() erreur: $e")
                 println("    💡 C'est la source du BoundsError!")
                 
-                # Solution: utiliser les types concretee
-                concretee_type = if family_name == :discretizer
+                # Solution: utiliser les types concrets
+                concrete_type = if family_name == :discretizer
                     TestRouteToComprehensive.RouteCollocation
                 elseif family_name == :modeler
                     TestRouteToComprehensive.RouteADNLP
@@ -65,7 +65,7 @@ for (family_name, family_type) in pairs(families)
                 else
                     error("Unknown family: $family_name")
                 end
-                println("    🔄 Solution: $concretee_type")
+                println("    🔄 Solution: $concrete_type")
             end
         else
             println("    ⚠️  Pas de champ 'types' dans $family_type")
@@ -162,7 +162,7 @@ println(solution1)
 
 println("\n🎯 Solution 2: Corriger le test d'absence")
 solution2 = """
-# Dans Single Strategy Routing, s'assurer que le routing functionne:
+# Dans Single Strategy Routing, s'assurer que le routing fonctionne:
 # - Créer les stratégies APRÈS le routing
 # - Vérifier que les options sont correctement distribuées
 

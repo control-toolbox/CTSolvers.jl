@@ -2,7 +2,7 @@
 # Script de Correction : Mode Field Issue
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 using Pkg
 Pkg.activate(@__DIR__)
 
@@ -67,9 +67,9 @@ println("\n📋 Test 3: Vérification de build_strategy_options")
 println("-" ^ 30)
 
 try
-    # Test avec mode explicit
+    # Test avec mode explicite
     options = CTSolvers.Strategies.build_strategy_options(CTSolvers.Modelers.ADNLPModeler; backend=:default, mode=:permissive)
-    println("✅ build_strategy_options avec mode explicit: SUCCESS")
+    println("✅ build_strategy_options avec mode explicite: SUCCESS")
     println("   Type: ", typeof(options))
     println("   Champs: ", fieldnames(typeof(options)))
     
@@ -85,9 +85,9 @@ catch e
 end
 
 try
-    # Test sans mode explicit (devrait être :strict par défaut)
+    # Test sans mode explicite (devrait être :strict par défaut)
     options = CTSolvers.Strategies.build_strategy_options(CTSolvers.Modelers.ADNLPModeler; backend=:default)
-    println("✅ build_strategy_options sans mode explicit: SUCCESS")
+    println("✅ build_strategy_options sans mode explicite: SUCCESS")
     println("   Type: ", typeof(options))
     println("   Champs: ", fieldnames(typeof(options)))
     
@@ -103,7 +103,7 @@ catch e
 end
 
 # Test 4: Comparer avec les autres méthodes de construction
-println("\n📋 Test 4: Comparison des méthodes de construction")
+println("\n📋 Test 4: Comparaison des méthodes de construction")
 println("-" ^ 30)
 
 try
@@ -135,7 +135,7 @@ try
     end
     
 catch e
-    println("❌ Comparison échouée: ", e)
+    println("❌ Comparaison échouée: ", e)
 end
 
 println("\n" * "=" ^ 50)

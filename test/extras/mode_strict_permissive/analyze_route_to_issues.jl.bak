@@ -44,24 +44,24 @@ end
 # Analyse du problème BoundsError
 println("\n📋 1. Analyse du BoundsError (ligne 288):")
 println("💡 Problème: indexed_iterate(I::Int64, i::Int,, state::Nothing)")
-println("💡 Cause: Attempting to access an Int64 as if it were a collection")
-println("💡 Likely solution: family_type.types is an Int64 instead of a tuple")
+println("💡 Cause: Tentative d'accès à un Int64 comme s'il était une collection")
+println("💡 Solution probable: family_type.types est un Int64 au lieu d'un tuple")
 
 # Analyse du problème Option Absence
-println("\n📋 2. Analysis of Option Absence Test Failed (line 246):")
-println("💡 Problem: !(has_option(strategy, option_name)) failed")
-println("💡 Cause: The option is present when it shouldn't be")
-println("💡 Likely solution: Routing is not working as expected")
+println("\n📋 2. Analyse du Option Absence Test Failed (ligne 246):")
+println("💡 Problème: !(has_option(strategy, option_name)) échoue")
+println("💡 Cause: L'option est présente alors qu'elle ne devrait pas l'être")
+println("💡 Solution probable: Le routing ne fonctionne pas comme attendu")
 
-# Recommendations
-println("\n🎯 Correction Recommendations:")
+# Recommandations
+println("\n🎯 Recommandations de correction:")
 println("1. Pour le BoundsError:")
-println("   - Replace 'first(family_type.types)' with concrete types")
-println("   - Use if/elseif condition to map family_name -> concrete type")
+println("   - Remplacer 'first(family_type.types)' par des types concrets")
+println("   - Utiliser une condition if/elseif pour mapper family_name -> type concret")
 println()
 println("2. Pour l'Option Absence:")
-println("   - Check that mock strategies respect routed options")
-println("   - Simplify the test or correct mock logic")
+println("   - Vérifier que les mock stratégies respectent les options routées")
+println("   - Simplifier le test ou corriger la logique de mock")
 
 # Créer une correction simplifiée
 println("\n🔧 Correction proposée pour le BoundsError:")
@@ -86,7 +86,7 @@ println(correction_code)
 println("\n🔧 Correction proposée pour l'Option Absence:")
 correction_code2 = """
 # S'assurer que les stratégies sont créées avec les bonnes options
-# et que le routing functionne comme attendu
+# et que le routing fonctionne comme attendu
 
 # Option 1: Simplifier le test
 @test_skip "Option Absence tests" begin

@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_validation_mode.jl Issue
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -76,8 +76,8 @@ catch e
     println("   Error: ", e)
 end
 
-# Test 2: Mode strict explicit
-println("\n📋 Test 2: Mode strict explicit")
+# Test 2: Mode strict explicite
+println("\n📋 Test 2: Mode strict explicite")
 println("-" ^ 30)
 
 try
@@ -91,8 +91,8 @@ catch e
     println("   Error: ", e)
 end
 
-# Test 3: Mode permissif explicit
-println("\n📋 Test 3: Mode permissif explicit")
+# Test 3: Mode permissif explicite
+println("\n📋 Test 3: Mode permissif explicite")
 println("-" ^ 30)
 
 try
@@ -106,8 +106,8 @@ catch e
     println("   Error: ", e)
 end
 
-# Test 4: Mode invalid
-println("\n📋 Test 4: Mode invalid")
+# Test 4: Mode invalide
+println("\n📋 Test 4: Mode invalide")
 println("-" ^ 30)
 
 invalid_modes = [:invalid, :strict_invalid, :permissive_invalid, :STRICT, :PERMISSIVE, "strict", "permissive"]
@@ -138,13 +138,13 @@ try
     println("   Mode: ", modeler1.options.mode)
     println("   Mode should be :strict: ", modeler1.options.mode == :strict)
     
-    # Mode strict explicit
+    # Mode strict explicite
     modeler2 = CTSolvers.Strategies.build_strategy(:adnlp, CTSolvers.Modelers.AbstractOptimizationModeler, registry; backend=:default; mode=:strict)
     println("✅ build_strategy strict mode: SUCCESS")
     println("   Mode: ", modeler2.options.mode)
     println("   Mode should be :strict: ", modeler2.options.mode == :strict)
     
-    # Mode permissif explicit
+    # Mode permissif explicite
     modeler3 = CTSolvers.Strategies.build_strategy(:adnlp, CTSolvers.Modelers.AbstractOptimizationModeler, registry; backend=:default; mode=:permissive)
     println("✅ build_strategy permissive mode: SUCCESS")
     println("   Mode: ", modeler3.options.mode)
@@ -172,13 +172,13 @@ try
     println("   Mode: ", modeler1.options.mode)
     println("   Mode should be :strict: ", modeler1.options.mode == :strict)
     
-    # Mode strict explicit
+    # Mode strict explicite
     modeler2 = CTSolvers.Strategies.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; backend=:default; mode=:strict)
     println("✅ build_strategy_from_method strict mode: SUCCESS")
     println("   Mode: ", modeler2.options.mode)
     println("   Mode should be :strict: ", modeler2.options.mode == :strict)
     
-    # Mode permissif explicit
+    # Mode permissif explicite
     modeler3 = CTSolvers.Strategies.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; backend=:default; mode=:permissive)
     println("✅ build_strategy_from_method permissive mode: SUCCESS")
     println("   Mode: ", modeler3.options.mode)
@@ -206,13 +206,13 @@ try
     println("   Mode: ", modeler1.options.mode)
     println("   Mode should be :strict: ", modeler1.options.mode == :strict)
     
-    # Mode strict explicit
+    # Mode strict explicite
     modeler2 = CTSolvers.Orchestration.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; backend=:default; mode=:strict)
     println("✅ Orchestration strict mode: SUCCESS")
     println("   Mode: ", modeler2.options.mode)
     println("   Mode should be :strict: ", modeler2.options.mode == :strict)
     
-    # Mode permissif explicit
+    # Mode permissif explicite
     modeler3 = CTSolvers.Orchestration.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; backend=:default; mode=:permissive)
     println("✅ Orchestration permissive mode: SUCCESS")
     println("   Mode: ", modeler3.options.mode)
@@ -235,13 +235,13 @@ if isdefined(Main, :NLPModelsIpopt)
         println("   Mode: ", solver1.options.mode)
         println("   Mode should be :strict: ", solver1.options.mode == :strict)
         
-        # Mode strict explicit
+        # Mode strict explicite
         solver2 = CTSolvers.Solvers.IpoptSolver(max_iter=1000; mode=:strict)
         println("✅ IpoptSolver strict mode: SUCCESS")
         println("   Mode: ", solver2.options.mode)
         println("   Mode should be :strict: ", solver2.options.mode == :strict)
         
-        # Mode permissif explicit
+        # Mode permissif explicite
         solver3 = CTSolvers.Solvers.IpoptSolver(max_iter=1000; mode=:permissive)
         println("✅ IpoptSolver permissive mode: SUCCESS")
         println("   Mode: ", solver3.options.mode)

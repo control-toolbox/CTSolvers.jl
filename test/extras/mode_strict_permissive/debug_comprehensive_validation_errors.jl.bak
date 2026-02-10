@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_comprehensive_validation.jl - Erreurs Spécifiques
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -64,14 +64,14 @@ try
 catch e
     println("  ✅ Exception levée: $(typeof(e))")
     println("  📍 Message: $(string(e))")
-    println("  🔍 Contains 'unknown': $(occursin("unknown", string(e)))")
-    println("  🔍 Contains 'unrecognized': $(occursin("unrecognized", string(e)))")
+    println("  🔍 Contient 'unknown': $(occursin("unknown", string(e)))")
+    println("  🔍 Contient 'unrecognized': $(occursin("unrecognized", string(e)))")
 end
 
 # Test 2: Erreur de build_strategy_from_method (ambiguïté)
 println("\n📋 2. Test build_strategy_from_method - Ambiguïté:")
 try
-    # Test avec qualification explicit
+    # Test avec qualification explicite
     method = (:collocation, :adnlp, :ipopt)
     registry = CTSolvers.Strategies.create_registry(
         AbstractOptimizationModeler => (ADNLPModeler,),
@@ -81,7 +81,7 @@ try
     strategy = CTSolvers.Strategies.build_strategy_from_method(
         method, AbstractOptimizationModeler, registry; backend=:sparse
     )
-    println("  ✅ build_strategy_from_method qualifié functionne")
+    println("  ✅ build_strategy_from_method qualifié fonctionne")
     
 catch e
     println("  ❌ Erreur build_strategy_from_method qualifié: $e")
@@ -90,7 +90,7 @@ end
 # Test 3: Erreur test_option_recovery (type mismatch)
 println("\n📋 3. Test test_option_recovery - Type mismatch:")
 try
-    # Créer une function test_option_recovery simple
+    # Créer une fonction test_option_recovery simple
     function test_option_recovery_simple(strategy, known_options, unknown_options, mode)
         println("  ✅ test_option_recovery_simple appelé avec:")
         println("     strategy: $(typeof(strategy))")
@@ -154,21 +154,21 @@ println("\n📋 6. Vérification des imports et qualifications:")
 println("  ✅ CTSolvers.Strategies.build_strategy_from_method disponible: $(isdefined(CTSolvers.Strategies, :build_strategy_from_method))")
 println("  ✅ CTSolvers.Orchestration.build_strategy_from_method disponible: $(isdefined(CTSolvers.Orchestration, :build_strategy_from_method))")
 
-# Test 7: Création de registry
-println("\n📋 7. Test création de registry:")
+# Test 7: Création de registre
+println("\n📋 7. Test création de registre:")
 try
     modeler_registry = CTSolvers.Strategies.create_registry(
         AbstractOptimizationModeler => (ADNLPModeler, ExaModeler)
     )
-    println("  ✅ Registry de modelers créé: $(typeof(modeler_registry))")
+    println("  ✅ Registre de modelers créé: $(typeof(modeler_registry))")
     
     solver_registry = CTSolvers.Strategies.create_registry(
         AbstractOptimizationSolver => ()
     )
-    println("  ✅ Registry de solveurs vide créé: $(typeof(solver_registry))")
+    println("  ✅ Registre de solveurs vide créé: $(typeof(solver_registry))")
     
 catch e
-    println("  ❌ Erreur création registry: $e")
+    println("  ❌ Erreur création registre: $e")
 end
 
 println("\n" * "="^60)

@@ -58,7 +58,7 @@ module TestDiag
     option_value(strategy, name) = strategy.options[name]
 end
 
-# Créer le registry
+# Créer le registre
 registry = CTSolvers.Strategies.create_registry(
     TestDiag.MockCollocation => (TestDiag.MockCollocation,),
     TestDiag.MockADNLP => (TestDiag.MockADNLP,),
@@ -125,7 +125,7 @@ try
         if haskey(routed.strategies, family_name) && !isempty(routed.strategies[family_name])
             println("  🔄 Traitement de $family_name")
             
-            # Solution: utiliser les types concretee directement
+            # Solution: utiliser les types concrets directement
             strategy_type = if family_name == :discretizer
                 TestDiag.MockCollocation
             elseif family_name == :modeler
@@ -137,7 +137,7 @@ try
                 continue
             end
             
-            println("    ✅ Type concrete: $strategy_type")
+            println("    ✅ Type concret: $strategy_type")
             
             # Créer la stratégie
             strategy = strategy_type(; routed.strategies[family_name]...)

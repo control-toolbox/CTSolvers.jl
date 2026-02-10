@@ -33,7 +33,7 @@ struct TestIpopt <: TestSolver
     options::Strategies.StrategyOptions
 end
 
-# Contracts
+# Contrats
 Strategies.id(::Type{TestADNLP}) = :adnlp
 Strategies.id(::Type{TestIpopt}) = :ipopt
 
@@ -79,7 +79,7 @@ Strategies.metadata(::Type{TestIpopt}) = Strategies.StrategyMetadata(
     )
 )
 
-# Registry
+# Registre
 const TEST_REGISTRY = Strategies.create_registry(
     TestModeler => (TestADNLP,),
     TestSolver => (TestIpopt,)
@@ -104,7 +104,7 @@ const TEST_ACTION_DEFS = [
 # Tests de Base route_to()
 # ============================================================================
 
-println("\n📋 Test 1: route_to() Syntax de Base")
+println("\n📋 Test 1: route_to() Syntaxe de Base")
 println("-" ^ 40)
 
 # Test RoutedOption simple
@@ -121,7 +121,7 @@ println("   Routes: ", routed_multi.routes)
 # Tests de Routage Simple
 # ============================================================================
 
-println("\n📋 Test 2: Routage Simple (Sans Conflict)")
+println("\n📋 Test 2: Routage Simple (Sans Conflit)")
 println("-" ^ 40)
 
 # Options sans conflit
@@ -152,10 +152,10 @@ catch e
 end
 
 # ============================================================================
-# Tests de Conflict de Noms
+# Tests de Conflit de Noms
 # ============================================================================
 
-println("\n📋 Test 3: Conflict de Noms (:backend)")
+println("\n📋 Test 3: Conflit de Noms (:backend)")
 println("-" ^ 40)
 
 # Options avec conflit
@@ -187,9 +187,9 @@ try
     
     # Vérifier que le conflit est résolu correctement
     if modeler_backend == :sparse && solver_backend == :cpu
-        println("✅ Conflict résolu correctement")
+        println("✅ Conflit résolu correctement")
     else
-        println("❌ Conflict mal résolu")
+        println("❌ Conflit mal résolu")
     end
     
 catch e
@@ -268,7 +268,7 @@ try
     if CTSolvers.Strategies.has_option(solver, :fake_option)
         fake_value = CTSolvers.Strategies.option_value(solver, :fake_option)
         println("   Option inconnue acceptée: fake_option = ", fake_value)
-        println("✅ Mode permissif functionne correctement")
+        println("✅ Mode permissif fonctionne correctement")
     else
         println("❌ Option inconnue non trouvée")
     end
@@ -300,8 +300,8 @@ end
 println("\n📋 Test 7: Inspection Complète des Stratégies")
 println("-" ^ 40)
 
-# Test complete avec toutes les functionnalités
-kwargs_completee = (
+# Test complet avec toutes les fonctionnalités
+kwargs_complete = (
     backend = Strategies.route_to(adnlp=:sparse, ipopt=:cpu),
     show_time = true,
     max_iter = Strategies.route_to(ipopt=1000),
@@ -310,7 +310,7 @@ kwargs_completee = (
 
 try
     routed = Orchestration.route_all_options(
-        TEST_METHOD, TEST_FAMILIES, TEST_ACTION_DEFS, kwargs_completee, TEST_REGISTRY; mode=:strict
+        TEST_METHOD, TEST_FAMILIES, TEST_ACTION_DEFS, kwargs_complete, TEST_REGISTRY; mode=:strict
     )
     
     # Construire stratégies

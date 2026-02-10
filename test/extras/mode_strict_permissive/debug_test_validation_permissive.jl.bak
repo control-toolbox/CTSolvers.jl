@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_validation_permissive.jl Issue
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -66,7 +66,7 @@ println("\n📋 Test 1: ADNLPModeler - Mode permissif")
 println("-" ^ 30)
 
 try
-    # Options valides + option invalid - devrait functionner avec warning
+    # Options valides + option invalide - devrait fonctionner avec warning
     modeler = CTSolvers.Modelers.ADNLPModeler(backend=:default, show_time=true, fake_option=123; mode=:permissive)
     println("✅ ADNLPModeler with mixed options: SUCCESS")
     println("   Type: ", typeof(modeler))
@@ -78,7 +78,7 @@ try
     println("   backend source: ", CTSolvers.Strategies.option_source(modeler, :backend))
     println("   show_time source: ", CTSolvers.Strategies.option_source(modeler, :show_time))
     
-    # Vérifier l'option invalid
+    # Vérifier l'option invalide
     has_fake = CTSolvers.Strategies.has_option(modeler, :fake_option)
     println("   has fake_option: ", has_fake)
     if has_fake
@@ -153,7 +153,7 @@ try
         CTSolvers.Modelers.AbstractOptimizationModeler => (CTSolvers.Modelers.ADNLPModeler, CTSolvers.Modelers.ExaModeler)
     )
     
-    # Options valides + option invalid
+    # Options valides + option invalide
     modeler = CTSolvers.Strategies.build_strategy(:adnlp, CTSolvers.Modelers.AbstractOptimizationModeler, registry; backend=:default, fake_build_opt=456, mode=:permissive)
     println("✅ build_strategy with mixed options: SUCCESS")
     println("   Type: ", typeof(modeler))

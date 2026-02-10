@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_routing_validation Issue
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -32,7 +32,7 @@ println("=" ^ 50)
 # Test 1: Vérifier la signature de route_all_options
 println("\n📋 Test 1: Signature de route_all_options")
 @testset "route_all_options signature" begin
-    # Test avec Vararg (devrait functionner)
+    # Test avec Vararg (devrait fonctionner)
     try
         result = CTSolvers.Orchestration.route_all_options(
             (:discretizer, :modeler, :solver),
@@ -43,7 +43,7 @@ println("\n📋 Test 1: Signature de route_all_options")
             source_mode=:user,
             mode=:strict
         )
-        println("✅ route_all_options avec Vararg functionne")
+        println("✅ route_all_options avec Vararg fonctionne")
         @test true
     catch e
         println("❌ route_all_options avec Vararg échoue: ", e)
@@ -61,7 +61,7 @@ println("\n📋 Test 1: Signature de route_all_options")
             source_mode=:user,
             mode=:strict
         )
-        println("❌ route_all_options avec Tuple ne devrait pas functionner")
+        println("❌ route_all_options avec Tuple ne devrait pas fonctionner")
         @test false
     catch e
         println("✅ route_all_options avec Tuple échoue comme attendu: ", typeof(e))
@@ -69,7 +69,7 @@ println("\n📋 Test 1: Signature de route_all_options")
     end
 end
 
-# Test 2: Vérifier comment le test appelle la function
+# Test 2: Vérifier comment le test appelle la fonction
 println("\n📋 Test 2: Analyse du code du test")
 @testset "Test code analysis" begin
     # Simuler ce que le test fait

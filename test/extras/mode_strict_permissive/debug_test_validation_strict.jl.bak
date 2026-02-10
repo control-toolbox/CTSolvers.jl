@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_validation_strict.jl Issue
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -66,7 +66,7 @@ println("\n📋 Test 1: ADNLPModeler - Mode strict")
 println("-" ^ 30)
 
 try
-    # Options valides - devrait functionner
+    # Options valides - devrait fonctionner
     modeler = CTSolvers.Modelers.ADNLPModeler(backend=:default, show_time=true)
     println("✅ ADNLPModeler with valid options: SUCCESS")
     println("   Type: ", typeof(modeler))
@@ -79,7 +79,7 @@ catch e
 end
 
 try
-    # Option invalid - devrait échouer
+    # Option invalide - devrait échouer
     modeler = CTSolvers.Modelers.ADNLPModeler(backend=:default, fake_option=123)
     println("❌ ADNLPModeler with invalid option: UNEXPECTED SUCCESS")
 catch e
@@ -104,7 +104,7 @@ catch e
 end
 
 try
-    # Option invalid
+    # Option invalide
     modeler = CTSolvers.Modelers.ExaModeler(base_type=Float64, fake_exa_option="test")
     println("❌ ExaModeler with invalid option: UNEXPECTED SUCCESS")
 catch e
@@ -165,7 +165,7 @@ try
         CTSolvers.Modelers.AbstractOptimizationModeler => (CTSolvers.Modelers.ADNLPModeler, CTSolvers.Modelers.ExaModeler)
     )
     
-    # Option invalid
+    # Option invalide
     modeler = CTSolvers.Strategies.build_strategy(:adnlp, CTSolvers.Modelers.AbstractOptimizationModeler, registry; backend=:default, fake_build_opt=456)
     println("❌ build_strategy with invalid option: UNEXPECTED SUCCESS")
 catch e
@@ -174,8 +174,8 @@ catch e
     println("   Error message contains 'fake_build_opt': ", occursin("fake_build_opt", string(e)))
 end
 
-# Test 5: Mode invalid
-println("\n📋 Test 5: Mode invalid")
+# Test 5: Mode invalide
+println("\n📋 Test 5: Mode invalide")
 println("-" ^ 30)
 
 try

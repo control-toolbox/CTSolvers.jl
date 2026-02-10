@@ -36,7 +36,7 @@ println("✅ Direct - Strict - Valid: SUCCESS")
 println("   backend: ", CTSolvers.Strategies.option_value(modeler1, :backend))
 println("   show_time: ", CTSolvers.Strategies.option_value(modeler1, :show_time))
 
-# Mode strict - options invalids (doit échouer)
+# Mode strict - options invalides (doit échouer)
 try
     CTSolvers.Modelers.ADNLPModeler(; known_options..., unknown_options...)
     println("❌ Direct - Strict - Invalid: UNEXPECTED SUCCESS")
@@ -60,7 +60,7 @@ modeler3 = CTSolvers.Strategies.build_strategy(:adnlp, CTSolvers.Modelers.Abstra
 println("✅ build_strategy - Strict - Valid: SUCCESS")
 println("   backend: ", CTSolvers.Strategies.option_value(modeler3, :backend))
 
-# Mode strict - options invalids (doit échouer)
+# Mode strict - options invalides (doit échouer)
 try
     CTSolvers.Strategies.build_strategy(:adnlp, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options..., unknown_options...)
     println("❌ build_strategy - Strict - Invalid: UNEXPECTED SUCCESS")
@@ -83,7 +83,7 @@ modeler5 = CTSolvers.Strategies.build_strategy_from_method(method, CTSolvers.Mod
 println("✅ build_strategy_from_method - Strict - Valid: SUCCESS")
 println("   backend: ", CTSolvers.Strategies.option_value(modeler5, :backend))
 
-# Mode strict - options invalids (doit échouer)
+# Mode strict - options invalides (doit échouer)
 try
     CTSolvers.Strategies.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options..., unknown_options...)
     println("❌ build_strategy_from_method - Strict - Invalid: UNEXPECTED SUCCESS")
@@ -106,7 +106,7 @@ modeler7 = CTSolvers.Orchestration.build_strategy_from_method(method, CTSolvers.
 println("✅ Orchestration - Strict - Valid: SUCCESS")
 println("   backend: ", CTSolvers.Strategies.option_value(modeler7, :backend))
 
-# Mode strict - options invalids (doit échouer)
+# Mode strict - options invalides (doit échouer)
 try
     CTSolvers.Orchestration.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options..., unknown_options...)
     println("❌ Orchestration - Strict - Invalid: UNEXPECTED SUCCESS")
@@ -124,7 +124,7 @@ println("   fake_option: ", CTSolvers.Strategies.option_value(modeler8, :fake_op
 println("\n📋 Test 5: Mode NON Stocké dans Options")
 println("-" ^ 40)
 
-strategies = [modeler2, modeler4, modeler6, modeler8]  # Those créées en mode permissif
+strategies = [modeler2, modeler4, modeler6, modeler8]  # Celles créées en mode permissif
 
 for (i, strategy) in enumerate(strategies)
     try
@@ -135,8 +135,8 @@ for (i, strategy) in enumerate(strategies)
     end
 end
 
-# Test 6: Consistency
-println("\n📋 Test 6: Consistency Entre Méthodes")
+# Test 6: Consistance
+println("\n📋 Test 6: Consistance Entre Méthodes")
 println("-" ^ 40)
 
 permissive_strategies = [modeler2, modeler4, modeler6, modeler8]
@@ -157,9 +157,9 @@ for (i, strategy) in enumerate(permissive_strategies)
 end
 
 if all_consistent
-    println("✅ Consistency: PARFAITE - toutes les méthodes donnent le même résultat")
+    println("✅ Consistance: PARFAITE - toutes les méthodes donnent le même résultat")
 else
-    println("❌ Consistency: PROBLÈME - résultats incohérents")
+    println("❌ Consistance: PROBLÈME - résultats incohérents")
 end
 
 println("\n" * "=" ^ 60)

@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_comprehensive_validation.jl Issue
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -86,17 +86,17 @@ try
     
     println("  📊 Solveurs disponibles: $(length(solver_types))")
     
-    # Créer le registry
+    # Créer le registre
     solver_registry = if isempty(solver_types)
         create_registry(AbstractOptimizationSolver => ())
     else
         create_registry(AbstractOptimizationSolver => tuple(solver_types...))
     end
     
-    println("  ✅ Registry de solveurs créé")
+    println("  ✅ Registre de solveurs créé")
     
 catch e
-    println("  ❌ Erreur lors de la création du registry: $e")
+    println("  ❌ Erreur lors de la création du registre: $e")
 end
 
 # Test 2: Tests de base pour chaque solveur disponible

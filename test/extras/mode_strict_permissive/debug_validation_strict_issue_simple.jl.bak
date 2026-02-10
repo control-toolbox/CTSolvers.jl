@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_validation_strict Issue (Simple)
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -31,9 +31,9 @@ using Test
 println("🔍 Diagnostic du test : test_validation_strict (Simple)")
 println("=" ^ 50)
 
-# Test 1: Vérifier si les extensions sont chargées SANS les charger explicitment
+# Test 1: Vérifier si les extensions sont chargées SANS les charger explicitement
 println("\n📋 Test 1: Vérification SANS charger les extensions")
-@testset "Extension loading (sans chargement explicit)" begin
+@testset "Extension loading (sans chargement explicite)" begin
     @testset "IpoptSolver metadata sans extension" begin
         try
             meta = Strategies.metadata(CTSolvers.Solvers.IpoptSolver)
@@ -83,7 +83,7 @@ println("\n📋 Test 3: build_strategy_options avec IpoptSolver")
             mode=:strict,
             tol=1e-6
         )
-        println("✅ IpoptSolver build_strategy_options functionne")
+        println("✅ IpoptSolver build_strategy_options fonctionne")
         @test opts isa CTSolvers.Strategies.StrategyOptions
     catch e
         println("❌ IpoptSolver build_strategy_options failed: ", e)

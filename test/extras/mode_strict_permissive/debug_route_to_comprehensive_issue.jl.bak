@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_route_to_comprehensive.jl Issue
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -111,7 +111,7 @@ try
         end
     end
     
-    # Test avec route_to (devrait functionner)
+    # Test avec route_to (devrait fonctionner)
     routed = route_to(adnlp=Float64)
     println("  ✅ route_to(adnlp=Float64) créé")
     println("  📍 Type: $(typeof(routed))")
@@ -126,23 +126,23 @@ catch e
     end
 end
 
-# Test 3: Vérifier les registrys
-println("\n📋 3. Test création de registrys:")
+# Test 3: Vérifier les registres
+println("\n📋 3. Test création de registres:")
 try
     modeler_registry = create_registry(
         AbstractOptimizationModeler => (ADNLPModeler, ExaModeler)
     )
-    println("  ✅ Registry de modelers créé")
+    println("  ✅ Registre de modelers créé")
     
     solver_registry = if isempty(solver_types)
         create_registry(AbstractOptimizationSolver => ())
     else
         create_registry(AbstractOptimizationSolver => tuple(solver_types...))
     end
-    println("  ✅ Registry de solveurs créé")
+    println("  ✅ Registre de solveurs créé")
     
 catch e
-    println("  ❌ Erreur création registrys: $e")
+    println("  ❌ Erreur création registres: $e")
 end
 
 # Test 4: Test avec stratégies réelles

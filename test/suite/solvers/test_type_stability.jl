@@ -131,7 +131,7 @@ function test_type_stability()
                 opts = Strategies.options(solver)
                 
                 # Test that extract_raw_options returns correct type
-                # Note: NamedTuple field names are not inferrable, so we check the type
+                # Note: NamedTuple field names are not inferable, so we check the type
                 raw_opts = Options.extract_raw_options(opts.options)
                 @test raw_opts isa NamedTuple
                 @test haskey(raw_opts, :max_iter)

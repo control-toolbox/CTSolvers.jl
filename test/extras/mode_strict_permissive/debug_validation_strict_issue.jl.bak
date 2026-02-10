@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_validation_strict Issue
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -87,7 +87,7 @@ println("\n📋 Test 2: Méthodes disponibles")
     end
 end
 
-# Test 3: Vérifier build_strategy_options avec ADNLPModeler (qui functionne)
+# Test 3: Vérifier build_strategy_options avec ADNLPModeler (qui fonctionne)
 println("\n📋 Test 3: build_strategy_options avec ADNLPModeler")
 @testset "build_strategy_options ADNLPModeler" begin
     try
@@ -97,7 +97,7 @@ println("\n📋 Test 3: build_strategy_options avec ADNLPModeler")
             backend=:optimized,
             show_time=true
         )
-        println("✅ ADNLPModeler build_strategy_options functionne")
+        println("✅ ADNLPModeler build_strategy_options fonctionne")
         @test opts isa CTSolvers.Strategies.StrategyOptions
     catch e
         println("❌ ADNLPModeler build_strategy_options failed: ", e)
@@ -114,7 +114,7 @@ println("\n📋 Test 4: build_strategy_options avec IpoptSolver")
             mode=:strict,
             tol=1e-6
         )
-        println("✅ IpoptSolver build_strategy_options functionne")
+        println("✅ IpoptSolver build_strategy_options fonctionne")
         @test opts isa CTSolvers.Strategies.StrategyOptions
     catch e
         println("❌ IpoptSolver build_strategy_options failed: ", e)

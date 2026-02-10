@@ -34,7 +34,7 @@ println("-" ^ 40)
 
 @testset "Direct Constructor" begin
     @testset "Mode Strict" begin
-        # Options valides - devrait functionner
+        # Options valides - devrait fonctionner
         @test_nowarn CTSolvers.Modelers.ADNLPModeler(; known_options...)
         modeler = CTSolvers.Modelers.ADNLPModeler(; known_options...)
         @test modeler isa CTSolvers.Modelers.ADNLPModeler
@@ -47,7 +47,7 @@ println("-" ^ 40)
     end
     
     @testset "Mode Permissif" begin
-        # Options valides + invalids - devrait functionner (avec warning)
+        # Options valides + invalides - devrait fonctionner (avec warning)
         modeler = CTSolvers.Modelers.ADNLPModeler(; known_options..., unknown_options..., mode=:permissive)
         @test modeler isa CTSolvers.Modelers.ADNLPModeler
         @test CTSolvers.Strategies.option_value(modeler, :backend) == :default
@@ -64,7 +64,7 @@ println("-" ^ 40)
 
 @testset "build_strategy()" begin
     @testset "Mode Strict" begin
-        # Options valides - devrait functionner
+        # Options valides - devrait fonctionner
         @test_nowarn CTSolvers.Strategies.build_strategy(:adnlp, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options...)
         modeler = CTSolvers.Strategies.build_strategy(:adnlp, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options...)
         @test modeler isa CTSolvers.Modelers.ADNLPModeler
@@ -77,7 +77,7 @@ println("-" ^ 40)
     end
     
     @testset "Mode Permissif" begin
-        # Options valides + invalids - devrait functionner
+        # Options valides + invalides - devrait fonctionner
         @test_nowarn begin
             modeler = CTSolvers.Strategies.build_strategy(:adnlp, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options..., unknown_options..., mode=:permissive)
             @test modeler isa CTSolvers.Modelers.ADNLPModeler
@@ -99,7 +99,7 @@ method = (:collocation, :adnlp, :ipopt)
 
 @testset "build_strategy_from_method()" begin
     @testset "Mode Strict" begin
-        # Options valides - devrait functionner
+        # Options valides - devrait fonctionner
         @test_nowarn CTSolvers.Strategies.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options...)
         modeler = CTSolvers.Strategies.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options...)
         @test modeler isa CTSolvers.Modelers.ADNLPModeler
@@ -112,7 +112,7 @@ method = (:collocation, :adnlp, :ipopt)
     end
     
     @testset "Mode Permissif" begin
-        # Options valides + invalids - devrait functionner
+        # Options valides + invalides - devrait fonctionner
         @test_nowarn CTSolvers.Strategies.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options..., unknown_options..., mode=:permissive)
         modeler = CTSolvers.Strategies.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options..., unknown_options..., mode=:permissive)
         @test modeler isa CTSolvers.Modelers.ADNLPModeler
@@ -130,7 +130,7 @@ println("-" ^ 40)
 
 @testset "Orchestration Wrapper" begin
     @testset "Mode Strict" begin
-        # Options valides - devrait functionner
+        # Options valides - devrait fonctionner
         @test_nowarn CTSolvers.Orchestration.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options...)
         modeler = CTSolvers.Orchestration.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options...)
         @test modeler isa CTSolvers.Modelers.ADNLPModeler
@@ -143,7 +143,7 @@ println("-" ^ 40)
     end
     
     @testset "Mode Permissif" begin
-        # Options valides + invalids - devrait functionner
+        # Options valides + invalides - devrait fonctionner
         @test_nowarn CTSolvers.Orchestration.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options..., unknown_options..., mode=:permissive)
         modeler = CTSolvers.Orchestration.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options..., unknown_options..., mode=:permissive)
         @test modeler isa CTSolvers.Modelers.ADNLPModeler
@@ -183,5 +183,5 @@ end
 
 println("\n" * "=" ^ 60)
 println("🏁 Test Systématique Terminé")
-println("✅ Tous les moyens de construction functionnent correctement!")
+println("✅ Tous les moyens de construction fonctionnent correctement!")
 println("=" ^ 60)

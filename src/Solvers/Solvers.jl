@@ -70,7 +70,7 @@ include(joinpath(@__DIR__, "madncl_solver.jl"))
 include(joinpath(@__DIR__, "knitro_solver.jl"))
 include(joinpath(@__DIR__, "common_solve_api.jl"))
 
-# Public API - types abstraits et concrets
+# Public API - abstract and concrete types
 export AbstractOptimizationSolver
 export IpoptSolver, MadNLPSolver, MadNCLSolver, KnitroSolver
 

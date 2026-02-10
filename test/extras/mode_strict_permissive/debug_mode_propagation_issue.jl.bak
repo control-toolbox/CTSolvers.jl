@@ -2,7 +2,7 @@
 # Script de Diagnostic : test_mode_propagation Issue
 # ========================================
 
-# Configuration de l'environment
+# Configuration de l'environnement
 try
     using Revise
 catch
@@ -69,7 +69,7 @@ println("=" ^ 50)
     # Test metadata
     try
         meta = Strategies.metadata(FakeStrategy)
-        println("✅ metadata(FakeStrategy) functionne")
+        println("✅ metadata(FakeStrategy) fonctionne")
         @test meta isa Strategies.StrategyMetadata
     catch e
         println("❌ metadata(FakeStrategy) échoue: ", e)
@@ -79,7 +79,7 @@ println("=" ^ 50)
     # Test id (correct way)
     try
         id = Strategies.id(FakeStrategy)
-        println("✅ id(FakeStrategy) functionne: ", id)
+        println("✅ id(FakeStrategy) fonctionne: ", id)
         @test id == :fake
     catch e
         println("❌ id(FakeStrategy) échoue: ", e)
@@ -87,7 +87,7 @@ println("=" ^ 50)
     end
 end
 
-# Test 2: Vérifier le registry
+# Test 2: Vérifier le registre
 @testset "Registry Creation" begin
     println("\n📋 Test 2: Registry creation with FakeStrategy")
     
@@ -115,7 +115,7 @@ end
     try
         # Test avec mode permissive et option connue
         opts = Strategies.build_strategy_options(FakeStrategy; known_option=500, mode=:permissive)
-        println("✅ build_strategy_options functionne")
+        println("✅ build_strategy_options fonctionne")
         @test opts isa Strategies.StrategyOptions
         
         # Créer une stratégie pour tester option_value
@@ -150,7 +150,7 @@ end
             mode=:permissive
         )
         
-        println("✅ build_strategy_from_method functionne")
+        println("✅ build_strategy_from_method fonctionne")
         @test strategy isa FakeStrategy
         
     catch e
@@ -173,7 +173,7 @@ end
     # Test direct avec FakeStrategy constructor
     try
         strategy = FakeStrategy(; known_option=500, mode=:permissive)
-        println("✅ FakeStrategy constructor functionne")
+        println("✅ FakeStrategy constructor fonctionne")
         @test strategy isa FakeStrategy
     catch e
         println("❌ FakeStrategy constructor échoue: ", e)
