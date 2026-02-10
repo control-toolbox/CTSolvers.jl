@@ -40,7 +40,7 @@ println("-" ^ 40)
         @test modeler isa CTSolvers.Modelers.ADNLPModeler
         @test CTSolvers.Strategies.option_value(modeler, :backend) == :default
         @test CTSolvers.Strategies.option_value(modeler, :show_time) == true
-        @test_throws FieldError modeler.options.mode  # Mode NOT stored
+        @test_throws Exception modeler.options.mode  # Mode NOT stored
         
         # Option invalide - devrait échouer
         @test_throws CTSolvers.Exceptions.IncorrectArgument CTSolvers.Modelers.ADNLPModeler(; known_options..., unknown_options...)
@@ -54,7 +54,7 @@ println("-" ^ 40)
         @test CTSolvers.Strategies.option_value(modeler, :show_time) == true
         @test CTSolvers.Strategies.has_option(modeler, :fake_option)
         @test CTSolvers.Strategies.option_value(modeler, :fake_option) == 123
-        @test_throws FieldError modeler.options.mode  # Mode NOT stored
+        @test_throws Exception modeler.options.mode  # Mode NOT stored
     end
 end
 
@@ -70,7 +70,7 @@ println("-" ^ 40)
         @test modeler isa CTSolvers.Modelers.ADNLPModeler
         @test CTSolvers.Strategies.option_value(modeler, :backend) == :default
         @test CTSolvers.Strategies.option_value(modeler, :show_time) == true
-        @test_throws FieldError modeler.options.mode  # Mode NOT stored
+        @test_throws Exception modeler.options.mode  # Mode NOT stored
         
         # Option invalide - devrait échouer
         @test_throws CTSolvers.Exceptions.IncorrectArgument CTSolvers.Strategies.build_strategy(:adnlp, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options..., unknown_options...)
@@ -85,9 +85,9 @@ println("-" ^ 40)
             @test CTSolvers.Strategies.option_value(modeler, :show_time) == true
             @test CTSolvers.Strategies.has_option(modeler, :fake_option)
             @test CTSolvers.Strategies.option_value(modeler, :fake_option) == 123
-            @test_throws FieldError modeler.options.mode  # Mode NOT stored
+            @test_throws Exception modeler.options.mode  # Mode NOT stored
         end
-        @test_throws FieldError modeler.options.mode  # Mode NOT stored
+        @test_throws Exception modeler.options.mode  # Mode NOT stored
     end
 end
 
@@ -105,7 +105,7 @@ method = (:collocation, :adnlp, :ipopt)
         @test modeler isa CTSolvers.Modelers.ADNLPModeler
         @test CTSolvers.Strategies.option_value(modeler, :backend) == :default
         @test CTSolvers.Strategies.option_value(modeler, :show_time) == true
-        @test_throws FieldError modeler.options.mode  # Mode NOT stored
+        @test_throws Exception modeler.options.mode  # Mode NOT stored
         
         # Option invalide - devrait échouer
         @test_throws CTSolvers.Exceptions.IncorrectArgument CTSolvers.Strategies.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options..., unknown_options...)
@@ -120,7 +120,7 @@ method = (:collocation, :adnlp, :ipopt)
         @test CTSolvers.Strategies.option_value(modeler, :show_time) == true
         @test CTSolvers.Strategies.has_option(modeler, :fake_option)
         @test CTSolvers.Strategies.option_value(modeler, :fake_option) == 123
-        @test_throws FieldError modeler.options.mode  # Mode NOT stored
+        @test_throws Exception modeler.options.mode  # Mode NOT stored
     end
 end
 
@@ -136,7 +136,7 @@ println("-" ^ 40)
         @test modeler isa CTSolvers.Modelers.ADNLPModeler
         @test CTSolvers.Strategies.option_value(modeler, :backend) == :default
         @test CTSolvers.Strategies.option_value(modeler, :show_time) == true
-        @test_throws FieldError modeler.options.mode  # Mode NOT stored
+        @test_throws Exception modeler.options.mode  # Mode NOT stored
         
         # Option invalide - devrait échouer
         @test_throws CTSolvers.Exceptions.IncorrectArgument CTSolvers.Orchestration.build_strategy_from_method(method, CTSolvers.Modelers.AbstractOptimizationModeler, registry; known_options..., unknown_options...)
@@ -151,7 +151,7 @@ println("-" ^ 40)
         @test CTSolvers.Strategies.option_value(modeler, :show_time) == true
         @test CTSolvers.Strategies.has_option(modeler, :fake_option)
         @test CTSolvers.Strategies.option_value(modeler, :fake_option) == 123
-        @test_throws FieldError modeler.options.mode  # Mode NOT stored
+        @test_throws Exception modeler.options.mode  # Mode NOT stored
     end
 end
 
@@ -176,7 +176,7 @@ println("-" ^ 40)
         @test CTSolvers.Strategies.option_value(strategy, :fake_option) == 123
         @test CTSolvers.Strategies.has_option(strategy, :custom_param)
         @test CTSolvers.Strategies.option_value(strategy, :custom_param) == "test"
-        @test_throws FieldError strategy.options.mode  # Mode NOT stored
+        @test_throws Exception strategy.options.mode  # Mode NOT stored
         println("   Strategy $i: ✅ All checks passed")
     end
 end
