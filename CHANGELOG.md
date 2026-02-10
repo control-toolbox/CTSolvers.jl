@@ -10,15 +10,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Performance benchmarks for validation modes
 - Comprehensive documentation for options validation
 - Migration guide for new validation system
 - Examples and tutorials for strict/permissive modes
 
 ### Changed
+
 - Improved error messages with better suggestions
 - Enhanced documentation with Mermaid diagrams
 - Updated examples to use new `route_to()` syntax
+
+---
+
+## [0.2.1-beta.1] - 2026-02-10
+
+### Added
+
+- **`:manual` backend** support for ADNLP modelers validation
+- **GitHub Actions workflows** for Coverage and Documentation with CT registry integration
+
+### Changed
+
+- **Version bump** to 0.2.1-beta.1
+- **Coverage workflow** now uses CT registry with codecov token integration
+- **Documentation workflow** now uses CT registry for improved build process
+
+### Fixed
+
+- **Repository cleanup** removed temporary and IDE files from version control
+- **.gitignore** updated to exclude `.reports/`, `.resources/`, `.windsurf/`, `.vscode/` directories
 
 ---
 
