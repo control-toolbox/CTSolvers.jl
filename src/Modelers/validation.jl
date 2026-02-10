@@ -27,7 +27,7 @@ ERROR: ArgumentError: Invalid backend: :invalid_backend. Valid options: (:defaul
 ```
 """
 function validate_adnlp_backend(backend::Symbol)
-    valid_backends = (:default, :optimized, :generic, :enzyme, :zygote)
+    valid_backends = (:default, :optimized, :generic, :enzyme, :zygote, :manual)
     
     if backend ∉ valid_backends
         throw(Exceptions.IncorrectArgument(
