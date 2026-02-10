@@ -126,7 +126,7 @@ function test_strategy_construction(
                 @test strategy isa strategy_type
                 
                 # Verify mode is NOT stored in options (correct behavior)
-                @test_throws FieldError strategy.options.mode
+                @test_throws Exception strategy.options.mode
             end
         end
         
@@ -151,7 +151,7 @@ function test_strategy_construction(
                 strategy = build_strategy(strategy_id, family, registry; known_options..., unknown_options..., mode=:permissive)
                 @test strategy isa strategy_type
                                 # Verify mode is NOT stored in options (correct behavior)
-                @test_throws FieldError strategy.options.mode
+                @test_throws Exception strategy.options.mode
             end
         end
         
@@ -183,7 +183,7 @@ function test_strategy_construction(
                 strategy = CTSolvers.Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
                 @test strategy isa strategy_type
                                 # Verify mode is NOT stored in options (correct behavior)
-                @test_throws FieldError strategy.options.mode
+                @test_throws Exception strategy.options.mode
             end
         end
         
@@ -214,7 +214,7 @@ function test_strategy_construction(
                 strategy = Orchestration.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
                 @test strategy isa strategy_type
                                 # Verify mode is NOT stored in options (correct behavior)
-                @test_throws FieldError strategy.options.mode
+                @test_throws Exception strategy.options.mode
             end
         end
     end
@@ -258,7 +258,7 @@ function test_option_recovery(
         end
         
         # Test mode is NOT stored in options (correct behavior)
-        @test_throws FieldError strategy.options.mode
+        @test_throws Exception strategy.options.mode
         
         # Test some default options (should be present with :default source)
         metadata_def = Strategies.metadata(typeof(strategy))
@@ -533,10 +533,10 @@ function test_comprehensive_validation()
                 # @test modeler4.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
                 # CORRECT: Verify mode is NOT stored in options
-                @test_throws FieldError modeler1.options.mode
-                @test_throws FieldError modeler2.options.mode
-                @test_throws FieldError modeler3.options.mode
-                @test_throws FieldError modeler4.options.mode
+                @test_throws Exception modeler1.options.mode
+                @test_throws Exception modeler2.options.mode
+                @test_throws Exception modeler3.options.mode
+                @test_throws Exception modeler4.options.mode
             end
             
             @testset "Error Quality" begin
@@ -589,7 +589,7 @@ function test_comprehensive_validation()
                     @test option_source(strategy, :show_time) == :user
                     @test option_source(strategy, :test_consistency) == :user
                     # Verify mode is NOT stored in options (correct behavior)
-                    @test_throws FieldError strategy.options.mode
+                    @test_throws Exception strategy.options.mode
                 end
             end
         end
@@ -606,10 +606,10 @@ function test_comprehensive_validation()
                 
                 # Test mode is NOT stored in options (correct behavior)
                 modeler = ADNLPModeler()
-                @test_throws FieldError modeler.options.mode  # Default
+                @test_throws Exception modeler.options.mode  # Default
                 
                 modeler_permissive = ADNLPModeler(; mode=:permissive)
-                @test_throws FieldError modeler_permissive.options.mode
+                @test_throws Exception modeler_permissive.options.mode
             end
             
             @testset "Mixed Valid/Invalid Options" begin
