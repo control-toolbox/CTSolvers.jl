@@ -6,6 +6,7 @@ Implements the complete MadNCLSolver functionality with proper option definition
 """
 module CTSolversMadNCL
 
+using DocStringExtensions
 using CTSolvers
 using CTSolvers.Solvers
 using CTSolvers.Strategies

@@ -6,6 +6,7 @@ Implements the complete KnitroSolver functionality with proper option definition
 """
 module CTSolversKnitro
 
+using DocStringExtensions
 using CTSolvers
 using CTSolvers.Solvers
 using CTSolvers.Strategies

@@ -11,7 +11,7 @@ module DOCP
 using DocStringExtensions
 using NLPModels
 using SolverCore
-using CTModels.OCP: AbstractOptimalControlProblem
+using CTModels: AbstractOptimalControlProblem
 using ..CTSolvers.Optimization: AbstractOptimizationProblem
 using ..CTSolvers.Optimization: AbstractBuilder, AbstractModelBuilder, AbstractSolutionBuilder
 using ..CTSolvers.Optimization: AbstractOCPSolutionBuilder

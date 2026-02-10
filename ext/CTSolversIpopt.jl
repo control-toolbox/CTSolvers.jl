@@ -6,6 +6,7 @@ Implements the complete IpoptSolver functionality with proper option definitions
 """
 module CTSolversIpopt
 
+using DocStringExtensions
 using CTSolvers
 using CTSolvers.Solvers
 using CTSolvers.Strategies
