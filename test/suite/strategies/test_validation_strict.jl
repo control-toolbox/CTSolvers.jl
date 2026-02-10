@@ -12,7 +12,8 @@ using CTSolvers.Strategies
 using CTSolvers.Solvers
 using CTSolvers.Options
 using NLPModelsIpopt
-using CTBase: CTBase, Exceptions
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true

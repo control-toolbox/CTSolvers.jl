@@ -1,7 +1,8 @@
 module TestStrategiesAbstractStrategy
 
 using Test
-using CTBase: CTBase, Exceptions
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
 using CTSolvers
 using CTSolvers.Strategies
 using CTSolvers.Options

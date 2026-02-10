@@ -3,7 +3,8 @@
 # ========================================
 
 using Test
-using CTBase: CTBase, Exceptions
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
 
 println("🔍 Analyse statique de test_route_to_comprehensive.jl")
 println("=" ^ 60)

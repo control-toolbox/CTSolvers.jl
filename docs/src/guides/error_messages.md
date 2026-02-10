@@ -20,7 +20,8 @@ All three accept keyword arguments for structured messages:
 
 ```@example errors
 using CTSolvers
-using CTBase: Exceptions
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
 nothing # hide
 ```
 

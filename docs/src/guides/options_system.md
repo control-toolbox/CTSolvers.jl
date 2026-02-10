@@ -8,7 +8,8 @@ This guide explains the Options module — the foundational layer for defining, 
 
 ```@example options
 using CTSolvers
-using CTBase: Exceptions
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
 nothing # hide
 ```
 

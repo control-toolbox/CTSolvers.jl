@@ -22,7 +22,8 @@ using CTSolvers.Strategies
 using CTSolvers.Solvers
 using CTSolvers.Modelers
 using CTSolvers.Orchestration
-using CTBase: Exceptions
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
 using CTSolvers.Strategies: create_registry, StrategyRegistry, route_to, RoutedOption
 
 # Charger les extensions nécessaires

@@ -1,7 +1,8 @@
 module TestMadNCLExtension
 
 using Test
-using CTBase: CTBase, Exceptions
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
 using CTSolvers
 using CTSolvers.Solvers
 using CTSolvers.Strategies

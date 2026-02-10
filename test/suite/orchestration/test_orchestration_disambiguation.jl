@@ -1,7 +1,8 @@
 module TestOrchestrationDisambiguation
 
 using Test
-using CTBase: CTBase, Exceptions
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
 using CTSolvers
 using CTSolvers.Orchestration
 using CTSolvers.Strategies
