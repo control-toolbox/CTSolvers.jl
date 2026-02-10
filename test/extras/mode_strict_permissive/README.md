@@ -123,7 +123,7 @@ println("=" ^ 50)
 - **Module isolation** : Définir un module par fichier
 - **Top-level definitions** : Helper types/fonctions au niveau module
 - **Export functions** : Redéfinir dans l'outer scope
-- **Unit vs Integration** : Séparer clairement avec des commentaires
+- **Unit vs Integration** : Separate clearly with comments
 
 #### **🔧 Développement**
 - **Dev mode** : Toujours utiliser `Pkg.develop()` pour CTSolvers
