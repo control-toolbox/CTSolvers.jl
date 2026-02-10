@@ -12,8 +12,9 @@ but provides higher-level strategy management capabilities.
 """
 module Strategies
 
-using CTBase: CTBase, Exceptions
 using DocStringExtensions
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
 using ..CTSolvers.Options
 
 # ==============================================================================

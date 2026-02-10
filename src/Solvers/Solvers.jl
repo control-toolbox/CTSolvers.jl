@@ -44,7 +44,8 @@ using DocStringExtensions
 using NLPModels
 using SolverCore
 using CommonSolve
-using CTBase: CTBase, Exceptions
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
 
 # Import parent module components
 using ..CTSolvers.Strategies

@@ -8,7 +8,8 @@
 
 module Modelers
 
-using CTBase: CTBase, Exceptions
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
 using DocStringExtensions
 using SolverCore
 using ADNLPModels
