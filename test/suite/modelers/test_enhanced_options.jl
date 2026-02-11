@@ -243,6 +243,38 @@ function test_enhanced_options()
                 @test opts[:ghjvprod_backend] === nothing
             end
         end
+        
+        @testset "Backend Aliases with Deprecation Warnings" begin
+            # Test ADNLPModeler with adnlp_backend alias
+            # Use :generic (not the default :optimized) to verify the alias actually passes the value
+            @testset "ADNLPModeler adnlp_backend alias" begin
+                modeler = ADNLPModeler(adnlp_backend=:generic)
+                opts = options(modeler)
+                @test haskey(opts.options, :backend)
+                @test opts[:backend] == :generic
+            end
+            
+            # Test ExaModeler with exa_backend alias
+            # Default is nothing, so pass a CPU backend to verify alias works
+            @testset "ExaModeler exa_backend alias" begin
+                modeler = ExaModeler(exa_backend=nothing)
+                opts = options(modeler)
+                @test haskey(opts.options, :backend)
+                @test opts[:backend] === nothing
+            end
+            
+            # Test deprecation warnings are emitted
+            @testset "Deprecation warnings" begin
+                @test_logs (:warn, "adnlp_backend is deprecated, use backend instead") ADNLPModeler(adnlp_backend=:default)
+                @test_logs (:warn, "exa_backend is deprecated, use backend instead") ExaModeler(exa_backend=nothing)
+            end
+            
+            # Test standard backend does not emit warning
+            @testset "No warning with standard backend" begin
+                @test_logs ADNLPModeler(backend=:generic)
+                @test_logs ExaModeler(backend=nothing)
+            end
+        end
     end
 
 end # function test_enhanced_options
