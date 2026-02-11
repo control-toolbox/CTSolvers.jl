@@ -262,3 +262,163 @@ function options(strategy::T) where {T<:AbstractStrategy}
         ))
     end
 end
+
+# ============================================================================
+# Display - Instance
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Pretty display of a strategy instance with tree-style formatting.
+
+Shows the concrete type name, strategy id, and all configured options
+with their values and provenance sources.
+
+# Arguments
+- `io::IO`: Output stream
+- `::MIME"text/plain"`: MIME type for pretty printing
+- `strategy::AbstractStrategy`: The strategy instance to display
+
+# Example
+```julia-repl
+julia> ADNLPModeler()
+ADNLPModeler (instance)
+├─ id: :adnlp
+├─ matrix_free = false  [default]
+├─ show_time = false  [default]
+├─ name = CTSolvers-ADNLP  [default]
+└─ backend = optimized  [default]
+Tip: use describe(ADNLPModeler) to see all available options.
+```
+
+See also: [`describe`](@ref), [`options`](@ref)
+"""
+function Base.show(io::IO, ::MIME"text/plain", strategy::T) where {T<:AbstractStrategy}
+    type_name = nameof(T)
+    strategy_id = try id(T) catch; nothing end
+    opts = try options(strategy) catch; nothing end
+
+    # Header with ID on first line
+    if strategy_id !== nothing
+        println(io, type_name, " (instance, id: :", strategy_id, ")")
+    else
+        println(io, type_name, " (instance)")
+    end
+
+    if opts !== nothing
+        items = collect(pairs(opts.options))
+        for (i, (key, opt)) in enumerate(items)
+            is_last = i == length(items)
+            prefix = is_last ? "└─ " : "├─ "
+            println(io, prefix, key, " = ", opt.value, "  [", opt.source, "]")
+        end
+    end
+
+    println(io, "Tip: use describe(", type_name, ") to see all available options.")
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Compact display of a strategy instance.
+
+# Arguments
+- `io::IO`: Output stream
+- `strategy::AbstractStrategy`: The strategy instance to display
+
+# Example
+```julia-repl
+julia> print(ADNLPModeler())
+ADNLPModeler(matrix_free=false, show_time=false, name=CTSolvers-ADNLP, backend=optimized)
+```
+
+See also: [`Base.show(::IO, ::MIME"text/plain", ::AbstractStrategy)`](@ref)
+"""
+function Base.show(io::IO, strategy::T) where {T<:AbstractStrategy}
+    type_name = nameof(T)
+    opts = try options(strategy) catch; nothing end
+
+    print(io, type_name, "(")
+    if opts !== nothing
+        print(io, join(("$k=$(v.value)" for (k, v) in pairs(opts.options)), ", "))
+    end
+    print(io, ")")
+end
+
+# ============================================================================
+# Describe - Type introspection
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Display detailed information about a strategy type, including its id,
+supertype, and full metadata with all available option definitions.
+
+This function is useful for discovering what options a strategy accepts
+before constructing an instance.
+
+# Arguments
+- `strategy_type::Type{<:AbstractStrategy}`: The strategy type to describe
+
+# Example
+```julia-repl
+julia> describe(ADNLPModeler)
+ADNLPModeler (strategy type)
+├─ id: :adnlp
+├─ supertype: AbstractOptimizationModeler
+└─ metadata: 4 options defined
+   ├─ show_time :: Bool (default: false)
+   │  description: Whether to show timing information
+   ├─ backend :: Symbol (default: optimized)
+   │  description: AD backend used by ADNLPModels
+   └─ matrix_free :: Bool (default: false)
+      description: Enable matrix-free mode
+```
+
+See also: [`metadata`](@ref), [`id`](@ref), [`options`](@ref)
+"""
+function describe end
+
+function describe(strategy_type::Type{T}) where {T<:AbstractStrategy}
+    describe(stdout, strategy_type)
+end
+
+function describe(io::IO, strategy_type::Type{T}) where {T<:AbstractStrategy}
+    type_name = nameof(T)
+    strategy_id = try id(T) catch; nothing end
+    meta = try metadata(T) catch; nothing end
+    super = supertype(T)
+
+    println(io, type_name, " (strategy type)")
+
+    # id line
+    if strategy_id !== nothing
+        println(io, "├─ id: :", strategy_id)
+    end
+
+    # supertype line
+    if meta !== nothing
+        println(io, "├─ supertype: ", nameof(super))
+    else
+        println(io, "└─ supertype: ", nameof(super))
+        return
+    end
+
+    # metadata section
+    n_opts = length(meta)
+    println(io, "└─ metadata: ", n_opts, " option", n_opts == 1 ? "" : "s", " defined")
+    items = collect(pairs(meta))
+    for (i, (key, def)) in enumerate(items)
+        is_last = i == length(items)
+        prefix = is_last ? "   └─ " : "   ├─ "
+        cont   = is_last ? "      " : "   │  "
+        println(io, prefix, def)
+        println(io, cont, "description: ", def.description)
+        # Add separator line between options (except after last)
+        if !is_last
+            println(io, cont)
+        end
+    end
+end

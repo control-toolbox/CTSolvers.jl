@@ -10,38 +10,11 @@
 """
 $(TYPEDSIGNATURES)
 
-Return the default value for the `show_time` option of [`ADNLPModeler`](@ref).
-
-Default is `false`.
-"""
-__adnlp_model_show_time() = false
-
-"""
-$(TYPEDSIGNATURES)
-
 Return the default automatic differentiation backend for [`ADNLPModeler`](@ref).
 
 Default is `:optimized`.
 """
 __adnlp_model_backend() = :optimized
-
-"""
-$(TYPEDSIGNATURES)
-
-Return the default value for the `matrix_free` option of [`ADNLPModeler`](@ref).
-
-Default is `false`.
-"""
-__adnlp_model_matrix_free() = false
-
-"""
-$(TYPEDSIGNATURES)
-
-Return the default value for the `name` option of [`ADNLPModeler`](@ref).
-
-Default is `"CTSolvers-ADNLP"`.
-"""
-__adnlp_model_name() = "CTSolvers-ADNLP"
 
 """
 $(TYPEDEF)
@@ -163,7 +136,7 @@ function Strategies.metadata(::Type{<:ADNLPModeler})
         Strategies.OptionDefinition(;
             name=:show_time,
             type=Bool,
-            default=__adnlp_model_show_time(),
+            default=Options.NotProvided,
             description="Whether to show timing information while building the ADNLP model"
         ),
         Strategies.OptionDefinition(;
@@ -178,14 +151,14 @@ function Strategies.metadata(::Type{<:ADNLPModeler})
         Strategies.OptionDefinition(;
             name=:matrix_free,
             type=Bool,
-            default=__adnlp_model_matrix_free(),
+            default=Options.NotProvided,
             description="Enable matrix-free mode (avoids explicit Hessian/Jacobian matrices)",
             validator=validate_matrix_free
         ),
         Strategies.OptionDefinition(;
             name=:name,
             type=String,
-            default=__adnlp_model_name(),
+            default=Options.NotProvided,
             description="Name of the optimization model for identification",
             validator=validate_model_name
         ),

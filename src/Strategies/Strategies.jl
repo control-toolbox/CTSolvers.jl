@@ -47,6 +47,9 @@ export id, metadata
 # Instance-level contract methods
 export options
 
+# Display and introspection
+export describe
+
 # Registry functions
 export create_registry, strategy_ids, type_from_id
 

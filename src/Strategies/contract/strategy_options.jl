@@ -493,8 +493,11 @@ See also: [`Base.show`](@ref)
 function Base.show(io::IO, ::MIME"text/plain", opts::StrategyOptions)
     n = length(opts)
     println(io, "StrategyOptions with $n option$(n == 1 ? "" : "s"):")
-    for (key, opt) in pairs(opts.options)
-        println(io, "  $key = $(opt.value)  [$(opt.source)]")
+    items = collect(pairs(opts.options))
+    for (i, (key, opt)) in enumerate(items)
+        is_last = i == length(items)
+        prefix = is_last ? "└─ " : "├─ "
+        println(io, prefix, key, " = ", opt.value, "  [", opt.source, "]")
     end
 end
 

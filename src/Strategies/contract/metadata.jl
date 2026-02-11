@@ -342,8 +342,14 @@ Base.haskey(meta::StrategyMetadata, key::Symbol) = haskey(meta.specs, key)
 
 # Display
 function Base.show(io::IO, ::MIME"text/plain", meta::StrategyMetadata)
-    println(io, "StrategyMetadata with $(length(meta)) options:")
-    for (key, def) in pairs(meta)
-        println(io, "  $def")
+    n = length(meta)
+    println(io, "StrategyMetadata with $n option$(n == 1 ? "" : "s"):")
+    items = collect(pairs(meta))
+    for (i, (key, def)) in enumerate(items)
+        is_last = i == length(items)
+        prefix = is_last ? "└─ " : "├─ "
+        cont   = is_last ? "   " : "│  "
+        println(io, prefix, def)
+        println(io, cont, "description: ", def.description)
     end
 end

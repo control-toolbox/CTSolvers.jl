@@ -286,8 +286,11 @@ function Base.show(io::IO, ::MIME"text/plain", registry::StrategyRegistry)
     n_families = length(registry.families)
     println(io, "StrategyRegistry with $n_families $(n_families == 1 ? "family" : "families"):")
     
-    for (family, strategies) in registry.families
+    items = collect(registry.families)
+    for (i, (family, strategies)) in enumerate(items)
+        is_last = i == length(items)
+        prefix = is_last ? "└─ " : "├─ "
         ids = [id(T) for T in strategies]
-        println(io, "  $family => $(Tuple(ids))")
+        println(io, prefix, family, " => ", Tuple(ids))
     end
 end

@@ -235,12 +235,9 @@ See also: [`OptionDefinition`](@ref)
 function Base.show(io::IO, def::OptionDefinition)
     # Show primary name with aliases if present
     if isempty(def.aliases)
-        println(io, "$(def.name) :: $(def.type)")
+        print(io, "$(def.name) :: $(def.type)")
     else
-        println(io, "$(def.name) ($(join(def.aliases, ", "))) :: $(def.type)")
+        print(io, "$(def.name) ($(join(def.aliases, ", "))) :: $(def.type)")
     end
-    
-    # Show details
-    println(io, "  default: $(def.default)")
-    println(io, "  description: $(def.description)")
+    print(io, " (default: $(def.default))")
 end
