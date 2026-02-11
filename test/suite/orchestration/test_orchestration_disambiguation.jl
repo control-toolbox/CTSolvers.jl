@@ -29,7 +29,8 @@ Strategies.metadata(::Type{ADNLPModeler}) = Strategies.StrategyMetadata(
         name = :backend,
         type = Symbol,
         default = :dense,
-        description = "Backend type"
+        description = "Backend type",
+        aliases = (:adnlp_backend,)
     )
 )
 
@@ -46,7 +47,8 @@ Strategies.metadata(::Type{IpoptSolver}) = Strategies.StrategyMetadata(
         name = :backend,
         type = Symbol,
         default = :cpu,
-        description = "Solver backend"
+        description = "Solver backend",
+        aliases = (:ipopt_backend,)
     )
 )
 
@@ -162,6 +164,36 @@ function test_orchestration_disambiguation()
             Test.@test haskey(map, :backend)
             Test.@test map[:backend] == Set([:modeler, :solver])
             Test.@test length(map[:backend]) == 2
+        end
+        
+        # ====================================================================
+        # Ambiguous option error includes aliases
+        # ====================================================================
+        
+        Test.@testset "Ambiguous option error shows aliases" begin
+            # backend is ambiguous between adnlp and ipopt
+            # The error message should mention the aliases adnlp_backend and ipopt_backend
+            try
+                Orchestration.route_all_options(
+                    TEST_METHOD,
+                    TEST_FAMILIES,
+                    Options.OptionDefinition[],
+                    (; backend = :sparse),
+                    TEST_REGISTRY;
+                    source_mode = :description
+                )
+                Test.@test false  # Should not reach here
+            catch e
+                Test.@test e isa Exceptions.IncorrectArgument
+                msg = sprint(showerror, e)
+                # Check that route_to suggestion is present
+                Test.@test occursin("route_to", msg)
+                # Check that aliases are mentioned
+                Test.@test occursin("adnlp_backend", msg)
+                Test.@test occursin("ipopt_backend", msg)
+                # Check that the alias section header is present
+                Test.@test occursin("aliases", msg)
+            end
         end
         
         # ====================================================================

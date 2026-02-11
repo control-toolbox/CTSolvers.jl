@@ -194,7 +194,8 @@ function route_all_options(
             else
                 # Ambiguous - need disambiguation
                 _error_ambiguous_option(
-                    key, value, owners, strategy_to_family, source_mode
+                    key, value, owners, strategy_to_family, source_mode,
+                    method, families, registry
                 )
             end
         end
@@ -266,12 +267,35 @@ function _error_ambiguous_option(
     value::Any,
     owners::Set{Symbol},
     strategy_to_family::Dict{Symbol, Symbol},
-    source_mode::Symbol
+    source_mode::Symbol,
+    method::Tuple{Vararg{Symbol}},
+    families::NamedTuple,
+    registry::Strategies.StrategyRegistry
 )
     # Find which strategies own this option
     strategies = [
         id for (id, fam) in strategy_to_family if fam in owners
     ]
+
+    # Collect aliases for this option from each strategy's metadata
+    alias_info = String[]
+    for (family_name, family_type) in pairs(families)
+        if family_name in owners
+            try
+                sid = Strategies.extract_id_from_method(method, family_type, registry)
+                strategy_type = Strategies.type_from_id(sid, family_type, registry)
+                meta = Strategies.metadata(strategy_type)
+                if haskey(meta, key)
+                    def = meta[key]
+                    if !isempty(def.aliases)
+                        push!(alias_info, "  :$sid aliases: $(join(def.aliases, ", "))")
+                    end
+                end
+            catch
+                # Skip if metadata lookup fails
+            end
+        end
+    end
 
     if source_mode === :description
         # User-friendly error message with route_to() syntax
@@ -286,11 +310,17 @@ function _error_ambiguous_option(
                "  $key = route_to(" *
                join(["$id=$value" for id in strategies], ", ") *
                ")"
+        # Build suggestion with alias info
+        suggestion = "Use route_to() like $key = route_to($(first(strategies))=$value) to specify target strategy"
+        if !isempty(alias_info)
+            suggestion *= ". Or use strategy-specific aliases to avoid ambiguity:\n" *
+                         join(alias_info, "\n")
+        end
         throw(Exceptions.IncorrectArgument(
             "Ambiguous option requires disambiguation",
             got="option :$key between strategies: $(join(strategies, ", "))",
             expected="strategy-specific routing using route_to()",
-            suggestion="Use route_to() like $key = route_to($(first(strategies))=$value) to specify target strategy",
+            suggestion=suggestion,
             context="route_options - ambiguous option resolution"
         ))
     else
