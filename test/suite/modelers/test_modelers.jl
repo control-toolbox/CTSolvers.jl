@@ -66,7 +66,6 @@ function test_adnlp_modeler()
         # Test option defaults
         modeler_default = Modelers.ADNLPModeler()
         opts_default = Strategies.options(modeler_default)
-        Test.@test opts_default[:show_time] == false
         Test.@test opts_default[:backend] == :optimized
         
         # Test options are passed generically

@@ -31,7 +31,7 @@ ADNLPModel(...)
 function nlp_model(
     prob::DiscretizedOptimalControlProblem,
     initial_guess,
-    modeler
+    modeler::Modelers.AbstractOptimizationModeler
 )::NLPModels.AbstractNLPModel
     return build_model(prob, initial_guess, modeler)
 end
@@ -62,7 +62,7 @@ OptimalControlSolution(...)
 function ocp_solution(
     docp::DiscretizedOptimalControlProblem,
     model_solution::SolverCore.AbstractExecutionStats,
-    modeler
+    modeler::Modelers.AbstractOptimizationModeler
 )
     return build_solution(docp, model_solution, modeler)
 end

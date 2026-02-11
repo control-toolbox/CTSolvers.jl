@@ -155,10 +155,11 @@ function test_enhanced_options()
                 # Default values should be preserved
                 modeler3 = ADNLPModeler()
                 opts = options(modeler3)
-                @test opts[:show_time] == false
                 @test opts[:backend] == :optimized
-                @test opts[:matrix_free] == false
-                @test opts[:name] == "CTSolvers-ADNLP"
+                # show_time, matrix_free, name have NotProvided defaults — not stored when not provided
+                @test !haskey(opts.options, :show_time)
+                @test !haskey(opts.options, :matrix_free)
+                @test !haskey(opts.options, :name)
             end
             
             @testset "ExaModeler Backward Compatibility" begin

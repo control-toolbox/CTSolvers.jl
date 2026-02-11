@@ -18,6 +18,7 @@ using ..CTSolvers.Optimization: AbstractOCPSolutionBuilder
 using ..CTSolvers.Optimization: build_model, build_solution
 import ..CTSolvers.Optimization: get_adnlp_model_builder, get_exa_model_builder
 import ..CTSolvers.Optimization: get_adnlp_solution_builder, get_exa_solution_builder
+using ..CTSolvers.Modelers
 
 # Include submodules
 include(joinpath(@__DIR__, "types.jl"))
