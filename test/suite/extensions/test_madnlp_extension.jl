@@ -16,6 +16,7 @@ using ADNLPModels
 using MadNLP
 using MadNLPMumps
 using ExaModels
+import MadNLPGPU
 using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
 
 # Trigger extension loading
@@ -23,6 +24,14 @@ const CTSolversMadNLP = Base.get_extension(CTSolvers, :CTSolversMadNLP)
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+
+# CUDA availability check
+is_cuda_on() = CUDA.functional()
+if is_cuda_on()
+    println("✓ CUDA functional, GPU tests enabled")
+else
+    println("⚠️  CUDA not functional, GPU tests will be skipped")
+end
 
 """
     test_madnlp_extension()
@@ -263,24 +272,49 @@ function test_madnlp_extension()
         # ====================================================================
         
         Test.@testset "GPU Tests" begin
-            # Check if CUDA is available and functional
-            if CUDA.functional()
-                Test.@testset "Rosenbrock Problem - GPU" begin
+            if is_cuda_on()
+                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
+                gpu_solver = Solvers.MadNLPSolver(
+                    max_iter=1000,
+                    tol=1e-6,
+                    print_level=MadNLP.ERROR,
+                    linear_solver=MadNLPGPU.CUDSSSolver
+                )
+
+                Test.@testset "Rosenbrock - GPU" begin
                     ros = Rosenbrock()
-                    
-                    # Note: GPU linear solver would need to be configured
-                    # For now, just test that the solver can be created
-                    solver = Solvers.MadNLPSolver(
-                        max_iter=1000,
-                        tol=1e-6,
-                        print_level=MadNLP.ERROR
+                    nlp = Optimization.build_model(ros.prob, ros.init, gpu_modeler)
+                    sol = CommonSolve.solve(
+                        ros.prob, ros.init, gpu_modeler, gpu_solver;
+                        display=false
                     )
-                    
-                    Test.@test solver isa Solvers.MadNLPSolver
-                    @test_skip "GPU linear solver configuration needed"
+                    Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test sol.solution ≈ ros.sol atol=1e-6
+                    Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+                end
+
+                Test.@testset "Elec - GPU" begin
+                    elec = Elec()
+                    sol = CommonSolve.solve(
+                        elec.prob, elec.init, gpu_modeler, gpu_solver;
+                        display=false
+                    )
+                    Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test isfinite(sol.objective)
+                end
+
+                Test.@testset "Max1MinusX2 - GPU" begin
+                    max_prob = Max1MinusX2()
+                    sol = CommonSolve.solve(
+                        max_prob.prob, max_prob.init, gpu_modeler, gpu_solver;
+                        display=false
+                    )
+                    Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test length(sol.solution) == 1
+                    Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
                 end
             else
-                @test_skip "CUDA not functional, GPU tests skipped"
+                @info "CUDA not functional, skipping GPU tests."
             end
         end
         
@@ -544,131 +578,84 @@ function test_madnlp_extension()
         end
         
         # ====================================================================
-        # INTEGRATION TESTS - GPU Tests (Extended)
+        # INTEGRATION TESTS - GPU solve_with_madnlp (direct function)
         # ====================================================================
         
-        Test.@testset "GPU Tests - Extended" begin
-            if CUDA.functional()
-                # GPU tests disabled for now
-                # using MadNLPGPU
-                # linear_solver_gpu = MadNLPGPU.CUDSSSolver
-                madnlp_options = Dict(:max_iter => 1000, :tol => 1e-6, :print_level => MadNLP.ERROR)
-                
-                Test.@testset "solve_with_madnlp - GPU" begin
-                    Test.@testset "Rosenbrock - GPU" begin
-                        ros = Rosenbrock()
-                        
-                        # Build NLP model
-                        adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
-                        nlp = adnlp_builder(ros.init)
-                        
-                        # Solve with GPU
-                        stats = CTSolvers.solve_with_madnlp(nlp; linear_solver=linear_solver_gpu, madnlp_options...)
-                        
-                        Test.@test stats isa MadNLP.MadNLPExecutionStats
-                        Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
-                        Test.@test isfinite(stats.objective)
-                        Test.@test stats.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
-                    end
-                    
-                    Test.@testset "Elec - GPU" begin
-                        elec = Elec()
-                        
-                        # Build NLP model
-                        adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
-                        nlp = adnlp_builder(elec.init)
-                        
-                        # Solve with GPU
-                        stats = CTSolvers.solve_with_madnlp(nlp; linear_solver=linear_solver_gpu, madnlp_options...)
-                        
-                        Test.@test stats isa MadNLP.MadNLPExecutionStats
-                        Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
-                        Test.@test isfinite(stats.objective)
-                    end
+        Test.@testset "GPU - solve_with_madnlp" begin
+            if is_cuda_on()
+                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
+                madnlp_options = Dict(
+                    :max_iter => 1000,
+                    :tol => 1e-6,
+                    :print_level => MadNLP.ERROR,
+                    :linear_solver => MadNLPGPU.CUDSSSolver
+                )
+
+                Test.@testset "Rosenbrock - GPU" begin
+                    ros = Rosenbrock()
+                    nlp = Optimization.build_model(ros.prob, ros.init, gpu_modeler)
+                    sol = CTSolversMadNLP.solve_with_madnlp(nlp; madnlp_options...)
+                    Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test sol.solution ≈ ros.sol atol=1e-6
+                    Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
                 end
-                
-                Test.@testset "Initial Guess - GPU (max_iter=0)" begin
-                    Test.@testset "Rosenbrock - GPU" begin
-                        ros = Rosenbrock()
-                        
-                        # Build NLP starting at solution
-                        adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
-                        nlp = adnlp_builder(ros.sol)
-                        
-                        # Solver with max_iter=0
-                        solver = Solvers.MadNLPSolver(
-                            max_iter=0,
-                            print_level=MadNLP.ERROR,
-                            linear_solver=linear_solver_gpu
-                        )
-                        
-                        stats = solver(nlp; display=false)
-                        
-                        Test.@test stats.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
-                        Test.@test stats.solution ≈ ros.sol atol=1e-6
-                    end
-                    
-                    Test.@testset "Elec - GPU" begin
-                        elec = Elec()
-                        
-                        # Build NLP with initial guess
-                        adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
-                        nlp = adnlp_builder(elec.init)
-                        
-                        # Solver with max_iter=0
-                        solver = Solvers.MadNLPSolver(
-                            max_iter=0,
-                            print_level=MadNLP.ERROR,
-                            linear_solver=linear_solver_gpu
-                        )
-                        
-                        stats = solver(nlp; display=false)
-                        
-                        Test.@test stats.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
-                        expected = vcat(elec.init.x, elec.init.y, elec.init.z)
-                        Test.@test stats.solution ≈ expected atol=1e-6
-                    end
+
+                Test.@testset "Elec - GPU" begin
+                    elec = Elec()
+                    nlp = Optimization.build_model(elec.prob, elec.init, gpu_modeler)
+                    sol = CTSolversMadNLP.solve_with_madnlp(nlp; madnlp_options...)
+                    Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test isfinite(sol.objective)
                 end
-                
-                Test.@testset "CommonSolve.solve - GPU" begin
-                    solver = Solvers.MadNLPSolver(
-                        max_iter=1000,
-                        tol=1e-6,
-                        print_level=MadNLP.ERROR,
-                        linear_solver=linear_solver_gpu
-                    )
-                    
-                    Test.@testset "Rosenbrock - GPU" begin
-                        ros = Rosenbrock()
-                        
-                        # Build NLP model
-                        adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
-                        nlp = adnlp_builder(ros.init)
-                        
-                        stats = solver(nlp; display=false)
-                        
-                        Test.@test stats isa MadNLP.MadNLPExecutionStats
-                        Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
-                        Test.@test isfinite(stats.objective)
-                        Test.@test stats.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
-                    end
-                    
-                    Test.@testset "Elec - GPU" begin
-                        elec = Elec()
-                        
-                        # Build NLP model
-                        adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
-                        nlp = adnlp_builder(elec.init)
-                        
-                        stats = solver(nlp; display=false)
-                        
-                        Test.@test stats isa MadNLP.MadNLPExecutionStats
-                        Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
-                        Test.@test isfinite(stats.objective)
-                    end
+
+                Test.@testset "Max1MinusX2 - GPU" begin
+                    max_prob = Max1MinusX2()
+                    nlp = Optimization.build_model(max_prob.prob, max_prob.init, gpu_modeler)
+                    sol = CTSolversMadNLP.solve_with_madnlp(nlp; madnlp_options...)
+                    Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test length(sol.solution) == 1
+                    Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
                 end
             else
-                @test_skip "CUDA not functional, GPU tests skipped"
+                @info "CUDA not functional, skipping GPU solve_with_madnlp tests."
+            end
+        end
+
+        # ====================================================================
+        # INTEGRATION TESTS - GPU Initial Guess (max_iter=0)
+        # ====================================================================
+
+        Test.@testset "GPU - Initial Guess (max_iter=0)" begin
+            if is_cuda_on()
+                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
+                gpu_solver_0 = Solvers.MadNLPSolver(
+                    max_iter=0,
+                    print_level=MadNLP.ERROR,
+                    linear_solver=MadNLPGPU.CUDSSSolver
+                )
+
+                Test.@testset "Rosenbrock - GPU" begin
+                    ros = Rosenbrock()
+                    sol = CommonSolve.solve(
+                        ros.prob, ros.sol, gpu_modeler, gpu_solver_0;
+                        display=false
+                    )
+                    Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
+                    Test.@test sol.solution ≈ ros.sol atol=1e-6
+                end
+
+                Test.@testset "Elec - GPU" begin
+                    elec = Elec()
+                    sol = CommonSolve.solve(
+                        elec.prob, elec.init, gpu_modeler, gpu_solver_0;
+                        display=false
+                    )
+                    Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
+                    expected = vcat(elec.init.x, elec.init.y, elec.init.z)
+                    Test.@test sol.solution ≈ expected atol=1e-6
+                end
+            else
+                @info "CUDA not functional, skipping GPU initial guess tests."
             end
         end
     end

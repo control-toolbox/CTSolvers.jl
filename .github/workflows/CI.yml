@@ -9,7 +9,7 @@ on:
     
 jobs:
   # Job pour les runners GitHub hosted (ubuntu, windows, macos)
-  test-github:
+  test-cpu-github:
     uses: control-toolbox/CTActions/.github/workflows/ci.yml@main
     with:
       runs_on: '["ubuntu-latest", "macos-latest"]'
@@ -18,11 +18,13 @@ jobs:
     secrets:
       SSH_KEY: ${{ secrets.SSH_KEY }}
 
-  # # Job pour le runner self-hosted moonshot (GPU/CUDA)
-  # test-moonshot:
-  #   uses: control-toolbox/CTActions/.github/workflows/ci.yml@main
-  #   with:
-  #     versions: '["1"]'
-  #     runs_on: '[["moonshot"]]'
-  #     archs: '["x64"]'
-  #     runner_type: 'self-hosted'
+  # Job pour le runner self-hosted kkt (GPU/CUDA)
+  test-gpu-kkt:
+    uses: control-toolbox/CTActions/.github/workflows/ci.yml@main
+    with:
+      versions: '["1"]'
+      runs_on: '[["kkt"]]'
+      runner_type: 'self-hosted'
+      use_ct_registry: true
+    secrets:
+      SSH_KEY: ${{ secrets.SSH_KEY }}

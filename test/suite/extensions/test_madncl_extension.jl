@@ -16,6 +16,7 @@ using ADNLPModels
 using MadNCL
 using MadNLP
 using MadNLPMumps
+import MadNLPGPU
 using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
 
 # Trigger extension loading
@@ -23,6 +24,14 @@ const CTSolversMadNCL = Base.get_extension(CTSolvers, :CTSolversMadNCL)
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+
+# CUDA availability check
+is_cuda_on() = CUDA.functional()
+if is_cuda_on()
+    println("✓ CUDA functional, GPU tests enabled")
+else
+    println("⚠️  CUDA not functional, GPU tests will be skipped")
+end
 
 """
     test_madncl_extension()
@@ -449,117 +458,111 @@ function test_madncl_extension()
         end
         
         # ====================================================================
-        # INTEGRATION TESTS - GPU Tests (Extended)
+        # INTEGRATION TESTS - GPU Tests
         # ====================================================================
         
-        Test.@testset "GPU Tests - Extended" begin
-            if CUDA.functional()
-                # GPU tests disabled for now
-                # using MadNLPGPU
-                # linear_solver_gpu = MadNLPGPU.CUDSSSolver
+        Test.@testset "GPU Tests" begin
+            if is_cuda_on()
+                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
+                gpu_solver = Solvers.MadNCLSolver(
+                    max_iter=1000,
+                    tol=1e-6,
+                    print_level=MadNLP.ERROR,
+                    linear_solver=MadNLPGPU.CUDSSSolver,
+                    ncl_options=MadNCL.NCLOptions{Float64}(; verbose=false)
+                )
+
+                Test.@testset "Elec - GPU" begin
+                    elec = Elec()
+                    sol = CommonSolve.solve(
+                        elec.prob, elec.init, gpu_modeler, gpu_solver;
+                        display=false
+                    )
+                    Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test isfinite(sol.objective)
+                end
+
+                Test.@testset "Max1MinusX2 - GPU" begin
+                    max_prob = Max1MinusX2()
+                    sol = CommonSolve.solve(
+                        max_prob.prob, max_prob.init, gpu_modeler, gpu_solver;
+                        display=false
+                    )
+                    Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test length(sol.solution) == 1
+                    Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
+                end
+            else
+                @info "CUDA not functional, skipping GPU tests."
+            end
+        end
+
+        # ====================================================================
+        # INTEGRATION TESTS - GPU solve_with_madncl (direct function)
+        # ====================================================================
+
+        Test.@testset "GPU - solve_with_madncl" begin
+            if is_cuda_on()
+                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
                 madncl_options = Dict(
                     :max_iter => 1000,
                     :tol => 1e-6,
                     :print_level => MadNLP.ERROR,
+                    :linear_solver => MadNLPGPU.CUDSSSolver,
                     :ncl_options => MadNCL.NCLOptions{Float64}(; verbose=false)
                 )
-                
-                Test.@testset "solve_with_madncl - GPU" begin
-                    Test.@testset "Elec - GPU" begin
-                        elec = Elec()
-                        
-                        # Build NLP model
-                        adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
-                        nlp = adnlp_builder(elec.init)
-                        
-                        # Solve with GPU
-                        stats = CTSolvers.solve_with_madncl(nlp; linear_solver=linear_solver_gpu, madncl_options...)
-                        
-                        Test.@test stats isa MadNCL.NCLStats
-                        Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
-                    end
-                    
-                    Test.@testset "Max1MinusX2 - GPU" begin
-                        max_prob = Max1MinusX2()
-                        
-                        # Build NLP model
-                        adnlp_builder = CTSolvers.get_adnlp_model_builder(max_prob.prob)
-                        nlp = adnlp_builder(max_prob.init)
-                        
-                        # Solve with GPU
-                        stats = CTSolvers.solve_with_madncl(nlp; linear_solver=linear_solver_gpu, madncl_options...)
-                        
-                        Test.@test stats isa MadNCL.NCLStats
-                        Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
-                    end
+
+                Test.@testset "Elec - GPU" begin
+                    elec = Elec()
+                    nlp = Optimization.build_model(elec.prob, elec.init, gpu_modeler)
+                    sol = CTSolversMadNCL.solve_with_madncl(nlp; madncl_options...)
+                    Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test isfinite(sol.objective)
                 end
-                
-                Test.@testset "Initial Guess - GPU (max_iter=0)" begin
-                    Test.@testset "Elec - GPU" begin
-                        elec = Elec()
-                        
-                        # Build NLP with initial guess
-                        adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
-                        nlp = adnlp_builder(elec.init)
-                        
-                        # Create NCLOptions with max_auglag_iter=0
-                        ncl_opts = MadNCL.NCLOptions{Float64}(
-                            verbose=false,
-                            max_auglag_iter=0
-                        )
-                        
-                        # Solver with max_iter=0
-                        solver = Solvers.MadNCLSolver(
-                            max_iter=0,
-                            print_level=MadNLP.ERROR,
-                            linear_solver=linear_solver_gpu,
-                            ncl_options=ncl_opts
-                        )
-                        
-                        stats = solver(nlp; display=false)
-                        
-                        Test.@test stats.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
-                        expected = vcat(elec.init.x, elec.init.y, elec.init.z)
-                        Test.@test stats.solution ≈ expected atol=1e-6
-                    end
-                end
-                
-                Test.@testset "CommonSolve.solve - GPU" begin
-                    solver = Solvers.MadNCLSolver(
-                        max_iter=1000,
-                        tol=1e-6,
-                        print_level=MadNLP.ERROR,
-                        linear_solver=linear_solver_gpu
-                    )
-                    
-                    Test.@testset "Elec - GPU" begin
-                        elec = Elec()
-                        
-                        # Build NLP model
-                        adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
-                        nlp = adnlp_builder(elec.init)
-                        
-                        stats = solver(nlp; display=false)
-                        
-                        Test.@test stats isa MadNCL.NCLStats
-                        Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
-                    end
-                    
-                    Test.@testset "Max1MinusX2 - GPU" begin
-                        max_prob = Max1MinusX2()
-                        
-                        # Build NLP model
-                        adnlp_builder = CTSolvers.get_adnlp_model_builder(max_prob.prob)
-                        nlp = adnlp_builder(max_prob.init)
-                        
-                        stats = solver(nlp; display=false)
-                        
-                        Test.@test stats isa MadNCL.NCLStats
-                        Test.@test stats.status == MadNLP.SOLVE_SUCCEEDED
-                    end
+
+                Test.@testset "Max1MinusX2 - GPU" begin
+                    max_prob = Max1MinusX2()
+                    nlp = Optimization.build_model(max_prob.prob, max_prob.init, gpu_modeler)
+                    sol = CTSolversMadNCL.solve_with_madncl(nlp; madncl_options...)
+                    Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
+                    Test.@test length(sol.solution) == 1
+                    Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
                 end
             else
-                @test_skip "CUDA not functional, GPU tests skipped"
+                @info "CUDA not functional, skipping GPU solve_with_madncl tests."
+            end
+        end
+
+        # ====================================================================
+        # INTEGRATION TESTS - GPU Initial Guess (max_iter=0)
+        # ====================================================================
+
+        Test.@testset "GPU - Initial Guess (max_iter=0)" begin
+            if is_cuda_on()
+                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
+                ncl_opts_0 = MadNCL.NCLOptions{Float64}(
+                    verbose=false,
+                    max_auglag_iter=0
+                )
+                gpu_solver_0 = Solvers.MadNCLSolver(
+                    max_iter=0,
+                    print_level=MadNLP.ERROR,
+                    linear_solver=MadNLPGPU.CUDSSSolver,
+                    ncl_options=ncl_opts_0
+                )
+
+                Test.@testset "Elec - GPU" begin
+                    elec = Elec()
+                    sol = CommonSolve.solve(
+                        elec.prob, elec.init, gpu_modeler, gpu_solver_0;
+                        display=false
+                    )
+                    Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
+                    expected = vcat(elec.init.x, elec.init.y, elec.init.z)
+                    Test.@test sol.solution ≈ expected atol=1e-6
+                end
+            else
+                @info "CUDA not functional, skipping GPU initial guess tests."
             end
         end
     end
