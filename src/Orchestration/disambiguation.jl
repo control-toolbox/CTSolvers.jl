@@ -187,17 +187,57 @@ function build_option_ownership_map(
     option_owners = Dict{Symbol, Set{Symbol}}()
     
     for (family_name, family_type) in pairs(families)
-        option_names = Strategies.option_names_from_method(
-            method, family_type, registry
-        )
+        id = Strategies.extract_id_from_method(method, family_type, registry)
+        strategy_type = Strategies.type_from_id(id, family_type, registry)
+        meta = Strategies.metadata(strategy_type)
         
-        for option_name in option_names
-            if !haskey(option_owners, option_name)
-                option_owners[option_name] = Set{Symbol}()
+        for (primary_name, def) in pairs(meta)
+            # Register primary name
+            if !haskey(option_owners, primary_name)
+                option_owners[primary_name] = Set{Symbol}()
             end
-            push!(option_owners[option_name], family_name)
+            push!(option_owners[primary_name], family_name)
+            
+            # Register aliases with the same ownership
+            for alias in def.aliases
+                if !haskey(option_owners, alias)
+                    option_owners[alias] = Set{Symbol}()
+                end
+                push!(option_owners[alias], family_name)
+            end
         end
     end
     
     return option_owners
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Build a mapping from alias names to their primary option names for all strategies in the method.
+
+# Returns
+- `Dict{Symbol, Symbol}`: Dictionary mapping alias => primary_name
+"""
+function build_alias_to_primary_map(
+    method::Tuple{Vararg{Symbol}},
+    families::NamedTuple,
+    registry::Strategies.StrategyRegistry
+)::Dict{Symbol, Symbol}
+    
+    alias_map = Dict{Symbol, Symbol}()
+    
+    for (family_name, family_type) in pairs(families)
+        id = Strategies.extract_id_from_method(method, family_type, registry)
+        strategy_type = Strategies.type_from_id(id, family_type, registry)
+        meta = Strategies.metadata(strategy_type)
+        
+        for (primary_name, def) in pairs(meta)
+            for alias in def.aliases
+                alias_map[alias] = primary_name
+            end
+        end
+    end
+    
+    return alias_map
 end

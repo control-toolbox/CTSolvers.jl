@@ -36,7 +36,8 @@ Strategies.metadata(::Type{RoutingADNLP}) = Strategies.StrategyMetadata(
         name = :backend,
         type = Symbol,
         default = :dense,
-        description = "Backend type"
+        description = "Backend type",
+        aliases = (:adnlp_backend,)
     )
 )
 
@@ -53,7 +54,8 @@ Strategies.metadata(::Type{RoutingIpopt}) = Strategies.StrategyMetadata(
         name = :backend,
         type = Symbol,
         default = :cpu,
-        description = "Solver backend"
+        description = "Solver backend",
+        aliases = (:ipopt_backend,)
     )
 )
 
@@ -224,6 +226,90 @@ function test_routing()
                 kwargs,
                 ROUTING_REGISTRY
             )
+        end
+        
+        # ====================================================================
+        # Routing via aliases (unambiguous)
+        # ====================================================================
+        
+        Test.@testset "Auto-routing via alias (unambiguous)" begin
+            # adnlp_backend is an alias for backend, only in modeler => unambiguous
+            kwargs = (adnlp_backend = :sparse,)
+            
+            routed = Orchestration.route_all_options(
+                ROUTING_METHOD,
+                ROUTING_FAMILIES,
+                ROUTING_ACTION_DEFS,
+                kwargs,
+                ROUTING_REGISTRY
+            )
+            
+            # adnlp_backend should be routed to modeler
+            Test.@test haskey(routed.strategies.modeler, :adnlp_backend)
+            Test.@test routed.strategies.modeler[:adnlp_backend] === :sparse
+            # solver should NOT have it
+            Test.@test !haskey(routed.strategies.solver, :adnlp_backend)
+        end
+        
+        Test.@testset "Auto-routing via solver alias (unambiguous)" begin
+            # ipopt_backend is an alias for backend, only in solver => unambiguous
+            kwargs = (ipopt_backend = :gpu,)
+            
+            routed = Orchestration.route_all_options(
+                ROUTING_METHOD,
+                ROUTING_FAMILIES,
+                ROUTING_ACTION_DEFS,
+                kwargs,
+                ROUTING_REGISTRY
+            )
+            
+            # ipopt_backend should be routed to solver
+            Test.@test haskey(routed.strategies.solver, :ipopt_backend)
+            Test.@test routed.strategies.solver[:ipopt_backend] === :gpu
+            # modeler should NOT have it
+            Test.@test !haskey(routed.strategies.modeler, :ipopt_backend)
+        end
+        
+        Test.@testset "Mixed alias and primary routing" begin
+            # Use alias for one strategy and primary for another
+            kwargs = (
+                adnlp_backend = :sparse,
+                max_iter = 500,
+                grid_size = 200
+            )
+            
+            routed = Orchestration.route_all_options(
+                ROUTING_METHOD,
+                ROUTING_FAMILIES,
+                ROUTING_ACTION_DEFS,
+                kwargs,
+                ROUTING_REGISTRY
+            )
+            
+            Test.@test routed.strategies.modeler[:adnlp_backend] === :sparse
+            Test.@test routed.strategies.solver[:max_iter] == 500
+            Test.@test routed.strategies.discretizer[:grid_size] == 200
+        end
+        
+        Test.@testset "Ownership map includes aliases" begin
+            map = Orchestration.build_option_ownership_map(
+                ROUTING_METHOD, ROUTING_FAMILIES, ROUTING_REGISTRY
+            )
+            
+            # Primary names
+            Test.@test haskey(map, :backend)
+            Test.@test length(map[:backend]) == 2  # modeler + solver
+            Test.@test haskey(map, :max_iter)
+            Test.@test length(map[:max_iter]) == 1  # solver only
+            
+            # Aliases should be in the map too
+            Test.@test haskey(map, :adnlp_backend)
+            Test.@test length(map[:adnlp_backend]) == 1  # modeler only
+            Test.@test :modeler in map[:adnlp_backend]
+            
+            Test.@test haskey(map, :ipopt_backend)
+            Test.@test length(map[:ipopt_backend]) == 1  # solver only
+            Test.@test :solver in map[:ipopt_backend]
         end
         
         # ====================================================================
