@@ -30,7 +30,6 @@ include(joinpath(@__DIR__, "api", "introspection.jl"))
 include(joinpath(@__DIR__, "api", "builders.jl"))
 include(joinpath(@__DIR__, "api", "configuration.jl"))
 include(joinpath(@__DIR__, "api", "utilities.jl"))
-include(joinpath(@__DIR__, "api", "validation.jl"))
 include(joinpath(@__DIR__, "api", "validation_helpers.jl"))
 include(joinpath(@__DIR__, "api", "disambiguation.jl"))
 
@@ -65,8 +64,5 @@ export build_strategy_options, resolve_alias
 
 # Utility functions
 export filter_options, suggest_options, options_dict, route_to
-
-# Validation functions
-export validate_strategy_contract
 
 end # module Strategies
