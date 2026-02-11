@@ -9,6 +9,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4-beta] - 2026-02-11
+
+### Added
+
+- **GPU support** for MadNLP and MadNCL extensions with proper MadNLPGPU integration
+- **CUDA availability checks** with informative status messages in test suites
+- **GPU test scenarios** including solve via CommonSolve, direct solve functions, and initial guess tests
+
+### Changed
+
+- **Import strategy** refactored across all modules to avoid namespace pollution
+  - External packages now use `import` instead of `using`
+  - Internal CTSolvers modules use `using` for API access
+- **GPU test implementation** completely rewritten from placeholder to functional tests
+- **Code organization** improved with clear separation between external and internal dependencies
+
+### Fixed
+
+- **Missing TYPEDFIELDS import** in Solvers module that caused precompilation errors
+- **Dead GPU test code** removed (commented MadNLPGPU imports, undefined linear_solver_gpu)
+- **Namespace pollution** reduced by using qualified imports for external packages
+
+### Technical Details
+
+#### Import Refactoring
+```julia
+# Before
+using DocStringExtensions
+using NLPModels
+
+# After  
+import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES, TYPEDFIELDS
+import NLPModels
+```
+
+#### GPU Test Implementation
+```julia
+# Before (dead code)
+# using MadNLPGPU
+# linear_solver_gpu = MadNLPGPU.CUDSSSolver
+
+# After (functional)
+import MadNLPGPU
+gpu_solver = Solvers.MadNLPSolver(linear_solver=MadNLPGPU.CUDSSSolver)
+```
+
+#### CUDA Availability Helper
+```julia
+is_cuda_on() = CUDA.functional()
+if is_cuda_on()
+    println("✓ CUDA functional, GPU tests enabled")
+else
+    println("⚠️  CUDA not functional, GPU tests will be skipped")
+end
+```
+
+### Testing
+
+- **MadNLP extension**: 177/177 tests pass (GPU tests skipped gracefully without CUDA)
+- **MadNCL extension**: 82/82 tests pass (GPU tests skipped gracefully without CUDA)
+- **GPU test coverage**: 3 test scenarios per extension (solve, direct solve, initial guess)
+
+---
+
+## [0.2.3-beta] - 2026-02-11
+
 ### Added
 
 - Performance benchmarks for validation modes
