@@ -159,7 +159,8 @@ function Strategies.metadata(::Type{<:ExaModeler})
             name=:backend,
             type=Union{Nothing, KernelAbstractions.Backend},  # More permissive for various backend types
             default=__exa_model_backend(),
-            description="Execution backend for ExaModels (CPU, GPU, etc.)"
+            description="Execution backend for ExaModels (CPU, GPU, etc.)",
+            aliases=(:exa_backend,)
         )
     )
 end
@@ -202,6 +203,11 @@ modeler = ExaModeler(base_type=Float64, custom_option=123; mode=:permissive)
 - [`Strategies.build_strategy_options`](@ref): Option validation function
 """
 function ExaModeler(; mode::Symbol=:strict, kwargs...)
+    # Check for deprecated aliases
+    if haskey(kwargs, :exa_backend)
+        @warn "exa_backend is deprecated, use backend instead" maxlog=1
+    end
+    
     opts = Strategies.build_strategy_options(
         ExaModeler; mode=mode, kwargs...
     )

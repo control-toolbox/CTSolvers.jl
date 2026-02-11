@@ -144,7 +144,8 @@ function Strategies.metadata(::Type{<:ADNLPModeler})
             type=Symbol,
             default=__adnlp_model_backend(),
             description="Automatic differentiation backend used by ADNLPModels",
-            validator=validate_adnlp_backend
+            validator=validate_adnlp_backend,
+            aliases=(:adnlp_backend,)
         ),
         
         # === New High-Priority Options ===
@@ -300,6 +301,11 @@ modeler = ADNLPModeler(backend=:optimized, custom_option=123; mode=:permissive)
 - [`Strategies.build_strategy_options`](@ref): Option validation function
 """
 function ADNLPModeler(; mode::Symbol=:strict, kwargs...)
+    # Check for deprecated aliases
+    if haskey(kwargs, :adnlp_backend)
+        @warn "adnlp_backend is deprecated, use backend instead" maxlog=1
+    end
+    
     opts = Strategies.build_strategy_options(
         ADNLPModeler; mode=mode, kwargs...
     )
