@@ -343,6 +343,67 @@ function test_routing()
             Test.@test routed.strategies.solver[:backend] === :gpu
             Test.@test routed.strategies.solver[:max_iter] == 500
         end
+        # ====================================================================
+        # Unknown option error suggests closest options (alias-aware)
+        # ====================================================================
+        
+        Test.@testset "Unknown option error suggests closest (alias-aware)" begin
+            # adnlp_backen is close to alias adnlp_backend (distance 1)
+            # but far from primary name backend (distance 7)
+            # The error should suggest :backend (alias: adnlp_backend)
+            try
+                Orchestration.route_all_options(
+                    ROUTING_METHOD,
+                    ROUTING_FAMILIES,
+                    ROUTING_ACTION_DEFS,
+                    (; adnlp_backen = :sparse),
+                    ROUTING_REGISTRY
+                )
+                Test.@test false  # Should not reach here
+            catch e
+                Test.@test e isa CTBase.Exceptions.IncorrectArgument
+                msg = sprint(showerror, e)
+                # Should suggest backend via alias proximity
+                Test.@test occursin("Did you mean?", msg)
+                Test.@test occursin("backend", msg)
+                Test.@test occursin("adnlp_backend", msg)
+            end
+            
+            # ipopt_backen is close to alias ipopt_backend (distance 1)
+            try
+                Orchestration.route_all_options(
+                    ROUTING_METHOD,
+                    ROUTING_FAMILIES,
+                    ROUTING_ACTION_DEFS,
+                    (; ipopt_backen = :gpu),
+                    ROUTING_REGISTRY
+                )
+                Test.@test false
+            catch e
+                Test.@test e isa CTBase.Exceptions.IncorrectArgument
+                msg = sprint(showerror, e)
+                Test.@test occursin("Did you mean?", msg)
+                Test.@test occursin("backend", msg)
+                Test.@test occursin("ipopt_backend", msg)
+            end
+            
+            # max_ite is close to primary max_iter (distance 1), no alias needed
+            try
+                Orchestration.route_all_options(
+                    ROUTING_METHOD,
+                    ROUTING_FAMILIES,
+                    ROUTING_ACTION_DEFS,
+                    (; max_ite = 500),
+                    ROUTING_REGISTRY
+                )
+                Test.@test false
+            catch e
+                Test.@test e isa CTBase.Exceptions.IncorrectArgument
+                msg = sprint(showerror, e)
+                Test.@test occursin("Did you mean?", msg)
+                Test.@test occursin("max_iter", msg)
+            end
+        end
     end
 end
 

@@ -66,6 +66,6 @@ export extract_id_from_method, option_names_from_method
 export build_strategy_options, resolve_alias
 
 # Utility functions
-export filter_options, suggest_options, options_dict, route_to
+export filter_options, suggest_options, format_suggestion, options_dict, route_to
 
 end # module Strategies

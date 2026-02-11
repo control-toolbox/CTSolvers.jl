@@ -247,13 +247,55 @@ function _error_unknown_option(
         msg *= "  $family (:$id): $(join(option_names, ", "))\n"
     end
 
+    # Suggest closest options across all strategies (using primary names + aliases)
+    suggestion = "Check available options and use a correct option name"
+    all_suggestions = _collect_suggestions_across_strategies(
+        key, method, families, registry; max_suggestions=3
+    )
+    if !isempty(all_suggestions)
+        suggestion = "Did you mean?\n" *
+            join(["  - $(Strategies.format_suggestion(s))" for s in all_suggestions], "\n")
+    end
+
     throw(Exceptions.IncorrectArgument(
         "Unknown option provided",
         got="option :$key in method $method",
         expected="valid option name for one of the strategies",
-        suggestion="Check available options above and use correct option name",
+        suggestion=suggestion,
         context="route_options - unknown option validation"
     ))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Collect option suggestions across all strategies in the method, deduplicated by primary name.
+Returns the top `max_suggestions` results sorted by minimum Levenshtein distance.
+"""
+function _collect_suggestions_across_strategies(
+    key::Symbol,
+    method::Tuple,
+    families::NamedTuple,
+    registry::Strategies.StrategyRegistry;
+    max_suggestions::Int=3
+)
+    # Collect suggestions from all strategies, keeping best distance per primary name
+    best = Dict{Symbol, @NamedTuple{primary::Symbol, aliases::Tuple{Vararg{Symbol}}, distance::Int}}()
+    for (family_name, family_type) in pairs(families)
+        id = Strategies.extract_id_from_method(method, family_type, registry)
+        strategy_type = Strategies.type_from_id(id, family_type, registry)
+        suggestions = Strategies.suggest_options(key, strategy_type; max_suggestions=typemax(Int))
+        for s in suggestions
+            if !haskey(best, s.primary) || s.distance < best[s.primary].distance
+                best[s.primary] = s
+            end
+        end
+    end
+
+    # Sort by distance and take top suggestions
+    results = sort(collect(values(best)), by=x -> x.distance)
+    n = min(max_suggestions, length(results))
+    return results[1:n]
 end
 
 """

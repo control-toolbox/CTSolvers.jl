@@ -172,20 +172,22 @@ function test_configuration()
         Test.@testset "suggest_options" begin
             # Similar to existing option
             suggestions1 = Strategies.suggest_options(:max_it, TestStrategyA)
-            Test.@test :max_iter in suggestions1 || :max in suggestions1
+            Test.@test suggestions1[1].primary == :max_iter
             
             # Similar to alias
             suggestions2 = Strategies.suggest_options(:tolrance, TestStrategyA)
-            Test.@test :tolerance in suggestions2 || :tol in suggestions2
+            Test.@test suggestions2[1].primary == :tolerance
             
             # Limit suggestions
             suggestions3 = Strategies.suggest_options(:x, TestStrategyA; max_suggestions=2)
             Test.@test length(suggestions3) <= 2
             
-            # Returns vector of symbols
+            # Returns structured results
             suggestions4 = Strategies.suggest_options(:unknown, TestStrategyA)
-            Test.@test suggestions4 isa Vector{Symbol}
             Test.@test !isempty(suggestions4)
+            Test.@test haskey(suggestions4[1], :primary)
+            Test.@test haskey(suggestions4[1], :aliases)
+            Test.@test haskey(suggestions4[1], :distance)
         end
         
         # ====================================================================

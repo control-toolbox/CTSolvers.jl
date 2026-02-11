@@ -116,16 +116,30 @@ function test_utilities()
         # suggest_options
         # ====================================================================
         
-        Test.@testset "suggest_options" begin
+        Test.@testset "suggest_options - structured results" begin
             # Similar to existing option
             suggestions1 = Strategies.suggest_options(:max_it, TestUtilStrategy)
-            Test.@test suggestions1 isa Vector{Symbol}
             Test.@test !isempty(suggestions1)
-            Test.@test :max_iter in suggestions1 || :max in suggestions1 || :maxiter in suggestions1
+            Test.@test suggestions1[1].primary == :max_iter
+            # Distance should be min over primary and all aliases
+            expected_dist1 = min(
+                Strategies.levenshtein_distance("max_it", "max_iter"),
+                Strategies.levenshtein_distance("max_it", "max"),
+                Strategies.levenshtein_distance("max_it", "maxiter")
+            )
+            Test.@test suggestions1[1].distance == expected_dist1
+            Test.@test suggestions1[1].aliases == (:max, :maxiter)
             
-            # Similar to alias
+            # Similar to alias - alias proximity should help
             suggestions2 = Strategies.suggest_options(:tolrance, TestUtilStrategy)
-            Test.@test :tolerance in suggestions2 || :tol in suggestions2
+            Test.@test suggestions2[1].primary == :tolerance
+            Test.@test suggestions2[1].aliases == (:tol,)
+            # Distance should be min of dist to "tolerance" and dist to "tol"
+            expected_dist = min(
+                Strategies.levenshtein_distance("tolrance", "tolerance"),
+                Strategies.levenshtein_distance("tolrance", "tol")
+            )
+            Test.@test suggestions2[1].distance == expected_dist
             
             # Very different key
             suggestions3 = Strategies.suggest_options(:xyz, TestUtilStrategy)
@@ -135,15 +149,88 @@ function test_utilities()
             # Limit suggestions
             suggestions4 = Strategies.suggest_options(:x, TestUtilStrategy; max_suggestions=2)
             Test.@test length(suggestions4) <= 2
-            Test.@test suggestions4 isa Vector{Symbol}
             
             # Single suggestion
             suggestions5 = Strategies.suggest_options(:unknown, TestUtilStrategy; max_suggestions=1)
             Test.@test length(suggestions5) == 1
+            Test.@test haskey(suggestions5[1], :primary)
+            Test.@test haskey(suggestions5[1], :aliases)
+            Test.@test haskey(suggestions5[1], :distance)
             
-            # Exact match should be first suggestion
+            # Exact match should be first suggestion with distance 0
             suggestions6 = Strategies.suggest_options(:max_iter, TestUtilStrategy)
-            Test.@test suggestions6[1] == :max_iter
+            Test.@test suggestions6[1].primary == :max_iter
+            Test.@test suggestions6[1].distance == 0
+            
+            # Exact alias match should give distance 0
+            suggestions7 = Strategies.suggest_options(:tol, TestUtilStrategy)
+            Test.@test suggestions7[1].primary == :tolerance
+            Test.@test suggestions7[1].distance == 0
+        end
+        
+        # ====================================================================
+        # suggest_options - alias proximity advantage
+        # ====================================================================
+        
+        Test.@testset "suggest_options - alias proximity advantage" begin
+            # KEY TEST: keyword close to an alias but far from primary name
+            # :maxiter is an alias of :max_iter
+            # :maxite is close to :maxiter (distance 1) but farther from :max_iter (distance 2)
+            suggestions = Strategies.suggest_options(:maxite, TestUtilStrategy)
+            Test.@test suggestions[1].primary == :max_iter
+            # Without alias awareness, distance would be levenshtein("maxite", "max_iter") = 3
+            # With alias awareness, distance is min(3, levenshtein("maxite", "maxiter")) = min(3, 1) = 1
+            dist_to_primary = Strategies.levenshtein_distance("maxite", "max_iter")
+            dist_to_alias = Strategies.levenshtein_distance("maxite", "maxiter")
+            Test.@test dist_to_alias < dist_to_primary  # Alias is closer
+            Test.@test suggestions[1].distance == dist_to_alias  # Uses alias distance
+            
+            # :to is close to :tol (distance 1) but far from :tolerance (distance 7)
+            suggestions2 = Strategies.suggest_options(:to, TestUtilStrategy)
+            # :tol alias should bring :tolerance closer
+            dist_to_primary2 = Strategies.levenshtein_distance("to", "tolerance")
+            dist_to_alias2 = Strategies.levenshtein_distance("to", "tol")
+            Test.@test dist_to_alias2 < dist_to_primary2
+            # Find the tolerance entry
+            tol_entry = nothing
+            for s in suggestions2
+                if s.primary == :tolerance
+                    tol_entry = s
+                    break
+                end
+            end
+            Test.@test tol_entry !== nothing
+            Test.@test tol_entry.distance == dist_to_alias2
+        end
+        
+        # ====================================================================
+        # format_suggestion
+        # ====================================================================
+        
+        Test.@testset "format_suggestion" begin
+            # Without aliases
+            s1 = (primary=:verbose, aliases=(), distance=2)
+            formatted1 = Strategies.format_suggestion(s1)
+            Test.@test occursin(":verbose", formatted1)
+            Test.@test occursin("[distance: 2]", formatted1)
+            Test.@test !occursin("alias", formatted1)
+            
+            # With single alias
+            s2 = (primary=:backend, aliases=(:adnlp_backend,), distance=1)
+            formatted2 = Strategies.format_suggestion(s2)
+            Test.@test occursin(":backend", formatted2)
+            Test.@test occursin("adnlp_backend", formatted2)
+            Test.@test occursin("alias:", formatted2)
+            Test.@test occursin("[distance: 1]", formatted2)
+            
+            # With multiple aliases
+            s3 = (primary=:max_iter, aliases=(:max, :maxiter), distance=0)
+            formatted3 = Strategies.format_suggestion(s3)
+            Test.@test occursin(":max_iter", formatted3)
+            Test.@test occursin("max", formatted3)
+            Test.@test occursin("maxiter", formatted3)
+            Test.@test occursin("aliases:", formatted3)
+            Test.@test occursin("[distance: 0]", formatted3)
         end
         
         # ====================================================================
@@ -250,7 +337,7 @@ function test_utilities()
             
             # Get suggestions for typo
             suggestions = Strategies.suggest_options(:max_itr, TestUtilStrategy)
-            Test.@test :max_iter in suggestions || :max in suggestions
+            Test.@test suggestions[1].primary == :max_iter
             
             # Verify distance calculation
             dist = Strategies.levenshtein_distance("max_itr", "max_iter")

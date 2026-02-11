@@ -112,8 +112,8 @@ $(TYPEDSIGNATURES)
 
 Suggest similar option names for an unknown key using Levenshtein distance.
 
-This function helps provide helpful error messages by suggesting option names
-that are similar to the unknown key provided by the user.
+For each option, the distance is the minimum over the primary name and all its aliases.
+Results are grouped by primary option name and sorted by this minimum distance.
 
 # Arguments
 - `key::Symbol`: Unknown key to find suggestions for
@@ -121,19 +121,23 @@ that are similar to the unknown key provided by the user.
 - `max_suggestions::Int=3`: Maximum number of suggestions to return
 
 # Returns
-- `Vector{Symbol}`: Suggested keys, sorted by similarity (closest first)
+- `Vector{@NamedTuple{primary::Symbol, aliases::Tuple{Vararg{Symbol}}, distance::Int}}`:
+  Suggested options sorted by distance (closest first), each with primary name, aliases, and distance.
 
 # Example
 ```julia-repl
 julia> suggest_options(:max_it, MyStrategy)
-[:max_iter]
+1-element Vector{...}:
+ (primary = :max_iter, aliases = (), distance = 2)
 
-julia> suggest_options(:tolrance, MyStrategy)
-[:tolerance]
+julia> suggest_options(:adnlp_backen, MyStrategy)
+1-element Vector{...}:
+ (primary = :backend, aliases = (:adnlp_backend,), distance = 1)
 ```
 
 # Note
-Used internally by error messages to provide helpful suggestions.
+The distance of an option to the key is `min(dist(key, primary), dist(key, alias1), ...)`.
+This ensures that options with a close alias are suggested even if the primary name is far.
 
 See also: [`resolve_alias`](@ref), [`levenshtein_distance`](@ref)
 """
@@ -143,27 +147,61 @@ function suggest_options(
     max_suggestions::Int=3
 )
     meta = metadata(strategy_type)
+    return suggest_options(key, meta; max_suggestions=max_suggestions)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Suggest similar option names from a `StrategyMetadata` using Levenshtein distance.
+
+See [`suggest_options(::Symbol, ::Type{<:AbstractStrategy})`](@ref) for details.
+"""
+function suggest_options(
+    key::Symbol,
+    meta::StrategyMetadata;
+    max_suggestions::Int=3
+)
+    key_str = string(key)
     
-    # Collect all available keys (primary names + aliases)
-    all_keys = Symbol[]
-    for (primary_key, spec) in pairs(meta)
-        push!(all_keys, primary_key)
-        append!(all_keys, spec.aliases)
+    # For each option, compute min distance over primary name + aliases
+    results = NamedTuple{(:primary, :aliases, :distance), Tuple{Symbol, Tuple{Vararg{Symbol}}, Int}}[]
+    for (primary_name, def) in pairs(meta)
+        # Distance to primary name
+        min_dist = levenshtein_distance(key_str, string(primary_name))
+        # Distance to each alias
+        for alias in def.aliases
+            d = levenshtein_distance(key_str, string(alias))
+            min_dist = min(min_dist, d)
+        end
+        push!(results, (primary=primary_name, aliases=def.aliases, distance=min_dist))
     end
     
-    # Compute Levenshtein distances
-    key_str = string(key)
-    distances = [
-        (k, levenshtein_distance(key_str, string(k)))
-        for k in all_keys
-    ]
-    
-    # Sort by distance and take top suggestions
-    sort!(distances, by=x -> x[2])
-    n_suggestions = min(max_suggestions, length(distances))
-    suggestions = [k for (k, d) in distances[1:n_suggestions]]
-    
-    return suggestions
+    # Sort by distance, then take top suggestions
+    sort!(results, by=x -> x.distance)
+    n = min(max_suggestions, length(results))
+    return results[1:n]
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Format a suggestion entry as a human-readable string.
+
+# Example
+```julia-repl
+julia> format_suggestion((primary=:backend, aliases=(:adnlp_backend,), distance=1))
+":backend (alias: adnlp_backend) [distance: 1]"
+```
+"""
+function format_suggestion(s::NamedTuple)
+    str = ":$(s.primary)"
+    if !isempty(s.aliases)
+        alias_label = length(s.aliases) == 1 ? "alias" : "aliases"
+        str *= " ($alias_label: $(join(s.aliases, ", ")))"
+    end
+    str *= " [distance: $(s.distance)]"
+    return str
 end
 
 """

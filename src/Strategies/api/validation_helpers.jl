@@ -49,9 +49,8 @@ function _error_unknown_options_strict(
         suggestions = suggest_options(key, strategy_type; max_suggestions=3)
         if !isempty(suggestions)
             suggestions_str *= "\nSuggestions for :$key:\n"
-            for (i, sugg) in enumerate(suggestions)
-                dist = levenshtein_distance(string(key), string(sugg))
-                suggestions_str *= "  - :$sugg (Levenshtein distance: $dist)\n"
+            for s in suggestions
+                suggestions_str *= "  - $(format_suggestion(s))\n"
             end
         end
     end
