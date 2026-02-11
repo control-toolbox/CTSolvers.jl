@@ -41,7 +41,7 @@ See also: [`AbstractOptimizationSolver`](@ref), [`IpoptSolver`](@ref)
 module Solvers
 
 # Importing to avoid namespace pollution
-import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES, TYPEDFIELDS
 import NLPModels
 import SolverCore
 import CommonSolve
