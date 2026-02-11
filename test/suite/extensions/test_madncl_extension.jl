@@ -490,7 +490,7 @@ function test_madncl_extension()
                     )
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test length(sol.solution) == 1
-                    Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
+                    Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
                 end
             else
                 @info "CUDA not functional, skipping GPU tests."
@@ -526,7 +526,7 @@ function test_madncl_extension()
                     sol = CTSolversMadNCL.solve_with_madncl(nlp; madncl_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test length(sol.solution) == 1
-                    Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
+                    Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
                 end
             else
                 @info "CUDA not functional, skipping GPU solve_with_madncl tests."
@@ -559,7 +559,7 @@ function test_madncl_extension()
                     )
                     Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                     expected = vcat(elec.init.x, elec.init.y, elec.init.z)
-                    Test.@test sol.solution ≈ expected atol=1e-6
+                    Test.@test Array(sol.solution) ≈ expected atol=1e-6
                 end
             else
                 @info "CUDA not functional, skipping GPU initial guess tests."
