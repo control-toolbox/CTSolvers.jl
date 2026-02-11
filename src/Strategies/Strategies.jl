@@ -12,9 +12,12 @@ but provides higher-level strategy management capabilities.
 """
 module Strategies
 
-using DocStringExtensions
-using CTBase: CTBase
+# Importing to avoid namespace pollution
+import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+import CTBase
 const Exceptions = CTBase.Exceptions
+
+# Using CTSolvers modules to get access to the api
 using ..CTSolvers.Options
 
 # ==============================================================================

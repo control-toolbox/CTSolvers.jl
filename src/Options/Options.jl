@@ -12,8 +12,9 @@ CTModels modules, making it reusable across the ecosystem.
 """
 module Options
 
-using DocStringExtensions
-using CTBase: CTBase
+# Importing to avoid namespace pollution
+import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+import CTBase
 const Exceptions = CTBase.Exceptions
 
 # ==============================================================================

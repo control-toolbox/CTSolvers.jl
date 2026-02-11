@@ -8,16 +8,14 @@
 
 module DOCP
 
-using DocStringExtensions
-using NLPModels
-using SolverCore
-using CTModels: AbstractOptimalControlProblem
-using ..CTSolvers.Optimization: AbstractOptimizationProblem
-using ..CTSolvers.Optimization: AbstractBuilder, AbstractModelBuilder, AbstractSolutionBuilder
-using ..CTSolvers.Optimization: AbstractOCPSolutionBuilder
-using ..CTSolvers.Optimization: build_model, build_solution
-import ..CTSolvers.Optimization: get_adnlp_model_builder, get_exa_model_builder
-import ..CTSolvers.Optimization: get_adnlp_solution_builder, get_exa_solution_builder
+# Importing to avoid namespace pollution
+import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+import NLPModels
+import SolverCore
+import CTModels
+
+# Using CTSolvers modules to get access to the api
+using ..CTSolvers.Optimization
 using ..CTSolvers.Modelers
 
 # Include submodules

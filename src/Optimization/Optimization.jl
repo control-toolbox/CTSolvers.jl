@@ -8,11 +8,12 @@
 
 module Optimization
 
-using CTBase: CTBase
+# Importing to avoid namespace pollution
+import CTBase
 const Exceptions = CTBase.Exceptions
-using DocStringExtensions
-using NLPModels
-using SolverCore
+import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+import NLPModels
+import SolverCore
 
 # Include submodules
 include(joinpath(@__DIR__, "abstract_types.jl"))

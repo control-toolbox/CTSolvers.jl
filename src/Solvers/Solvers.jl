@@ -40,14 +40,15 @@ See also: [`AbstractOptimizationSolver`](@ref), [`IpoptSolver`](@ref)
 """
 module Solvers
 
-using DocStringExtensions
-using NLPModels
-using SolverCore
-using CommonSolve
-using CTBase: CTBase
+# Importing to avoid namespace pollution
+import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+import NLPModels
+import SolverCore
+import CommonSolve
+import CTBase
 const Exceptions = CTBase.Exceptions
 
-# Import parent module components
+# Using CTSolvers modules to get access to the api
 using ..CTSolvers.Strategies
 using ..CTSolvers.Options
 using ..CTSolvers.Optimization

@@ -8,18 +8,19 @@
 
 module Modelers
 
-using CTBase: CTBase
+# Importing to avoid namespace pollution
+import CTBase
 const Exceptions = CTBase.Exceptions
-using DocStringExtensions
-using SolverCore
-using ADNLPModels
-using ExaModels
-using KernelAbstractions
+import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+import SolverCore
+import ADNLPModels
+import ExaModels
+import KernelAbstractions
+
+# Using CTSolvers modules to get access to the api
 using ..CTSolvers.Options
 using ..CTSolvers.Strategies
-using ..CTSolvers.Optimization: AbstractOptimizationProblem,
-    get_adnlp_model_builder, get_exa_model_builder,
-    get_adnlp_solution_builder, get_exa_solution_builder
+using ..CTSolvers.Optimization
 
 # Include submodules
 include(joinpath(@__DIR__, "abstract_modeler.jl"))

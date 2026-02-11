@@ -20,11 +20,14 @@ Design guidelines follow `reference/16_development_standards_reference.md`:
 """
 module Orchestration
 
-using DocStringExtensions
-using CTBase: CTBase
+# Importing to avoid namespace pollution
+import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+import CTBase
 const Exceptions = CTBase.Exceptions
-using ..Options
-using ..Strategies
+
+# Using CTSolvers modules to get access to the api
+using ..CTSolvers.Options
+using ..CTSolvers.Strategies
 
 # ---------------------------------------------------------------------------
 # Submodules / helper source files

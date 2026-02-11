@@ -28,7 +28,7 @@ julia> nlp_model = builder(initial_guess; show_time=false)
 ADNLPModel(...)
 ```
 """
-function get_adnlp_model_builder(prob::DiscretizedOptimalControlProblem)
+function Optimization.get_adnlp_model_builder(prob::DiscretizedOptimalControlProblem)
     return prob.adnlp_model_builder
 end
 
@@ -54,7 +54,7 @@ julia> nlp_model = builder(Float64, initial_guess; backend=nothing)
 ExaModel{Float64}(...)
 ```
 """
-function get_exa_model_builder(prob::DiscretizedOptimalControlProblem)
+function Optimization.get_exa_model_builder(prob::DiscretizedOptimalControlProblem)
     return prob.exa_model_builder
 end
 
@@ -80,7 +80,7 @@ julia> solution = builder(nlp_stats)
 OptimalControlSolution(...)
 ```
 """
-function get_adnlp_solution_builder(prob::DiscretizedOptimalControlProblem)
+function Optimization.get_adnlp_solution_builder(prob::DiscretizedOptimalControlProblem)
     return prob.adnlp_solution_builder
 end
 
@@ -106,6 +106,6 @@ julia> solution = builder(nlp_stats)
 OptimalControlSolution(...)
 ```
 """
-function get_exa_solution_builder(prob::DiscretizedOptimalControlProblem)
+function Optimization.get_exa_solution_builder(prob::DiscretizedOptimalControlProblem)
     return prob.exa_solution_builder
 end

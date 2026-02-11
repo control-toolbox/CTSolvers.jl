@@ -34,7 +34,7 @@ DiscretizedOptimalControlProblem{...}(...)
 ```
 """
 struct DiscretizedOptimalControlProblem{
-    TO<:AbstractOptimalControlProblem,
+    TO<:CTModels.AbstractOptimalControlProblem,
     TAMB<:AbstractModelBuilder,
     TEMB<:AbstractModelBuilder,
     TASB<:AbstractSolutionBuilder,
