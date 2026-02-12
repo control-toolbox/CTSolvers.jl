@@ -254,8 +254,8 @@ function test_knitro_extension()
         #         @warn "Knitro license not available, skipping Initial Guess tests"
         #         Test.@test_skip "Knitro license required"
         #     else
-        #         modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler()]
-        #         modelers_names = ["Modelers.ADNLPModeler", "ExaModeler (CPU)"]
+        #         modelers = [Modelers.ADNLP(), Modelers.ExaModeler()]
+        #         modelers_names = ["Modelers.ADNLP", "ExaModeler (CPU)"]
         #         
         #         # Rosenbrock: start at the known solution and enforce maxit=0
         #         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -297,8 +297,8 @@ function test_knitro_extension()
         #         @warn "Knitro license not available, skipping solve_with_knitro tests"
         #         Test.@test_skip "Knitro license required"
         #     else
-        #         modelers = [Modelers.ADNLPModeler()]
-        #         modelers_names = ["Modelers.ADNLPModeler"]
+        #         modelers = [Modelers.ADNLP()]
+        #         modelers_names = ["Modelers.ADNLP"]
         #         knitro_options = Dict(
         #             :maxit => 1000,
         #             :feastol_abs => 1e-6,
@@ -342,8 +342,8 @@ function test_knitro_extension()
         #         @warn "Knitro license not available, skipping CommonSolve.solve tests"
         #         Test.@test_skip "Knitro license required"
         #     else
-        #         modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler()]
-        #         modelers_names = ["Modelers.ADNLPModeler", "ExaModeler (CPU)"]
+        #         modelers = [Modelers.ADNLP(), Modelers.ExaModeler()]
+        #         modelers_names = ["Modelers.ADNLP", "ExaModeler (CPU)"]
         #         knitro_options = Dict(
         #             :maxit => 1000,
         #             :feastol_abs => 1e-6,

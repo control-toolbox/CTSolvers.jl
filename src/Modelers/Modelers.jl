@@ -30,6 +30,6 @@ include(joinpath(@__DIR__, "exa_modeler.jl"))
 
 # Public API
 export AbstractNLPModeler
-export ADNLPModeler, ExaModeler
+export ADNLP, ExaModeler
 
 end # module Modelers

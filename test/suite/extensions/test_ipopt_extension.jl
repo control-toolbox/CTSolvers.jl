@@ -241,8 +241,8 @@ function test_ipopt_extension()
         # ====================================================================
         
         Test.@testset "Initial Guess - max_iter=0" begin
-            modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler()]
-            modelers_names = ["Modelers.ADNLPModeler", "ExaModeler (CPU)"]
+            modelers = [Modelers.ADNLP(), Modelers.ExaModeler()]
+            modelers_names = ["Modelers.ADNLP", "ExaModeler (CPU)"]
             
             # Rosenbrock: start at the known solution and enforce max_iter=0
             Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -288,8 +288,8 @@ function test_ipopt_extension()
         # ====================================================================
         
         Test.@testset "solve_with_ipopt Function" begin
-            modelers = [Modelers.ADNLPModeler()]
-            modelers_names = ["Modelers.ADNLPModeler"]
+            modelers = [Modelers.ADNLP()]
+            modelers_names = ["Modelers.ADNLP"]
             
             ipopt_options = Dict(
                 :max_iter => 1000,
@@ -344,8 +344,8 @@ function test_ipopt_extension()
         # ====================================================================
         
         Test.@testset "CommonSolve.solve with Ipopt" begin
-            modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler()]
-            modelers_names = ["Modelers.ADNLPModeler", "ExaModeler (CPU)"]
+            modelers = [Modelers.ADNLP(), Modelers.ExaModeler()]
+            modelers_names = ["Modelers.ADNLP", "ExaModeler (CPU)"]
             
             ipopt_options = Dict(
                 :max_iter => 1000,

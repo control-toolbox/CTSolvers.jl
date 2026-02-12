@@ -17,15 +17,15 @@ The modeler handles the conversion to the specific NLP backend.
 # Arguments
 - `prob::AbstractOptimizationProblem`: The optimization problem
 - `initial_guess`: Initial guess for the NLP solver
-- `modeler`: The modeler strategy (e.g., Modelers.ADNLPModeler, ExaModeler)
+- `modeler`: The modeler strategy (e.g., Modelers.ADNLP, ExaModeler)
 
 # Returns
 - An NLP model suitable for the chosen backend
 
 # Example
 ```julia-repl
-julia> modeler = Modelers.ADNLPModeler(show_time=false)
-Modelers.ADNLPModeler(...)
+julia> modeler = Modelers.ADNLP(show_time=false)
+Modelers.ADNLP(...)
 
 julia> nlp = build_model(prob, initial_guess, modeler)
 ADNLPModel(...)

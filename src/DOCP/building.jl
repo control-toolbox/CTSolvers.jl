@@ -17,7 +17,7 @@ typing for `DiscretizedModel`.
 # Arguments
 - `prob::DiscretizedModel`: The discretized OCP
 - `initial_guess`: Initial guess for the NLP solver
-- `modeler`: The modeler to use (e.g., Modelers.ADNLPModeler, ExaModeler)
+- `modeler`: The modeler to use (e.g., Modelers.ADNLP, ExaModeler)
 
 # Returns
 - `NLPModels.AbstractNLPModel`: The NLP model

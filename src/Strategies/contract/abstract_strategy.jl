@@ -282,14 +282,14 @@ with their values and provenance sources.
 
 # Example
 ```julia-repl
-julia> Modelers.ADNLPModeler()
-Modelers.ADNLPModeler (instance)
+julia> Modelers.ADNLP()
+Modelers.ADNLP (instance)
 ├─ id: :adnlp
 ├─ matrix_free = false  [default]
 ├─ show_time = false  [default]
 ├─ name = CTSolvers-ADNLP  [default]
 └─ backend = optimized  [default]
-Tip: use describe(Modelers.ADNLPModeler) to see all available options.
+Tip: use describe(Modelers.ADNLP) to see all available options.
 ```
 
 See also: [`describe`](@ref), [`options`](@ref)
@@ -329,8 +329,8 @@ Compact display of a strategy instance.
 
 # Example
 ```julia-repl
-julia> print(Modelers.ADNLPModeler())
-Modelers.ADNLPModeler(matrix_free=false, show_time=false, name=CTSolvers-ADNLP, backend=optimized)
+julia> print(Modelers.ADNLP())
+Modelers.ADNLP(matrix_free=false, show_time=false, name=CTSolvers-ADNLP, backend=optimized)
 ```
 
 See also: [`Base.show(::IO, ::MIME"text/plain", ::AbstractStrategy)`](@ref)
@@ -364,8 +364,8 @@ before constructing an instance.
 
 # Example
 ```julia-repl
-julia> describe(Modelers.ADNLPModeler)
-Modelers.ADNLPModeler (strategy type)
+julia> describe(Modelers.ADNLP)
+Modelers.ADNLP (strategy type)
 ├─ id: :adnlp
 ├─ supertype: AbstractNLPModeler
 └─ metadata: 4 options defined

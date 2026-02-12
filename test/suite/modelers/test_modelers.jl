@@ -19,20 +19,20 @@ function test_modelers_basic()
     Test.@testset "Modelers Basic Tests" begin
         # Test module exports
         Test.@test isdefined(CTSolvers, :AbstractNLPModeler)
-        Test.@test isdefined(CTSolvers, :ADNLPModeler)
+        Test.@test isdefined(CTSolvers, :ADNLP)
         Test.@test isdefined(CTSolvers, :ExaModeler)
         
         # Test type hierarchy
         Test.@test Modelers.AbstractNLPModeler <: Strategies.AbstractStrategy
-        Test.@test Modelers.ADNLPModeler <: Modelers.AbstractNLPModeler
+        Test.@test Modelers.ADNLP <: Modelers.AbstractNLPModeler
         Test.@test Modelers.ExaModeler <: Modelers.AbstractNLPModeler
         
         # Test strategy identification
-        Test.@test Strategies.id(Modelers.ADNLPModeler) == :adnlp
+        Test.@test Strategies.id(Modelers.ADNLP) == :adnlp
         Test.@test Strategies.id(Modelers.ExaModeler) == :exa
         
         # Test strategy metadata structure
-        adnlp_meta = Strategies.metadata(Modelers.ADNLPModeler)
+        adnlp_meta = Strategies.metadata(Modelers.ADNLP)
         Test.@test adnlp_meta isa Strategies.StrategyMetadata
         Test.@test haskey(adnlp_meta, :show_time)
         Test.@test haskey(adnlp_meta, :backend)
@@ -47,23 +47,23 @@ end
 """
     test_adnlp_modeler()
 
-Test Modelers.ADNLPModeler implementation.
+Test Modelers.ADNLP implementation.
 """
 function test_adnlp_modeler()
-    Test.@testset "Modelers.ADNLPModeler Tests" begin
+    Test.@testset "Modelers.ADNLP Tests" begin
         # Test default constructor
-        modeler = Modelers.ADNLPModeler()
+        modeler = Modelers.ADNLP()
         Test.@test modeler isa Modelers.AbstractNLPModeler
         Test.@test modeler isa Strategies.AbstractStrategy
         
         # Test constructor with options
-        modeler_opts = Modelers.ADNLPModeler(show_time=true, backend=:default)
+        modeler_opts = Modelers.ADNLP(show_time=true, backend=:default)
         opts = Strategies.options(modeler_opts)
         Test.@test opts[:show_time] == true
         Test.@test opts[:backend] == :default
         
         # Test option defaults
-        modeler_default = Modelers.ADNLPModeler()
+        modeler_default = Modelers.ADNLP()
         opts_default = Strategies.options(modeler_default)
         Test.@test opts_default[:backend] == :optimized
         
@@ -117,11 +117,11 @@ Test integration with Optimization and Strategies modules.
 function test_modelers_integration()
     Test.@testset "Modelers Integration Tests" begin
         # Test strategy registry compatibility
-        Test.@test Modelers.ADNLPModeler <: Strategies.AbstractStrategy
+        Test.@test Modelers.ADNLP <: Strategies.AbstractStrategy
         Test.@test Modelers.ExaModeler <: Strategies.AbstractStrategy
         
         # Test option extraction
-        modeler = Modelers.ADNLPModeler(show_time=true)
+        modeler = Modelers.ADNLP(show_time=true)
         opts = Strategies.options(modeler)
         Test.@test haskey(opts, :show_time)
         Test.@test haskey(opts, :backend)
@@ -152,7 +152,7 @@ Test generic options API.
 function test_modelers_options_api()
     Test.@testset "Modelers Options API" begin
         # Test that options are passed generically (not extracted by name)
-        modeler = Modelers.ADNLPModeler(show_time=true, backend=:default)
+        modeler = Modelers.ADNLP(show_time=true, backend=:default)
         opts = Strategies.options(modeler)
         
         # Options should be accessible as NamedTuple for generic passing

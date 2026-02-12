@@ -39,7 +39,7 @@ function test_end_to_end()
             prob = ros.prob
             
             # Step 3: Create modeler
-            modeler = Modelers.ADNLPModeler(show_time=false)
+            modeler = Modelers.ADNLP(show_time=false)
             Test.@test modeler isa Modelers.AbstractNLPModeler
             
             # Step 4: Build NLP model
@@ -159,9 +159,9 @@ function test_end_to_end()
             ros = Rosenbrock()
             prob = ros.prob
             
-            Test.@testset "Modelers.ADNLPModeler - Simple" begin
+            Test.@testset "Modelers.ADNLP - Simple" begin
                 # Test without options (defaults)
-                modeler = Modelers.ADNLPModeler()
+                modeler = Modelers.ADNLP()
                 nlp = modeler(prob, ros.init)
                 
                 Test.@test nlp isa ADNLPModels.ADNLPModel
@@ -169,15 +169,15 @@ function test_end_to_end()
                 Test.@test obj ≈ rosenbrock_objective(ros.init)
             end
             
-            Test.@testset "Modelers.ADNLPModeler - With Options" begin
+            Test.@testset "Modelers.ADNLP - With Options" begin
                 # Test with show_time option
-                modeler = Modelers.ADNLPModeler(show_time=false)
+                modeler = Modelers.ADNLP(show_time=false)
                 nlp = modeler(prob, ros.init)
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 
                 # Test with different backends (all valid ADNLPModels backends)
                 for backend in [:optimized, :generic, :default]
-                    modeler_backend = Modelers.ADNLPModeler(backend=backend, show_time=false)
+                    modeler_backend = Modelers.ADNLP(backend=backend, show_time=false)
                     nlp_backend = modeler_backend(prob, ros.init)
                     
                     Test.@test nlp_backend isa ADNLPModels.ADNLPModel
@@ -221,7 +221,7 @@ function test_end_to_end()
             prob = ros.prob
             
             # Build with ADNLP
-            modeler_adnlp = Modelers.ADNLPModeler(show_time=false)
+            modeler_adnlp = Modelers.ADNLP(show_time=false)
             nlp_adnlp = modeler_adnlp(prob, ros.init)
             obj_adnlp = NLPModels.obj(nlp_adnlp, ros.init)
             
@@ -247,7 +247,7 @@ function test_end_to_end()
             ros = Rosenbrock()
             prob = ros.prob
             
-            modeler = Modelers.ADNLPModeler(show_time=false)
+            modeler = Modelers.ADNLP(show_time=false)
             nlp = modeler(prob, ros.init)
             
             Test.@testset "Gradient at initial point" begin
@@ -279,7 +279,7 @@ function test_end_to_end()
             ros = Rosenbrock()
             prob = ros.prob
             
-            modeler = Modelers.ADNLPModeler(show_time=false)
+            modeler = Modelers.ADNLP(show_time=false)
             nlp = modeler(prob, ros.init)
             
             Test.@testset "Constraint at initial point" begin
@@ -310,7 +310,7 @@ function test_end_to_end()
             prob = ros.prob
             
             Test.@testset "Model building time" begin
-                modeler = Modelers.ADNLPModeler(show_time=false)
+                modeler = Modelers.ADNLP(show_time=false)
                 
                 # Should be fast
                 t = @elapsed nlp = modeler(prob, ros.init)
@@ -319,7 +319,7 @@ function test_end_to_end()
             end
             
             Test.@testset "Function evaluation time" begin
-                modeler = Modelers.ADNLPModeler(show_time=false)
+                modeler = Modelers.ADNLP(show_time=false)
                 nlp = modeler(prob, ros.init)
                 
                 # Objective evaluation should be fast

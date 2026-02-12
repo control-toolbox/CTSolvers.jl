@@ -49,10 +49,10 @@ function test_coverage_modelers()
         end
 
         # ====================================================================
-        # UNIT TESTS - Modelers.ADNLPModeler defaults (adnlp_modeler.jl)
+        # UNIT TESTS - Modelers.ADNLP defaults (adnlp_modeler.jl)
         # ====================================================================
 
-        Test.@testset "Modelers.ADNLPModeler - default helpers" begin
+        Test.@testset "Modelers.ADNLP - default helpers" begin
             Test.@test Modelers.__adnlp_model_backend() == :optimized
         end
 
@@ -76,12 +76,12 @@ function test_coverage_modelers()
         end
 
         # ====================================================================
-        # UNIT TESTS - Modelers.ADNLPModeler invalid unknown option (strict mode)
+        # UNIT TESTS - Modelers.ADNLP invalid unknown option (strict mode)
         # ====================================================================
 
-        Test.@testset "Modelers.ADNLPModeler - unknown option strict mode" begin
+        Test.@testset "Modelers.ADNLP - unknown option strict mode" begin
             redirect_stderr(devnull) do
-                Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLPModeler(unknown_opt=42)
+                Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(unknown_opt=42)
             end
         end
 
@@ -95,8 +95,8 @@ function test_coverage_modelers()
         # UNIT TESTS - Strategies.id() direct calls (coverage for id lines)
         # ====================================================================
 
-        Test.@testset "Modelers.ADNLPModeler - Strategies.id() direct" begin
-            Test.@test Strategies.id(Modelers.ADNLPModeler) === :adnlp
+        Test.@testset "Modelers.ADNLP - Strategies.id() direct" begin
+            Test.@test Strategies.id(Modelers.ADNLP) === :adnlp
         end
 
         Test.@testset "ExaModeler - Strategies.id() direct" begin

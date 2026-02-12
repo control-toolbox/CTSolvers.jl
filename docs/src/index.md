@@ -43,7 +43,7 @@ It provides the **solution layer** for optimal control problems:
 | `Strategies` | Abstract strategy contract, metadata, options, registry |
 | `Orchestration` | Option routing, disambiguation, method tuple handling |
 | `Optimization` | Abstract problem types, builder pattern, build/solve API |
-| `Modelers` | Modelers.ADNLPModeler, ExaModeler — NLP backend adapters |
+| `Modelers` | Modelers.ADNLP, ExaModeler — NLP backend adapters |
 | `DOCP` | DiscretizedModel — concrete problem type |
 | `Solvers` | IpoptSolver, MadNLPSolver, KnitroSolver — NLP solver wrappers |
 
@@ -74,7 +74,7 @@ using NLPModelsIpopt  # loads the Ipopt extension
 solver = CTSolvers.Solvers.IpoptSolver(max_iter = 1000, tol = 1e-8)
 
 # Create a modeler
-modeler = CTSolvers.Modelers.ADNLPModeler(backend = :optimized)
+modeler = CTSolvers.Modelers.ADNLP(backend = :optimized)
 
 # Solve (high-level API)
 using CommonSolve

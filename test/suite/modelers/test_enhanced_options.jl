@@ -1,6 +1,6 @@
 # Tests for Enhanced Modelers Options
 #
-# This file tests the enhanced Modelers.ADNLPModeler and ExaModeler options
+# This file tests the enhanced Modelers.ADNLP and ExaModeler options
 # to ensure they work correctly with validation and provide expected behavior.
 #
 # Author: CTSolvers Development Team
@@ -25,52 +25,52 @@ struct TestDummyModel end
 function test_enhanced_options()
     Test.@testset "Enhanced Modelers Options" verbose = VERBOSE showtiming = SHOWTIMING begin
 
-        Test.@testset "Modelers.ADNLPModeler Enhanced Options" begin
+        Test.@testset "Modelers.ADNLP Enhanced Options" begin
             
             Test.@testset "New Options Validation" begin
                 # Test matrix_free option
-                modeler = Modelers.ADNLPModeler(matrix_free=true)
+                modeler = Modelers.ADNLP(matrix_free=true)
                 Test.@test Strategies.options(modeler)[:matrix_free] == true
                 
-                modeler = Modelers.ADNLPModeler(matrix_free=false)
+                modeler = Modelers.ADNLP(matrix_free=false)
                 Test.@test Strategies.options(modeler)[:matrix_free] == false
                 
                 # Test name option
-                modeler = Modelers.ADNLPModeler(name="TestProblem")
+                modeler = Modelers.ADNLP(name="TestProblem")
                 Test.@test Strategies.options(modeler)[:name] == "TestProblem"
             end
             
             Test.@testset "Backend Validation" begin
                 # Valid backends should work (some may generate warnings if packages not loaded)
-                Test.@test_nowarn Modelers.ADNLPModeler(backend=:default)
-                Test.@test_nowarn Modelers.ADNLPModeler(backend=:optimized)
-                Test.@test_nowarn Modelers.ADNLPModeler(backend=:generic)
+                Test.@test_nowarn Modelers.ADNLP(backend=:default)
+                Test.@test_nowarn Modelers.ADNLP(backend=:optimized)
+                Test.@test_nowarn Modelers.ADNLP(backend=:generic)
                 # Enzyme and Zygote may generate warnings if packages not loaded - that's expected
                 redirect_stderr(devnull) do
-                    Modelers.ADNLPModeler(backend=:enzyme)  # May warn if Enzyme not loaded
-                    Modelers.ADNLPModeler(backend=:zygote)  # May warn if Zygote not loaded
+                    Modelers.ADNLP(backend=:enzyme)  # May warn if Enzyme not loaded
+                    Modelers.ADNLP(backend=:zygote)  # May warn if Zygote not loaded
                 end
                 
                 # Invalid backend should throw error (redirect stderr to hide error logs)
                 redirect_stderr(devnull) do
-                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLPModeler(backend=:invalid)
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(backend=:invalid)
                 end
             end
             
             Test.@testset "Name Validation" begin
                 # Valid names should work
-                Test.@test_nowarn Modelers.ADNLPModeler(name="ValidName")
-                Test.@test_nowarn Modelers.ADNLPModeler(name="name_with_123")
+                Test.@test_nowarn Modelers.ADNLP(name="ValidName")
+                Test.@test_nowarn Modelers.ADNLP(name="name_with_123")
                 
                 # Empty name should throw error (redirect stderr to hide error logs)
                 redirect_stderr(devnull) do
-                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLPModeler(name="")
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(name="")
                 end
             end
             
             Test.@testset "Combined Options" begin
                 # Test multiple options together
-                modeler = Modelers.ADNLPModeler(
+                modeler = Modelers.ADNLP(
                     backend=:optimized,
                     matrix_free=true,
                     name="CombinedTest",
@@ -140,19 +140,19 @@ function test_enhanced_options()
         
         Test.@testset "Backward Compatibility" begin
             
-            Test.@testset "Modelers.ADNLPModeler Backward Compatibility" begin
+            Test.@testset "Modelers.ADNLP Backward Compatibility" begin
                 # Original constructor should still work
-                modeler1 = Modelers.ADNLPModeler()
-                Test.@test modeler1 isa Modelers.ADNLPModeler
+                modeler1 = Modelers.ADNLP()
+                Test.@test modeler1 isa Modelers.ADNLP
                 
                 # Original options should still work
-                modeler2 = Modelers.ADNLPModeler(show_time=true, backend=:default)
-                Test.@test modeler2 isa Modelers.ADNLPModeler
+                modeler2 = Modelers.ADNLP(show_time=true, backend=:default)
+                Test.@test modeler2 isa Modelers.ADNLP
                 Test.@test Strategies.options(modeler2)[:show_time] == true
                 Test.@test Strategies.options(modeler2)[:backend] == :default
                 
                 # Default values should be preserved
-                modeler3 = Modelers.ADNLPModeler()
+                modeler3 = Modelers.ADNLP()
                 opts = Strategies.options(modeler3)
                 Test.@test opts[:backend] == :optimized
                 # show_time, matrix_free, name have NotProvided defaults — not stored when not provided
@@ -182,23 +182,23 @@ function test_enhanced_options()
         Test.@testset "Advanced Backend Overrides" begin
             Test.@testset "Backend Override Validation" begin
                 # Valid backend overrides should work
-                Test.@test_nowarn Modelers.ADNLPModeler(gradient_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLPModeler(hprod_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLPModeler(jprod_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLPModeler(jtprod_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLPModeler(jacobian_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLPModeler(hessian_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(gradient_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(hprod_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(jprod_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(jtprod_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(jacobian_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(hessian_backend=nothing)
 
                 # NLS backend overrides should work
-                Test.@test_nowarn Modelers.ADNLPModeler(ghjvprod_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLPModeler(hprod_residual_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLPModeler(jprod_residual_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLPModeler(jtprod_residual_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLPModeler(jacobian_residual_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLPModeler(hessian_residual_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(ghjvprod_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(hprod_residual_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(jprod_residual_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(jtprod_residual_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(jacobian_residual_backend=nothing)
+                Test.@test_nowarn Modelers.ADNLP(hessian_residual_backend=nothing)
 
                 # Test that options are accessible
-                modeler = Modelers.ADNLPModeler(
+                modeler = Modelers.ADNLP(
                     gradient_backend=nothing,
                     hprod_backend=nothing,
                     ghjvprod_backend=nothing
@@ -212,16 +212,16 @@ function test_enhanced_options()
             Test.@testset "Backend Override Type Validation" begin
                 # Invalid types should throw enriched exceptions (redirect stderr to hide error logs)
                 redirect_stderr(devnull) do
-                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLPModeler(gradient_backend="invalid")
-                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLPModeler(hprod_backend=123)
-                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLPModeler(jprod_backend=:invalid)
-                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLPModeler(ghjvprod_backend="invalid")
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(gradient_backend="invalid")
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(hprod_backend=123)
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(jprod_backend=:invalid)
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(ghjvprod_backend="invalid")
                 end
             end
 
             Test.@testset "Combined Advanced Options" begin
                 # Test advanced options with basic options
-                modeler = Modelers.ADNLPModeler(
+                modeler = Modelers.ADNLP(
                     backend=:optimized,
                     matrix_free=true,
                     name="AdvancedTest",
@@ -244,10 +244,10 @@ function test_enhanced_options()
         end
         
         Test.@testset "Backend Aliases with Deprecation Warnings" begin
-            # Test Modelers.ADNLPModeler with adnlp_backend alias
+            # Test Modelers.ADNLP with adnlp_backend alias
             # Use :generic (not the default :optimized) to verify the alias actually passes the value
-            Test.@testset "Modelers.ADNLPModeler adnlp_backend alias" begin
-                modeler = Modelers.ADNLPModeler(adnlp_backend=:generic)
+            Test.@testset "Modelers.ADNLP adnlp_backend alias" begin
+                modeler = Modelers.ADNLP(adnlp_backend=:generic)
                 opts = Strategies.options(modeler)
                 Test.@test haskey(opts.options, :backend)
                 Test.@test opts[:backend] == :generic
@@ -264,13 +264,13 @@ function test_enhanced_options()
             
             # Test deprecation warnings are emitted
             Test.@testset "Deprecation warnings" begin
-                Test.@test_logs (:warn, "adnlp_backend is deprecated, use backend instead") Modelers.ADNLPModeler(adnlp_backend=:default)
+                Test.@test_logs (:warn, "adnlp_backend is deprecated, use backend instead") Modelers.ADNLP(adnlp_backend=:default)
                 Test.@test_logs (:warn, "exa_backend is deprecated, use backend instead") ExaModeler(exa_backend=nothing)
             end
             
             # Test standard backend does not emit warning
             Test.@testset "No warning with standard backend" begin
-                Test.@test_logs Modelers.ADNLPModeler(backend=:generic)
+                Test.@test_logs Modelers.ADNLP(backend=:generic)
                 Test.@test_logs ExaModeler(backend=nothing)
             end
         end
