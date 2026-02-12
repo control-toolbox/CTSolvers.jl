@@ -290,7 +290,7 @@ function test_comprehensive_validation()
         
         # Create registries for testing
         modeler_registry = CTSolvers.Strategies.create_registry(
-            AbstractNLPModeler => (ADNLPModeler, ExaModeler)
+            AbstractNLPModeler => (Modelers.ADNLPModeler, ExaModeler)
         )
         
         # Create solver registry based on available extensions
@@ -313,27 +313,27 @@ function test_comprehensive_validation()
         @testset "Modelers" begin
             
             # ----------------------------------------------------------------
-            # ADNLPModeler Tests
+            # Modelers.ADNLPModeler Tests
             # ----------------------------------------------------------------
             
-            @testset "ADNLPModeler" begin
+            @testset "Modelers.ADNLPModeler" begin
                 known_options = (backend=:default, show_time=true)
                 unknown_options = (fake_option=123, custom_param="test")
                 
                 # Test all construction methods
                 test_strategy_construction(
-                    ADNLPModeler, :adnlp, AbstractNLPModeler,
+                    Modelers.ADNLPModeler, :adnlp, AbstractNLPModeler,
                     known_options, unknown_options, modeler_registry
                 )
                 
                 # Test option recovery for successful constructions
                 @testset "Option Recovery" begin
                     # Strict mode - known options only
-                    strategy_strict = ADNLPModeler(; known_options...)
+                    strategy_strict = Modelers.ADNLPModeler(; known_options...)
                     test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                     
                     # Permissive mode - known + unknown options
-                    strategy_permissive = ADNLPModeler(; known_options..., unknown_options..., mode=:permissive)
+                    strategy_permissive = Modelers.ADNLPModeler(; known_options..., unknown_options..., mode=:permissive)
                     test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
                     
                     # Test build_strategy option recovery
@@ -342,7 +342,7 @@ function test_comprehensive_validation()
                 end
                 
                 # Test invalid mode
-                test_invalid_mode(ADNLPModeler)
+                test_invalid_mode(Modelers.ADNLPModeler)
             end
             
             # ----------------------------------------------------------------
@@ -516,7 +516,7 @@ function test_comprehensive_validation()
                 registry = modeler_registry
                 
                 # Direct constructor - mode should NOT be stored in options
-                modeler1 = ADNLPModeler(backend=:default; mode=:permissive)
+                modeler1 = Modelers.ADNLPModeler(backend=:default; mode=:permissive)
                 # @test modeler1.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
                 # build_strategy - mode should NOT be stored in options  
@@ -542,7 +542,7 @@ function test_comprehensive_validation()
             @testset "Error Quality" begin
                 # Test that error messages are helpful
                 try
-                    ADNLPModeler(backend=:default, completely_unknown_option=999)
+                    Modelers.ADNLPModeler(backend=:default, completely_unknown_option=999)
                     @test false  # Should not reach here
                 catch e
                     @test e isa Exceptions.IncorrectArgument
@@ -552,7 +552,7 @@ function test_comprehensive_validation()
                 
                 # Test invalid mode error
                 try
-                    ADNLPModeler(backend=:default; mode=:totally_invalid)
+                    Modelers.ADNLPModeler(backend=:default; mode=:totally_invalid)
                     @test false  # Should not reach here
                 catch e
                     @test e isa Exceptions.IncorrectArgument
@@ -567,11 +567,11 @@ function test_comprehensive_validation()
                 local unknown_options = (test_consistency=42)
                 
                 local registry = CTSolvers.Strategies.create_registry(
-                    AbstractNLPModeler => (ADNLPModeler, ExaModeler)
+                    AbstractNLPModeler => (Modelers.ADNLPModeler, ExaModeler)
                 )
                 
                 # Create strategies with different methods
-                modeler1 = ADNLPModeler(; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
+                modeler1 = Modelers.ADNLPModeler(; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                 modeler2 = build_strategy(:adnlp, AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                 
                 method = (:collocation, :adnlp, :ipopt)
@@ -601,20 +601,20 @@ function test_comprehensive_validation()
         @testset "Regression Tests" begin
             @testset "Empty Options" begin
                 # Test that strategies can be created with no options
-                @test_nowarn ADNLPModeler()
-                @test_nowarn ADNLPModeler(; mode=:permissive)
+                @test_nowarn Modelers.ADNLPModeler()
+                @test_nowarn Modelers.ADNLPModeler(; mode=:permissive)
                 
                 # Test mode is NOT stored in options (correct behavior)
-                modeler = ADNLPModeler()
+                modeler = Modelers.ADNLPModeler()
                 @test_throws Exception modeler.options.mode  # Default
                 
-                modeler_permissive = ADNLPModeler(; mode=:permissive)
+                modeler_permissive = Modelers.ADNLPModeler(; mode=:permissive)
                 @test_throws Exception modeler_permissive.options.mode
             end
             
             @testset "Mixed Valid/Invalid Options" begin
                 # Test with a mix of valid and invalid options
-                @test_throws Exceptions.IncorrectArgument ADNLPModeler(
+                @test_throws Exceptions.IncorrectArgument Modelers.ADNLPModeler(
                     backend=:default,  # valid
                     show_time=true,    # valid  
                     fake_option=123,   # invalid
@@ -622,7 +622,7 @@ function test_comprehensive_validation()
                 )
                 
                 # In permissive mode, should work with warnings
-                @test_warn "Unrecognized options" ADNLPModeler(
+                @test_warn "Unrecognized options" Modelers.ADNLPModeler(
                     backend=:default,  # valid
                     show_time=true,    # valid
                     fake_option=123,   # invalid but accepted

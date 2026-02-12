@@ -487,8 +487,8 @@ function test_route_to_comprehensive()
         # ====================================================================
         
         @testset "Real Strategy Tests" begin
-            # Test with real ADNLPModeler
-            @testset "Real ADNLPModeler" begin
+            # Test with real Modelers.ADNLPModeler
+            @testset "Real Modelers.ADNLPModeler" begin
                 real_registry = Strategies.create_registry(
                     RouteTestDiscretizer => (RouteCollocation,),
                     CTSolvers.Modelers.AbstractNLPModeler => (CTSolvers.Modelers.ADNLPModeler,),
@@ -503,7 +503,7 @@ function test_route_to_comprehensive()
                 
                 kwargs = (
                     grid_size = 200,
-                    backend = Strategies.route_to(adnlp=:default),  # Route to real ADNLPModeler
+                    backend = Strategies.route_to(adnlp=:default),  # Route to real Modelers.ADNLPModeler
                     max_iter = 1000,  # Auto-route to mock solver
                     display = false
                 )

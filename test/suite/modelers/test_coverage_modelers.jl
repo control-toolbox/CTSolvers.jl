@@ -1,14 +1,12 @@
 module TestCoverageModelers
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Modelers
-using CTSolvers.Strategies
-using CTSolvers.Options
-using CTSolvers.Optimization
-using SolverCore
+import Test
+import CTBase.Exceptions
+import CTSolvers.Modelers
+import CTSolvers.Strategies
+import CTSolvers.Options
+import CTSolvers.Optimization
+import SolverCore
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -51,10 +49,10 @@ function test_coverage_modelers()
         end
 
         # ====================================================================
-        # UNIT TESTS - ADNLPModeler defaults (adnlp_modeler.jl)
+        # UNIT TESTS - Modelers.ADNLPModeler defaults (adnlp_modeler.jl)
         # ====================================================================
 
-        Test.@testset "ADNLPModeler - default helpers" begin
+        Test.@testset "Modelers.ADNLPModeler - default helpers" begin
             Test.@test Modelers.__adnlp_model_backend() == :optimized
         end
 
@@ -78,10 +76,10 @@ function test_coverage_modelers()
         end
 
         # ====================================================================
-        # UNIT TESTS - ADNLPModeler invalid unknown option (strict mode)
+        # UNIT TESTS - Modelers.ADNLPModeler invalid unknown option (strict mode)
         # ====================================================================
 
-        Test.@testset "ADNLPModeler - unknown option strict mode" begin
+        Test.@testset "Modelers.ADNLPModeler - unknown option strict mode" begin
             redirect_stderr(devnull) do
                 Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLPModeler(unknown_opt=42)
             end
@@ -97,7 +95,7 @@ function test_coverage_modelers()
         # UNIT TESTS - Strategies.id() direct calls (coverage for id lines)
         # ====================================================================
 
-        Test.@testset "ADNLPModeler - Strategies.id() direct" begin
+        Test.@testset "Modelers.ADNLPModeler - Strategies.id() direct" begin
             Test.@test Strategies.id(Modelers.ADNLPModeler) === :adnlp
         end
 

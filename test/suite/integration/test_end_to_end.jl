@@ -159,7 +159,7 @@ function test_end_to_end()
             ros = Rosenbrock()
             prob = ros.prob
             
-            Test.@testset "ADNLPModeler - Simple" begin
+            Test.@testset "Modelers.ADNLPModeler - Simple" begin
                 # Test without options (defaults)
                 modeler = Modelers.ADNLPModeler()
                 nlp = modeler(prob, ros.init)
@@ -169,7 +169,7 @@ function test_end_to_end()
                 Test.@test obj ≈ rosenbrock_objective(ros.init)
             end
             
-            Test.@testset "ADNLPModeler - With Options" begin
+            Test.@testset "Modelers.ADNLPModeler - With Options" begin
                 # Test with show_time option
                 modeler = Modelers.ADNLPModeler(show_time=false)
                 nlp = modeler(prob, ros.init)

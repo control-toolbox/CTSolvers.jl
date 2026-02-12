@@ -37,7 +37,7 @@ using CTSolvers
 # Define problem, initial guess, modeler, solver
 problem = ...
 x0 = ...
-modeler = ADNLPModeler()
+modeler = Modelers.ADNLPModeler()
 solver = IpoptSolver(max_iter=1000)
 
 # Solve

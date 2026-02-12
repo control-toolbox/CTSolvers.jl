@@ -29,7 +29,7 @@ The registry uses an **explicit passing pattern** rather than global mutable sta
 julia> using CTSolvers.Strategies
 
 julia> registry = create_registry(
-           AbstractNLPModeler => (ADNLPModeler, ExaModeler),
+           AbstractNLPModeler => (Modelers.ADNLPModeler, ExaModeler),
            AbstractOptimizationSolver => (IpoptSolver, MadNLPSolver)
        )
 StrategyRegistry with 2 families
@@ -38,7 +38,7 @@ julia> strategy_ids(AbstractNLPModeler, registry)
 (:adnlp, :exa)
 
 julia> T = type_from_id(:adnlp, AbstractNLPModeler, registry)
-ADNLPModeler
+Modelers.ADNLPModeler
 ```
 
 See also: [`create_registry`](@ref), [`strategy_ids`](@ref), [`type_from_id`](@ref)
@@ -74,7 +74,7 @@ This function validates the registry structure and ensures:
 julia> using CTSolvers.Strategies
 
 julia> registry = create_registry(
-           AbstractNLPModeler => (ADNLPModeler, ExaModeler),
+           AbstractNLPModeler => (Modelers.ADNLPModeler, ExaModeler),
            AbstractOptimizationSolver => (IpoptSolver, MadNLPSolver, KnitroSolver)
        )
 StrategyRegistry with 2 families
@@ -231,7 +231,7 @@ functions to convert symbolic descriptions to concrete types.
 julia> using CTSolvers.Strategies
 
 julia> T = type_from_id(:adnlp, AbstractNLPModeler, registry)
-ADNLPModeler
+Modelers.ADNLPModeler
 
 julia> id(T)
 :adnlp

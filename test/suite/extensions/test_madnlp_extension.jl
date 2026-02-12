@@ -478,7 +478,7 @@ function test_madnlp_extension()
         Test.@testset "Initial Guess - Linear Solvers" begin
             BaseType = Float32
             modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler(; base_type=BaseType)]
-            modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+            modelers_names = ["Modelers.ADNLPModeler", "ExaModeler (CPU)"]
             linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
             linear_solver_names = ["Umfpack", "Mumps"]
             
@@ -530,7 +530,7 @@ function test_madnlp_extension()
         Test.@testset "solve_with_madnlp Function" begin
             BaseType = Float32
             modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler(; base_type=BaseType)]
-            modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+            modelers_names = ["Modelers.ADNLPModeler", "ExaModeler (CPU)"]
             madnlp_options = Dict(:max_iter => 1000, :tol => 1e-6, :print_level => MadNLP.ERROR)
             linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
             linear_solver_names = ["Umfpack", "Mumps"]

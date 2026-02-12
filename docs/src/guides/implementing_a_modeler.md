@@ -4,7 +4,7 @@
 CurrentModule = CTSolvers
 ```
 
-This guide explains how to implement an optimization modeler in CTSolvers. Modelers are strategies that convert `AbstractOptimizationProblem` instances into NLP backend models and convert NLP solver results back into problem-specific solutions. We use **ADNLPModeler** and **ExaModeler** as reference examples.
+This guide explains how to implement an optimization modeler in CTSolvers. Modelers are strategies that convert `AbstractOptimizationProblem` instances into NLP backend models and convert NLP solver results back into problem-specific solutions. We use **Modelers.ADNLPModeler** and **ExaModeler** as reference examples.
 
 !!! tip "Prerequisites"
     Read [Architecture](@ref) and [Implementing a Strategy](@ref) first. A modeler is a strategy with two additional **callable contracts**.
@@ -33,7 +33,7 @@ classDiagram
     }
 
     AbstractStrategy <|-- AbstractNLPModeler
-    AbstractNLPModeler <|-- ADNLPModeler
+    AbstractNLPModeler <|-- Modelers.ADNLPModeler
     AbstractNLPModeler <|-- ExaModeler
 ```
 
@@ -56,12 +56,12 @@ CTSolvers.Strategies.id(CTSolvers.Modelers.ExaModeler)
 
 ## Step-by-Step Implementation
 
-We walk through the ADNLPModeler implementation as a reference.
+We walk through the Modelers.ADNLPModeler implementation as a reference.
 
 ### Step 1 — Define the struct
 
 ```julia
-struct ADNLPModeler <: AbstractNLPModeler
+struct Modelers.ADNLPModeler <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 ```
@@ -97,7 +97,7 @@ CTSolvers.Strategies.options(modeler)
 This is the core of the modeler. It retrieves the appropriate **builder** from the problem and invokes it:
 
 ```julia
-function (modeler::ADNLPModeler)(
+function (modeler::Modelers.ADNLPModeler)(
     prob::AbstractOptimizationProblem,
     initial_guess,
 )::ADNLPModels.ADNLPModel
@@ -119,7 +119,7 @@ The key interaction is with the **Builder pattern**: the modeler doesn't know ho
 Same pattern, but for converting NLP results back into a problem-specific solution:
 
 ```julia
-function (modeler::ADNLPModeler)(
+function (modeler::Modelers.ADNLPModeler)(
     prob::AbstractOptimizationProblem,
     nlp_solution::SolverCore.AbstractExecutionStats,
 )
@@ -202,7 +202,7 @@ sequenceDiagram
     participant User
     participant Solve as CommonSolve.solve
     participant BuildModel as build_model
-    participant Modeler as ADNLPModeler
+    participant Modeler as Modelers.ADNLPModeler
     participant Problem as AbstractOptimizationProblem
     participant Builder as ADNLPModelBuilder
 
@@ -221,7 +221,7 @@ sequenceDiagram
 Use `validate_strategy_contract` to verify the strategy contract (but not the callables — those require a real problem):
 
 ```julia
-julia> Strategies.validate_strategy_contract(ADNLPModeler)
+julia> Strategies.validate_strategy_contract(Modelers.ADNLPModeler)
 true
 
 julia> Strategies.validate_strategy_contract(ExaModeler)
@@ -238,7 +238,7 @@ For the callables, test with a fake or real problem:
 prob = FakeOptimizationProblem(adnlp_builder, adnlp_solution_builder)
 
 # Test model building
-modeler = ADNLPModeler(backend = :optimized)
+modeler = Modelers.ADNLPModeler(backend = :optimized)
 nlp = modeler(prob, x0)
 @test nlp isa ADNLPModels.ADNLPModel
 

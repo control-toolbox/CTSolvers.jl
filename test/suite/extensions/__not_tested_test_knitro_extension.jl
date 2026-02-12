@@ -255,7 +255,7 @@ function test_knitro_extension()
         #         Test.@test_skip "Knitro license required"
         #     else
         #         modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler()]
-        #         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+        #         modelers_names = ["Modelers.ADNLPModeler", "ExaModeler (CPU)"]
         #         
         #         # Rosenbrock: start at the known solution and enforce maxit=0
         #         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -298,7 +298,7 @@ function test_knitro_extension()
         #         Test.@test_skip "Knitro license required"
         #     else
         #         modelers = [Modelers.ADNLPModeler()]
-        #         modelers_names = ["ADNLPModeler"]
+        #         modelers_names = ["Modelers.ADNLPModeler"]
         #         knitro_options = Dict(
         #             :maxit => 1000,
         #             :feastol_abs => 1e-6,
@@ -343,7 +343,7 @@ function test_knitro_extension()
         #         Test.@test_skip "Knitro license required"
         #     else
         #         modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler()]
-        #         modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+        #         modelers_names = ["Modelers.ADNLPModeler", "ExaModeler (CPU)"]
         #         knitro_options = Dict(
         #             :maxit => 1000,
         #             :feastol_abs => 1e-6,

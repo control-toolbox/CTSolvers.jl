@@ -22,9 +22,9 @@ struct CollocationDiscretizer <: TestDiscretizer end
 Strategies.id(::Type{CollocationDiscretizer}) = :collocation
 Strategies.metadata(::Type{CollocationDiscretizer}) = Strategies.StrategyMetadata()
 
-struct ADNLPModeler <: TestModeler end
-Strategies.id(::Type{ADNLPModeler}) = :adnlp
-Strategies.metadata(::Type{ADNLPModeler}) = Strategies.StrategyMetadata(
+struct Modelers.ADNLPModeler <: TestModeler end
+Strategies.id(::Type{Modelers.ADNLPModeler}) = :adnlp
+Strategies.metadata(::Type{Modelers.ADNLPModeler}) = Strategies.StrategyMetadata(
     Options.OptionDefinition(
         name = :backend,
         type = Symbol,
@@ -54,7 +54,7 @@ Strategies.metadata(::Type{IpoptSolver}) = Strategies.StrategyMetadata(
 
 const TEST_REGISTRY = Strategies.create_registry(
     TestDiscretizer => (CollocationDiscretizer,),
-    TestModeler => (ADNLPModeler,),
+    TestModeler => (Modelers.ADNLPModeler,),
     TestSolver => (IpoptSolver,)
 )
 

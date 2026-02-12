@@ -1,13 +1,12 @@
 module TestModelers
 
-using Test
-using CTBase
-using CTSolvers
-using CTSolvers.Modelers
-using CTSolvers.Strategies
-using ADNLPModels
-using ExaModels
-using SolverCore
+import Test
+import CTSolvers
+import CTSolvers.Modelers
+import CTSolvers.Strategies
+import ADNLPModels
+import ExaModels
+import SolverCore
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
@@ -48,10 +47,10 @@ end
 """
     test_adnlp_modeler()
 
-Test ADNLPModeler implementation.
+Test Modelers.ADNLPModeler implementation.
 """
 function test_adnlp_modeler()
-    Test.@testset "ADNLPModeler Tests" begin
+    Test.@testset "Modelers.ADNLPModeler Tests" begin
         # Test default constructor
         modeler = Modelers.ADNLPModeler()
         Test.@test modeler isa Modelers.AbstractNLPModeler

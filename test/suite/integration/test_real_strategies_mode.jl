@@ -35,7 +35,7 @@ function test_real_strategies_mode()
         # INTEGRATION TESTS - Real Modelers
         # ====================================================================
         
-        @testset "ADNLPModeler Mode Validation" begin
+        @testset "Modelers.ADNLPModeler Mode Validation" begin
             
             @testset "Strict mode rejects unknown options" begin
                 # Should throw error for unknown option

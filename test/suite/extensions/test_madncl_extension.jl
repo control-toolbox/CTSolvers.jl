@@ -374,7 +374,7 @@ function test_madncl_extension()
         Test.@testset "Initial Guess - NCLOptions" begin
             BaseType = Float64
             modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler(; base_type=BaseType)]
-            modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+            modelers_names = ["Modelers.ADNLPModeler", "ExaModeler (CPU)"]
             linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
             linear_solver_names = ["Umfpack", "Mumps"]
             
@@ -416,7 +416,7 @@ function test_madncl_extension()
         Test.@testset "solve_with_madncl Function" begin
             BaseType = Float64
             modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler(; base_type=BaseType)]
-            modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+            modelers_names = ["Modelers.ADNLPModeler", "ExaModeler (CPU)"]
             madncl_options = Dict(
                 :max_iter => 1000,
                 :tol => 1e-6,

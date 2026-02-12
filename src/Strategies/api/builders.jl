@@ -27,15 +27,15 @@ This function creates a concrete strategy instance by:
 # Example
 ```julia-repl
 julia> registry = create_registry(
-           AbstractNLPModeler => (ADNLPModeler, ExaModeler)
+           AbstractNLPModeler => (Modelers.ADNLPModeler, ExaModeler)
        )
 
 julia> modeler = build_strategy(:adnlp, AbstractNLPModeler, registry; backend=:sparse)
-ADNLPModeler(options=StrategyOptions{...})
+Modelers.ADNLPModeler(options=StrategyOptions{...})
 
 julia> modeler = build_strategy(:adnlp, AbstractNLPModeler, registry; 
            backend=:sparse, mode=:permissive)
-ADNLPModeler(options=StrategyOptions{...})
+Modelers.ADNLPModeler(options=StrategyOptions{...})
 ```
 
 See also: [`type_from_id`](@ref), [`build_strategy_from_method`](@ref)
@@ -182,7 +182,7 @@ julia> modeler = build_strategy_from_method(
            registry; 
            backend=:sparse
        )
-ADNLPModeler(options=StrategyOptions{...})
+Modelers.ADNLPModeler(options=StrategyOptions{...})
 
 julia> modeler = build_strategy_from_method(
            method, 
@@ -191,7 +191,7 @@ julia> modeler = build_strategy_from_method(
            backend=:sparse,
            mode=:permissive
        )
-ADNLPModeler(options=StrategyOptions{...})
+Modelers.ADNLPModeler(options=StrategyOptions{...})
 ```
 
 See also: [`extract_id_from_method`](@ref), [`build_strategy`](@ref)

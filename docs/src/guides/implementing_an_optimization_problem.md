@@ -15,9 +15,9 @@ Every concrete optimization problem must implement **four builder getters** — 
 
 | Method | Returns | Used by |
 |--------|---------|---------|
-| `get_adnlp_model_builder(prob)` | `AbstractModelBuilder` | `ADNLPModeler` |
+| `get_adnlp_model_builder(prob)` | `AbstractModelBuilder` | `Modelers.ADNLPModeler` |
 | `get_exa_model_builder(prob)` | `AbstractModelBuilder` | `ExaModeler` |
-| `get_adnlp_solution_builder(prob)` | `AbstractSolutionBuilder` | `ADNLPModeler` |
+| `get_adnlp_solution_builder(prob)` | `AbstractSolutionBuilder` | `Modelers.ADNLPModeler` |
 | `get_exa_solution_builder(prob)` | `AbstractSolutionBuilder` | `ExaModeler` |
 
 All four have default implementations that throw `NotImplemented`:
@@ -183,7 +183,7 @@ The complete data flow from user call to solution:
 sequenceDiagram
     participant User
     participant Solve as CommonSolve.solve
-    participant Modeler as ADNLPModeler
+    participant Modeler as Modelers.ADNLPModeler
     participant Problem as DOCP
     participant ModelBuilder as ADNLPModelBuilder
     participant Solver as IpoptSolver
