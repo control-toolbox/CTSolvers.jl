@@ -126,7 +126,7 @@ The DOCP stores the original OCP plus one builder per backend:
 
 ```julia
 struct DiscretizedOptimalControlProblem{
-    TO <: AbstractOptimalControlProblem,
+    TO <: AbstractModel,
     TAMB <: AbstractModelBuilder,
     TEMB <: AbstractModelBuilder,
     TASB <: AbstractSolutionBuilder,

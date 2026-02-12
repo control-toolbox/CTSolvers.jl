@@ -27,7 +27,7 @@ import CTSolvers.Modelers: AbstractOptimizationModeler
 """
 Fake OCP for testing DOCP construction.
 """
-struct FakeOCP <: CTModels.AbstractOptimalControlProblem
+struct FakeOCP <: CTModels.AbstractModel
     name::String
 end
 

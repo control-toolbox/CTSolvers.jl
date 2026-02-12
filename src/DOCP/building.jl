@@ -51,7 +51,7 @@ is an optimal control solution.
 - `modeler`: The modeler used for building
 
 # Returns
-- `AbstractOptimalControlSolution`: The OCP solution
+- `AbstractSolution`: The OCP solution
 
 # Example
 ```julia-repl
