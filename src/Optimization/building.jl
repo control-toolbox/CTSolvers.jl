@@ -17,7 +17,7 @@ The modeler handles the conversion to the specific NLP backend.
 # Arguments
 - `prob::AbstractOptimizationProblem`: The optimization problem
 - `initial_guess`: Initial guess for the NLP solver
-- `modeler`: The modeler strategy (e.g., Modelers.ADNLP, ExaModeler)
+- `modeler`: The modeler strategy (e.g., Modelers.ADNLP, Modelers.ExaModeler)
 
 # Returns
 - An NLP model suitable for the chosen backend

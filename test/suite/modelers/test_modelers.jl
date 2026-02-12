@@ -78,10 +78,10 @@ end
 """
     test_exa_modeler()
 
-Test ExaModeler implementation.
+Test Modelers.ExaModeler implementation.
 """
 function test_exa_modeler()
-    Test.@testset "ExaModeler Tests" begin
+    Test.@testset "Modelers.ExaModeler Tests" begin
         # Test default constructor
         modeler = Modelers.ExaModeler()
         Test.@test modeler isa Modelers.AbstractNLPModeler
@@ -93,7 +93,7 @@ function test_exa_modeler()
         opts = Strategies.options(modeler_opts)
         Test.@test opts[:backend] === nothing
         
-        # Test type parameter (removed - ExaModeler is no longer parameterized)
+        # Test type parameter (removed - Modelers.ExaModeler is no longer parameterized)
         modeler_f32 = Modelers.ExaModeler(base_type=Float32)
         Test.@test typeof(modeler_f32) == Modelers.ExaModeler
         

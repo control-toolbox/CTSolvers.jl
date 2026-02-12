@@ -186,7 +186,7 @@ function test_end_to_end()
                 end
             end
             
-            Test.@testset "ExaModeler - Simple" begin
+            Test.@testset "Modelers.ExaModeler - Simple" begin
                 # Test without options (defaults)
                 modeler = Modelers.ExaModeler(base_type=Float64)
                 nlp = modeler(prob, ros.init)
@@ -196,7 +196,7 @@ function test_end_to_end()
                 Test.@test obj ≈ rosenbrock_objective(ros.init)
             end
             
-            Test.@testset "ExaModeler - With Options" begin
+            Test.@testset "Modelers.ExaModeler - With Options" begin
                 # Test with multiple options (permissive mode for minimize option)
                 modeler = Modelers.ExaModeler(
                     base_type=Float64,

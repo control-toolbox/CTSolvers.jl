@@ -1,6 +1,6 @@
 # Exa Modeler
 #
-# Implementation of ExaModeler using the AbstractStrategy contract.
+# Implementation of Modelers.ExaModeler using the AbstractStrategy contract.
 # This modeler converts discretized optimal control problems to ExaModels.
 #
 # Author: CTSolvers Development Team
@@ -10,7 +10,7 @@
 """
 $(TYPEDSIGNATURES)
 
-Return the default floating-point type for [`ExaModeler`](@ref).
+Return the default floating-point type for [`Modelers.ExaModeler`](@ref).
 
 Default is `Float64`.
 """
@@ -19,7 +19,7 @@ __exa_model_base_type() = Float64
 """
 $(TYPEDSIGNATURES)
 
-Return the default execution backend for [`ExaModeler`](@ref).
+Return the default execution backend for [`Modelers.ExaModeler`](@ref).
 
 Default is `nothing` (CPU).
 """
@@ -41,7 +41,7 @@ support for various execution backends (CPU, GPU) and floating-point types.
 # Constructor
 
 ```julia
-ExaModeler(; mode::Symbol=:strict, kwargs...)
+Modelers.ExaModeler(; mode::Symbol=:strict, kwargs...)
 ```
 
 # Arguments
@@ -61,35 +61,35 @@ ExaModeler(; mode::Symbol=:strict, kwargs...)
 ## Basic Usage
 ```julia
 # Default modeler (Float64, CPU)
-modeler = ExaModeler()
+modeler = Modelers.ExaModeler()
 ```
 
 ## Type Specification
 ```julia
 # Single precision
-modeler = ExaModeler(base_type=Float32)
+modeler = Modelers.ExaModeler(base_type=Float32)
 
 # Double precision (default)
-modeler = ExaModeler(base_type=Float64)
+modeler = Modelers.ExaModeler(base_type=Float64)
 ```
 
 ## Backend Configuration
 ```julia
 # CPU backend (default)
-modeler = ExaModeler(backend=nothing)
+modeler = Modelers.ExaModeler(backend=nothing)
 
 # GPU backend (if available)
 using KernelAbstractions
-modeler = ExaModeler(backend=CUDABackend())
+modeler = Modelers.ExaModeler(backend=CUDABackend())
 ```
 
 ## Validation Modes
 ```julia
 # Strict mode (default) - rejects unknown options
-modeler = ExaModeler(base_type=Float64)
+modeler = Modelers.ExaModeler(base_type=Float64)
 
 # Permissive mode - accepts unknown options with warning
-modeler = ExaModeler(
+modeler = Modelers.ExaModeler(
     base_type=Float64,
     custom_option=123;
     mode=:permissive
@@ -99,7 +99,7 @@ modeler = ExaModeler(
 ## Complete Configuration
 ```julia
 # Full configuration with type and backend
-modeler = ExaModeler(
+modeler = Modelers.ExaModeler(
     base_type=Float32,
     backend=CUDABackend();
     mode=:permissive
@@ -134,10 +134,10 @@ struct ExaModeler <: AbstractNLPModeler
 end
 
 # Strategy identification
-Strategies.id(::Type{<:ExaModeler}) = :exa
+Strategies.id(::Type{<:Modelers.ExaModeler}) = :exa
 
 # Strategy metadata with option definitions
-function Strategies.metadata(::Type{<:ExaModeler})
+function Strategies.metadata(::Type{<:Modelers.ExaModeler})
     return Strategies.StrategyMetadata(
         # === Existing Options (enhanced) ===
         Strategies.OptionDefinition(;
@@ -169,27 +169,27 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Create an ExaModeler with validated options.
+Create an Modelers.ExaModeler with validated options.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Modeler options (see [`ExaModeler`](@ref) documentation)
+- `kwargs...`: Modeler options (see [`Modelers.ExaModeler`](@ref) documentation)
 
 # Returns
-- `ExaModeler`: Configured modeler instance
+- `Modelers.ExaModeler`: Configured modeler instance
 
 # Examples
 ```julia
 # Default modeler
-modeler = ExaModeler()
+modeler = Modelers.ExaModeler()
 
 # With custom options
-modeler = ExaModeler(base_type=Float32, backend=nothing)
+modeler = Modelers.ExaModeler(base_type=Float32, backend=nothing)
 
 # With permissive mode
-modeler = ExaModeler(base_type=Float64, custom_option=123; mode=:permissive)
+modeler = Modelers.ExaModeler(base_type=Float64, custom_option=123; mode=:permissive)
 ```
 
 # Throws
@@ -199,23 +199,23 @@ modeler = ExaModeler(base_type=Float64, custom_option=123; mode=:permissive)
 
 # See also
 
-- [`ExaModeler`](@ref): Type documentation
+- [`Modelers.ExaModeler`](@ref): Type documentation
 - [`Strategies.build_strategy_options`](@ref): Option validation function
 """
-function ExaModeler(; mode::Symbol=:strict, kwargs...)
+function Modelers.ExaModeler(; mode::Symbol=:strict, kwargs...)
     # Check for deprecated aliases
     if haskey(kwargs, :exa_backend)
         @warn "exa_backend is deprecated, use backend instead" maxlog=1
     end
     
     opts = Strategies.build_strategy_options(
-        ExaModeler; mode=mode, kwargs...
+        Modelers.ExaModeler; mode=mode, kwargs...
     )
-    return ExaModeler(opts)
+    return Modelers.ExaModeler(opts)
 end
 
 # Access to strategy options
-Strategies.options(m::ExaModeler) = m.options
+Strategies.options(m::Modelers.ExaModeler) = m.options
 
 # Model building interface
 """
@@ -224,7 +224,7 @@ $(TYPEDSIGNATURES)
 Build an ExaModel from a discretized optimal control problem.
 
 # Arguments
-- `modeler::ExaModeler`: Configured modeler instance
+- `modeler::Modelers.ExaModeler`: Configured modeler instance
 - `prob::AbstractOptimizationProblem`: Discretized optimal control problem
 - `initial_guess`: Initial guess for optimization variables
 
@@ -234,7 +234,7 @@ Build an ExaModel from a discretized optimal control problem.
 # Examples
 ```julia
 # Create modeler
-modeler = ExaModeler(base_type=Float64)
+modeler = Modelers.ExaModeler(base_type=Float64)
 
 # Build model from problem
 nlp = modeler(problem, initial_guess)
@@ -245,11 +245,11 @@ stats = solve(nlp, solver)
 
 # See also
 
-- [`ExaModeler`](@ref): Type documentation
+- [`Modelers.ExaModeler`](@ref): Type documentation
 - [`build_model`](@ref): Generic model building interface
 - [`ExaModels.ExaModel`](@ref): NLP model type
 """
-function (modeler::ExaModeler)(
+function (modeler::Modelers.ExaModeler)(
     prob::AbstractOptimizationProblem,
     initial_guess
 )::ExaModels.ExaModel
@@ -274,7 +274,7 @@ $(TYPEDSIGNATURES)
 Build a solution object from NLP solver statistics.
 
 # Arguments
-- `modeler::ExaModeler`: Configured modeler instance
+- `modeler::Modelers.ExaModeler`: Configured modeler instance
 - `prob::AbstractOptimizationProblem`: Original optimization problem
 - `nlp_solution::SolverCore.AbstractExecutionStats`: NLP solver statistics
 
@@ -284,7 +284,7 @@ Build a solution object from NLP solver statistics.
 # Examples
 ```julia
 # Create modeler and solve
-modeler = ExaModeler()
+modeler = Modelers.ExaModeler()
 nlp = modeler(problem, initial_guess)
 stats = solve(nlp, solver)
 
@@ -294,11 +294,11 @@ solution = modeler(problem, stats)
 
 # See also
 
-- [`ExaModeler`](@ref): Type documentation
+- [`Modelers.ExaModeler`](@ref): Type documentation
 - [`SolverCore.AbstractExecutionStats`](@ref): Solver statistics type
 - [`solve`](@ref): Generic solve interface
 """
-function (modeler::ExaModeler)(
+function (modeler::Modelers.ExaModeler)(
     prob::AbstractOptimizationProblem,
     nlp_solution::SolverCore.AbstractExecutionStats
 )

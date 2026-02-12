@@ -173,7 +173,7 @@ function test_not_provided()
         end
         
         Test.@testset "Complete workflow: NotProvided never stored" begin
-            # Define options like ExaModeler
+            # Define options like Modelers.ExaModeler
             defs_nt = (
                 base_type=Options.OptionDefinition(
                     name = :base_type,

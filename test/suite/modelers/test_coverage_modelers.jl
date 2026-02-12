@@ -57,19 +57,19 @@ function test_coverage_modelers()
         end
 
         # ====================================================================
-        # UNIT TESTS - ExaModeler defaults (exa_modeler.jl)
+        # UNIT TESTS - Modelers.ExaModeler defaults (exa_modeler.jl)
         # ====================================================================
 
-        Test.@testset "ExaModeler - default helpers" begin
+        Test.@testset "Modelers.ExaModeler - default helpers" begin
             Test.@test Modelers.__exa_model_base_type() == Float64
             Test.@test Modelers.__exa_model_backend() === nothing
         end
 
         # ====================================================================
-        # UNIT TESTS - ExaModeler invalid base_type
+        # UNIT TESTS - Modelers.ExaModeler invalid base_type
         # ====================================================================
 
-        Test.@testset "ExaModeler - invalid base_type" begin
+        Test.@testset "Modelers.ExaModeler - invalid base_type" begin
             redirect_stderr(devnull) do
                 Test.@test_throws Exceptions.IncorrectArgument Modelers.ExaModeler(base_type=Int)
             end
@@ -85,7 +85,7 @@ function test_coverage_modelers()
             end
         end
 
-        Test.@testset "ExaModeler - unknown option strict mode" begin
+        Test.@testset "Modelers.ExaModeler - unknown option strict mode" begin
             redirect_stderr(devnull) do
                 Test.@test_throws Exceptions.IncorrectArgument Modelers.ExaModeler(unknown_opt=42)
             end
@@ -99,7 +99,7 @@ function test_coverage_modelers()
             Test.@test Strategies.id(Modelers.ADNLP) === :adnlp
         end
 
-        Test.@testset "ExaModeler - Strategies.id() direct" begin
+        Test.@testset "Modelers.ExaModeler - Strategies.id() direct" begin
             Test.@test Strategies.id(Modelers.ExaModeler) === :exa
         end
     end

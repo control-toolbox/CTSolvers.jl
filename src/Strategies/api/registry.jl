@@ -29,7 +29,7 @@ The registry uses an **explicit passing pattern** rather than global mutable sta
 julia> using CTSolvers.Strategies
 
 julia> registry = create_registry(
-           AbstractNLPModeler => (Modelers.ADNLP, ExaModeler),
+           AbstractNLPModeler => (Modelers.ADNLP, Modelers.ExaModeler),
            AbstractOptimizationSolver => (IpoptSolver, MadNLPSolver)
        )
 StrategyRegistry with 2 families
@@ -74,7 +74,7 @@ This function validates the registry structure and ensures:
 julia> using CTSolvers.Strategies
 
 julia> registry = create_registry(
-           AbstractNLPModeler => (Modelers.ADNLP, ExaModeler),
+           AbstractNLPModeler => (Modelers.ADNLP, Modelers.ExaModeler),
            AbstractOptimizationSolver => (IpoptSolver, MadNLPSolver, KnitroSolver)
        )
 StrategyRegistry with 2 families

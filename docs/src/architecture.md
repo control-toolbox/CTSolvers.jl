@@ -18,7 +18,7 @@ CTSolvers is organized into 7 modules, loaded in strict dependency order:
 | 2 | **Strategies** | Strategy contract (`AbstractStrategy`), registry, metadata, options building |
 | 3 | **Orchestration** | Multi-strategy option routing and disambiguation |
 | 4 | **Optimization** | Abstract optimization types (`AbstractOptimizationProblem`), builders, `build_model`/`build_solution` |
-| 5 | **Modelers** | NLP model backends: `Modelers.ADNLP`, `ExaModeler` |
+| 5 | **Modelers** | NLP model backends: `Modelers.ADNLP`, `Modelers.ExaModeler` |
 | 6 | **DOCP** | `DiscretizedModel` — bridges CTModels and CTSolvers |
 | 7 | **Solvers** | Solver integration: `IpoptSolver`, `MadNLPSolver`, `MadNCLSolver`, `KnitroSolver`, CommonSolve API |
 
@@ -61,7 +61,7 @@ classDiagram
         (modeler)(prob, stats) → Solution
     }
     AbstractNLPModeler <|-- Modelers.ADNLP
-    AbstractNLPModeler <|-- ExaModeler
+    AbstractNLPModeler <|-- Modelers.ExaModeler
 
     class AbstractOptimizationSolver {
         <<abstract>>

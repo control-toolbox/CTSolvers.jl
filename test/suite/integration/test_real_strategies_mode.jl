@@ -94,7 +94,7 @@ function test_real_strategies_mode()
             end
         end
         
-        @testset "ExaModeler Mode Validation" begin
+        @testset "Modelers.ExaModeler Mode Validation" begin
             
             @testset "Strict mode rejects unknown options" begin
                 # Should throw error for unknown option

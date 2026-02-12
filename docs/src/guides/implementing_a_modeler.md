@@ -4,7 +4,7 @@
 CurrentModule = CTSolvers
 ```
 
-This guide explains how to implement an optimization modeler in CTSolvers. Modelers are strategies that convert `AbstractOptimizationProblem` instances into NLP backend models and convert NLP solver results back into problem-specific solutions. We use **Modelers.ADNLP** and **ExaModeler** as reference examples.
+This guide explains how to implement an optimization modeler in CTSolvers. Modelers are strategies that convert `AbstractOptimizationProblem` instances into NLP backend models and convert NLP solver results back into problem-specific solutions. We use **Modelers.ADNLP** and **Modelers.ExaModeler** as reference examples.
 
 !!! tip "Prerequisites"
     Read [Architecture](@ref) and [Implementing a Strategy](@ref) first. A modeler is a strategy with two additional **callable contracts**.
@@ -34,7 +34,7 @@ classDiagram
 
     AbstractStrategy <|-- AbstractNLPModeler
     AbstractNLPModeler <|-- Modelers.ADNLP
-    AbstractNLPModeler <|-- ExaModeler
+    AbstractNLPModeler <|-- Modelers.ExaModeler
 ```
 
 Both callables have default implementations that throw `NotImplemented`.
@@ -128,18 +128,18 @@ function (modeler::Modelers.ADNLP)(
 end
 ```
 
-## ExaModeler: A Second Example
+## Modelers.ExaModeler: A Second Example
 
-ExaModeler follows the same pattern with different options and a slightly different callable signature:
+Modelers.ExaModeler follows the same pattern with different options and a slightly different callable signature:
 
 ```julia
-struct ExaModeler <: AbstractNLPModeler
+struct Modelers.ExaModeler <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 
-Strategies.id(::Type{<:ExaModeler}) = :exa
+Strategies.id(::Type{<:Modelers.ExaModeler}) = :exa
 
-function Strategies.metadata(::Type{<:ExaModeler})
+function Strategies.metadata(::Type{<:Modelers.ExaModeler})
     return Strategies.StrategyMetadata(
         Options.OptionDefinition(
             name = :base_type,
@@ -161,7 +161,7 @@ end
 The model building callable extracts `base_type` as a positional argument:
 
 ```julia
-function (modeler::ExaModeler)(
+function (modeler::Modelers.ExaModeler)(
     prob::AbstractOptimizationProblem,
     initial_guess,
 )::ExaModels.ExaModel
@@ -224,7 +224,7 @@ Use `validate_strategy_contract` to verify the strategy contract (but not the ca
 julia> Strategies.validate_strategy_contract(Modelers.ADNLP)
 true
 
-julia> Strategies.validate_strategy_contract(ExaModeler)
+julia> Strategies.validate_strategy_contract(Modelers.ExaModeler)
 true
 ```
 

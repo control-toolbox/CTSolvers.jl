@@ -106,7 +106,7 @@ modeler = Modelers.ADNLP(
 
 # See also
 
-- [`ExaModeler`](@ref): Alternative modeler using ExaModels
+- [`Modelers.ExaModeler`](@ref): Alternative modeler using ExaModels
 - [`build_model`](@ref): Build model from problem and modeler
 - [`solve!`](@ref): Solve optimization problem
 

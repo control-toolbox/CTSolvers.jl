@@ -20,7 +20,7 @@ CTSolvers is organized into specialized modules, each with clear responsibilitie
 ## Implemented Modules
 
 - **DOCP**: Discretized Optimal Control Problem types and operations
-- **Modelers**: Backend modeler implementations (Modelers.ADNLP, ExaModeler)
+- **Modelers**: Backend modeler implementations (Modelers.ADNLP, Modelers.ExaModeler)
 - **Optimization**: General optimization abstractions and builders
 - **Orchestration**: High-level coordination and method routing
 - **Strategies**: Strategy patterns for solution approaches
@@ -60,7 +60,7 @@ using .Orchestration
 include(joinpath(@__DIR__, "Optimization", "Optimization.jl"))
 using .Optimization
 
-# Modelers module - backend modeler implementations (Modelers.ADNLP, ExaModeler)
+# Modelers module - backend modeler implementations (Modelers.ADNLP, Modelers.ExaModeler)
 include(joinpath(@__DIR__, "Modelers", "Modelers.jl"))
 using .Modelers
 
