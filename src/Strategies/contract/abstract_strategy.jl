@@ -367,7 +367,7 @@ before constructing an instance.
 julia> describe(ADNLPModeler)
 ADNLPModeler (strategy type)
 ├─ id: :adnlp
-├─ supertype: AbstractOptimizationModeler
+├─ supertype: AbstractNLPModeler
 └─ metadata: 4 options defined
    ├─ show_time :: Bool (default: false)
    │  description: Whether to show timing information

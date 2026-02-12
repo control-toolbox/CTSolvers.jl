@@ -40,7 +40,7 @@ function test_end_to_end()
             
             # Step 3: Create modeler
             modeler = Modelers.ADNLPModeler(show_time=false)
-            Test.@test modeler isa Modelers.AbstractOptimizationModeler
+            Test.@test modeler isa Modelers.AbstractNLPModeler
             
             # Step 4: Build NLP model
             nlp = modeler(prob, ros.init)
@@ -95,7 +95,7 @@ function test_end_to_end()
             
             # Step 2: Create modeler with Exa backend (permissive mode for minimize option)
             modeler = Modelers.ExaModeler(base_type=Float64, minimize=true; mode=:permissive)
-            Test.@test modeler isa Modelers.AbstractOptimizationModeler
+            Test.@test modeler isa Modelers.AbstractNLPModeler
             Test.@test typeof(modeler) == Modelers.ExaModeler
             
             # Step 3: Build NLP model

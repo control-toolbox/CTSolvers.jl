@@ -129,7 +129,7 @@ modeler = ExaModeler(
 - ExaModels.jl: [https://github.com/JuliaSmoothOptimizers/ExaModels.jl](https://github.com/JuliaSmoothOptimizers/ExaModels.jl)
 - KernelAbstractions.jl: [https://github.com/JuliaGPU/KernelAbstractions.jl](https://github.com/JuliaGPU/KernelAbstractions.jl)
 """
-struct ExaModeler <: AbstractOptimizationModeler
+struct ExaModeler <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 

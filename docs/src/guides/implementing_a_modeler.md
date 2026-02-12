@@ -9,7 +9,7 @@ This guide explains how to implement an optimization modeler in CTSolvers. Model
 !!! tip "Prerequisites"
     Read [Architecture](@ref) and [Implementing a Strategy](@ref) first. A modeler is a strategy with two additional **callable contracts**.
 
-## The AbstractOptimizationModeler Contract
+## The AbstractNLPModeler Contract
 
 A modeler must satisfy **three contracts**:
 
@@ -26,15 +26,15 @@ classDiagram
         options(instance)::StrategyOptions
     }
 
-    class AbstractOptimizationModeler {
+    class AbstractNLPModeler {
         <<abstract>>
         (modeler)(prob, x0) → NLP
         (modeler)(prob, stats) → Solution
     }
 
-    AbstractStrategy <|-- AbstractOptimizationModeler
-    AbstractOptimizationModeler <|-- ADNLPModeler
-    AbstractOptimizationModeler <|-- ExaModeler
+    AbstractStrategy <|-- AbstractNLPModeler
+    AbstractNLPModeler <|-- ADNLPModeler
+    AbstractNLPModeler <|-- ExaModeler
 ```
 
 Both callables have default implementations that throw `NotImplemented`.
@@ -61,7 +61,7 @@ We walk through the ADNLPModeler implementation as a reference.
 ### Step 1 — Define the struct
 
 ```julia
-struct ADNLPModeler <: AbstractOptimizationModeler
+struct ADNLPModeler <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 ```
@@ -133,7 +133,7 @@ end
 ExaModeler follows the same pattern with different options and a slightly different callable signature:
 
 ```julia
-struct ExaModeler <: AbstractOptimizationModeler
+struct ExaModeler <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 
@@ -252,7 +252,7 @@ solution = modeler(prob, stats)
 
 To add a new modeler (e.g., `MyModeler` for a new NLP backend):
 
-1. Define `MyModeler <: AbstractOptimizationModeler` with `options::StrategyOptions`
+1. Define `MyModeler <: AbstractNLPModeler` with `options::StrategyOptions`
 2. Implement `Strategies.id(::Type{<:MyModeler}) = :my_backend`
 3. Implement `Strategies.metadata(::Type{<:MyModeler})` with option definitions
 4. Write constructor: `MyModeler(; mode, kwargs...)`

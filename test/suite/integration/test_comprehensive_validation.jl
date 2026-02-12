@@ -161,7 +161,7 @@ function test_strategy_construction(
         
         @testset "build_strategy_from_method()" begin
             # Create method tuple with strategy ID
-            method = if family == AbstractOptimizationModeler
+            method = if family == AbstractNLPModeler
                 (:collocation, strategy_id, :ipopt)
             else
                 (:collocation, :adnlp, strategy_id)
@@ -192,7 +192,7 @@ function test_strategy_construction(
         # ====================================================================
         
         @testset "Orchestration Wrapper" begin
-            method = if family == AbstractOptimizationModeler
+            method = if family == AbstractNLPModeler
                 (:collocation, strategy_id, :ipopt)
             else
                 (:collocation, :adnlp, strategy_id)
@@ -290,7 +290,7 @@ function test_comprehensive_validation()
         
         # Create registries for testing
         modeler_registry = CTSolvers.Strategies.create_registry(
-            AbstractOptimizationModeler => (ADNLPModeler, ExaModeler)
+            AbstractNLPModeler => (ADNLPModeler, ExaModeler)
         )
         
         # Create solver registry based on available extensions
@@ -322,7 +322,7 @@ function test_comprehensive_validation()
                 
                 # Test all construction methods
                 test_strategy_construction(
-                    ADNLPModeler, :adnlp, AbstractOptimizationModeler,
+                    ADNLPModeler, :adnlp, AbstractNLPModeler,
                     known_options, unknown_options, modeler_registry
                 )
                 
@@ -337,7 +337,7 @@ function test_comprehensive_validation()
                     test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
                     
                     # Test build_strategy option recovery
-                    strategy_build = build_strategy(:adnlp, AbstractOptimizationModeler, modeler_registry; known_options..., unknown_options..., mode=:permissive)
+                    strategy_build = build_strategy(:adnlp, AbstractNLPModeler, modeler_registry; known_options..., unknown_options..., mode=:permissive)
                     test_option_recovery(strategy_build, known_options, unknown_options, :permissive)
                 end
                 
@@ -355,7 +355,7 @@ function test_comprehensive_validation()
                 
                 # Test all construction methods
                 test_strategy_construction(
-                    ExaModeler, :exa, AbstractOptimizationModeler,
+                    ExaModeler, :exa, AbstractNLPModeler,
                     known_options, unknown_options, modeler_registry
                 )
                 
@@ -520,16 +520,16 @@ function test_comprehensive_validation()
                 # @test modeler1.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
                 # build_strategy - mode should NOT be stored in options  
-                modeler2 = build_strategy(:adnlp, AbstractOptimizationModeler, registry; backend=:default, mode=:permissive)
+                modeler2 = build_strategy(:adnlp, AbstractNLPModeler, registry; backend=:default, mode=:permissive)
                 # @test modeler2.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
                 # build_strategy_from_method - mode should NOT be stored in options
                 method = (:collocation, :adnlp, :ipopt)
-                modeler3 = CTSolvers.Strategies.build_strategy_from_method(method, AbstractOptimizationModeler, registry; backend=:default, mode=:permissive)
+                modeler3 = CTSolvers.Strategies.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, mode=:permissive)
                 # @test modeler3.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
                 # Orchestration wrapper - mode should NOT be stored in options
-                modeler4 = Orchestration.build_strategy_from_method(method, AbstractOptimizationModeler, registry; backend=:default, mode=:permissive)
+                modeler4 = Orchestration.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, mode=:permissive)
                 # @test modeler4.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
                 # CORRECT: Verify mode is NOT stored in options
@@ -567,16 +567,16 @@ function test_comprehensive_validation()
                 local unknown_options = (test_consistency=42)
                 
                 local registry = CTSolvers.Strategies.create_registry(
-                    AbstractOptimizationModeler => (ADNLPModeler, ExaModeler)
+                    AbstractNLPModeler => (ADNLPModeler, ExaModeler)
                 )
                 
                 # Create strategies with different methods
                 modeler1 = ADNLPModeler(; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
-                modeler2 = build_strategy(:adnlp, AbstractOptimizationModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
+                modeler2 = build_strategy(:adnlp, AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                 
                 method = (:collocation, :adnlp, :ipopt)
-                modeler3 = CTSolvers.Strategies.build_strategy_from_method(method, AbstractOptimizationModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
-                modeler4 = Orchestration.build_strategy_from_method(method, AbstractOptimizationModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
+                modeler3 = CTSolvers.Strategies.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
+                modeler4 = Orchestration.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                 
                 # Test that all have the same options
                 strategies = [modeler1, modeler2, modeler3, modeler4]

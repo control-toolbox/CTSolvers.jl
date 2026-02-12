@@ -19,14 +19,14 @@ Test basic functionality and module structure.
 function test_modelers_basic()
     Test.@testset "Modelers Basic Tests" begin
         # Test module exports
-        Test.@test isdefined(CTSolvers, :AbstractOptimizationModeler)
+        Test.@test isdefined(CTSolvers, :AbstractNLPModeler)
         Test.@test isdefined(CTSolvers, :ADNLPModeler)
         Test.@test isdefined(CTSolvers, :ExaModeler)
         
         # Test type hierarchy
-        Test.@test Modelers.AbstractOptimizationModeler <: Strategies.AbstractStrategy
-        Test.@test Modelers.ADNLPModeler <: Modelers.AbstractOptimizationModeler
-        Test.@test Modelers.ExaModeler <: Modelers.AbstractOptimizationModeler
+        Test.@test Modelers.AbstractNLPModeler <: Strategies.AbstractStrategy
+        Test.@test Modelers.ADNLPModeler <: Modelers.AbstractNLPModeler
+        Test.@test Modelers.ExaModeler <: Modelers.AbstractNLPModeler
         
         # Test strategy identification
         Test.@test Strategies.id(Modelers.ADNLPModeler) == :adnlp
@@ -54,7 +54,7 @@ function test_adnlp_modeler()
     Test.@testset "ADNLPModeler Tests" begin
         # Test default constructor
         modeler = Modelers.ADNLPModeler()
-        Test.@test modeler isa Modelers.AbstractOptimizationModeler
+        Test.@test modeler isa Modelers.AbstractNLPModeler
         Test.@test modeler isa Strategies.AbstractStrategy
         
         # Test constructor with options
@@ -85,7 +85,7 @@ function test_exa_modeler()
     Test.@testset "ExaModeler Tests" begin
         # Test default constructor
         modeler = Modelers.ExaModeler()
-        Test.@test modeler isa Modelers.AbstractOptimizationModeler
+        Test.@test modeler isa Modelers.AbstractNLPModeler
         Test.@test modeler isa Strategies.AbstractStrategy
         Test.@test typeof(modeler) == Modelers.ExaModeler
         
@@ -139,8 +139,8 @@ function test_modelers_error_handling()
         # Test that abstract methods throw NotImplemented
         # Note: Cannot instantiate abstract type, so we test the interface exists
         Test.@test hasmethod(
-            (m::Modelers.AbstractOptimizationModeler, prob, ig) -> m(prob, ig),
-            Tuple{Modelers.AbstractOptimizationModeler, Modelers.AbstractOptimizationProblem, Any}
+            (m::Modelers.AbstractNLPModeler, prob, ig) -> m(prob, ig),
+            Tuple{Modelers.AbstractNLPModeler, Modelers.AbstractOptimizationProblem, Any}
         )
     end
 end

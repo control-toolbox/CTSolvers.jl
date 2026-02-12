@@ -51,17 +51,17 @@ classDiagram
         options(instance)::StrategyOptions
     }
 
-    AbstractStrategy <|-- AbstractOptimizationModeler
+    AbstractStrategy <|-- AbstractNLPModeler
     AbstractStrategy <|-- AbstractOptimizationSolver
     AbstractStrategy <|-- AbstractOptimalControlDiscretizer
 
-    class AbstractOptimizationModeler {
+    class AbstractNLPModeler {
         <<abstract>>
         (modeler)(prob, x0) → NLP
         (modeler)(prob, stats) → Solution
     }
-    AbstractOptimizationModeler <|-- ADNLPModeler
-    AbstractOptimizationModeler <|-- ExaModeler
+    AbstractNLPModeler <|-- ADNLPModeler
+    AbstractNLPModeler <|-- ExaModeler
 
     class AbstractOptimizationSolver {
         <<abstract>>
@@ -80,7 +80,7 @@ classDiagram
     AbstractOptimalControlDiscretizer <|-- DirectShooting
 ```
 
-- **`AbstractOptimizationModeler`** (in `Modelers`): converts problems into NLP models and back into solutions.
+- **`AbstractNLPModeler`** (in `Modelers`): converts problems into NLP models and back into solutions.
 - **`AbstractOptimizationSolver`** (in `Solvers`): solves NLP models via backend libraries.
 - **`AbstractOptimalControlDiscretizer`** (in CTDirect, external): discretizes continuous-time OCP into finite-dimensional problems. See [Implementing a Strategy](@ref) for a complete tutorial.
 
@@ -162,7 +162,7 @@ The complete resolution pipeline transforms an optimal control problem into a so
 sequenceDiagram
     participant User
     participant Solve as CommonSolve.solve
-    participant Modeler as AbstractOptimizationModeler
+    participant Modeler as AbstractNLPModeler
     participant Problem as AbstractOptimizationProblem
     participant Builder as AbstractModelBuilder
     participant Solver as AbstractOptimizationSolver

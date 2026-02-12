@@ -18,7 +18,7 @@ import CTSolvers.Optimization: AbstractModelBuilder, AbstractSolutionBuilder, Ab
 import CTSolvers.Optimization: get_adnlp_model_builder, get_exa_model_builder
 import CTSolvers.Optimization: get_adnlp_solution_builder, get_exa_solution_builder
 import CTSolvers.Optimization: build_model, build_solution
-import CTSolvers.Modelers: AbstractOptimizationModeler
+import CTSolvers.Modelers: AbstractNLPModeler
 
 # ============================================================================
 # FAKE TYPES FOR TESTING (TOP-LEVEL)
@@ -43,9 +43,9 @@ end
 
 """
 Fake modeler for testing building functions.
-Subtypes AbstractOptimizationModeler to satisfy the type annotation on nlp_model/ocp_solution.
+Subtypes AbstractNLPModeler to satisfy the type annotation on nlp_model/ocp_solution.
 """
-struct FakeModelerDOCP <: AbstractOptimizationModeler
+struct FakeModelerDOCP <: AbstractNLPModeler
     backend::Symbol
 end
 

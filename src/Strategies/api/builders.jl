@@ -27,13 +27,13 @@ This function creates a concrete strategy instance by:
 # Example
 ```julia-repl
 julia> registry = create_registry(
-           AbstractOptimizationModeler => (ADNLPModeler, ExaModeler)
+           AbstractNLPModeler => (ADNLPModeler, ExaModeler)
        )
 
-julia> modeler = build_strategy(:adnlp, AbstractOptimizationModeler, registry; backend=:sparse)
+julia> modeler = build_strategy(:adnlp, AbstractNLPModeler, registry; backend=:sparse)
 ADNLPModeler(options=StrategyOptions{...})
 
-julia> modeler = build_strategy(:adnlp, AbstractOptimizationModeler, registry; 
+julia> modeler = build_strategy(:adnlp, AbstractNLPModeler, registry; 
            backend=:sparse, mode=:permissive)
 ADNLPModeler(options=StrategyOptions{...})
 ```
@@ -74,7 +74,7 @@ This function identifies which ID corresponds to the requested family.
 ```julia-repl
 julia> method = (:collocation, :adnlp, :ipopt)
 
-julia> extract_id_from_method(method, AbstractOptimizationModeler, registry)
+julia> extract_id_from_method(method, AbstractNLPModeler, registry)
 :adnlp
 
 julia> extract_id_from_method(method, AbstractOptimizationSolver, registry)
@@ -137,7 +137,7 @@ This is a convenience function that combines ID extraction with option introspec
 ```julia-repl
 julia> method = (:collocation, :adnlp, :ipopt)
 
-julia> option_names_from_method(method, AbstractOptimizationModeler, registry)
+julia> option_names_from_method(method, AbstractNLPModeler, registry)
 (:backend, :show_time)
 ```
 
@@ -178,7 +178,7 @@ julia> method = (:collocation, :adnlp, :ipopt)
 
 julia> modeler = build_strategy_from_method(
            method, 
-           AbstractOptimizationModeler, 
+           AbstractNLPModeler, 
            registry; 
            backend=:sparse
        )
@@ -186,7 +186,7 @@ ADNLPModeler(options=StrategyOptions{...})
 
 julia> modeler = build_strategy_from_method(
            method, 
-           AbstractOptimizationModeler, 
+           AbstractNLPModeler, 
            registry; 
            backend=:sparse,
            mode=:permissive

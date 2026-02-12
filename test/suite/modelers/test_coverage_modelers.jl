@@ -17,7 +17,7 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 # Fake types for testing (must be at module top-level)
 # ============================================================================
 
-struct CovFakeModeler <: Modelers.AbstractOptimizationModeler
+struct CovFakeModeler <: Modelers.AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 
@@ -29,10 +29,10 @@ function test_coverage_modelers()
     Test.@testset "Coverage: Modelers" verbose=VERBOSE showtiming=SHOWTIMING begin
 
         # ====================================================================
-        # UNIT TESTS - AbstractOptimizationModeler (abstract_modeler.jl)
+        # UNIT TESTS - AbstractNLPModeler (abstract_modeler.jl)
         # ====================================================================
 
-        Test.@testset "AbstractOptimizationModeler - NotImplemented errors" begin
+        Test.@testset "AbstractNLPModeler - NotImplemented errors" begin
             opts = Strategies.StrategyOptions()
             modeler = CovFakeModeler(opts)
             prob = CovFakeProblem()
@@ -45,9 +45,9 @@ function test_coverage_modelers()
             Test.@test_throws Exceptions.NotImplemented modeler(prob, stats)
         end
 
-        Test.@testset "AbstractOptimizationModeler - type hierarchy" begin
-            Test.@test Modelers.AbstractOptimizationModeler <: Strategies.AbstractStrategy
-            Test.@test isabstracttype(Modelers.AbstractOptimizationModeler)
+        Test.@testset "AbstractNLPModeler - type hierarchy" begin
+            Test.@test Modelers.AbstractNLPModeler <: Strategies.AbstractStrategy
+            Test.@test isabstracttype(Modelers.AbstractNLPModeler)
         end
 
         # ====================================================================

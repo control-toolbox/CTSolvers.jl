@@ -230,7 +230,7 @@ function test_coverage_options()
                 Strategies.AbstractStrategy => (CovOptFakeStrategy,)
             )
             Test.@test_throws Exceptions.IncorrectArgument Strategies.strategy_ids(
-                CTSolvers.Modelers.AbstractOptimizationModeler, registry
+                CTSolvers.Modelers.AbstractNLPModeler, registry
             )
 
             # Unknown strategy ID
@@ -240,7 +240,7 @@ function test_coverage_options()
 
             # Family not found in type_from_id
             Test.@test_throws Exceptions.IncorrectArgument Strategies.type_from_id(
-                :cov_opt_fake, CTSolvers.Modelers.AbstractOptimizationModeler, registry
+                :cov_opt_fake, CTSolvers.Modelers.AbstractNLPModeler, registry
             )
         end
     end

@@ -53,7 +53,7 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 
 # Abstract strategy types for testing
 abstract type RouteTestDiscretizer <: Strategies.AbstractStrategy end
-abstract type RouteTestModeler <: CTSolvers.Modelers.AbstractOptimizationModeler end
+abstract type RouteTestModeler <: CTSolvers.Modelers.AbstractNLPModeler end
 abstract type RouteTestSolver <: CTSolvers.Solvers.AbstractOptimizationSolver end
 
 # Mock discretizer (no option conflicts)
@@ -491,13 +491,13 @@ function test_route_to_comprehensive()
             @testset "Real ADNLPModeler" begin
                 real_registry = Strategies.create_registry(
                     RouteTestDiscretizer => (RouteCollocation,),
-                    CTSolvers.Modelers.AbstractOptimizationModeler => (CTSolvers.Modelers.ADNLPModeler,),
+                    CTSolvers.Modelers.AbstractNLPModeler => (CTSolvers.Modelers.ADNLPModeler,),
                     RouteTestSolver => (RouteIpopt,)
                 )
                 
                 real_families = (
                     discretizer = RouteTestDiscretizer,
-                    modeler = CTSolvers.Modelers.AbstractOptimizationModeler,
+                    modeler = CTSolvers.Modelers.AbstractNLPModeler,
                     solver = RouteTestSolver
                 )
                 
@@ -514,7 +514,7 @@ function test_route_to_comprehensive()
                 
                 # Build real modeler
                 real_modeler = Strategies.build_strategy_from_method(
-                    MOCK_METHOD, CTSolvers.Modelers.AbstractOptimizationModeler, real_registry; 
+                    MOCK_METHOD, CTSolvers.Modelers.AbstractNLPModeler, real_registry; 
                     routed.strategies.modeler...
                 )
                 

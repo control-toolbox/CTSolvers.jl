@@ -122,7 +122,7 @@ modeler = ADNLPModeler(
 - ADNLPModels.jl: [https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl)
 - Automatic Differentiation in Julia: [https://github.com/JuliaDiff/](https://github.com/JuliaDiff/)
 """
-struct ADNLPModeler <: AbstractOptimizationModeler
+struct ADNLPModeler <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 
