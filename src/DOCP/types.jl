@@ -1,6 +1,6 @@
 # DOCP Types
 #
-# This module defines the DiscretizedOptimalControlProblem type.
+# This module defines the DiscretizedModel type.
 # All builder types are now in the Optimization module.
 #
 # Author: CTSolvers Development Team
@@ -23,17 +23,17 @@ This type implements the `AbstractOptimizationProblem` contract.
 
 # Example
 ```julia-repl
-julia> docp = DiscretizedOptimalControlProblem(
+julia> docp = DiscretizedModel(
            ocp,
            ADNLPModelBuilder(build_adnlp_model),
            ExaModelBuilder(build_exa_model),
            ADNLPSolutionBuilder(build_adnlp_solution),
            ExaSolutionBuilder(build_exa_solution)
        )
-DiscretizedOptimalControlProblem{...}(...)
+DiscretizedModel{...}(...)
 ```
 """
-struct DiscretizedOptimalControlProblem{
+struct DiscretizedModel{
     TO<:CTModels.AbstractModel,
     TAMB<:AbstractModelBuilder,
     TEMB<:AbstractModelBuilder,

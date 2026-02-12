@@ -19,7 +19,7 @@ CTSolvers is organized into 7 modules, loaded in strict dependency order:
 | 3 | **Orchestration** | Multi-strategy option routing and disambiguation |
 | 4 | **Optimization** | Abstract optimization types (`AbstractOptimizationProblem`), builders, `build_model`/`build_solution` |
 | 5 | **Modelers** | NLP model backends: `ADNLPModeler`, `ExaModeler` |
-| 6 | **DOCP** | `DiscretizedOptimalControlProblem` — bridges CTModels and CTSolvers |
+| 6 | **DOCP** | `DiscretizedModel` — bridges CTModels and CTSolvers |
 | 7 | **Solvers** | Solver integration: `IpoptSolver`, `MadNLPSolver`, `MadNCLSolver`, `KnitroSolver`, CommonSolve API |
 
 All access is **qualified** — CTSolvers does not export symbols at the top level:
@@ -98,7 +98,7 @@ classDiagram
         get_adnlp_solution_builder()
         get_exa_solution_builder()
     }
-    AbstractOptimizationProblem <|-- DiscretizedOptimalControlProblem
+    AbstractOptimizationProblem <|-- DiscretizedModel
 
     class AbstractBuilder {
         <<abstract>>
@@ -124,7 +124,7 @@ classDiagram
 - **`AbstractOptimizationProblem`**: any problem that can provide builders for NLP model construction and solution conversion.
 - **`AbstractModelBuilder`**: callable that constructs an NLP model (ADNLPModel or ExaModel).
 - **`AbstractSolutionBuilder`**: callable that converts NLP solver results into problem-specific solutions.
-- **`DiscretizedOptimalControlProblem`** (in `DOCP`): the concrete implementation that bridges CTModels OCP with CTSolvers builders.
+- **`DiscretizedModel`** (in `DOCP`): the concrete implementation that bridges CTModels OCP with CTSolvers builders.
 
 ## Module Dependencies
 

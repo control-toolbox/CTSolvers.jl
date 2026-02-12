@@ -49,7 +49,7 @@ struct FakeModelerDOCP <: AbstractOptimizationModeler
     backend::Symbol
 end
 
-function (modeler::FakeModelerDOCP)(prob::DiscretizedOptimalControlProblem, initial_guess)
+function (modeler::FakeModelerDOCP)(prob::DiscretizedModel, initial_guess)
     if modeler.backend == :adnlp
         builder = get_adnlp_model_builder(prob)
         return builder(initial_guess)
@@ -59,7 +59,7 @@ function (modeler::FakeModelerDOCP)(prob::DiscretizedOptimalControlProblem, init
     end
 end
 
-function (modeler::FakeModelerDOCP)(prob::DiscretizedOptimalControlProblem, nlp_solution::SolverCore.AbstractExecutionStats)
+function (modeler::FakeModelerDOCP)(prob::DiscretizedModel, nlp_solution::SolverCore.AbstractExecutionStats)
     if modeler.backend == :adnlp
         builder = get_adnlp_solution_builder(prob)
         return builder(nlp_solution)
@@ -77,10 +77,10 @@ function test_docp()
     Test.@testset "DOCP Module" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
-        # UNIT TESTS - DiscretizedOptimalControlProblem Type
+        # UNIT TESTS - DiscretizedModel Type
         # ====================================================================
         
-        Test.@testset "DiscretizedOptimalControlProblem Type" begin
+        Test.@testset "DiscretizedModel Type" begin
             Test.@testset "Construction" begin
                 # Create builders
                 adnlp_builder = Optimization.ADNLPModelBuilder(x -> ADNLPModel(z -> sum(z.^2), x))
@@ -99,7 +99,7 @@ function test_docp()
                 ocp = FakeOCP("test_ocp")
                 
                 # Create DOCP
-                docp = DiscretizedOptimalControlProblem(
+                docp = DiscretizedModel(
                     ocp,
                     adnlp_builder,
                     exa_builder,
@@ -107,7 +107,7 @@ function test_docp()
                     exa_sol_builder
                 )
                 
-                Test.@test docp isa DiscretizedOptimalControlProblem
+                Test.@test docp isa DiscretizedModel
                 Test.@test docp isa AbstractOptimizationProblem
                 Test.@test docp.optimal_control_problem === ocp
                 Test.@test docp.adnlp_model_builder === adnlp_builder
@@ -130,7 +130,7 @@ function test_docp()
                 adnlp_sol_builder = Optimization.ADNLPSolutionBuilder(s -> (objective=s.objective,))
                 exa_sol_builder = Optimization.ExaSolutionBuilder(s -> (objective=s.objective,))
                 
-                docp = DiscretizedOptimalControlProblem(
+                docp = DiscretizedModel(
                     ocp, adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder
                 )
                 
@@ -160,7 +160,7 @@ function test_docp()
             adnlp_sol_builder = Optimization.ADNLPSolutionBuilder(s -> (objective=s.objective,))
             exa_sol_builder = Optimization.ExaSolutionBuilder(s -> (objective=s.objective,))
             
-            docp = DiscretizedOptimalControlProblem(
+            docp = DiscretizedModel(
                 ocp, adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder
             )
             
@@ -208,7 +208,7 @@ function test_docp()
                 adnlp_sol_builder = Optimization.ADNLPSolutionBuilder(s -> (objective=s.objective,))
                 exa_sol_builder = Optimization.ExaSolutionBuilder(s -> (objective=s.objective,))
                 
-                docp = DiscretizedOptimalControlProblem(
+                docp = DiscretizedModel(
                     ocp, adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder
                 )
                 
@@ -236,7 +236,7 @@ function test_docp()
             adnlp_sol_builder = Optimization.ADNLPSolutionBuilder(s -> (objective=s.objective, status=s.status))
             exa_sol_builder = Optimization.ExaSolutionBuilder(s -> (objective=s.objective, iter=s.iter))
             
-            docp = DiscretizedOptimalControlProblem(
+            docp = DiscretizedModel(
                 ocp, adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder
             )
             
@@ -308,7 +308,7 @@ function test_docp()
                 exa_sol_builder = Optimization.ExaSolutionBuilder(s -> (objective=s.objective, iter=s.iter))
                 
                 # Create DOCP
-                docp = DiscretizedOptimalControlProblem(
+                docp = DiscretizedModel(
                     ocp, adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder
                 )
                 
@@ -355,7 +355,7 @@ function test_docp()
                 ))
                 
                 # Create DOCP
-                docp = DiscretizedOptimalControlProblem(
+                docp = DiscretizedModel(
                     ocp, adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder
                 )
                 
@@ -395,7 +395,7 @@ function test_docp()
                 adnlp_sol_builder = Optimization.ADNLPSolutionBuilder(s -> (objective=s.objective,))
                 exa_sol_builder = Optimization.ExaSolutionBuilder(s -> (objective=s.objective,))
                 
-                docp = DiscretizedOptimalControlProblem(
+                docp = DiscretizedModel(
                     ocp, adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder
                 )
                 

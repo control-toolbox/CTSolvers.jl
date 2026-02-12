@@ -17,7 +17,7 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 import CTSolvers.Modelers
 import CTSolvers.Optimization
 import CTSolvers.DOCP
-import CTSolvers.DOCP: DiscretizedOptimalControlProblem, ocp_model, nlp_model, ocp_solution
+import CTSolvers.DOCP: DiscretizedModel, ocp_model, nlp_model, ocp_solution
 
 # ============================================================================
 # TEST FUNCTION

@@ -1,6 +1,6 @@
 # DOCP Module
 #
-# This module provides the DiscretizedOptimalControlProblem type and implements
+# This module provides the DiscretizedModel type and implements
 # the AbstractOptimizationProblem contract.
 #
 # Author: CTSolvers Development Team
@@ -25,7 +25,7 @@ include(joinpath(@__DIR__, "accessors.jl"))
 include(joinpath(@__DIR__, "building.jl"))
 
 # Public API
-export DiscretizedOptimalControlProblem
+export DiscretizedModel
 export ocp_model
 export nlp_model, ocp_solution
 

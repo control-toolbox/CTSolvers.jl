@@ -44,7 +44,7 @@ It provides the **solution layer** for optimal control problems:
 | `Orchestration` | Option routing, disambiguation, method tuple handling |
 | `Optimization` | Abstract problem types, builder pattern, build/solve API |
 | `Modelers` | ADNLPModeler, ExaModeler — NLP backend adapters |
-| `DOCP` | DiscretizedOptimalControlProblem — concrete problem type |
+| `DOCP` | DiscretizedModel — concrete problem type |
 | `Solvers` | IpoptSolver, MadNLPSolver, KnitroSolver — NLP solver wrappers |
 
 ## Documentation
