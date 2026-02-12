@@ -64,7 +64,6 @@ abstract type AbstractTag end
 
 # Include submodules
 include(joinpath(@__DIR__, "abstract_solver.jl"))
-include(joinpath(@__DIR__, "validation.jl"))
 include(joinpath(@__DIR__, "ipopt_solver.jl"))
 include(joinpath(@__DIR__, "madnlp_solver.jl"))
 include(joinpath(@__DIR__, "madncl_solver.jl"))

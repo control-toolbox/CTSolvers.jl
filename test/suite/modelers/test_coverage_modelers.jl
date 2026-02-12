@@ -1,0 +1,112 @@
+module TestCoverageModelers
+
+using Test
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions
+using CTSolvers
+using CTSolvers.Modelers
+using CTSolvers.Strategies
+using CTSolvers.Options
+using CTSolvers.Optimization
+using SolverCore
+
+const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+
+# ============================================================================
+# Fake types for testing (must be at module top-level)
+# ============================================================================
+
+struct CovFakeModeler <: Modelers.AbstractOptimizationModeler
+    options::Strategies.StrategyOptions
+end
+
+struct CovFakeProblem <: Optimization.AbstractOptimizationProblem end
+
+struct CovFakeStats <: SolverCore.AbstractExecutionStats end
+
+function test_coverage_modelers()
+    Test.@testset "Coverage: Modelers" verbose=VERBOSE showtiming=SHOWTIMING begin
+
+        # ====================================================================
+        # UNIT TESTS - AbstractOptimizationModeler (abstract_modeler.jl)
+        # ====================================================================
+
+        Test.@testset "AbstractOptimizationModeler - NotImplemented errors" begin
+            opts = Strategies.StrategyOptions()
+            modeler = CovFakeModeler(opts)
+            prob = CovFakeProblem()
+            stats = CovFakeStats()
+
+            # Model building callable - NotImplemented
+            Test.@test_throws Exceptions.NotImplemented modeler(prob, [1.0, 2.0])
+
+            # Solution building callable - NotImplemented
+            Test.@test_throws Exceptions.NotImplemented modeler(prob, stats)
+        end
+
+        Test.@testset "AbstractOptimizationModeler - type hierarchy" begin
+            Test.@test Modelers.AbstractOptimizationModeler <: Strategies.AbstractStrategy
+            Test.@test isabstracttype(Modelers.AbstractOptimizationModeler)
+        end
+
+        # ====================================================================
+        # UNIT TESTS - ADNLPModeler defaults (adnlp_modeler.jl)
+        # ====================================================================
+
+        Test.@testset "ADNLPModeler - default helpers" begin
+            Test.@test Modelers.__adnlp_model_backend() == :optimized
+        end
+
+        # ====================================================================
+        # UNIT TESTS - ExaModeler defaults (exa_modeler.jl)
+        # ====================================================================
+
+        Test.@testset "ExaModeler - default helpers" begin
+            Test.@test Modelers.__exa_model_base_type() == Float64
+            Test.@test Modelers.__exa_model_backend() === nothing
+        end
+
+        # ====================================================================
+        # UNIT TESTS - ExaModeler invalid base_type
+        # ====================================================================
+
+        Test.@testset "ExaModeler - invalid base_type" begin
+            redirect_stderr(devnull) do
+                Test.@test_throws Exceptions.IncorrectArgument Modelers.ExaModeler(base_type=Int)
+            end
+        end
+
+        # ====================================================================
+        # UNIT TESTS - ADNLPModeler invalid unknown option (strict mode)
+        # ====================================================================
+
+        Test.@testset "ADNLPModeler - unknown option strict mode" begin
+            redirect_stderr(devnull) do
+                Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLPModeler(unknown_opt=42)
+            end
+        end
+
+        Test.@testset "ExaModeler - unknown option strict mode" begin
+            redirect_stderr(devnull) do
+                Test.@test_throws Exceptions.IncorrectArgument Modelers.ExaModeler(unknown_opt=42)
+            end
+        end
+
+        # ====================================================================
+        # UNIT TESTS - Strategies.id() direct calls (coverage for id lines)
+        # ====================================================================
+
+        Test.@testset "ADNLPModeler - Strategies.id() direct" begin
+            Test.@test Strategies.id(Modelers.ADNLPModeler) === :adnlp
+        end
+
+        Test.@testset "ExaModeler - Strategies.id() direct" begin
+            Test.@test Strategies.id(Modelers.ExaModeler) === :exa
+        end
+    end
+end
+
+end # module
+
+test_coverage_modelers() = TestCoverageModelers.test_coverage_modelers()

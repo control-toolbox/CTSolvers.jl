@@ -613,6 +613,7 @@ function test_madnlp_extension()
                 end
 
                 # NOTE: Max1MinusX2 is a maximization problem (minimize=false)
+                # https://github.com/MadNLP/MadNLP.jl/issues/518
                 # ExaModels on GPU treats maximization as minimization, causing
                 # convergence to constraint bound x≈5 instead of x=0
                 # Test disabled until ExaModels GPU supports maximization correctly
