@@ -16,9 +16,9 @@ Every concrete optimization problem must implement **four builder getters** — 
 | Method | Returns | Used by |
 |--------|---------|---------|
 | `get_adnlp_model_builder(prob)` | `AbstractModelBuilder` | `Modelers.ADNLP` |
-| `get_exa_model_builder(prob)` | `AbstractModelBuilder` | `Modelers.ExaModeler` |
+| `get_exa_model_builder(prob)` | `AbstractModelBuilder` | `Modelers.Exa` |
 | `get_adnlp_solution_builder(prob)` | `AbstractSolutionBuilder` | `Modelers.ADNLP` |
-| `get_exa_solution_builder(prob)` | `AbstractSolutionBuilder` | `Modelers.ExaModeler` |
+| `get_exa_solution_builder(prob)` | `AbstractSolutionBuilder` | `Modelers.Exa` |
 
 All four have default implementations that throw `NotImplemented`:
 

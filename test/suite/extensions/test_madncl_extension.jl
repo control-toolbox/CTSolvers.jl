@@ -373,8 +373,8 @@ function test_madncl_extension()
         
         Test.@testset "Initial Guess - NCLOptions" begin
             BaseType = Float64
-            modelers = [Modelers.ADNLP(), Modelers.ExaModeler(; base_type=BaseType)]
-            modelers_names = ["Modelers.ADNLP", "Modelers.ExaModeler (CPU)"]
+            modelers = [Modelers.ADNLP(), Modelers.Exa(; base_type=BaseType)]
+            modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
             linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
             linear_solver_names = ["Umfpack", "Mumps"]
             
@@ -415,8 +415,8 @@ function test_madncl_extension()
         
         Test.@testset "solve_with_madncl Function" begin
             BaseType = Float64
-            modelers = [Modelers.ADNLP(), Modelers.ExaModeler(; base_type=BaseType)]
-            modelers_names = ["Modelers.ADNLP", "Modelers.ExaModeler (CPU)"]
+            modelers = [Modelers.ADNLP(), Modelers.Exa(; base_type=BaseType)]
+            modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
             madncl_options = Dict(
                 :max_iter => 1000,
                 :tol => 1e-6,
@@ -463,7 +463,7 @@ function test_madncl_extension()
         
         Test.@testset "GPU Tests" begin
             if is_cuda_on()
-                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
+                gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
                 gpu_solver = Solvers.MadNCLSolver(
                     max_iter=1000,
                     tol=1e-6,
@@ -508,7 +508,7 @@ function test_madncl_extension()
 
         Test.@testset "GPU - solve_with_madncl" begin
             if is_cuda_on()
-                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
+                gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
                 madncl_options = Dict(
                     :max_iter => 1000,
                     :tol => 1e-6,
@@ -548,7 +548,7 @@ function test_madncl_extension()
 
         Test.@testset "GPU - Initial Guess (max_iter=0)" begin
             if is_cuda_on()
-                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
+                gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
                 ncl_opts_0 = MadNCL.NCLOptions{Float64}(
                     verbose=false,
                     max_auglag_iter=0

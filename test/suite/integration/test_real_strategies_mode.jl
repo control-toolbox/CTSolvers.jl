@@ -94,11 +94,11 @@ function test_real_strategies_mode()
             end
         end
         
-        @testset "Modelers.ExaModeler Mode Validation" begin
+        @testset "Modelers.Exa Mode Validation" begin
             
             @testset "Strict mode rejects unknown options" begin
                 # Should throw error for unknown option
-                @test_throws Exception CTSolvers.Modelers.ExaModeler(
+                @test_throws Exception CTSolvers.Modelers.Exa(
                     backend=nothing,
                     unknown_option=123
                 )
@@ -106,21 +106,21 @@ function test_real_strategies_mode()
             
             @testset "Strict mode accepts known options" begin
                 # Should work with known options
-                modeler = CTSolvers.Modelers.ExaModeler(
+                modeler = CTSolvers.Modelers.Exa(
                     backend=nothing
                 )
-                @test modeler isa CTSolvers.Modelers.ExaModeler
+                @test modeler isa CTSolvers.Modelers.Exa
                 @test Strategies.option_value(modeler, :backend) === nothing
             end
             
             @testset "Permissive mode accepts unknown options" begin
                 # Should work with warning
-                modeler = CTSolvers.Modelers.ExaModeler(
+                modeler = CTSolvers.Modelers.Exa(
                     backend=nothing,
                     unknown_option=123;
                     mode=:permissive
                 )
-                @test modeler isa CTSolvers.Modelers.ExaModeler
+                @test modeler isa CTSolvers.Modelers.Exa
                 @test Strategies.has_option(modeler, :unknown_option)
             end
         end

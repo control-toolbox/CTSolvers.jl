@@ -290,7 +290,7 @@ function test_comprehensive_validation()
         
         # Create registries for testing
         modeler_registry = CTSolvers.Strategies.create_registry(
-            AbstractNLPModeler => (Modelers.ADNLP, Modelers.ExaModeler)
+            AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa)
         )
         
         # Create solver registry based on available extensions
@@ -346,30 +346,30 @@ function test_comprehensive_validation()
             end
             
             # ----------------------------------------------------------------
-            # Modelers.ExaModeler Tests
+            # Modelers.Exa Tests
             # ----------------------------------------------------------------
             
-            @testset "Modelers.ExaModeler" begin
+            @testset "Modelers.Exa" begin
                 known_options = (base_type=Float64, backend=:dense)
                 unknown_options = (exa_fake=456, unknown_setting=true)
                 
                 # Test all construction methods
                 test_strategy_construction(
-                    Modelers.ExaModeler, :exa, AbstractNLPModeler,
+                    Modelers.Exa, :exa, AbstractNLPModeler,
                     known_options, unknown_options, modeler_registry
                 )
                 
                 # Test option recovery
                 @testset "Option Recovery" begin
-                    strategy_strict = Modelers.ExaModeler(; known_options...)
+                    strategy_strict = Modelers.Exa(; known_options...)
                     test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                     
-                    strategy_permissive = Modelers.ExaModeler(; known_options..., unknown_options..., mode=:permissive)
+                    strategy_permissive = Modelers.Exa(; known_options..., unknown_options..., mode=:permissive)
                     test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
                 end
                 
                 # Test invalid mode
-                test_invalid_mode(Modelers.ExaModeler)
+                test_invalid_mode(Modelers.Exa)
             end
         end
         
@@ -567,7 +567,7 @@ function test_comprehensive_validation()
                 local unknown_options = (test_consistency=42)
                 
                 local registry = CTSolvers.Strategies.create_registry(
-                    AbstractNLPModeler => (Modelers.ADNLP, Modelers.ExaModeler)
+                    AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa)
                 )
                 
                 # Create strategies with different methods

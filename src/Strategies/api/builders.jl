@@ -27,7 +27,7 @@ This function creates a concrete strategy instance by:
 # Example
 ```julia-repl
 julia> registry = create_registry(
-           AbstractNLPModeler => (Modelers.ADNLP, Modelers.ExaModeler)
+           AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa)
        )
 
 julia> modeler = build_strategy(:adnlp, AbstractNLPModeler, registry; backend=:sparse)

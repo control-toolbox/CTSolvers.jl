@@ -20,16 +20,16 @@ function test_modelers_basic()
         # Test module exports
         Test.@test isdefined(CTSolvers, :AbstractNLPModeler)
         Test.@test isdefined(CTSolvers, :ADNLP)
-        Test.@test isdefined(CTSolvers, :ExaModeler)
+        Test.@test isdefined(CTSolvers, :Exa)
         
         # Test type hierarchy
         Test.@test Modelers.AbstractNLPModeler <: Strategies.AbstractStrategy
         Test.@test Modelers.ADNLP <: Modelers.AbstractNLPModeler
-        Test.@test Modelers.ExaModeler <: Modelers.AbstractNLPModeler
+        Test.@test Modelers.Exa <: Modelers.AbstractNLPModeler
         
         # Test strategy identification
         Test.@test Strategies.id(Modelers.ADNLP) == :adnlp
-        Test.@test Strategies.id(Modelers.ExaModeler) == :exa
+        Test.@test Strategies.id(Modelers.Exa) == :exa
         
         # Test strategy metadata structure
         adnlp_meta = Strategies.metadata(Modelers.ADNLP)
@@ -37,7 +37,7 @@ function test_modelers_basic()
         Test.@test haskey(adnlp_meta, :show_time)
         Test.@test haskey(adnlp_meta, :backend)
         
-        exa_meta = Strategies.metadata(Modelers.ExaModeler)
+        exa_meta = Strategies.metadata(Modelers.Exa)
         Test.@test exa_meta isa Strategies.StrategyMetadata
         Test.@test haskey(exa_meta, :base_type)
         Test.@test haskey(exa_meta, :backend)
@@ -78,28 +78,28 @@ end
 """
     test_exa_modeler()
 
-Test Modelers.ExaModeler implementation.
+Test Modelers.Exa implementation.
 """
 function test_exa_modeler()
-    Test.@testset "Modelers.ExaModeler Tests" begin
+    Test.@testset "Modelers.Exa Tests" begin
         # Test default constructor
-        modeler = Modelers.ExaModeler()
+        modeler = Modelers.Exa()
         Test.@test modeler isa Modelers.AbstractNLPModeler
         Test.@test modeler isa Strategies.AbstractStrategy
-        Test.@test typeof(modeler) == Modelers.ExaModeler
+        Test.@test typeof(modeler) == Modelers.Exa
         
         # Test constructor with options
-        modeler_opts = Modelers.ExaModeler(backend=nothing)
+        modeler_opts = Modelers.Exa(backend=nothing)
         opts = Strategies.options(modeler_opts)
         Test.@test opts[:backend] === nothing
         
-        # Test type parameter (removed - Modelers.ExaModeler is no longer parameterized)
-        modeler_f32 = Modelers.ExaModeler(base_type=Float32)
-        Test.@test typeof(modeler_f32) == Modelers.ExaModeler
+        # Test type parameter (removed - Modelers.Exa is no longer parameterized)
+        modeler_f32 = Modelers.Exa(base_type=Float32)
+        Test.@test typeof(modeler_f32) == Modelers.Exa
         
         # Test base_type option handling
-        modeler_type = Modelers.ExaModeler(base_type=Float32)
-        Test.@test typeof(modeler_type) == Modelers.ExaModeler
+        modeler_type = Modelers.Exa(base_type=Float32)
+        Test.@test typeof(modeler_type) == Modelers.Exa
         Test.@test Strategies.options(modeler_type)[:base_type] == Float32
         
         # Test base_type is stored in options (not filtered anymore)
@@ -118,7 +118,7 @@ function test_modelers_integration()
     Test.@testset "Modelers Integration Tests" begin
         # Test strategy registry compatibility
         Test.@test Modelers.ADNLP <: Strategies.AbstractStrategy
-        Test.@test Modelers.ExaModeler <: Strategies.AbstractStrategy
+        Test.@test Modelers.Exa <: Strategies.AbstractStrategy
         
         # Test option extraction
         modeler = Modelers.ADNLP(show_time=true)

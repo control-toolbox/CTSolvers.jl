@@ -1,6 +1,6 @@
 # Tests for Enhanced Modelers Options
 #
-# This file tests the enhanced Modelers.ADNLP and Modelers.ExaModeler options
+# This file tests the enhanced Modelers.ADNLP and Modelers.Exa options
 # to ensure they work correctly with validation and provide expected behavior.
 #
 # Author: CTSolvers Development Team
@@ -15,7 +15,7 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 
 # Import the specific types we need
 import CTSolvers.Modelers
-import CTSolvers.Modelers: Modelers.ExaModeler
+import CTSolvers.Modelers: Modelers.Exa
 import KernelAbstractions
 import CTSolvers.Strategies
 
@@ -85,46 +85,46 @@ function test_enhanced_options()
             end
         end
         
-        Test.@testset "Modelers.ExaModeler Enhanced Options" begin
+        Test.@testset "Modelers.Exa Enhanced Options" begin
             
             Test.@testset "Base Type Validation" begin
                 # Test valid base types
-                modeler = Modelers.ExaModeler(base_type=Float32)
+                modeler = Modelers.Exa(base_type=Float32)
                 Test.@test Strategies.options(modeler)[:base_type] == Float32
                 
-                modeler = Modelers.ExaModeler(base_type=Float64)
+                modeler = Modelers.Exa(base_type=Float64)
                 Test.@test Strategies.options(modeler)[:base_type] == Float64
             end
             
             Test.@testset "Backend Validation" begin
                 # Test backend option
-                modeler = Modelers.ExaModeler(backend=nothing)
+                modeler = Modelers.Exa(backend=nothing)
                 Test.@test Strategies.options(modeler)[:backend] === nothing
                 
                 # Test with a backend type
-                modeler = Modelers.ExaModeler(backend=KernelAbstractions.CPU())
+                modeler = Modelers.Exa(backend=KernelAbstractions.CPU())
                 Test.@test Strategies.options(modeler)[:backend] == KernelAbstractions.CPU()
             end
             
             Test.@testset "Base Type Extraction in Build" begin
                 # Test that BaseType is correctly extracted and used in build process
-                modeler = Modelers.ExaModeler(base_type=Float32)
+                modeler = Modelers.Exa(base_type=Float32)
                 
                 # Verify base_type is stored in options
                 Test.@test Strategies.options(modeler)[:base_type] == Float32
                 
                 # Test with Float64 as well
-                modeler64 = Modelers.ExaModeler(base_type=Float64)
+                modeler64 = Modelers.Exa(base_type=Float64)
                 Test.@test Strategies.options(modeler64)[:base_type] == Float64
                 
                 # Test that default base_type is preserved
-                default_modeler = Modelers.ExaModeler()
+                default_modeler = Modelers.Exa()
                 Test.@test Strategies.options(default_modeler)[:base_type] == Float64
             end
             
             Test.@testset "Combined Options" begin
                 # Test multiple options together
-                modeler = Modelers.ExaModeler(
+                modeler = Modelers.Exa(
                     base_type=Float32,
                     backend=nothing
                 )
@@ -134,7 +134,7 @@ function test_enhanced_options()
                 Test.@test opts[:base_type] == Float32
                 
                 # Check that modeler is not parameterized anymore
-                Test.@test modeler isa Modelers.ExaModeler
+                Test.@test modeler isa Modelers.Exa
             end
         end
         
@@ -161,18 +161,18 @@ function test_enhanced_options()
                 Test.@test !haskey(opts.options, :name)
             end
             
-            Test.@testset "Modelers.ExaModeler Backward Compatibility" begin
+            Test.@testset "Modelers.Exa Backward Compatibility" begin
                 # Original constructor should still work
-                modeler1 = Modelers.ExaModeler()
-                Test.@test modeler1 isa Modelers.ExaModeler
+                modeler1 = Modelers.Exa()
+                Test.@test modeler1 isa Modelers.Exa
                 
                 # Original options should still work
-                modeler2 = Modelers.ExaModeler(base_type=Float32)
-                Test.@test modeler2 isa Modelers.ExaModeler
+                modeler2 = Modelers.Exa(base_type=Float32)
+                Test.@test modeler2 isa Modelers.Exa
                 Test.@test Strategies.options(modeler2)[:base_type] == Float32
                 
                 # Default values should be preserved
-                modeler3 = Modelers.ExaModeler()
+                modeler3 = Modelers.Exa()
                 opts = Strategies.options(modeler3)
                 Test.@test opts[:backend] === nothing
                 Test.@test opts[:base_type] == Float64
@@ -253,10 +253,10 @@ function test_enhanced_options()
                 Test.@test opts[:backend] == :generic
             end
             
-            # Test Modelers.ExaModeler with exa_backend alias
+            # Test Modelers.Exa with exa_backend alias
             # Default is nothing, so pass a CPU backend to verify alias works
-            Test.@testset "Modelers.ExaModeler exa_backend alias" begin
-                modeler = Modelers.ExaModeler(exa_backend=nothing)
+            Test.@testset "Modelers.Exa exa_backend alias" begin
+                modeler = Modelers.Exa(exa_backend=nothing)
                 opts = Strategies.options(modeler)
                 Test.@test haskey(opts.options, :backend)
                 Test.@test opts[:backend] === nothing
@@ -265,13 +265,13 @@ function test_enhanced_options()
             # Test deprecation warnings are emitted
             Test.@testset "Deprecation warnings" begin
                 Test.@test_logs (:warn, "adnlp_backend is deprecated, use backend instead") Modelers.ADNLP(adnlp_backend=:default)
-                Test.@test_logs (:warn, "exa_backend is deprecated, use backend instead") Modelers.ExaModeler(exa_backend=nothing)
+                Test.@test_logs (:warn, "exa_backend is deprecated, use backend instead") Modelers.Exa(exa_backend=nothing)
             end
             
             # Test standard backend does not emit warning
             Test.@testset "No warning with standard backend" begin
                 Test.@test_logs Modelers.ADNLP(backend=:generic)
-                Test.@test_logs Modelers.ExaModeler(backend=nothing)
+                Test.@test_logs Modelers.Exa(backend=nothing)
             end
         end
     end
