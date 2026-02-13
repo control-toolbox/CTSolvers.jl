@@ -247,25 +247,31 @@ function test_enhanced_options()
             # Test Modelers.ADNLP with adnlp_backend alias
             # Use :generic (not the default :optimized) to verify the alias actually passes the value
             Test.@testset "Modelers.ADNLP adnlp_backend alias" begin
-                modeler = Modelers.ADNLP(adnlp_backend=:generic)
-                opts = Strategies.options(modeler)
-                Test.@test haskey(opts.options, :backend)
-                Test.@test opts[:backend] == :generic
+                redirect_stderr(devnull) do
+                    modeler = Modelers.ADNLP(adnlp_backend=:generic)
+                    opts = Strategies.options(modeler)
+                    Test.@test haskey(opts.options, :backend)
+                    Test.@test opts[:backend] == :generic
+                end
             end
             
             # Test Modelers.Exa with exa_backend alias
             # Default is nothing, so pass a CPU backend to verify alias works
             Test.@testset "Modelers.Exa exa_backend alias" begin
-                modeler = Modelers.Exa(exa_backend=nothing)
-                opts = Strategies.options(modeler)
-                Test.@test haskey(opts.options, :backend)
-                Test.@test opts[:backend] === nothing
+                redirect_stderr(devnull) do
+                    modeler = Modelers.Exa(exa_backend=nothing)
+                    opts = Strategies.options(modeler)
+                    Test.@test haskey(opts.options, :backend)
+                    Test.@test opts[:backend] === nothing
+                end
             end
             
-            # Test deprecation warnings are emitted
-            Test.@testset "Deprecation warnings" begin
-                Test.@test_logs (:warn, "adnlp_backend is deprecated, use backend instead") Modelers.ADNLP(adnlp_backend=:default)
-                Test.@test_logs (:warn, "exa_backend is deprecated, use backend instead") Modelers.Exa(exa_backend=nothing)
+            # Test deprecation warnings are emitted (but capture them to avoid console output)
+            Test.@testset "Depreciation warnings" begin
+                redirect_stderr(devnull) do
+                    Test.@test_logs (:warn, "adnlp_backend is deprecated, use backend instead") Modelers.ADNLP(adnlp_backend=:default)
+                    Test.@test_logs (:warn, "exa_backend is deprecated, use backend instead") Modelers.Exa(exa_backend=nothing)
+                end
             end
             
             # Test standard backend does not emit warning

@@ -87,10 +87,10 @@ Test strategy construction with all methods for a given strategy type.
 function test_strategy_construction(
     strategy_type::Type,
     strategy_id::Symbol,
-    family::Type{<:AbstractStrategy},
+    family::Type{<:Strategies.AbstractStrategy},
     known_options::NamedTuple,
     unknown_options::NamedTuple,
-    registry::CTSolvers.Strategies.StrategyRegistry
+    registry::Strategies.StrategyRegistry
 )
     Test.@testset "Strategy Construction - $(strategy_type)" begin
         
@@ -168,18 +168,18 @@ function test_strategy_construction(
             
             Test.@testset "Strict Mode" begin
                 # Known options only - should work
-                Test.@test_nowarn CTSolvers.Strategies.build_strategy_from_method(method, family, registry; known_options...)
-                strategy = CTSolvers.Strategies.build_strategy_from_method(method, family, registry; known_options...)
+                Test.@test_nowarn Strategies.build_strategy_from_method(method, family, registry; known_options...)
+                strategy = Strategies.build_strategy_from_method(method, family, registry; known_options...)
                 Test.@test strategy isa strategy_type
                 
                 # Unknown option - should throw
-                Test.@test_throws Exceptions.IncorrectArgument CTSolvers.Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options...)
+                Test.@test_throws Exceptions.IncorrectArgument Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options...)
             end
             
             Test.@testset "Permissive Mode" begin
                 # Known + unknown options - should work
-                Test.@test_warn "Unrecognized options" CTSolvers.Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
-                strategy = CTSolvers.Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
+                Test.@test_warn "Unrecognized options" Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
+                strategy = Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
                 Test.@test strategy isa strategy_type
                                 # Verify mode is NOT stored in options (correct behavior)
                 Test.@test_throws Exception strategy.options.mode
@@ -229,7 +229,7 @@ Test option recovery for a constructed strategy.
 - `mode`: The validation mode used
 """
 function test_option_recovery(
-    strategy::AbstractStrategy,
+    strategy::Strategies.AbstractStrategy,
     known_options::NamedTuple,
     unknown_options::NamedTuple,
     mode::Symbol
@@ -276,7 +276,7 @@ Test error quality for invalid mode parameter.
 function test_invalid_mode(strategy_type::Type)
     Test.@testset "Invalid Mode Tests - $(strategy_type)" begin
         Test.@test_throws Exceptions.IncorrectArgument strategy_type(; mode=:invalid)
-        Test.@test_throws Exceptions.IncorrectArgument build_strategy(:test, AbstractStrategy, CTSolvers.Strategies.create_registry(); mode=:invalid)
+        Test.@test_throws Exceptions.IncorrectArgument build_strategy(:test, Strategies.AbstractStrategy, Strategies.create_registry(); mode=:invalid)
     end
 end
 
@@ -288,21 +288,21 @@ function test_comprehensive_validation()
     Test.@testset "Comprehensive Strict/Permissive Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # Create registries for testing
-        modeler_registry = CTSolvers.Strategies.create_registry(
+        modeler_registry = Strategies.create_registry(
             AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa)
         )
         
         # Create solver registry based on available extensions
         solver_types = []
-        IPOPT_AVAILABLE && push!(solver_types, CTSolvers.Solvers.Ipopt)
-        MADNLP_AVAILABLE && push!(solver_types, CTSolvers.Solvers.MadNLP)
-        MADNCL_AVAILABLE && push!(solver_types, CTSolvers.Solvers.MadNCLSolver)
-        # KNITRO_AVAILABLE && push!(solver_types, CTSolvers.Solvers.Knitro)  # Never available - no license
+        IPOPT_AVAILABLE && push!(solver_types, Solvers.Ipopt)
+        MADNLP_AVAILABLE && push!(solver_types, Solvers.MadNLP)
+        MADNCL_AVAILABLE && push!(solver_types, Solvers.MadNCLSolver)
+        # KNITRO_AVAILABLE && push!(solver_types, Solvers.Knitro)  # Never available - no license
         
         solver_registry = if isempty(solver_types)
-            CTSolvers.Strategies.create_registry(AbstractOptimizationSolver => ())
+            Strategies.create_registry(AbstractOptimizationSolver => ())
         else
-            CTSolvers.Strategies.create_registry(AbstractOptimizationSolver => tuple(solver_types...))
+            Strategies.create_registry(AbstractOptimizationSolver => tuple(solver_types...))
         end
         
         # ====================================================================
@@ -402,24 +402,24 @@ function test_comprehensive_validation()
                     # Test all construction methods - redirect stderr to hide warnings
                     redirect_stderr(devnull) do
                         test_strategy_construction(
-                            CTSolvers.Solvers.Ipopt, :ipopt, AbstractOptimizationSolver,
+                            Solvers.Ipopt, :ipopt, AbstractOptimizationSolver,
                             known_options, unknown_options, solver_registry
                         )
                     end
                     
                     # Test option recovery
                     Test.@testset "Option Recovery" begin
-                        strategy_strict = CTSolvers.Solvers.Ipopt(; known_options...)
+                        strategy_strict = Solvers.Ipopt(; known_options...)
                         test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                         
                         redirect_stderr(devnull) do
-                            strategy_permissive = CTSolvers.Solvers.Ipopt(; known_options..., unknown_options..., mode=:permissive)
+                            strategy_permissive = Solvers.Ipopt(; known_options..., unknown_options..., mode=:permissive)
                             test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
                         end
                     end
                     
                     # Test invalid mode
-                    test_invalid_mode(CTSolvers.Solvers.Ipopt)
+                    test_invalid_mode(Solvers.Ipopt)
                 end
             else
                 Test.@testset "Solvers.Ipopt (Not Available)" begin
@@ -438,22 +438,22 @@ function test_comprehensive_validation()
                     
                     redirect_stderr(devnull) do
                         test_strategy_construction(
-                            CTSolvers.Solvers.MadNLP, :madnlp, AbstractOptimizationSolver,
+                            Solvers.MadNLP, :madnlp, AbstractOptimizationSolver,
                             known_options, unknown_options, solver_registry
                         )
                     end
                     
                     Test.@testset "Option Recovery" begin
-                        strategy_strict = CTSolvers.Solvers.MadNLP(; known_options...)
+                        strategy_strict = Solvers.MadNLP(; known_options...)
                         test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                         
                         redirect_stderr(devnull) do
-                            strategy_permissive = CTSolvers.Solvers.MadNLP(; known_options..., unknown_options..., mode=:permissive)
+                            strategy_permissive = Solvers.MadNLP(; known_options..., unknown_options..., mode=:permissive)
                             test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
                         end
                     end
                     
-                    test_invalid_mode(CTSolvers.Solvers.MadNLP)
+                    test_invalid_mode(Solvers.MadNLP)
                 end
             else
                 Test.@testset "Solvers.MadNLP (Not Available)" begin
@@ -472,22 +472,22 @@ function test_comprehensive_validation()
                     
                     redirect_stderr(devnull) do
                         test_strategy_construction(
-                            CTSolvers.Solvers.MadNCLSolver, :madncl, AbstractOptimizationSolver,
+                            Solvers.MadNCLSolver, :madncl, AbstractOptimizationSolver,
                             known_options, unknown_options, solver_registry
                         )
                     end
                     
                     Test.@testset "Option Recovery" begin
-                        strategy_strict = CTSolvers.Solvers.MadNCLSolver(; known_options...)
+                        strategy_strict = Solvers.MadNCLSolver(; known_options...)
                         test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                         
                         redirect_stderr(devnull) do
-                            strategy_permissive = CTSolvers.Solvers.MadNCLSolver(; known_options..., unknown_options..., mode=:permissive)
+                            strategy_permissive = Solvers.MadNCLSolver(; known_options..., unknown_options..., mode=:permissive)
                             test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
                         end
                     end
                     
-                    test_invalid_mode(CTSolvers.Solvers.MadNCLSolver)
+                    test_invalid_mode(Solvers.MadNCLSolver)
                 end
             else
                 Test.@testset "MadNCLSolver (Not Available)" begin
@@ -506,19 +506,19 @@ function test_comprehensive_validation()
             #         unknown_options = (knitro_fake=333, custom_knitro="test")
                     
             #         test_strategy_construction(
-            #             CTSolvers.Solvers.Knitro, :knitro, AbstractOptimizationSolver,
+            #             Solvers.Knitro, :knitro, AbstractOptimizationSolver,
             #             known_options, unknown_options, solver_registry
             #         )
                     
             #         Test.@testset "Option Recovery" begin
-            #             strategy_strict = CTSolvers.Solvers.Knitro(; known_options...)
+            #             strategy_strict = Solvers.Knitro(; known_options...)
             #             test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                         
-            #             strategy_permissive = CTSolvers.Solvers.Knitro(; known_options..., unknown_options..., mode=:permissive)
+            #             strategy_permissive = Solvers.Knitro(; known_options..., unknown_options..., mode=:permissive)
             #             test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
             #         end
                     
-            #         test_invalid_mode(CTSolvers.Solvers.Knitro)
+            #         test_invalid_mode(Solvers.Knitro)
             #     end
             # else
             #     Test.@testset "Solvers.Knitro (Not Available)" begin
@@ -546,7 +546,7 @@ function test_comprehensive_validation()
                 
                 # build_strategy_from_method - mode should NOT be stored in options
                 method = (:collocation, :adnlp, :ipopt)
-                modeler3 = CTSolvers.Strategies.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, mode=:permissive)
+                modeler3 = Strategies.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, mode=:permissive)
                 # Test.@test modeler3.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
                 # Orchestration wrapper - mode should NOT be stored in options
@@ -587,7 +587,7 @@ function test_comprehensive_validation()
                 local known_options = (backend=:default, show_time=false)
                 local unknown_options = (test_consistency=42)
                 
-                local registry = CTSolvers.Strategies.create_registry(
+                local registry = Strategies.create_registry(
                     AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa)
                 )
                 
@@ -597,7 +597,7 @@ function test_comprehensive_validation()
                     modeler2 = build_strategy(:adnlp, AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                     
                     method = (:collocation, :adnlp, :ipopt)
-                    modeler3 = CTSolvers.Strategies.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
+                    modeler3 = Strategies.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                     modeler4 = Orchestration.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                     
                     # Test that all have the same options
