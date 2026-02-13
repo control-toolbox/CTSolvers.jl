@@ -307,10 +307,9 @@ function test_madncl_extension()
                     )
                     
                     Test.@test solver isa Solvers.MadNCLSolver
-                    Test.@test_skip "GPU linear solver configuration needed"
                 end
             else
-                Test.@test_skip "CUDA not functional, GPU tests skipped"
+                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
         
