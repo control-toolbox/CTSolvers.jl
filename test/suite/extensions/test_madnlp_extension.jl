@@ -16,7 +16,9 @@ import MadNLP
 import MadNLPMumps
 import ExaModels
 import MadNLPGPU
-import Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
+
+include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
+import .TestProblems
 
 # Trigger extension loading
 const CTSolversMadNLP = Base.get_extension(CTSolvers, :CTSolversMadNLP)
@@ -26,11 +28,6 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 
 # CUDA availability check
 is_cuda_on() = CUDA.functional()
-if is_cuda_on()
-    println("✓ CUDA functional, GPU tests enabled")
-else
-    println("⚠️  CUDA not functional, GPU tests will be skipped")
-end
 
 """
     test_madnlp_extension()
@@ -203,7 +200,7 @@ function test_madnlp_extension()
         # ====================================================================
         
         Test.@testset "Rosenbrock Problem - CPU" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             
             # Build NLP model
             adnlp_builder = Optimization.get_adnlp_model_builder(ros.prob)
@@ -225,7 +222,7 @@ function test_madnlp_extension()
         end
         
         Test.@testset "Elec Problem - CPU" begin
-            elec = Elec()
+            elec = TestProblems.Elec()
             
             # Build NLP model
             adnlp_builder = Optimization.get_adnlp_model_builder(elec.prob)
@@ -244,7 +241,7 @@ function test_madnlp_extension()
         end
         
         Test.@testset "Max1MinusX2 Problem - CPU" begin
-            max_prob = Max1MinusX2()
+            max_prob = TestProblems.Max1MinusX2()
             
             # Build NLP model
             adnlp_builder = Optimization.get_adnlp_model_builder(max_prob.prob)
@@ -263,7 +260,7 @@ function test_madnlp_extension()
             Test.@test length(stats.solution) == 1
             Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
             # Note: MadNLP 0.8 inverts the sign for maximization problems
-            Test.@test -stats.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
+            Test.@test -stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
         end
         
         # ====================================================================
@@ -281,7 +278,7 @@ function test_madnlp_extension()
                 )
 
                 Test.@testset "Rosenbrock - GPU" begin
-                    ros = Rosenbrock()
+                    ros = TestProblems.Rosenbrock()
                     nlp = Optimization.build_model(ros.prob, ros.init, gpu_modeler)
                     sol = CommonSolve.solve(
                         ros.prob, ros.init, gpu_modeler, gpu_solver;
@@ -289,11 +286,11 @@ function test_madnlp_extension()
                     )
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test Array(sol.solution) ≈ ros.sol atol=1e-6
-                    Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+                    Test.@test sol.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
                 end
 
                 Test.@testset "Elec - GPU" begin
-                    elec = Elec()
+                    elec = TestProblems.Elec()
                     sol = CommonSolve.solve(
                         elec.prob, elec.init, gpu_modeler, gpu_solver;
                         display=false
@@ -307,7 +304,7 @@ function test_madnlp_extension()
                 # convergence to constraint bound x≈5 instead of x=0
                 # Test disabled until ExaModels GPU supports maximization correctly
                 # Test.@testset "Max1MinusX2 - GPU" begin
-                #     max_prob = Max1MinusX2()
+                #     max_prob = TestProblems.Max1MinusX2()
                 #     sol = CommonSolve.solve(
                 #         max_prob.prob, max_prob.init, gpu_modeler, gpu_solver;
                 #         display=false
@@ -453,8 +450,8 @@ function test_madnlp_extension()
             )
             
             # Solve different problems with same solver
-            ros = Rosenbrock()
-            max_prob = Max1MinusX2()
+            ros = TestProblems.Rosenbrock()
+            max_prob = TestProblems.Max1MinusX2()
             
             # Build NLP models
             adnlp_builder = Optimization.get_adnlp_model_builder(ros.prob)
@@ -483,7 +480,7 @@ function test_madnlp_extension()
             
             # Rosenbrock: start at the known solution and enforce max_iter=0
             Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
-                ros = Rosenbrock()
+                ros = TestProblems.Rosenbrock()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -503,7 +500,7 @@ function test_madnlp_extension()
             
             # Elec
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-                elec = Elec()
+                elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -535,7 +532,7 @@ function test_madnlp_extension()
             linear_solver_names = ["Umfpack", "Mumps"]
             
             Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
-                ros = Rosenbrock()
+                ros = TestProblems.Rosenbrock()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -543,14 +540,14 @@ function test_madnlp_extension()
                             sol = CTSolversMadNLP.solve_with_madnlp(nlp; linear_solver=linear_solver, madnlp_options...)
                             Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                             Test.@test sol.solution ≈ ros.sol atol=1e-6
-                            Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+                            Test.@test sol.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
                         end
                     end
                 end
             end
             
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-                elec = Elec()
+                elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -563,7 +560,7 @@ function test_madnlp_extension()
             end
             
             Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
-                max_prob = Max1MinusX2()
+                max_prob = TestProblems.Max1MinusX2()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -573,7 +570,7 @@ function test_madnlp_extension()
                             Test.@test length(sol.solution) == 1
                             Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
                             # MadNLP inverts sign for maximization
-                            Test.@test -sol.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
+                            Test.@test -sol.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
                         end
                     end
                 end
@@ -595,16 +592,16 @@ function test_madnlp_extension()
                 )
 
                 Test.@testset "Rosenbrock - GPU" begin
-                    ros = Rosenbrock()
+                    ros = TestProblems.Rosenbrock()
                     nlp = Optimization.build_model(ros.prob, ros.init, gpu_modeler)
                     sol = CTSolversMadNLP.solve_with_madnlp(nlp; madnlp_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test Array(sol.solution) ≈ ros.sol atol=1e-6
-                    Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+                    Test.@test sol.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
                 end
 
                 Test.@testset "Elec - GPU" begin
-                    elec = Elec()
+                    elec = TestProblems.Elec()
                     nlp = Optimization.build_model(elec.prob, elec.init, gpu_modeler)
                     sol = CTSolversMadNLP.solve_with_madnlp(nlp; madnlp_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
@@ -617,7 +614,7 @@ function test_madnlp_extension()
                 # convergence to constraint bound x≈5 instead of x=0
                 # Test disabled until ExaModels GPU supports maximization correctly
                 # Test.@testset "Max1MinusX2 - GPU" begin
-                #     max_prob = Max1MinusX2()
+                #     max_prob = TestProblems.Max1MinusX2()
                 #     nlp = Optimization.build_model(max_prob.prob, max_prob.init, gpu_modeler)
                 #     sol = CTSolversMadNLP.solve_with_madnlp(nlp; madnlp_options...)
                 #     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
@@ -643,7 +640,7 @@ function test_madnlp_extension()
                 )
 
                 Test.@testset "Rosenbrock - GPU" begin
-                    ros = Rosenbrock()
+                    ros = TestProblems.Rosenbrock()
                     sol = CommonSolve.solve(
                         ros.prob, ros.sol, gpu_modeler, gpu_solver_0;
                         display=false
@@ -653,7 +650,7 @@ function test_madnlp_extension()
                 end
 
                 Test.@testset "Elec - GPU" begin
-                    elec = Elec()
+                    elec = TestProblems.Elec()
                     sol = CommonSolve.solve(
                         elec.prob, elec.init, gpu_modeler, gpu_solver_0;
                         display=false

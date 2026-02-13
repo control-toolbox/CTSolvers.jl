@@ -9,7 +9,10 @@ import ADNLPModels
 import ExaModels
 import MadNLP
 import MadNLPMumps # must be removed in the future
-import Main.TestProblems
+
+include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
+import .TestProblems
+
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
@@ -31,7 +34,7 @@ function test_end_to_end()
         
         Test.@testset "Complete Workflow - Rosenbrock ADNLP" begin
             # Step 1: Load problem
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             Test.@test ros.prob isa Optimization.AbstractOptimizationProblem
             
             # Step 2: Create DOCP (if needed, here it's already an OptimizationProblem)
@@ -53,20 +56,20 @@ function test_end_to_end()
             
             # Step 6: Evaluate at initial point
             obj_init = NLPModels.obj(nlp, ros.init)
-            Test.@test obj_init ≈ rosenbrock_objective(ros.init)
+            Test.@test obj_init ≈ TestProblems.rosenbrock_objective(ros.init)
             
             # Step 7: Evaluate at solution
             obj_sol = NLPModels.obj(nlp, ros.sol)
-            Test.@test obj_sol ≈ rosenbrock_objective(ros.sol)
+            Test.@test obj_sol ≈ TestProblems.rosenbrock_objective(ros.sol)
             Test.@test obj_sol < obj_init  # Solution is better than initial
             
             # Step 8: Check constraints
             cons_init = NLPModels.cons(nlp, ros.init)
-            Test.@test cons_init[1] ≈ rosenbrock_constraint(ros.init)
+            Test.@test cons_init[1] ≈ TestProblems.rosenbrock_constraint(ros.init)
             
             # Step 9: Solve with MadNLP (optional, if solver available)
             try
-                solver = MadNLP.Solvers.MadNLP(nlp; print_level=MadNLP.ERROR)
+                solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR)
                 result = MadNLP.solve!(solver)
                 
                 # Step 10: Extract solver info
@@ -89,7 +92,7 @@ function test_end_to_end()
         
         Test.@testset "Complete Workflow - Rosenbrock Exa" begin
             # Step 1: Load problem
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             prob = ros.prob
             
             # Step 2: Create modeler with Exa backend (permissive mode for minimize option)
@@ -110,11 +113,11 @@ function test_end_to_end()
                 
                 # Step 5: Evaluate at initial point
                 obj_init = NLPModels.obj(nlp, Float64.(ros.init))
-                Test.@test obj_init ≈ rosenbrock_objective(ros.init)
+                Test.@test obj_init ≈ TestProblems.rosenbrock_objective(ros.init)
                 
                 # Step 6: Evaluate at solution
                 obj_sol = NLPModels.obj(nlp, Float64.(ros.sol))
-                Test.@test obj_sol ≈ rosenbrock_objective(ros.sol)
+                Test.@test obj_sol ≈ TestProblems.rosenbrock_objective(ros.sol)
                 Test.@test obj_sol < obj_init
             end
         end
@@ -124,7 +127,7 @@ function test_end_to_end()
         # ====================================================================
         
         Test.@testset "Complete Workflow - Different Base Types" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             prob = ros.prob
             
             Test.@testset "Float32 workflow" begin
@@ -137,7 +140,7 @@ function test_end_to_end()
                     
                     # Evaluate with Float32 (obj may be promoted to Float64 by NLPModels)
                     obj = NLPModels.obj(nlp, Float32.(ros.init))
-                    Test.@test obj ≈ rosenbrock_objective(ros.init) rtol = 1e-5
+                    Test.@test obj ≈ TestProblems.rosenbrock_objective(ros.init) rtol = 1e-5
                 end
             end
             
@@ -151,7 +154,7 @@ function test_end_to_end()
                     
                     obj = NLPModels.obj(nlp, Float64.(ros.init))
                     Test.@test obj isa Float64
-                    Test.@test obj ≈ rosenbrock_objective(ros.init)
+                    Test.@test obj ≈ TestProblems.rosenbrock_objective(ros.init)
                 end
             end
         end
@@ -161,7 +164,7 @@ function test_end_to_end()
         # ====================================================================
         
         Test.@testset "Modeler Options Workflow" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             prob = ros.prob
             
             Test.@testset "Modelers.ADNLP - Simple" begin
@@ -171,7 +174,7 @@ function test_end_to_end()
                 
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 obj = NLPModels.obj(nlp, ros.init)
-                Test.@test obj ≈ rosenbrock_objective(ros.init)
+                Test.@test obj ≈ TestProblems.rosenbrock_objective(ros.init)
             end
             
             Test.@testset "Modelers.ADNLP - With Options" begin
@@ -187,7 +190,7 @@ function test_end_to_end()
                     
                     Test.@test nlp_backend isa ADNLPModels.ADNLPModel
                     obj = NLPModels.obj(nlp_backend, ros.init)
-                    Test.@test obj ≈ rosenbrock_objective(ros.init) rtol = 1e-10
+                    Test.@test obj ≈ TestProblems.rosenbrock_objective(ros.init) rtol = 1e-10
                 end
             end
             
@@ -198,7 +201,7 @@ function test_end_to_end()
                 
                 Test.@test nlp isa ExaModels.ExaModel
                 obj = NLPModels.obj(nlp, ros.init)
-                Test.@test obj ≈ rosenbrock_objective(ros.init)
+                Test.@test obj ≈ TestProblems.rosenbrock_objective(ros.init)
             end
             
             Test.@testset "Modelers.Exa - With Options" begin
@@ -214,7 +217,7 @@ function test_end_to_end()
                     
                     Test.@test nlp isa ExaModels.ExaModel
                     obj = NLPModels.obj(nlp, ros.init)
-                    Test.@test obj ≈ rosenbrock_objective(ros.init)
+                    Test.@test obj ≈ TestProblems.rosenbrock_objective(ros.init)
                 end
             end
         end
@@ -224,7 +227,7 @@ function test_end_to_end()
         # ====================================================================
         
         Test.@testset "Backend Comparison" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             prob = ros.prob
             
             # Build with ADNLP
@@ -253,7 +256,7 @@ function test_end_to_end()
         # ====================================================================
         
         Test.@testset "Gradient and Hessian Evaluation" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             prob = ros.prob
             
             modeler = Modelers.ADNLP(show_time=false)
@@ -285,7 +288,7 @@ function test_end_to_end()
         # ====================================================================
         
         Test.@testset "Constraint Evaluation" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             prob = ros.prob
             
             modeler = Modelers.ADNLP(show_time=false)
@@ -295,12 +298,12 @@ function test_end_to_end()
                 cons = NLPModels.cons(nlp, ros.init)
                 Test.@test cons isa Vector{Float64}
                 Test.@test length(cons) == 1
-                Test.@test cons[1] ≈ rosenbrock_constraint(ros.init)
+                Test.@test cons[1] ≈ TestProblems.rosenbrock_constraint(ros.init)
             end
             
             Test.@testset "Constraint at solution" begin
                 cons = NLPModels.cons(nlp, ros.sol)
-                Test.@test cons[1] ≈ rosenbrock_constraint(ros.sol)
+                Test.@test cons[1] ≈ TestProblems.rosenbrock_constraint(ros.sol)
             end
             
             Test.@testset "Constraint Jacobian" begin
@@ -315,7 +318,7 @@ function test_end_to_end()
         # ====================================================================
         
         Test.@testset "Performance Characteristics" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             prob = ros.prob
             
             Test.@testset "Model building time" begin

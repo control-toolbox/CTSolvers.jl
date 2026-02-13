@@ -17,13 +17,13 @@ abstract type TestDiscretizer <: Strategies.AbstractStrategy end
 abstract type TestModeler <: Strategies.AbstractStrategy end
 abstract type TestSolver <: Strategies.AbstractStrategy end
 
-struct CollocationDiscretizer <: TestDiscretizer end
-Strategies.id(::Type{CollocationDiscretizer}) = :collocation
-Strategies.metadata(::Type{CollocationDiscretizer}) = Strategies.StrategyMetadata()
+struct CollocationMock <: TestDiscretizer end
+Strategies.id(::Type{CollocationMock}) = :collocation
+Strategies.metadata(::Type{CollocationMock}) = Strategies.StrategyMetadata()
 
-struct Modelers.ADNLP <: TestModeler end
-Strategies.id(::Type{Modelers.ADNLP}) = :adnlp
-Strategies.metadata(::Type{Modelers.ADNLP}) = Strategies.StrategyMetadata(
+struct ADNLPMock <: TestModeler end
+Strategies.id(::Type{ADNLPMock}) = :adnlp
+Strategies.metadata(::Type{ADNLPMock}) = Strategies.StrategyMetadata(
     Options.OptionDefinition(
         name = :backend,
         type = Symbol,
@@ -33,9 +33,9 @@ Strategies.metadata(::Type{Modelers.ADNLP}) = Strategies.StrategyMetadata(
     )
 )
 
-struct Solvers.Ipopt <: TestSolver end
-Strategies.id(::Type{Solvers.Ipopt}) = :ipopt
-Strategies.metadata(::Type{Solvers.Ipopt}) = Strategies.StrategyMetadata(
+struct IpoptMock <: TestSolver end
+Strategies.id(::Type{IpoptMock}) = :ipopt
+Strategies.metadata(::Type{IpoptMock}) = Strategies.StrategyMetadata(
     Options.OptionDefinition(
         name = :max_iter,
         type = Int,
@@ -52,9 +52,9 @@ Strategies.metadata(::Type{Solvers.Ipopt}) = Strategies.StrategyMetadata(
 )
 
 const TEST_REGISTRY = Strategies.create_registry(
-    TestDiscretizer => (CollocationDiscretizer,),
-    TestModeler => (Modelers.ADNLP,),
-    TestSolver => (Solvers.Ipopt,)
+    TestDiscretizer => (CollocationMock,),
+    TestModeler => (ADNLPMock,),
+    TestSolver => (IpoptMock,)
 )
 
 const TEST_METHOD = (:collocation, :adnlp, :ipopt)

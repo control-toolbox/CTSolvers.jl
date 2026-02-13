@@ -7,7 +7,9 @@ import NLPModels
 import SolverCore
 import ADNLPModels
 import ExaModels
-import ..TestProblems
+
+include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
+import .TestProblems
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -28,7 +30,7 @@ function test_real_problems()
         
         Test.@testset "Rosenbrock Problem" begin
             # Load Rosenbrock problem from TestProblems module
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             
             Test.@testset "ADNLPModelBuilder with Rosenbrock" begin
                 # Get the builder from the problem
@@ -43,12 +45,12 @@ function test_real_problems()
                 
                 # Test objective evaluation
                 obj_val = NLPModels.obj(nlp, ros.init)
-                expected_obj = rosenbrock_objective(ros.init)
+                expected_obj = TestProblems.rosenbrock_objective(ros.init)
                 Test.@test obj_val ≈ expected_obj
                 
                 # Test constraint evaluation
                 cons_val = NLPModels.cons(nlp, ros.init)
-                expected_cons = rosenbrock_constraint(ros.init)
+                expected_cons = TestProblems.rosenbrock_constraint(ros.init)
                 Test.@test cons_val[1] ≈ expected_cons
             end
             
@@ -65,12 +67,12 @@ function test_real_problems()
                 
                 # Test objective evaluation
                 obj_val = NLPModels.obj(nlp64, nlp64.meta.x0)
-                expected_obj = rosenbrock_objective(Float64.(ros.init))
+                expected_obj = TestProblems.rosenbrock_objective(Float64.(ros.init))
                 Test.@test obj_val ≈ expected_obj
                 
                 # Test constraint evaluation
                 cons_val = NLPModels.cons(nlp64, nlp64.meta.x0)
-                expected_cons = rosenbrock_constraint(Float64.(ros.init))
+                expected_cons = TestProblems.rosenbrock_constraint(Float64.(ros.init))
                 Test.@test cons_val[1] ≈ expected_cons
             end
             
@@ -87,12 +89,12 @@ function test_real_problems()
                 
                 # Test objective evaluation
                 obj_val = NLPModels.obj(nlp32, nlp32.meta.x0)
-                expected_obj = rosenbrock_objective(Float32.(ros.init))
+                expected_obj = TestProblems.rosenbrock_objective(Float32.(ros.init))
                 Test.@test obj_val ≈ expected_obj
                 
                 # Test constraint evaluation
                 cons_val = NLPModels.cons(nlp32, nlp32.meta.x0)
-                expected_cons = rosenbrock_constraint(Float32.(ros.init))
+                expected_cons = TestProblems.rosenbrock_constraint(Float32.(ros.init))
                 Test.@test cons_val[1] ≈ expected_cons
             end
         end
@@ -103,7 +105,7 @@ function test_real_problems()
         
         Test.@testset "Integration with Real Problems" begin
             Test.@testset "Complete workflow - Rosenbrock ADNLP" begin
-                ros = Rosenbrock()
+                ros = TestProblems.Rosenbrock()
                 
                 # Get builder
                 builder = Optimization.get_adnlp_model_builder(ros.prob)
@@ -118,15 +120,15 @@ function test_real_problems()
                 Test.@test nlp.meta.minimize == true
                 
                 # Verify at initial point
-                Test.@test NLPModels.obj(nlp, ros.init) ≈ rosenbrock_objective(ros.init)
+                Test.@test NLPModels.obj(nlp, ros.init) ≈ TestProblems.rosenbrock_objective(ros.init)
                 
                 # Verify at solution
-                Test.@test NLPModels.obj(nlp, ros.sol) ≈ rosenbrock_objective(ros.sol)
-                Test.@test rosenbrock_objective(ros.sol) < rosenbrock_objective(ros.init)
+                Test.@test NLPModels.obj(nlp, ros.sol) ≈ TestProblems.rosenbrock_objective(ros.sol)
+                Test.@test TestProblems.rosenbrock_objective(ros.sol) < TestProblems.rosenbrock_objective(ros.init)
             end
             
             Test.@testset "Complete workflow - Rosenbrock Exa" begin
-                ros = Rosenbrock()
+                ros = TestProblems.Rosenbrock()
                 
                 # Get builder
                 builder = Optimization.get_exa_model_builder(ros.prob)
@@ -141,10 +143,10 @@ function test_real_problems()
                 Test.@test nlp.meta.minimize == true
                 
                 # Verify at initial point
-                Test.@test NLPModels.obj(nlp, Float64.(ros.init)) ≈ rosenbrock_objective(ros.init)
+                Test.@test NLPModels.obj(nlp, Float64.(ros.init)) ≈ TestProblems.rosenbrock_objective(ros.init)
                 
                 # Verify at solution
-                Test.@test NLPModels.obj(nlp, Float64.(ros.sol)) ≈ rosenbrock_objective(ros.sol)
+                Test.@test NLPModels.obj(nlp, Float64.(ros.sol)) ≈ TestProblems.rosenbrock_objective(ros.sol)
             end
         end
     end

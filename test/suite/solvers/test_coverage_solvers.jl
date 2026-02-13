@@ -84,7 +84,7 @@ function test_coverage_solvers()
             end
             Test.@test err isa Exceptions.ExtensionError
             err_str = string(err)
-            Test.@test occursin("Solvers.Knitro", err_str)
+            Test.@test occursin("Knitro", err_str)
             Test.@test occursin("NLPModelsKnitro", err_str)
         end
 

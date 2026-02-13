@@ -53,7 +53,7 @@ function create_test_setup()
     
     # Define action options
     action_defs = [
-        OptionDefinition(
+        Options.OptionDefinition(
             name = :display,
             type = Bool,
             default = true,

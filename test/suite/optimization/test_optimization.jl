@@ -45,7 +45,7 @@ struct FakeModeler
     backend::Symbol
 end
 
-function (modeler::FakeModeler)(prob::AbstractOptimizationProblem, initial_guess)
+function (modeler::FakeModeler)(prob::Optimization.AbstractOptimizationProblem, initial_guess)
     if modeler.backend == :adnlp
         builder = Optimization.get_adnlp_model_builder(prob)
         return builder(initial_guess)
@@ -55,7 +55,7 @@ function (modeler::FakeModeler)(prob::AbstractOptimizationProblem, initial_guess
     end
 end
 
-function (modeler::FakeModeler)(prob::AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats)
+function (modeler::FakeModeler)(prob::Optimization.AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats)
     if modeler.backend == :adnlp
         builder = Optimization.get_adnlp_solution_builder(prob)
         return builder(nlp_solution)
@@ -127,7 +127,7 @@ function test_optimization()
                 calls = Ref(0)
                 function test_builder(x; show_time=false)
                     calls[] += 1
-                    return ADNLPModel(z -> sum(z.^2), x; show_time=show_time)
+                    return ADNLPModels.ADNLPModel(z -> sum(z.^2), x; show_time=show_time)
                 end
                 
                 builder = Optimization.ADNLPModelBuilder(test_builder)
@@ -221,7 +221,7 @@ function test_optimization()
         
         Test.@testset "Contract Implementation" begin
             # Create builders
-            adnlp_builder = Optimization.ADNLPModelBuilder(x -> ADNLPModel(z -> sum(z.^2), x))
+            adnlp_builder = Optimization.ADNLPModelBuilder(x -> ADNLPModels.ADNLPModel(z -> sum(z.^2), x))
             exa_builder = Optimization.ExaModelBuilder((T, x) -> begin
                 m = ExaModels.ExaCore(T)
                 x_var = ExaModels.variable(m, length(x); start=x)
@@ -269,7 +269,7 @@ function test_optimization()
         
         Test.@testset "Building Functions" begin
             # Setup
-            adnlp_builder = Optimization.ADNLPModelBuilder(x -> ADNLPModel(z -> sum(z.^2), x))
+            adnlp_builder = Optimization.ADNLPModelBuilder(x -> ADNLPModels.ADNLPModel(z -> sum(z.^2), x))
             exa_builder = Optimization.ExaModelBuilder((T, x) -> begin
                 m = ExaModels.ExaCore(T)
                 x_var = ExaModels.variable(m, length(x); start=x)
@@ -328,7 +328,7 @@ function test_optimization()
         Test.@testset "Solver Info Extraction" begin
             Test.@testset "extract_solver_infos - first_order status" begin
                 stats = MockExecutionStats(1.23, 15, 1.0e-6, :first_order)
-                nlp = ADNLPModel(x -> x[1]^2, [1.0])
+                nlp = ADNLPModels.ADNLPModel(x -> x[1]^2, [1.0])
                 
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
                 
@@ -342,7 +342,7 @@ function test_optimization()
             
             Test.@testset "extract_solver_infos - acceptable status" begin
                 stats = MockExecutionStats(2.34, 20, 1.0e-5, :acceptable)
-                nlp = ADNLPModel(x -> x[1]^2, [1.0])
+                nlp = ADNLPModels.ADNLPModel(x -> x[1]^2, [1.0])
                 
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
                 
@@ -356,7 +356,7 @@ function test_optimization()
             
             Test.@testset "extract_solver_infos - failure status" begin
                 stats = MockExecutionStats(3.45, 5, 1.0e-3, :max_iter)
-                nlp = ADNLPModel(x -> x[1]^2, [1.0])
+                nlp = ADNLPModels.ADNLPModel(x -> x[1]^2, [1.0])
                 
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
                 
@@ -376,7 +376,7 @@ function test_optimization()
         Test.@testset "Integration Tests" begin
             Test.@testset "Complete workflow - ADNLP" begin
                 # Create builders
-                adnlp_builder = Optimization.ADNLPModelBuilder(x -> ADNLPModel(z -> sum(z.^2), x))
+                adnlp_builder = Optimization.ADNLPModelBuilder(x -> ADNLPModels.ADNLPModel(z -> sum(z.^2), x))
                 exa_builder = Optimization.ExaModelBuilder((T, x) -> begin
                     c = ExaModels.ExaCore(T)
                     ExaModels.variable(c, 1 <= x[i=1:length(x)] <= 3, start=x[i])
@@ -414,7 +414,7 @@ function test_optimization()
             
             Test.@testset "Complete workflow - Exa" begin
                 # Create builders
-                adnlp_builder = Optimization.ADNLPModelBuilder(x -> ADNLPModel(z -> sum(z.^2), x))
+                adnlp_builder = Optimization.ADNLPModelBuilder(x -> ADNLPModels.ADNLPModel(z -> sum(z.^2), x))
                 exa_builder = Optimization.ExaModelBuilder((T, x) -> begin
                     n = length(x)
                     m = ExaModels.ExaCore(T)

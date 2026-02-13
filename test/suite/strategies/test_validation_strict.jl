@@ -139,8 +139,10 @@ function test_validation_strict()
         
         Test.@testset "Custom Validation Enforced" begin
             # tol must be positive
-            Test.@test_throws Exceptions.IncorrectArgument begin
-                Strategies.build_strategy_options(Solvers.Ipopt; tol=-1.0)
+            redirect_stderr(devnull) do
+                Test.@test_throws Exceptions.IncorrectArgument begin
+                    Strategies.build_strategy_options(Solvers.Ipopt; tol=-1.0)
+                end
             end
         end
         

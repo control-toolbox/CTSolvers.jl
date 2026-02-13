@@ -16,14 +16,19 @@ const TestRunner = Base.get_extension(CTBase, :TestRunner)
 
 # Controls nested testset output formatting (used by individual test files)
 module TestOptions
-const VERBOSE = true
-const SHOWTIMING = true
+    const VERBOSE = true
+    const SHOWTIMING = true
 end
 using .TestOptions: VERBOSE, SHOWTIMING
 
-# Include shared test problems via TestProblems module
-include(joinpath("problems", "TestProblems.jl"))
-using .TestProblems
+# CUDA availability check
+using CUDA
+is_cuda_on() = CUDA.functional()
+if is_cuda_on()
+    println("✓ CUDA functional, GPU tests enabled")
+else
+    println("⚠️  CUDA not functional, GPU tests will be skipped")
+end
 
 # Run tests using the TestRunner extension
 CTBase.run_tests(;

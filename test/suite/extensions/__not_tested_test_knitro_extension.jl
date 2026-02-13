@@ -12,7 +12,9 @@ using CTSolvers.Optimization
 using CommonSolve
 using NLPModels
 using ADNLPModels
-using Main.TestProblems: Rosenbrock, Elec, rosenbrock_objective
+
+include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
+import .TestProblems
 
 # # Trigger extension loading
 # using NLPModelsKnitro
@@ -157,7 +159,7 @@ function test_knitro_extension()
         
         # Commented out due to license requirement
         # Test.@testset "Rosenbrock Problem - ADNLPModels" begin
-        #     ros = Rosenbrock()
+        #     ros = TestProblems.Rosenbrock()
         #     
         #     # Build NLP model from problem
         #     adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
@@ -179,7 +181,7 @@ function test_knitro_extension()
         #         # Check convergence
         #         Test.@test stats.status == :first_order
         #         Test.@test stats.solution ≈ ros.sol atol=1e-6
-        #         Test.@test stats.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+        #         Test.@test stats.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
         #         @info "Knitro Rosenbrock test passed - license available"
         #     catch e
         #         if isa(e, Exception) && occursin("license", lowercase(string(e)))
@@ -193,7 +195,7 @@ function test_knitro_extension()
         
         # Commented out due to license requirement
         # Test.@testset "Elec Problem - ADNLPModels" begin
-        #     elec = Elec()
+        #     elec = TestProblems.Elec()
         #     
         #     # Build NLP model
         #     adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
@@ -259,7 +261,7 @@ function test_knitro_extension()
         #         
         #         # Rosenbrock: start at the known solution and enforce maxit=0
         #         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
-        #             ros = Rosenbrock()
+        #             ros = TestProblems.Rosenbrock()
         #             for (modeler, modeler_name) in zip(modelers, modelers_names)
         #                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
         #                     local opts = Dict(:maxit => 0, :outlev => 0)
@@ -273,7 +275,7 @@ function test_knitro_extension()
         #         
         #         # Elec: expect solution to remain equal to the initial guess vector
         #         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-        #             elec = Elec()
+        #             elec = TestProblems.Elec()
         #             for (modeler, modeler_name) in zip(modelers, modelers_names)
         #                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
         #                     local opts = Dict(:maxit => 0, :outlev => 0)
@@ -307,20 +309,20 @@ function test_knitro_extension()
         #         )
         #         
         #         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
-        #             ros = Rosenbrock()
+        #             ros = TestProblems.Rosenbrock()
         #             for (modeler, modeler_name) in zip(modelers, modelers_names)
         #                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
         #                     nlp = Optimization.build_model(ros.prob, ros.init, modeler)
         #                     sol = CTSolversKnitro.solve_with_knitro(nlp; knitro_options...)
         #                     Test.@test sol.status == :first_order
         #                     Test.@test sol.solution ≈ ros.sol atol=1e-6
-        #                     Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+        #                     Test.@test sol.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
         #                 end
         #             end
         #         end
         #         
         #         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-        #             elec = Elec()
+        #             elec = TestProblems.Elec()
         #             for (modeler, modeler_name) in zip(modelers, modelers_names)
         #                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
         #                     nlp = Optimization.build_model(elec.prob, elec.init, modeler)
@@ -352,7 +354,7 @@ function test_knitro_extension()
         #         )
         #         
         #         Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
-        #             ros = Rosenbrock()
+        #             ros = TestProblems.Rosenbrock()
         #             for (modeler, modeler_name) in zip(modelers, modelers_names)
         #                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
         #                     sol = CommonSolve.solve(
@@ -363,13 +365,13 @@ function test_knitro_extension()
         #                     )
         #                     Test.@test sol.status == :first_order
         #                     Test.@test sol.solution ≈ ros.sol atol=1e-6
-        #                     Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+        #                     Test.@test sol.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
         #                 end
         #             end
         #         end
         #         
         #         Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-        #             elec = Elec()
+        #             elec = TestProblems.Elec()
         #             for (modeler, modeler_name) in zip(modelers, modelers_names)
         #                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
         #                     sol = CommonSolve.solve(

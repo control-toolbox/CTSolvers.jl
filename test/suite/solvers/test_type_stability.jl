@@ -21,7 +21,7 @@ import MadNCL
 
 Test type stability of critical solver functions.
 
-🔧 **Applying Type Stability Rule**: Testing type stability with @inferred
+🔧 **Applying Type Stability Rule**: Testing type stability with Test.@inferred
 for performance-critical functions.
 """
 function test_type_stability()
@@ -34,28 +34,28 @@ function test_type_stability()
         Test.@testset "Solver Construction Type Stability" begin
             Test.@testset "Solvers.Ipopt construction" begin
                 # Test that constructor returns correct type
-                Test.@test_nowarn @inferred Solvers.Ipopt()
-                Test.@test_nowarn @inferred Solvers.Ipopt(max_iter=100)
-                Test.@test_nowarn @inferred Solvers.Ipopt(max_iter=100, tol=1e-6)
+                Test.@test_nowarn Test.@inferred Solvers.Ipopt()
+                Test.@test_nowarn Test.@inferred Solvers.Ipopt(max_iter=100)
+                Test.@test_nowarn Test.@inferred Solvers.Ipopt(max_iter=100, tol=1e-6)
             end
             
             Test.@testset "Solvers.MadNLP construction" begin
-                Test.@test_nowarn @inferred Solvers.MadNLP()
-                Test.@test_nowarn @inferred Solvers.MadNLP(max_iter=100)
-                Test.@test_nowarn @inferred Solvers.MadNLP(max_iter=100, tol=1e-6)
+                Test.@test_nowarn Test.@inferred Solvers.MadNLP()
+                Test.@test_nowarn Test.@inferred Solvers.MadNLP(max_iter=100)
+                Test.@test_nowarn Test.@inferred Solvers.MadNLP(max_iter=100, tol=1e-6)
             end
             
             Test.@testset "MadNCLSolver construction" begin
-                Test.@test_nowarn @inferred Solvers.MadNCLSolver()
-                Test.@test_nowarn @inferred Solvers.MadNCLSolver(max_iter=100)
-                Test.@test_nowarn @inferred Solvers.MadNCLSolver(max_iter=100, tol=1e-6)
+                Test.@test_nowarn Test.@inferred Solvers.MadNCLSolver()
+                Test.@test_nowarn Test.@inferred Solvers.MadNCLSolver(max_iter=100)
+                Test.@test_nowarn Test.@inferred Solvers.MadNCLSolver(max_iter=100, tol=1e-6)
             end
             
             # Commented out - no Knitro license available
             # Test.@testset "Solvers.Knitro construction" begin
-            #     Test.@test_nowarn @inferred Solvers.Knitro()
-            #     Test.@test_nowarn @inferred Solvers.Knitro(max_iter=100)
-            #     Test.@test_nowarn @inferred Solvers.Knitro(max_iter=100, ftol=1e-6)
+            #     Test.@test_nowarn Test.@inferred Solvers.Knitro()
+            #     Test.@test_nowarn Test.@inferred Solvers.Knitro(max_iter=100)
+            #     Test.@test_nowarn Test.@inferred Solvers.Knitro(max_iter=100, ftol=1e-6)
             # end
         end
         
@@ -66,23 +66,23 @@ function test_type_stability()
         Test.@testset "Strategy Contract Type Stability" begin
             Test.@testset "Solvers.Ipopt contract" begin
                 # Test id() type stability - simple Symbol return
-                Test.@test_nowarn @inferred Strategies.id(Solvers.Ipopt)
-                Test.@test @inferred(Strategies.id(Solvers.Ipopt)) === :ipopt
+                Test.@test_nowarn Test.@inferred Strategies.id(Solvers.Ipopt)
+                Test.@test Test.@inferred(Strategies.id(Solvers.Ipopt)) === :ipopt
                 
                 # Test metadata() returns correct type
                 meta = Strategies.metadata(Solvers.Ipopt)
                 Test.@test meta isa Strategies.StrategyMetadata
                 
                 # Test options() returns correct type
-                # Note: @inferred is too strict for parametric types, we verify concrete type
+                # Note: Test.@inferred is too strict for parametric types, we verify concrete type
                 solver = Solvers.Ipopt()
                 opts = Strategies.options(solver)
                 Test.@test opts isa Strategies.StrategyOptions
             end
             
             Test.@testset "Solvers.MadNLP contract" begin
-                Test.@test_nowarn @inferred Strategies.id(Solvers.MadNLP)
-                Test.@test @inferred(Strategies.id(Solvers.MadNLP)) === :madnlp
+                Test.@test_nowarn Test.@inferred Strategies.id(Solvers.MadNLP)
+                Test.@test Test.@inferred(Strategies.id(Solvers.MadNLP)) === :madnlp
                 
                 # Metadata returns correct type
                 meta = Strategies.metadata(Solvers.MadNLP)
@@ -94,8 +94,8 @@ function test_type_stability()
             end
             
             Test.@testset "MadNCLSolver contract" begin
-                Test.@test_nowarn @inferred Strategies.id(Solvers.MadNCLSolver)
-                Test.@test @inferred(Strategies.id(Solvers.MadNCLSolver)) === :madncl
+                Test.@test_nowarn Test.@inferred Strategies.id(Solvers.MadNCLSolver)
+                Test.@test Test.@inferred(Strategies.id(Solvers.MadNCLSolver)) === :madncl
                 
                 # Metadata returns correct type
                 meta = Strategies.metadata(Solvers.MadNCLSolver)
@@ -108,8 +108,8 @@ function test_type_stability()
             
             # Commented out - no Knitro license available
             # Test.@testset "Solvers.Knitro contract" begin
-            #     Test.@test_nowarn @inferred Strategies.id(Solvers.Knitro)
-            #     Test.@test @inferred(Strategies.id(Solvers.Knitro)) === :knitro
+            #     Test.@test_nowarn Test.@inferred Strategies.id(Solvers.Knitro)
+            #     Test.@test Test.@inferred(Strategies.id(Solvers.Knitro)) === :knitro
                 
             #     # Metadata returns correct type
             #     meta = Strategies.metadata(Solvers.Knitro)

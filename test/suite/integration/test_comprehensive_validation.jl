@@ -21,6 +21,7 @@ import CTSolvers.Options
 import CTSolvers.Modelers
 import CTSolvers.Solvers
 import CTSolvers.Orchestration
+import CTSolvers.Optimization
 
 # Load extensions if available for testing
 const IPOPT_AVAILABLE = try
@@ -136,18 +137,18 @@ function test_strategy_construction(
         Test.@testset "build_strategy()" begin
             Test.@testset "Strict Mode" begin
                 # Known options only - should work
-                Test.@test_nowarn build_strategy(strategy_id, family, registry; known_options...)
-                strategy = build_strategy(strategy_id, family, registry; known_options...)
+                Test.@test_nowarn Strategies.build_strategy(strategy_id, family, registry; known_options...)
+                strategy = Strategies.build_strategy(strategy_id, family, registry; known_options...)
                 Test.@test strategy isa strategy_type
                 
                 # Unknown option - should throw
-                Test.@test_throws Exceptions.IncorrectArgument build_strategy(strategy_id, family, registry; known_options..., unknown_options...)
+                Test.@test_throws Exceptions.IncorrectArgument Strategies.build_strategy(strategy_id, family, registry; known_options..., unknown_options...)
             end
             
             Test.@testset "Permissive Mode" begin
                 # Known + unknown options - should work
-                Test.@test_warn "Unrecognized options" build_strategy(strategy_id, family, registry; known_options..., unknown_options..., mode=:permissive)
-                strategy = build_strategy(strategy_id, family, registry; known_options..., unknown_options..., mode=:permissive)
+                Test.@test_warn "Unrecognized options" Strategies.build_strategy(strategy_id, family, registry; known_options..., unknown_options..., mode=:permissive)
+                strategy = Strategies.build_strategy(strategy_id, family, registry; known_options..., unknown_options..., mode=:permissive)
                 Test.@test strategy isa strategy_type
                                 # Verify mode is NOT stored in options (correct behavior)
                 Test.@test_throws Exception strategy.options.mode
@@ -160,7 +161,7 @@ function test_strategy_construction(
         
         Test.@testset "build_strategy_from_method()" begin
             # Create method tuple with strategy ID
-            method = if family == AbstractNLPModeler
+            method = if family == Modelers.AbstractNLPModeler
                 (:collocation, strategy_id, :ipopt)
             else
                 (:collocation, :adnlp, strategy_id)
@@ -191,7 +192,7 @@ function test_strategy_construction(
         # ====================================================================
         
         Test.@testset "Orchestration Wrapper" begin
-            method = if family == AbstractNLPModeler
+            method = if family == Modelers.AbstractNLPModeler
                 (:collocation, strategy_id, :ipopt)
             else
                 (:collocation, :adnlp, strategy_id)
@@ -237,17 +238,17 @@ function test_option_recovery(
     Test.@testset "Option Recovery - $(typeof(strategy))" begin
         # Test known options
         for (name, value) in pairs(known_options)
-            Test.@test has_option(strategy, name)
-            Test.@test option_value(strategy, name) == value
-            Test.@test option_source(strategy, name) == :user
+            Test.@test Strategies.has_option(strategy, name)
+            Test.@test Strategies.option_value(strategy, name) == value
+            Test.@test Strategies.option_source(strategy, name) == :user
         end
         
         # Test unknown options (only in permissive mode)
         if mode == :permissive
             for (name, value) in pairs(unknown_options)
-                Test.@test has_option(strategy, name)
-                Test.@test option_value(strategy, name) == value
-                Test.@test option_source(strategy, name) == :user
+                Test.@test Strategies.has_option(strategy, name)
+                Test.@test Strategies.option_value(strategy, name) == value
+                Test.@test Strategies.option_source(strategy, name) == :user
             end
         else
             # In strict mode, unknown options should not be present
@@ -263,8 +264,8 @@ function test_option_recovery(
         metadata_def = Strategies.metadata(typeof(strategy))
         for (name, definition) in pairs(metadata_def)
             if !(definition.default isa Options.NotProvidedType) && !haskey(known_options, name)
-                Test.@test has_option(strategy, name)
-                Test.@test option_source(strategy, name) == :default
+                Test.@test Strategies.has_option(strategy, name)
+                Test.@test Strategies.option_source(strategy, name) == :default
             end
         end
     end
@@ -276,7 +277,7 @@ Test error quality for invalid mode parameter.
 function test_invalid_mode(strategy_type::Type)
     Test.@testset "Invalid Mode Tests - $(strategy_type)" begin
         Test.@test_throws Exceptions.IncorrectArgument strategy_type(; mode=:invalid)
-        Test.@test_throws Exceptions.IncorrectArgument build_strategy(:test, Strategies.AbstractStrategy, Strategies.create_registry(); mode=:invalid)
+        Test.@test_throws Exceptions.IncorrectArgument Strategies.build_strategy(:test, Strategies.AbstractStrategy, Strategies.create_registry(); mode=:invalid)
     end
 end
 
@@ -289,7 +290,7 @@ function test_comprehensive_validation()
         
         # Create registries for testing
         modeler_registry = Strategies.create_registry(
-            AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa)
+            Modelers.AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa)
         )
         
         # Create solver registry based on available extensions
@@ -300,9 +301,9 @@ function test_comprehensive_validation()
         # KNITRO_AVAILABLE && push!(solver_types, Solvers.Knitro)  # Never available - no license
         
         solver_registry = if isempty(solver_types)
-            Strategies.create_registry(AbstractOptimizationSolver => ())
+            Strategies.create_registry(Solvers.AbstractOptimizationSolver => ())
         else
-            Strategies.create_registry(AbstractOptimizationSolver => tuple(solver_types...))
+            Strategies.create_registry(Solvers.AbstractOptimizationSolver => tuple(solver_types...))
         end
         
         # ====================================================================
@@ -322,7 +323,7 @@ function test_comprehensive_validation()
                 # Test all construction methods - redirect stderr to hide warnings
                 redirect_stderr(devnull) do
                     test_strategy_construction(
-                        Modelers.ADNLP, :adnlp, AbstractNLPModeler,
+                        Modelers.ADNLP, :adnlp, Modelers.AbstractNLPModeler,
                         known_options, unknown_options, modeler_registry
                     )
                 end
@@ -341,7 +342,7 @@ function test_comprehensive_validation()
                     
                     # Test build_strategy option recovery
                     redirect_stderr(devnull) do
-                        strategy_build = build_strategy(:adnlp, AbstractNLPModeler, modeler_registry; known_options..., unknown_options..., mode=:permissive)
+                        strategy_build = Strategies.build_strategy(:adnlp, Modelers.AbstractNLPModeler, modeler_registry; known_options..., unknown_options..., mode=:permissive)
                         test_option_recovery(strategy_build, known_options, unknown_options, :permissive)
                     end
                 end
@@ -361,7 +362,7 @@ function test_comprehensive_validation()
                 # Test all construction methods - redirect stderr to hide warnings
                 redirect_stderr(devnull) do
                     test_strategy_construction(
-                        Modelers.Exa, :exa, AbstractNLPModeler,
+                        Modelers.Exa, :exa, Modelers.AbstractNLPModeler,
                         known_options, unknown_options, modeler_registry
                     )
                 end
@@ -402,7 +403,7 @@ function test_comprehensive_validation()
                     # Test all construction methods - redirect stderr to hide warnings
                     redirect_stderr(devnull) do
                         test_strategy_construction(
-                            Solvers.Ipopt, :ipopt, AbstractOptimizationSolver,
+                            Solvers.Ipopt, :ipopt, Solvers.AbstractOptimizationSolver,
                             known_options, unknown_options, solver_registry
                         )
                     end
@@ -438,7 +439,7 @@ function test_comprehensive_validation()
                     
                     redirect_stderr(devnull) do
                         test_strategy_construction(
-                            Solvers.MadNLP, :madnlp, AbstractOptimizationSolver,
+                            Solvers.MadNLP, :madnlp, Solvers.AbstractOptimizationSolver,
                             known_options, unknown_options, solver_registry
                         )
                     end
@@ -472,7 +473,7 @@ function test_comprehensive_validation()
                     
                     redirect_stderr(devnull) do
                         test_strategy_construction(
-                            Solvers.MadNCLSolver, :madncl, AbstractOptimizationSolver,
+                            Solvers.MadNCLSolver, :madncl, Solvers.AbstractOptimizationSolver,
                             known_options, unknown_options, solver_registry
                         )
                     end
@@ -506,7 +507,7 @@ function test_comprehensive_validation()
             #         unknown_options = (knitro_fake=333, custom_knitro="test")
                     
             #         test_strategy_construction(
-            #             Solvers.Knitro, :knitro, AbstractOptimizationSolver,
+            #             Solvers.Knitro, :knitro, Solvers.AbstractOptimizationSolver,
             #             known_options, unknown_options, solver_registry
             #         )
                     
@@ -541,16 +542,16 @@ function test_comprehensive_validation()
                 # Test.@test modeler1.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
                 # build_strategy - mode should NOT be stored in options  
-                modeler2 = build_strategy(:adnlp, AbstractNLPModeler, registry; backend=:default, mode=:permissive)
+                modeler2 = Strategies.build_strategy(:adnlp, Modelers.AbstractNLPModeler, registry; backend=:default, mode=:permissive)
                 # Test.@test modeler2.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
                 # build_strategy_from_method - mode should NOT be stored in options
                 method = (:collocation, :adnlp, :ipopt)
-                modeler3 = Strategies.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, mode=:permissive)
+                modeler3 = Strategies.build_strategy_from_method(method, Modelers.AbstractNLPModeler, registry; backend=:default, mode=:permissive)
                 # Test.@test modeler3.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
                 # Orchestration wrapper - mode should NOT be stored in options
-                modeler4 = Orchestration.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, mode=:permissive)
+                modeler4 = Orchestration.build_strategy_from_method(method, Modelers.AbstractNLPModeler, registry; backend=:default, mode=:permissive)
                 # Test.@test modeler4.options.mode == :permissive  # WRONG - mode should NOT be stored
                 
                 # CORRECT: Verify mode is NOT stored in options
@@ -588,28 +589,28 @@ function test_comprehensive_validation()
                 local unknown_options = (test_consistency=42)
                 
                 local registry = Strategies.create_registry(
-                    AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa)
+                    Modelers.AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa)
                 )
                 
                 # Create strategies with different methods - redirect stderr to hide warnings
                 redirect_stderr(devnull) do
                     modeler1 = Modelers.ADNLP(; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
-                    modeler2 = build_strategy(:adnlp, AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
+                    modeler2 = Strategies.build_strategy(:adnlp, Modelers.AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                     
                     method = (:collocation, :adnlp, :ipopt)
-                    modeler3 = Strategies.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
-                    modeler4 = Orchestration.build_strategy_from_method(method, AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
+                    modeler3 = Strategies.build_strategy_from_method(method, Modelers.AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
+                    modeler4 = Orchestration.build_strategy_from_method(method, Modelers.AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                     
                     # Test that all have the same options
                     strategies = [modeler1, modeler2, modeler3, modeler4]
                     
                     for strategy in strategies
-                        Test.@test option_value(strategy, :backend) == :default
-                        Test.@test option_value(strategy, :show_time) == false
-                        Test.@test option_value(strategy, :test_consistency) == 42
-                        Test.@test option_source(strategy, :backend) == :user
-                        Test.@test option_source(strategy, :show_time) == :user
-                        Test.@test option_source(strategy, :test_consistency) == :user
+                        Test.@test Strategies.option_value(strategy, :backend) == :default
+                        Test.@test Strategies.option_value(strategy, :show_time) == false
+                        Test.@test Strategies.option_value(strategy, :test_consistency) == 42
+                        Test.@test Strategies.option_source(strategy, :backend) == :user
+                        Test.@test Strategies.option_source(strategy, :show_time) == :user
+                        Test.@test Strategies.option_source(strategy, :test_consistency) == :user
                         # Verify mode is NOT stored in options (correct behavior)
                         Test.@test_throws Exception strategy.options.mode
                     end

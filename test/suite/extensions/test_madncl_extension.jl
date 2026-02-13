@@ -16,7 +16,9 @@ import MadNCL
 import MadNLP
 import MadNLPMumps
 import MadNLPGPU
-import Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
+
+include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
+import .TestProblems
 
 # Trigger extension loading
 const CTSolversMadNCL = Base.get_extension(CTSolvers, :CTSolversMadNCL)
@@ -26,11 +28,6 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 
 # CUDA availability check
 is_cuda_on() = CUDA.functional()
-if is_cuda_on()
-    println("✓ CUDA functional, GPU tests enabled")
-else
-    println("⚠️  CUDA not functional, GPU tests will be skipped")
-end
 
 """
     test_madncl_extension()
@@ -187,7 +184,7 @@ function test_madncl_extension()
 
         Test.@testset "MadNLP Option Pass-through" begin
             # Create a simple dummy problem
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
             nlp = adnlp_builder(ros.init)
 
@@ -210,7 +207,7 @@ function test_madncl_extension()
         Test.@testset "Display Flag" begin
             # MadNCL requires problems with constraints
             # Using Elec problem which has constraints
-            elec = Elec()
+            elec = TestProblems.Elec()
             adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
             nlp = adnlp_builder(elec.init)
             
@@ -231,7 +228,7 @@ function test_madncl_extension()
         # ====================================================================
         
         Test.@testset "Rosenbrock Problem - CPU" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             
             # Build NLP model
             adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
@@ -250,7 +247,7 @@ function test_madncl_extension()
         end
         
         Test.@testset "Elec Problem - CPU" begin
-            elec = Elec()
+            elec = TestProblems.Elec()
             
             # Build NLP model
             adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
@@ -269,7 +266,7 @@ function test_madncl_extension()
         end
         
         Test.@testset "Max1MinusX2 Problem - CPU" begin
-            max_prob = Max1MinusX2()
+            max_prob = TestProblems.Max1MinusX2()
             
             # Build NLP model
             adnlp_builder = CTSolvers.get_adnlp_model_builder(max_prob.prob)
@@ -288,7 +285,7 @@ function test_madncl_extension()
             Test.@test length(stats.solution) == 1
             Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
             # Note: MadNCL does NOT invert the sign (unlike MadNLP)
-            Test.@test stats.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
+            Test.@test stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
         end
         
         # ====================================================================
@@ -299,7 +296,7 @@ function test_madncl_extension()
             # Check if CUDA is available and functional
             if CUDA.functional()
                 Test.@testset "Rosenbrock Problem - GPU" begin
-                    ros = Rosenbrock()
+                    ros = TestProblems.Rosenbrock()
                     
                     # Note: GPU linear solver would need to be configured
                     # For now, just test that the solver can be created
@@ -349,8 +346,8 @@ function test_madncl_extension()
             )
             
             # Solve different problems with same solver
-            elec = Elec()
-            max_prob = Max1MinusX2()
+            elec = TestProblems.Elec()
+            max_prob = TestProblems.Max1MinusX2()
             
             # Build NLP models
             adnlp_builder1 = CTSolvers.get_adnlp_model_builder(elec.prob)
@@ -378,7 +375,7 @@ function test_madncl_extension()
             linear_solver_names = ["Umfpack", "Mumps"]
             
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-                elec = Elec()
+                elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -426,7 +423,7 @@ function test_madncl_extension()
             linear_solver_names = ["Mumps"]
             
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-                elec = Elec()
+                elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -439,7 +436,7 @@ function test_madncl_extension()
             end
             
             Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
-                max_prob = Max1MinusX2()
+                max_prob = TestProblems.Max1MinusX2()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -449,7 +446,7 @@ function test_madncl_extension()
                             Test.@test length(sol.solution) == 1
                             Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
                             # MadNCL does NOT invert sign (unlike MadNLP)
-                            Test.@test sol.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
+                            Test.@test sol.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
                         end
                     end
                 end
@@ -472,7 +469,7 @@ function test_madncl_extension()
                 )
 
                 Test.@testset "Elec - GPU" begin
-                    elec = Elec()
+                    elec = TestProblems.Elec()
                     sol = CommonSolve.solve(
                         elec.prob, elec.init, gpu_modeler, gpu_solver;
                         display=false
@@ -487,7 +484,7 @@ function test_madncl_extension()
                 # convergence to constraint bound x≈5 instead of x=0
                 # Test disabled until ExaModels GPU supports maximization correctly
                 # Test.@testset "Max1MinusX2 - GPU" begin
-                #     max_prob = Max1MinusX2()
+                #     max_prob = TestProblems.Max1MinusX2()
                 #     sol = CommonSolve.solve(
                 #         max_prob.prob, max_prob.init, gpu_modeler, gpu_solver;
                 #         display=false
@@ -517,7 +514,7 @@ function test_madncl_extension()
                 )
 
                 Test.@testset "Elec - GPU" begin
-                    elec = Elec()
+                    elec = TestProblems.Elec()
                     nlp = Optimization.build_model(elec.prob, elec.init, gpu_modeler)
                     sol = CTSolversMadNCL.solve_with_madncl(nlp; madncl_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
@@ -529,7 +526,7 @@ function test_madncl_extension()
                 # convergence to constraint bound x≈5 instead of x=0
                 # Test disabled until ExaModels GPU supports maximization correctly
                 # Test.@testset "Max1MinusX2 - GPU" begin
-                #     max_prob = Max1MinusX2()
+                #     max_prob = TestProblems.Max1MinusX2()
                 #     nlp = Optimization.build_model(max_prob.prob, max_prob.init, gpu_modeler)
                 #     sol = CTSolversMadNCL.solve_with_madncl(nlp; madncl_options...)
                 #     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
@@ -560,7 +557,7 @@ function test_madncl_extension()
                 )
 
                 Test.@testset "Elec - GPU" begin
-                    elec = Elec()
+                    elec = TestProblems.Elec()
                     sol = CommonSolve.solve(
                         elec.prob, elec.init, gpu_modeler, gpu_solver_0;
                         display=false

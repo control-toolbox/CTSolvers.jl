@@ -11,7 +11,9 @@ import CTSolvers.Optimization
 import CommonSolve
 import NLPModels
 import ADNLPModels
-import Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
+
+include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
+import .TestProblems
 
 # Get extension to access solve_with_ipopt
 using NLPModelsIpopt
@@ -127,7 +129,7 @@ function test_ipopt_extension()
         # ====================================================================
         
         Test.@testset "Rosenbrock Problem - ADNLPModels" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             
             # Build NLP model from problem
             adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
@@ -149,11 +151,11 @@ function test_ipopt_extension()
             # Check convergence
             Test.@test stats.status == :first_order
             Test.@test stats.solution ≈ ros.sol atol=1e-6
-            Test.@test stats.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+            Test.@test stats.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
         end
         
         Test.@testset "Elec Problem - ADNLPModels" begin
-            elec = Elec()
+            elec = TestProblems.Elec()
             
             # Build NLP model
             adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
@@ -172,7 +174,7 @@ function test_ipopt_extension()
         end
         
         Test.@testset "Max1MinusX2 Problem - ADNLPModels" begin
-            max_prob = Max1MinusX2()
+            max_prob = TestProblems.Max1MinusX2()
             
             # Build NLP model
             adnlp_builder = CTSolvers.get_adnlp_model_builder(max_prob.prob)
@@ -190,7 +192,7 @@ function test_ipopt_extension()
             Test.@test stats.status == :first_order
             Test.@test length(stats.solution) == 1
             Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
-            Test.@test stats.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
+            Test.@test stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
         end
         
         # ====================================================================
@@ -221,8 +223,8 @@ function test_ipopt_extension()
             solver = Solvers.Ipopt(max_iter=1000, tol=1e-6, print_level=0)
             
             # Solve different problems with same solver
-            ros = Rosenbrock()
-            max_prob = Max1MinusX2()
+            ros = TestProblems.Rosenbrock()
+            max_prob = TestProblems.Max1MinusX2()
             
             # Build NLP models
             nlp1 = CTSolvers.get_adnlp_model_builder(ros.prob)(ros.init)
@@ -245,7 +247,7 @@ function test_ipopt_extension()
             
             # Rosenbrock: start at the known solution and enforce max_iter=0
             Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
-                ros = Rosenbrock()
+                ros = TestProblems.Rosenbrock()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         local opts = Dict(
@@ -264,7 +266,7 @@ function test_ipopt_extension()
             
             # Elec: expect solution to remain equal to the initial guess vector
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-                elec = Elec()
+                elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         local opts = Dict(
@@ -300,20 +302,20 @@ function test_ipopt_extension()
             )
             
             Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
-                ros = Rosenbrock()
+                ros = TestProblems.Rosenbrock()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         nlp = Optimization.build_model(ros.prob, ros.init, modeler)
                         sol = CTSolversIpopt.solve_with_ipopt(nlp; ipopt_options...)
                         Test.@test sol.status == :first_order
                         Test.@test sol.solution ≈ ros.sol atol=1e-6
-                        Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+                        Test.@test sol.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
                     end
                 end
             end
             
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-                elec = Elec()
+                elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         nlp = Optimization.build_model(elec.prob, elec.init, modeler)
@@ -324,7 +326,7 @@ function test_ipopt_extension()
             end
             
             Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
-                max_prob = Max1MinusX2()
+                max_prob = TestProblems.Max1MinusX2()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         nlp = Optimization.build_model(max_prob.prob, max_prob.init, modeler)
@@ -332,7 +334,7 @@ function test_ipopt_extension()
                         Test.@test sol.status == :first_order
                         Test.@test length(sol.solution) == 1
                         Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
-                        Test.@test sol.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
+                        Test.@test sol.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
                     end
                 end
             end
@@ -356,7 +358,7 @@ function test_ipopt_extension()
             )
             
             Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
-                ros = Rosenbrock()
+                ros = TestProblems.Rosenbrock()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
@@ -367,13 +369,13 @@ function test_ipopt_extension()
                         )
                         Test.@test sol.status == :first_order
                         Test.@test sol.solution ≈ ros.sol atol=1e-6
-                        Test.@test sol.objective ≈ rosenbrock_objective(ros.sol) atol=1e-6
+                        Test.@test sol.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
                     end
                 end
             end
             
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-                elec = Elec()
+                elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
@@ -388,7 +390,7 @@ function test_ipopt_extension()
             end
             
             Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
-                max_prob = Max1MinusX2()
+                max_prob = TestProblems.Max1MinusX2()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
@@ -400,7 +402,7 @@ function test_ipopt_extension()
                         Test.@test sol.status == :first_order
                         Test.@test length(sol.solution) == 1
                         Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
-                        Test.@test sol.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
+                        Test.@test sol.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
                     end
                 end
             end
@@ -476,7 +478,7 @@ function test_ipopt_extension()
         # ====================================================================
 
         Test.@testset "Pass-through Verification" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
             nlp = adnlp_builder(ros.init)
 
@@ -512,7 +514,7 @@ function test_ipopt_extension()
         # ====================================================================
 
         Test.@testset "Exhaustive Options Validation" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
             nlp = adnlp_builder(ros.init)
 

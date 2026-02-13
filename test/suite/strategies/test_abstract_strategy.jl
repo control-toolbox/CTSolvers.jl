@@ -166,8 +166,10 @@ function test_abstract_strategy()
                 strategy = FakeStrategy(opts)
                 
                 # Test that strategy components can be displayed
-                Test.@test_nowarn show(stdout, Strategies.metadata(typeof(strategy)))
-                Test.@test_nowarn show(stdout, Strategies.options(strategy))
+                redirect_stdout(devnull) do
+                    Test.@test_nowarn show(stdout, Strategies.metadata(typeof(strategy)))
+                    Test.@test_nowarn show(stdout, Strategies.options(strategy))
+                end
             end
         end
     end

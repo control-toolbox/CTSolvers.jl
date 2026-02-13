@@ -360,7 +360,7 @@ function test_routing()
                 )
                 Test.@test false  # Should not reach here
             catch e
-                Test.@test e isa CTBase.Exceptions.IncorrectArgument
+                Test.@test e isa Exceptions.IncorrectArgument
                 msg = sprint(showerror, e)
                 # Should suggest backend via alias proximity
                 Test.@test occursin("Did you mean?", msg)
@@ -379,7 +379,7 @@ function test_routing()
                 )
                 Test.@test false
             catch e
-                Test.@test e isa CTBase.Exceptions.IncorrectArgument
+                Test.@test e isa Exceptions.IncorrectArgument
                 msg = sprint(showerror, e)
                 Test.@test occursin("Did you mean?", msg)
                 Test.@test occursin("backend", msg)
@@ -397,7 +397,7 @@ function test_routing()
                 )
                 Test.@test false
             catch e
-                Test.@test e isa CTBase.Exceptions.IncorrectArgument
+                Test.@test e isa Exceptions.IncorrectArgument
                 msg = sprint(showerror, e)
                 Test.@test occursin("Did you mean?", msg)
                 Test.@test occursin("max_iter", msg)

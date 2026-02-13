@@ -48,8 +48,10 @@ function test_validation_permissive()
         
         Test.@testset "Custom Validation Still Applied" begin
             # Custom validation should work even in permissive mode
-            Test.@test_throws Exception begin
-                Strategies.build_strategy_options(Solvers.Ipopt; tol=-1.0, mode=:permissive)
+            redirect_stderr(devnull) do
+                Test.@test_throws Exception begin
+                    Strategies.build_strategy_options(Solvers.Ipopt; tol=-1.0, mode=:permissive)
+                end
             end
         end
         

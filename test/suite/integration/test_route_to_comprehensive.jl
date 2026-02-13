@@ -234,9 +234,9 @@ Test that an option is correctly routed to a strategy.
 """
 function test_option_routing(strategy, option_name::Symbol, expected_value, expected_source::Symbol=:user)
     Test.@testset "Option Routing - $option_name" begin
-        Test.@test has_option(strategy, option_name)
-        Test.@test option_value(strategy, option_name) == expected_value
-        Test.@test option_source(strategy, option_name) == expected_source
+        Test.@test Strategies.has_option(strategy, option_name)
+        Test.@test Strategies.option_value(strategy, option_name) == expected_value
+        Test.@test Strategies.option_source(strategy, option_name) == expected_source
     end
 end
 
@@ -245,7 +245,7 @@ Test that an option is NOT present in a strategy.
 """
 function test_option_absence(strategy, option_name::Symbol)
     Test.@testset "Option Absence - $option_name" begin
-        Test.@test !has_option(strategy, option_name)
+        Test.@test !Strategies.has_option(strategy, option_name)
     end
 end
 
@@ -479,8 +479,8 @@ function test_route_to_comprehensive()
                 
                 Test.@testset "Solver Options" begin
                     # At least one solver should have the options
-                    Test.@test has_option(ipopt, :backend) || has_option(madnlp, :backend)
-                    Test.@test has_option(ipopt, :max_iter) || has_option(madnlp, :max_iter)
+                    Test.@test Strategies.has_option(ipopt, :backend) || Strategies.has_option(madnlp, :backend)
+                    Test.@test Strategies.has_option(ipopt, :max_iter) || Strategies.has_option(madnlp, :max_iter)
                 end
             end
         end
