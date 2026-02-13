@@ -26,7 +26,7 @@ This function generates a detailed error message that includes:
 # Example
 ```julia
 # Internal use only - called by build_strategy_options()
-_error_unknown_options_strict((unknown_opt=123,), Solvers.IpoptSolver, meta)
+_error_unknown_options_strict((unknown_opt=123,), Solvers.Ipopt, meta)
 ```
 
 See also: [`build_strategy_options`](@ref), [`suggest_options`](@ref)
@@ -92,7 +92,7 @@ unvalidated options will be passed directly to the backend without validation.
 # Example
 ```julia
 # Internal use only - called by build_strategy_options()
-_warn_unknown_options_permissive((custom_opt=123,), Solvers.IpoptSolver)
+_warn_unknown_options_permissive((custom_opt=123,), Solvers.Ipopt)
 ```
 
 See also: [`build_strategy_options`](@ref), [`_error_unknown_options_strict`](@ref)

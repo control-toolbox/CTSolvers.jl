@@ -295,10 +295,10 @@ function test_comprehensive_validation()
         
         # Create solver registry based on available extensions
         solver_types = []
-        IPOPT_AVAILABLE && push!(solver_types, CTSolvers.Solvers.IpoptSolver)
+        IPOPT_AVAILABLE && push!(solver_types, CTSolvers.Solvers.Ipopt)
         MADNLP_AVAILABLE && push!(solver_types, CTSolvers.Solvers.MadNLPSolver)
         MADNCL_AVAILABLE && push!(solver_types, CTSolvers.Solvers.MadNCLSolver)
-        # KNITRO_AVAILABLE && push!(solver_types, CTSolvers.Solvers.KnitroSolver)  # Never available - no license
+        # KNITRO_AVAILABLE && push!(solver_types, CTSolvers.Solvers.Knitro)  # Never available - no license
         
         solver_registry = if isempty(solver_types)
             CTSolvers.Strategies.create_registry(AbstractOptimizationSolver => ())
@@ -390,12 +390,12 @@ function test_comprehensive_validation()
         @testset "Solvers" begin
             
             # ----------------------------------------------------------------
-            # Solvers.IpoptSolver Tests (if available)
+            # Solvers.Ipopt Tests (if available)
             # ----------------------------------------------------------------
             
             if IPOPT_AVAILABLE
-                @testset "Solvers.IpoptSolver" begin
-                    # Note: Solvers.IpoptSolver options are defined in the extension
+                @testset "Solvers.Ipopt" begin
+                    # Note: Solvers.Ipopt options are defined in the extension
                     # We'll use some common options that are typically available
                     known_options = (max_iter=1000, tol=1e-6)
                     unknown_options = (ipopt_fake=789, custom_ipopt_opt="value")
@@ -403,27 +403,27 @@ function test_comprehensive_validation()
                     # Test all construction methods - redirect stderr to hide warnings
                     redirect_stderr(devnull) do
                         test_strategy_construction(
-                            CTSolvers.Solvers.IpoptSolver, :ipopt, AbstractOptimizationSolver,
+                            CTSolvers.Solvers.Ipopt, :ipopt, AbstractOptimizationSolver,
                             known_options, unknown_options, solver_registry
                         )
                     end
                     
                     # Test option recovery
                     @testset "Option Recovery" begin
-                        strategy_strict = CTSolvers.Solvers.IpoptSolver(; known_options...)
+                        strategy_strict = CTSolvers.Solvers.Ipopt(; known_options...)
                         test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                         
                         redirect_stderr(devnull) do
-                            strategy_permissive = CTSolvers.Solvers.IpoptSolver(; known_options..., unknown_options..., mode=:permissive)
+                            strategy_permissive = CTSolvers.Solvers.Ipopt(; known_options..., unknown_options..., mode=:permissive)
                             test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
                         end
                     end
                     
                     # Test invalid mode
-                    test_invalid_mode(CTSolvers.Solvers.IpoptSolver)
+                    test_invalid_mode(CTSolvers.Solvers.Ipopt)
                 end
             else
-                @testset "Solvers.IpoptSolver (Not Available)" begin
+                @testset "Solvers.Ipopt (Not Available)" begin
                     @test_skip "NLPModelsIpopt not available"
                 end
             end
@@ -497,32 +497,32 @@ function test_comprehensive_validation()
             end
             
             # ----------------------------------------------------------------
-            # KnitroSolver Tests (if available)
+            # Solvers.Knitro Tests (if available)
             # ----------------------------------------------------------------
             
             # Commented out - no license available
             # if KNITRO_AVAILABLE
-            #     @testset "KnitroSolver" begin
+            #     @testset "Solvers.Knitro" begin
             #         known_options = (maxit=200, feastol_abs=1e-12)
             #         unknown_options = (knitro_fake=333, custom_knitro="test")
                     
             #         test_strategy_construction(
-            #             CTSolvers.Solvers.KnitroSolver, :knitro, AbstractOptimizationSolver,
+            #             CTSolvers.Solvers.Knitro, :knitro, AbstractOptimizationSolver,
             #             known_options, unknown_options, solver_registry
             #         )
                     
             #         @testset "Option Recovery" begin
-            #             strategy_strict = CTSolvers.Solvers.KnitroSolver(; known_options...)
+            #             strategy_strict = CTSolvers.Solvers.Knitro(; known_options...)
             #             test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                         
-            #             strategy_permissive = CTSolvers.Solvers.KnitroSolver(; known_options..., unknown_options..., mode=:permissive)
+            #             strategy_permissive = CTSolvers.Solvers.Knitro(; known_options..., unknown_options..., mode=:permissive)
             #             test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
             #         end
                     
-            #         test_invalid_mode(CTSolvers.Solvers.KnitroSolver)
+            #         test_invalid_mode(CTSolvers.Solvers.Knitro)
             #     end
             # else
-            #     @testset "KnitroSolver (Not Available)" begin
+            #     @testset "Solvers.Knitro (Not Available)" begin
             #         @test_skip "NLPModelsKnitro not available or no license"
             #     end
             # end

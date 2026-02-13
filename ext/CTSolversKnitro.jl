@@ -2,7 +2,7 @@
 CTSolversKnitro Extension
 
 Extension providing Knitro solver metadata, constructor, and backend interface.
-Implements the complete KnitroSolver functionality with proper option definitions.
+Implements the complete Solvers.Knitro functionality with proper option definitions.
 """
 module CTSolversKnitro
 
@@ -23,9 +23,9 @@ using SolverCore
 """
 $(TYPEDSIGNATURES)
 
-Return metadata defining KnitroSolver options and their specifications.
+Return metadata defining Solvers.Knitro options and their specifications.
 """
-function Strategies.metadata(::Type{<:Solvers.KnitroSolver})
+function Strategies.metadata(::Type{<:Solvers.Knitro})
     return Strategies.StrategyMetadata(
         # ====================================================================
         # TERMINATION OPTIONS
@@ -42,7 +42,7 @@ function Strategies.metadata(::Type{<:Solvers.KnitroSolver})
                 got="maxit=$x",
                 expected="non-negative integer (>= 0)",
                 suggestion="Provide a non-negative value for maximum iterations",
-                context="KnitroSolver maxit validation"
+                context="Solvers.Knitro maxit validation"
             ))
         ),
         
@@ -56,7 +56,7 @@ function Strategies.metadata(::Type{<:Solvers.KnitroSolver})
                 got="maxtime=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive time limit in seconds (e.g., 3600 for 1 hour)",
-                context="KnitroSolver maxtime validation"
+                context="Solvers.Knitro maxtime validation"
             ))
         ),
         
@@ -70,7 +70,7 @@ function Strategies.metadata(::Type{<:Solvers.KnitroSolver})
                 got="maxfevals=$x",
                 expected="integer >= -1 (-1 for unlimited)",
                 suggestion="Use -1 for unlimited or positive integer for limit",
-                context="KnitroSolver maxfevals validation"
+                context="Solvers.Knitro maxfevals validation"
             ))
         ),
         
@@ -84,7 +84,7 @@ function Strategies.metadata(::Type{<:Solvers.KnitroSolver})
                 got="feastol_abs=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e-8 for standard tolerance or smaller for stricter feasibility",
-                context="KnitroSolver feastol_abs validation"
+                context="Solvers.Knitro feastol_abs validation"
             ))
         ),
         
@@ -98,7 +98,7 @@ function Strategies.metadata(::Type{<:Solvers.KnitroSolver})
                 got="opttol_abs=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e-8 for standard tolerance or smaller for stricter optimality",
-                context="KnitroSolver opttol_abs validation"
+                context="Solvers.Knitro opttol_abs validation"
             ))
         ),
         
@@ -112,7 +112,7 @@ function Strategies.metadata(::Type{<:Solvers.KnitroSolver})
                 got="ftol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e-12 for standard tolerance or smaller for stricter convergence",
-                context="KnitroSolver ftol validation"
+                context="Solvers.Knitro ftol validation"
             ))
         ),
         
@@ -126,7 +126,7 @@ function Strategies.metadata(::Type{<:Solvers.KnitroSolver})
                 got="xtol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e-12 for standard tolerance or smaller for stricter convergence",
-                context="KnitroSolver xtol validation"
+                context="Solvers.Knitro xtol validation"
             ))
         ),
         
@@ -144,7 +144,7 @@ function Strategies.metadata(::Type{<:Solvers.KnitroSolver})
                 got="soltype=$x",
                 expected="0 (final) or 1 (bestfeas)",
                 suggestion="Use 0 for final solution or 1 for best feasible encountered",
-                context="KnitroSolver soltype validation"
+                context="Solvers.Knitro soltype validation"
             ))
         ),
         
@@ -163,7 +163,7 @@ function Strategies.metadata(::Type{<:Solvers.KnitroSolver})
                 got="outlev=$x",
                 expected="integer between 0 and 6",
                 suggestion="Use 0 for no output, 2 for every 10 iterations, 3 for each iteration, or higher for more details",
-                context="KnitroSolver outlev validation"
+                context="Solvers.Knitro outlev validation"
             ))
         )
     )
@@ -176,28 +176,28 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Build a KnitroSolver with validated options.
+Build a Solvers.Knitro with validated options.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Options to pass to the KnitroSolver constructor
+- `kwargs...`: Options to pass to the Solvers.Knitro constructor
 
 # Examples
 ```julia-repl
 # Strict mode (default) - rejects unknown options
 julia> solver = Solvers.build_knitro_solver(Solvers.KnitroTag; max_iter=1000)
-KnitroSolver(...)
+Solvers.Knitro(...)
 
 # Permissive mode - accepts unknown options with warning
 julia> solver = Solvers.build_knitro_solver(Solvers.KnitroTag; max_iter=1000, custom_option=123; mode=:permissive)
-KnitroSolver(...)  # with warning about custom_option
+Solvers.Knitro(...)  # with warning about custom_option
 ```
 """
 function Solvers.build_knitro_solver(::Solvers.KnitroTag; mode::Symbol=:strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.KnitroSolver; mode=mode, kwargs...)
-    return Solvers.KnitroSolver(opts)
+    opts = Strategies.build_strategy_options(Solvers.Knitro; mode=mode, kwargs...)
+    return Solvers.Knitro(opts)
 end
 
 # ============================================================================
@@ -216,7 +216,7 @@ Solve an NLP problem using Knitro.
 # Returns
 - `SolverCore.GenericExecutionStats`: Solver execution statistics
 """
-function (solver::Solvers.KnitroSolver)(
+function (solver::Solvers.Knitro)(
     nlp::NLPModels.AbstractNLPModel;
     display::Bool=true
 )::SolverCore.GenericExecutionStats

@@ -32,7 +32,7 @@ It provides the **solution layer** for optimal control problems:
     ```julia
     using CTSolvers
     CTSolvers.Options.extract_options(kwargs, defs)   # ✓ Qualified
-    CTSolvers.Strategies.id(Solvers.IpoptSolver)              # ✓ Qualified
+    CTSolvers.Strategies.id(Solvers.Ipopt)              # ✓ Qualified
     ```
 
 ## Modules
@@ -45,7 +45,7 @@ It provides the **solution layer** for optimal control problems:
 | `Optimization` | Abstract problem types, builder pattern, build/solve API |
 | `Modelers` | Modelers.ADNLP, Modelers.Exa — NLP backend adapters |
 | `DOCP` | DiscretizedModel — concrete problem type |
-| `Solvers` | Solvers.IpoptSolver, MadNLPSolver, KnitroSolver — NLP solver wrappers |
+| `Solvers` | Solvers.Ipopt, MadNLPSolver, Solvers.Knitro — NLP solver wrappers |
 
 ## Documentation
 
@@ -71,7 +71,7 @@ using CTSolvers
 using NLPModelsIpopt  # loads the Ipopt extension
 
 # Create a solver with validated options
-solver = CTSolvers.Solvers.IpoptSolver(max_iter = 1000, tol = 1e-8)
+solver = CTSolvers.Solvers.Ipopt(max_iter = 1000, tol = 1e-8)
 
 # Create a modeler
 modeler = CTSolvers.Modelers.ADNLP(backend = :optimized)

@@ -28,17 +28,17 @@ function test_validation_strict()
         
         @testset "Known Options Accepted" begin
             # Test with single known option
-            opts = Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=100)
+            opts = Strategies.build_strategy_options(Solvers.Ipopt; max_iter=100)
             @test opts[:max_iter] == 100
             @test Strategies.source(opts, :max_iter) == :user
             
             # Test with multiple known options
-            opts = Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=200, tol=1e-6)
+            opts = Strategies.build_strategy_options(Solvers.Ipopt; max_iter=200, tol=1e-6)
             @test opts[:max_iter] == 200
             @test opts[:tol] == 1e-6
             
             # Test with alias
-            opts = Strategies.build_strategy_options(Solvers.IpoptSolver; maxiter=300)
+            opts = Strategies.build_strategy_options(Solvers.Ipopt; maxiter=300)
             @test opts[:max_iter] == 300  # Alias resolved to primary name
         end
         
@@ -47,7 +47,7 @@ function test_validation_strict()
         # ====================================================================
         
         @testset "Default Options Used" begin
-            opts = Strategies.build_strategy_options(Solvers.IpoptSolver)
+            opts = Strategies.build_strategy_options(Solvers.Ipopt)
             @test Strategies.source(opts, :max_iter) == :default
             @test Strategies.source(opts, :tol) == :default
         end
@@ -58,19 +58,19 @@ function test_validation_strict()
         
         @testset "Unknown Option Rejected" begin
             @test_throws Exception begin
-                Strategies.build_strategy_options(Solvers.IpoptSolver; unknown_option=123)
+                Strategies.build_strategy_options(Solvers.Ipopt; unknown_option=123)
             end
         end
         
         @testset "Multiple Unknown Options Rejected" begin
             @test_throws Exception begin
-                Strategies.build_strategy_options(Solvers.IpoptSolver; unknown1=123, unknown2=456)
+                Strategies.build_strategy_options(Solvers.Ipopt; unknown1=123, unknown2=456)
             end
         end
         
         @testset "Mix Known/Unknown Options Rejected" begin
             @test_throws Exception begin
-                Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=1000, unknown=123)
+                Strategies.build_strategy_options(Solvers.Ipopt; max_iter=1000, unknown=123)
             end
         end
         
@@ -80,7 +80,7 @@ function test_validation_strict()
         
         @testset "Error Message Contains Unknown Option" begin
             try
-                Strategies.build_strategy_options(Solvers.IpoptSolver; unknown_option=123)
+                Strategies.build_strategy_options(Solvers.Ipopt; unknown_option=123)
                 @test false  # Should not reach here
             catch e
                 msg = string(e)
@@ -91,7 +91,7 @@ function test_validation_strict()
         
         @testset "Error Message Contains Suggestions (Typo)" begin
             try
-                Strategies.build_strategy_options(Solvers.IpoptSolver; max_it=1000)  # Typo
+                Strategies.build_strategy_options(Solvers.Ipopt; max_it=1000)  # Typo
                 @test false
             catch e
                 msg = string(e)
@@ -102,7 +102,7 @@ function test_validation_strict()
         
         @testset "Error Message Contains Available Options" begin
             try
-                Strategies.build_strategy_options(Solvers.IpoptSolver; unknown=123)
+                Strategies.build_strategy_options(Solvers.Ipopt; unknown=123)
                 @test false
             catch e
                 msg = string(e)
@@ -114,7 +114,7 @@ function test_validation_strict()
         
         @testset "Error Message Suggests Permissive Mode" begin
             try
-                Strategies.build_strategy_options(Solvers.IpoptSolver; custom_opt=123)
+                Strategies.build_strategy_options(Solvers.Ipopt; custom_opt=123)
                 @test false
             catch e
                 msg = string(e)
@@ -130,7 +130,7 @@ function test_validation_strict()
         @testset "Type Validation Enforced" begin
             # This should fail type validation (max_iter expects Integer)
             @test_throws Exceptions.IncorrectArgument begin
-                Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=1.5)
+                Strategies.build_strategy_options(Solvers.Ipopt; max_iter=1.5)
             end
         end
         
@@ -141,7 +141,7 @@ function test_validation_strict()
         @testset "Custom Validation Enforced" begin
             # tol must be positive
             @test_throws Exceptions.IncorrectArgument begin
-                Strategies.build_strategy_options(Solvers.IpoptSolver; tol=-1.0)
+                Strategies.build_strategy_options(Solvers.Ipopt; tol=-1.0)
             end
         end
         
@@ -152,11 +152,11 @@ function test_validation_strict()
         @testset "Explicit Strict Mode" begin
             # mode=:strict should behave identically to default
             @test_throws Exceptions.IncorrectArgument begin
-                Strategies.build_strategy_options(Solvers.IpoptSolver; unknown=123, mode=:strict)
+                Strategies.build_strategy_options(Solvers.Ipopt; unknown=123, mode=:strict)
             end
             
             # Known options should work
-            opts = Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=100, mode=:strict)
+            opts = Strategies.build_strategy_options(Solvers.Ipopt; max_iter=100, mode=:strict)
             @test opts[:max_iter] == 100
         end
     end

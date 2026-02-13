@@ -38,7 +38,7 @@ using CTSolvers
 problem = ...
 x0 = ...
 modeler = Modelers.ADNLP()
-solver = Solvers.IpoptSolver(max_iter=1000)
+solver = Solvers.Ipopt(max_iter=1000)
 
 # Solve
 solution = solve(problem, x0, modeler, solver, display=true)
@@ -81,7 +81,7 @@ Mid-level solve: Solve NLP problem directly.
 using ADNLPModels
 
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-solver = Solvers.IpoptSolver()
+solver = Solvers.Ipopt()
 stats = solve(nlp, solver, display=false)
 ```
 """

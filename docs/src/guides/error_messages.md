@@ -148,23 +148,23 @@ CTSolvers.Options.OptionValue(42, :invalid_source)
 Thrown when a solver requires a package extension that hasn't been loaded.
 
 ```@repl errors
-CTSolvers.Solvers.IpoptSolver()
+CTSolvers.Solvers.Ipopt()
 ```
 
 **Fix**: Load the required package before using the solver:
 
 ```julia
 using NLPModelsIpopt  # loads the CTSolversIpopt extension
-solver = Solvers.IpoptSolver(max_iter = 1000)
+solver = Solvers.Ipopt(max_iter = 1000)
 ```
 
 ### Where it's thrown
 
 | Solver | Required package |
 |--------|-----------------|
-| `Solvers.IpoptSolver` | `NLPModelsIpopt` |
+| `Solvers.Ipopt` | `NLPModelsIpopt` |
 | `MadNLPSolver` | `MadNLP` |
-| `KnitroSolver` | `KNITRO` |
+| `Solvers.Knitro` | `KNITRO` |
 | `MadNCLSolver` | `MadNCL` |
 
 ## Display Examples

@@ -189,10 +189,10 @@ If you need backend-specific options:
 
 ```julia
 # Before (would error)
-solver = Solvers.IpoptSolver(custom_option="value")
+solver = Solvers.Ipopt(custom_option="value")
 
 # After (works with warning)
-solver = Solvers.IpoptSolver(
+solver = Solvers.Ipopt(
     custom_option="value";
     mode=:permissive
 )
@@ -249,14 +249,14 @@ route_all_options(method, families, action_defs, kwargs, registry; mode::Symbol=
 ### Enhanced Error Messages
 
 ```julia
-ERROR: Unknown options provided for Solvers.IpoptSolver
+ERROR: Unknown options provided for Solvers.Ipopt
 Unrecognized options: [:max_itter]
 Available options: [:max_iter, :tol, :print_level, ...]
 Suggestions for :max_itter:
   - :max_iter (Levenshtein distance: 2)
 If you are certain these options exist for the backend,
 use permissive mode:
-  Solvers.IpoptSolver(...; mode=:permissive)
+  Solvers.Ipopt(...; mode=:permissive)
 ```
 
 ---

@@ -140,8 +140,8 @@ function test_real_strategies_mode()
             available_solvers = []
             
             # Check for available solver extensions
-            if isdefined(CTSolvers, :Solvers) && isdefined(CTSolvers.Solvers, :IpoptSolver)
-                push!(available_solvers, CTSolvers.Solvers.IpoptSolver)
+            if isdefined(CTSolvers, :Solvers) && isdefined(CTSolvers.Solvers, :Ipopt)
+                push!(available_solvers, CTSolvers.Solvers.Ipopt)
             end
             
             if isdefined(CTSolvers, :Solvers) && isdefined(CTSolvers.Solvers, :MadNLPSolver)

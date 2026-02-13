@@ -4,7 +4,7 @@
 CurrentModule = CTSolvers
 ```
 
-This guide explains how to implement an optimization solver in CTSolvers. Solvers are strategies that wrap NLP backend libraries (Ipopt, MadNLP, Knitro, etc.) behind a unified interface. We use **Solvers.IpoptSolver** as the reference example throughout.
+This guide explains how to implement an optimization solver in CTSolvers. Solvers are strategies that wrap NLP backend libraries (Ipopt, MadNLP, Knitro, etc.) behind a unified interface. We use **Solvers.Ipopt** as the reference example throughout.
 
 !!! tip "Prerequisites"
     Read [Architecture](@ref) and [Implementing a Strategy](@ref) first. A solver is a strategy with two additional requirements: a **callable interface** and a **Tag Dispatch** extension.
@@ -32,10 +32,10 @@ classDiagram
     }
 
     AbstractStrategy <|-- AbstractOptimizationSolver
-    AbstractOptimizationSolver <|-- Solvers.IpoptSolver
+    AbstractOptimizationSolver <|-- Solvers.Ipopt
     AbstractOptimizationSolver <|-- MadNLPSolver
     AbstractOptimizationSolver <|-- MadNCLSolver
-    AbstractOptimizationSolver <|-- KnitroSolver
+    AbstractOptimizationSolver <|-- Solvers.Knitro
 ```
 
 The default callable throws `NotImplemented` with guidance.
@@ -48,7 +48,7 @@ nothing # hide
 Without the extension loaded, constructing a solver throws `ExtensionError`:
 
 ```@repl solver
-CTSolvers.Solvers.IpoptSolver()
+CTSolvers.Solvers.Ipopt()
 ```
 
 ## Implementing the Solver Type
@@ -67,7 +67,7 @@ struct IpoptTag <: AbstractTag end
 Like any strategy, the solver has a single `options` field:
 
 ```julia
-struct Solvers.IpoptSolver <: AbstractOptimizationSolver
+struct Solvers.Ipopt <: AbstractOptimizationSolver
     options::Strategies.StrategyOptions
 end
 ```
@@ -77,7 +77,7 @@ end
 The `id` is available even without the extension:
 
 ```@example solver
-CTSolvers.Strategies.id(CTSolvers.Solvers.IpoptSolver)
+CTSolvers.Strategies.id(CTSolvers.Solvers.Ipopt)
 ```
 
 ### Step 4 — Constructor with Tag Dispatch
@@ -85,7 +85,7 @@ CTSolvers.Strategies.id(CTSolvers.Solvers.IpoptSolver)
 The constructor delegates to a `build_*` function that dispatches on the tag. The stub in `src/` throws an `ExtensionError` if the extension is not loaded:
 
 ```julia
-function Solvers.IpoptSolver(; mode::Symbol = :strict, kwargs...)
+function Solvers.Ipopt(; mode::Symbol = :strict, kwargs...)
     return build_ipopt_solver(IpoptTag(); mode = mode, kwargs...)
 end
 
@@ -93,8 +93,8 @@ end
 function build_ipopt_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
         :NLPModelsIpopt;
-        message = "to create Solvers.IpoptSolver, access options, and solve problems",
-        feature = "Solvers.IpoptSolver functionality",
+        message = "to create Solvers.Ipopt, access options, and solve problems",
+        feature = "Solvers.Ipopt functionality",
         context = "Load NLPModelsIpopt extension first: using NLPModelsIpopt",
     ))
 end
@@ -114,16 +114,16 @@ CTSolvers.Solvers.MadNLPSolver()
 ```mermaid
 flowchart LR
     subgraph src["src/Solvers/ipopt_solver.jl"]
-        Type["Solvers.IpoptSolver <: AbstractOptimizationSolver"]
+        Type["Solvers.Ipopt <: AbstractOptimizationSolver"]
         Tag["IpoptTag <: AbstractTag"]
-        Ctor["Solvers.IpoptSolver(; kwargs...)\n→ build_ipopt_solver(IpoptTag(); kwargs...)"]
+        Ctor["Solvers.Ipopt(; kwargs...)\n→ build_ipopt_solver(IpoptTag(); kwargs...)"]
         Stub["build_ipopt_solver(::AbstractTag)\n→ ExtensionError"]
     end
 
     subgraph ext["ext/CTSolversIpopt.jl"]
-        Meta["metadata(::Type{<:Solvers.IpoptSolver})\n→ StrategyMetadata(...)"]
-        Build["build_ipopt_solver(::IpoptTag)\n→ Solvers.IpoptSolver(opts)"]
-        Call["(solver::Solvers.IpoptSolver)(nlp)\n→ ipopt(nlp; opts...)"]
+        Meta["metadata(::Type{<:Solvers.Ipopt})\n→ StrategyMetadata(...)"]
+        Build["build_ipopt_solver(::IpoptTag)\n→ Solvers.Ipopt(opts)"]
+        Call["(solver::Solvers.Ipopt)(nlp)\n→ ipopt(nlp; opts...)"]
     end
 
     Ctor -->|"tag dispatch"| Build
@@ -171,7 +171,7 @@ using CTSolvers, CTSolvers.Solvers, CTSolvers.Strategies, CTSolvers.Options
 using CTBase.Exceptions
 using NLPModelsIpopt, NLPModels, SolverCore
 
-function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
+function Strategies.metadata(::Type{<:Solvers.Ipopt})
     return Strategies.StrategyMetadata(
         Options.OptionDefinition(
             name = :tol,
@@ -197,15 +197,15 @@ end
 
 ```julia
 function Solvers.build_ipopt_solver(::Solvers.IpoptTag; mode::Symbol = :strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.IpoptSolver; mode = mode, kwargs...)
-    return Solvers.IpoptSolver(opts)
+    opts = Strategies.build_strategy_options(Solvers.Ipopt; mode = mode, kwargs...)
+    return Solvers.Ipopt(opts)
 end
 ```
 
 **3. Callable** — solves the NLP problem using the backend:
 
 ```julia
-function (solver::Solvers.IpoptSolver)(
+function (solver::Solvers.Ipopt)(
     nlp::NLPModels.AbstractNLPModel;
     display::Bool = true,
 )::SolverCore.GenericExecutionStats
@@ -215,7 +215,7 @@ function (solver::Solvers.IpoptSolver)(
 end
 
 function solve_with_ipopt(nlp::NLPModels.AbstractNLPModel; kwargs...)
-    solver = NLPModelsIpopt.Solvers.IpoptSolver(nlp)
+    solver = NLPModelsIpopt.Solvers.Ipopt(nlp)
     return NLPModelsIpopt.solve!(solver, nlp; kwargs...)
 end
 
@@ -269,7 +269,7 @@ solution = solve(problem, x0, modeler, solver)
 using ADNLPModels
 
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-solver = Solvers.IpoptSolver(max_iter = 1000)
+solver = Solvers.Ipopt(max_iter = 1000)
 stats = solve(nlp, solver; display = false)
 ```
 

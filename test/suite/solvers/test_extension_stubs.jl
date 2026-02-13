@@ -25,10 +25,10 @@ function test_extension_stubs()
     Test.@testset "Extension Stubs" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
-        # UNIT TESTS - Solvers.IpoptSolver Stub
+        # UNIT TESTS - Solvers.Ipopt Stub
         # ====================================================================
         
-        Test.@testset "Solvers.IpoptSolver stub" begin
+        Test.@testset "Solvers.Ipopt stub" begin
             # Test that build_ipopt_solver throws ExtensionError with IpoptTag
             Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(DummyTag())
             
@@ -44,17 +44,17 @@ function test_extension_stubs()
             
             # Verify error message content
             err_str = string(err)
-            Test.@test occursin("Solvers.IpoptSolver", err_str)
+            Test.@test occursin("Solvers.Ipopt", err_str)
             Test.@test occursin("NLPModelsIpopt", err_str)
-            Test.@test occursin("to create Solvers.IpoptSolver, access options, and solve problems", err_str)
+            Test.@test occursin("to create Solvers.Ipopt, access options, and solve problems", err_str)
         end
         
         # ====================================================================
-        # UNIT TESTS - KnitroSolver Stub (Commented out - no license)
+        # UNIT TESTS - Solvers.Knitro Stub (Commented out - no license)
         # ====================================================================
         
         # Commented out - no Knitro license available
-        # Test.@testset "KnitroSolver stub" begin
+        # Test.@testset "Solvers.Knitro stub" begin
         #     Test.@test_throws Exceptions.ExtensionError Solvers.build_knitro_solver(DummyTag())
         #     
         #     err = nothing
@@ -67,9 +67,9 @@ function test_extension_stubs()
         #     Test.@test err isa Exceptions.ExtensionError
         #     
         #     err_str = string(err)
-        #     Test.@test occursin("KnitroSolver", err_str)
+        #     Test.@test occursin("Solvers.Knitro", err_str)
         #     Test.@test occursin("NLPModelsKnitro", err_str)
-        #     Test.@test occursin("to create KnitroSolver, access options, and solve problems", err_str)
+        #     Test.@test occursin("to create Solvers.Knitro, access options, and solve problems", err_str)
         # end
         
         # ====================================================================

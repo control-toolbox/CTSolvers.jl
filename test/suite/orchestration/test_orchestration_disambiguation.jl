@@ -34,9 +34,9 @@ Strategies.metadata(::Type{Modelers.ADNLP}) = Strategies.StrategyMetadata(
     )
 )
 
-struct Solvers.IpoptSolver <: TestSolver end
-Strategies.id(::Type{Solvers.IpoptSolver}) = :ipopt
-Strategies.metadata(::Type{Solvers.IpoptSolver}) = Strategies.StrategyMetadata(
+struct Solvers.Ipopt <: TestSolver end
+Strategies.id(::Type{Solvers.Ipopt}) = :ipopt
+Strategies.metadata(::Type{Solvers.Ipopt}) = Strategies.StrategyMetadata(
     Options.OptionDefinition(
         name = :max_iter,
         type = Int,
@@ -55,7 +55,7 @@ Strategies.metadata(::Type{Solvers.IpoptSolver}) = Strategies.StrategyMetadata(
 const TEST_REGISTRY = Strategies.create_registry(
     TestDiscretizer => (CollocationDiscretizer,),
     TestModeler => (Modelers.ADNLP,),
-    TestSolver => (Solvers.IpoptSolver,)
+    TestSolver => (Solvers.Ipopt,)
 )
 
 const TEST_METHOD = (:collocation, :adnlp, :ipopt)

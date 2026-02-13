@@ -24,29 +24,29 @@ function test_validation_mode()
         
         @testset "Valid Modes Accepted" begin
             # :strict should work
-            opts = Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=100, mode=:strict)
+            opts = Strategies.build_strategy_options(Solvers.Ipopt; max_iter=100, mode=:strict)
             @test opts[:max_iter] == 100
             
             # :permissive should work
             opts = @test_logs (:warn,) match_mode=:any begin
-                Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=100, custom=1, mode=:permissive)
+                Strategies.build_strategy_options(Solvers.Ipopt; max_iter=100, custom=1, mode=:permissive)
             end
             @test opts[:max_iter] == 100
         end
         
         @testset "Invalid Mode Rejected" begin
             @test_throws Exception begin
-                Strategies.build_strategy_options(Solvers.IpoptSolver; max_iter=100, mode=:invalid)
+                Strategies.build_strategy_options(Solvers.Ipopt; max_iter=100, mode=:invalid)
             end
             
             @test_throws Exception begin
-                Strategies.build_strategy_options(Solvers.IpoptSolver; mode=:wrong)
+                Strategies.build_strategy_options(Solvers.Ipopt; mode=:wrong)
             end
         end
         
         @testset "Invalid Mode Error Message" begin
             try
-                Strategies.build_strategy_options(Solvers.IpoptSolver; mode=:invalid)
+                Strategies.build_strategy_options(Solvers.Ipopt; mode=:invalid)
                 @test false
             catch e
                 msg = string(e)
@@ -63,18 +63,18 @@ function test_validation_mode()
         @testset "Default Mode is Strict" begin
             # Without mode parameter, should behave as strict
             @test_throws Exception begin
-                Strategies.build_strategy_options(Solvers.IpoptSolver; unknown_option=123)
+                Strategies.build_strategy_options(Solvers.Ipopt; unknown_option=123)
             end
         end
         
         @testset "Explicit Strict Same as Default" begin
             # Explicit mode=:strict should be identical to default
             try
-                Strategies.build_strategy_options(Solvers.IpoptSolver; unknown=123)
+                Strategies.build_strategy_options(Solvers.Ipopt; unknown=123)
                 @test false
             catch e1
                 try
-                    Strategies.build_strategy_options(Solvers.IpoptSolver; unknown=123, mode=:strict)
+                    Strategies.build_strategy_options(Solvers.Ipopt; unknown=123, mode=:strict)
                     @test false
                 catch e2
                     # Both should throw the same type of error
@@ -90,7 +90,7 @@ function test_validation_mode()
         @testset "Mode Must Be Symbol" begin
             # String should not work
             @test_throws Exception begin
-                Strategies.build_strategy_options(Solvers.IpoptSolver; mode="strict")
+                Strategies.build_strategy_options(Solvers.Ipopt; mode="strict")
             end
         end
     end

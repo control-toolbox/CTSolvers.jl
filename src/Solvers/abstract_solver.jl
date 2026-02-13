@@ -13,22 +13,22 @@ All concrete solver types must:
    - `(solver::MySolver)(nlp; display=Bool)` - Solve the NLP problem
 
 # Solver Types
-- `Solvers.IpoptSolver` - Interior point optimizer (Ipopt backend)
+- `Solvers.Ipopt` - Interior point optimizer (Ipopt backend)
 - `MadNLPSolver` - Matrix-free augmented Lagrangian (MadNLP backend)
 - `MadNCLSolver` - NCL variant of MadNLP
-- `KnitroSolver` - Commercial solver (Knitro backend)
+- `Solvers.Knitro` - Commercial solver (Knitro backend)
 
 # Example
 ```julia
 # Create solver with options
-solver = Solvers.IpoptSolver(max_iter=1000, tol=1e-8)
+solver = Solvers.Ipopt(max_iter=1000, tol=1e-8)
 
 # Solve an NLP problem
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
 stats = solver(nlp, display=true)
 ```
 
-See also: [`Solvers.IpoptSolver`](@ref), [`MadNLPSolver`](@ref), [`MadNCLSolver`](@ref), [`KnitroSolver`](@ref)
+See also: [`Solvers.Ipopt`](@ref), [`MadNLPSolver`](@ref), [`MadNCLSolver`](@ref), [`Solvers.Knitro`](@ref)
 """
 abstract type AbstractOptimizationSolver <: Strategies.AbstractStrategy end
 
@@ -55,7 +55,7 @@ throws a `NotImplemented` error with helpful guidance.
 
 # Example
 ```julia
-solver = Solvers.IpoptSolver(max_iter=100)
+solver = Solvers.Ipopt(max_iter=100)
 nlp = ADNLPModel(x -> sum(x.^2), zeros(5))
 stats = solver(nlp, display=false)
 ```

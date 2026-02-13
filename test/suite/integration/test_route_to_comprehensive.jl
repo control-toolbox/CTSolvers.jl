@@ -524,13 +524,13 @@ function test_route_to_comprehensive()
                 test_option_routing(real_modeler, :backend, :default)
             end
             
-            # Test with real Solvers.IpoptSolver (if available)
+            # Test with real Solvers.Ipopt (if available)
             if IPOPT_AVAILABLE
-                @testset "Real Solvers.IpoptSolver" begin
+                @testset "Real Solvers.Ipopt" begin
                     real_registry = Strategies.create_registry(
                         RouteTestDiscretizer => (RouteCollocation,),
                         RouteTestModeler => (RouteADNLP,),
-                        CTSolvers.Solvers.AbstractOptimizationSolver => (CTSolvers.Solvers.IpoptSolver,)
+                        CTSolvers.Solvers.AbstractOptimizationSolver => (CTSolvers.Solvers.Ipopt,)
                     )
                     
                     real_families = (
@@ -541,8 +541,8 @@ function test_route_to_comprehensive()
                     
                     kwargs = (
                         grid_size = 200,
-                        tol = Strategies.route_to(ipopt=1e-6),  # Route to real Solvers.IpoptSolver
-                        max_iter = Strategies.route_to(ipopt=1000),  # Route to real Solvers.IpoptSolver
+                        tol = Strategies.route_to(ipopt=1e-6),  # Route to real Solvers.Ipopt
+                        max_iter = Strategies.route_to(ipopt=1000),  # Route to real Solvers.Ipopt
                         display = false
                     )
                     
@@ -561,7 +561,7 @@ function test_route_to_comprehensive()
                     test_option_routing(real_solver, :max_iter, 1000)
                 end
             else
-                @testset "Real Solvers.IpoptSolver (Not Available)" begin
+                @testset "Real Solvers.Ipopt (Not Available)" begin
                     @test_skip "NLPModelsIpopt not available"
                 end
             end

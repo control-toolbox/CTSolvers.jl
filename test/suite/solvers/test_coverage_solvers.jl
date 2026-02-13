@@ -49,17 +49,17 @@ function test_coverage_solvers()
         end
 
         # ====================================================================
-        # UNIT TESTS - KnitroSolver (knitro_solver.jl)
+        # UNIT TESTS - Solvers.Knitro (knitro_solver.jl)
         # ====================================================================
 
-        Test.@testset "KnitroSolver" begin
+        Test.@testset "Solvers.Knitro" begin
             # Type hierarchy
-            Test.@test Solvers.KnitroSolver <: Solvers.AbstractOptimizationSolver
-            Test.@test Solvers.KnitroSolver <: Strategies.AbstractStrategy
-            Test.@test !isabstracttype(Solvers.KnitroSolver)
+            Test.@test Solvers.Knitro <: Solvers.AbstractOptimizationSolver
+            Test.@test Solvers.Knitro <: Strategies.AbstractStrategy
+            Test.@test !isabstracttype(Solvers.Knitro)
 
             # id() contract
-            Test.@test Strategies.id(Solvers.KnitroSolver) === :knitro
+            Test.@test Strategies.id(Solvers.Knitro) === :knitro
 
             # Tag type
             Test.@test Solvers.KnitroTag <: Solvers.AbstractTag
@@ -67,11 +67,11 @@ function test_coverage_solvers()
             Test.@test_nowarn Solvers.KnitroTag()
 
             # Struct fields
-            Test.@test :options in fieldnames(Solvers.KnitroSolver)
-            Test.@test length(fieldnames(Solvers.KnitroSolver)) == 1
+            Test.@test :options in fieldnames(Solvers.Knitro)
+            Test.@test length(fieldnames(Solvers.Knitro)) == 1
 
             # Constructor throws ExtensionError (NLPModelsKnitro not loaded)
-            Test.@test_throws Exceptions.ExtensionError Solvers.KnitroSolver()
+            Test.@test_throws Exceptions.ExtensionError Solvers.Knitro()
 
             # build_knitro_solver stub throws ExtensionError
             Test.@test_throws Exceptions.ExtensionError Solvers.build_knitro_solver(Solvers.KnitroTag())
@@ -85,15 +85,15 @@ function test_coverage_solvers()
             end
             Test.@test err isa Exceptions.ExtensionError
             err_str = string(err)
-            Test.@test occursin("KnitroSolver", err_str)
+            Test.@test occursin("Solvers.Knitro", err_str)
             Test.@test occursin("NLPModelsKnitro", err_str)
         end
 
         # ====================================================================
-        # UNIT TESTS - Solvers.IpoptSolver stub (ipopt_solver.jl)
+        # UNIT TESTS - Solvers.Ipopt stub (ipopt_solver.jl)
         # ====================================================================
 
-        Test.@testset "Solvers.IpoptSolver - ExtensionError on construct" begin
+        Test.@testset "Solvers.Ipopt - ExtensionError on construct" begin
             # Without NLPModelsIpopt loaded, constructor should throw
             # (NLPModelsIpopt IS loaded in test env, so this tests the stub path)
             # We test the stub directly with a non-IpoptTag
@@ -129,10 +129,10 @@ function test_coverage_solvers()
         # ====================================================================
 
         Test.@testset "Strategies.id() direct calls" begin
-            Test.@test Strategies.id(Solvers.IpoptSolver) === :ipopt
+            Test.@test Strategies.id(Solvers.Ipopt) === :ipopt
             Test.@test Strategies.id(Solvers.MadNLPSolver) === :madnlp
             Test.@test Strategies.id(Solvers.MadNCLSolver) === :madncl
-            Test.@test Strategies.id(Solvers.KnitroSolver) === :knitro
+            Test.@test Strategies.id(Solvers.Knitro) === :knitro
         end
 
         # ====================================================================

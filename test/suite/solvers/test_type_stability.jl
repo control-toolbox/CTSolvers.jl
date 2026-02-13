@@ -32,11 +32,11 @@ function test_type_stability()
         # ====================================================================
         
         @testset "Solver Construction Type Stability" begin
-            @testset "Solvers.IpoptSolver construction" begin
+            @testset "Solvers.Ipopt construction" begin
                 # Test that constructor returns correct type
-                @test_nowarn @inferred CTSolvers.Solvers.IpoptSolver()
-                @test_nowarn @inferred CTSolvers.Solvers.IpoptSolver(max_iter=100)
-                @test_nowarn @inferred CTSolvers.Solvers.IpoptSolver(max_iter=100, tol=1e-6)
+                @test_nowarn @inferred CTSolvers.Solvers.Ipopt()
+                @test_nowarn @inferred CTSolvers.Solvers.Ipopt(max_iter=100)
+                @test_nowarn @inferred CTSolvers.Solvers.Ipopt(max_iter=100, tol=1e-6)
             end
             
             @testset "MadNLPSolver construction" begin
@@ -52,10 +52,10 @@ function test_type_stability()
             end
             
             # Commented out - no Knitro license available
-            # @testset "KnitroSolver construction" begin
-            #     @test_nowarn @inferred CTSolvers.Solvers.KnitroSolver()
-            #     @test_nowarn @inferred CTSolvers.Solvers.KnitroSolver(max_iter=100)
-            #     @test_nowarn @inferred CTSolvers.Solvers.KnitroSolver(max_iter=100, ftol=1e-6)
+            # @testset "Solvers.Knitro construction" begin
+            #     @test_nowarn @inferred CTSolvers.Solvers.Knitro()
+            #     @test_nowarn @inferred CTSolvers.Solvers.Knitro(max_iter=100)
+            #     @test_nowarn @inferred CTSolvers.Solvers.Knitro(max_iter=100, ftol=1e-6)
             # end
         end
         
@@ -64,18 +64,18 @@ function test_type_stability()
         # ====================================================================
         
         @testset "Strategy Contract Type Stability" begin
-            @testset "Solvers.IpoptSolver contract" begin
+            @testset "Solvers.Ipopt contract" begin
                 # Test id() type stability - simple Symbol return
-                @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.IpoptSolver)
-                @test @inferred(Strategies.id(CTSolvers.Solvers.IpoptSolver)) === :ipopt
+                @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.Ipopt)
+                @test @inferred(Strategies.id(CTSolvers.Solvers.Ipopt)) === :ipopt
                 
                 # Test metadata() returns correct type
-                meta = Strategies.metadata(CTSolvers.Solvers.IpoptSolver)
+                meta = Strategies.metadata(CTSolvers.Solvers.Ipopt)
                 @test meta isa Strategies.StrategyMetadata
                 
                 # Test options() returns correct type
                 # Note: @inferred is too strict for parametric types, we verify concrete type
-                solver = CTSolvers.Solvers.IpoptSolver()
+                solver = CTSolvers.Solvers.Ipopt()
                 opts = Strategies.options(solver)
                 @test opts isa Strategies.StrategyOptions
             end
@@ -107,16 +107,16 @@ function test_type_stability()
             end
             
             # Commented out - no Knitro license available
-            # @testset "KnitroSolver contract" begin
-            #     @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.KnitroSolver)
-            #     @test @inferred(Strategies.id(CTSolvers.Solvers.KnitroSolver)) === :knitro
+            # @testset "Solvers.Knitro contract" begin
+            #     @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.Knitro)
+            #     @test @inferred(Strategies.id(CTSolvers.Solvers.Knitro)) === :knitro
                 
             #     # Metadata returns correct type
-            #     meta = Strategies.metadata(CTSolvers.Solvers.KnitroSolver)
+            #     meta = Strategies.metadata(CTSolvers.Solvers.Knitro)
             #     @test meta isa Strategies.StrategyMetadata
                 
             #     # Options returns correct type
-            #     opts = Strategies.options(CTSolvers.Solvers.KnitroSolver())
+            #     opts = Strategies.options(CTSolvers.Solvers.Knitro())
             #     @test opts isa Strategies.StrategyOptions
             # end
         end
@@ -126,8 +126,8 @@ function test_type_stability()
         # ====================================================================
         
         @testset "Options Extraction Type Stability" begin
-            @testset "Solvers.IpoptSolver options extraction" begin
-                solver = CTSolvers.Solvers.IpoptSolver(max_iter=100, tol=1e-6)
+            @testset "Solvers.Ipopt options extraction" begin
+                solver = CTSolvers.Solvers.Ipopt(max_iter=100, tol=1e-6)
                 opts = Strategies.options(solver)
                 
                 # Test that extract_raw_options returns correct type

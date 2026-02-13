@@ -8,10 +8,10 @@ optimization backends (Ipopt, MadNLP, MadNCL, Knitro). All solvers implement
 the `AbstractStrategy` contract and provide a unified callable interface.
 
 # Solver Types
-- `Solvers.IpoptSolver` - Interior point optimizer (requires NLPModelsIpopt)
+- `Solvers.Ipopt` - Interior point optimizer (requires NLPModelsIpopt)
 - `MadNLPSolver` - Matrix-free augmented Lagrangian (requires MadNLP, MadNLPMumps)
 - `MadNCLSolver` - NCL variant of MadNLP (requires MadNCL, MadNLP, MadNLPMumps)
-- `KnitroSolver` - Commercial solver (requires NLPModelsKnitro)
+- `Solvers.Knitro` - Commercial solver (requires NLPModelsKnitro)
 
 # Architecture
 - **Types and logic**: Defined in src/Solvers/ (this module)
@@ -24,7 +24,7 @@ using CTSolvers
 using NLPModelsIpopt  # Load backend extension
 
 # Create solver with options
-solver = Solvers.IpoptSolver(max_iter=1000, tol=1e-6)
+solver = Solvers.Ipopt(max_iter=1000, tol=1e-6)
 
 # Solve NLP problem
 using ADNLPModels
@@ -36,7 +36,7 @@ using CommonSolve
 stats = solve(nlp, solver, display=false)
 ```
 
-See also: [`AbstractOptimizationSolver`](@ref), [`Solvers.IpoptSolver`](@ref)
+See also: [`AbstractOptimizationSolver`](@ref), [`Solvers.Ipopt`](@ref)
 """
 module Solvers
 
@@ -72,6 +72,6 @@ include(joinpath(@__DIR__, "common_solve_api.jl"))
 
 # Public API - abstract and concrete types
 export AbstractOptimizationSolver
-export IpoptSolver, MadNLPSolver, MadNCLSolver, KnitroSolver
+export Ipopt, MadNLPSolver, MadNCLSolver, Knitro
 
 end # module Solvers

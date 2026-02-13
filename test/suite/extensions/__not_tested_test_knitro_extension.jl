@@ -45,11 +45,11 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 """
     test_knitro_extension()
 
-Tests for KnitroSolver extension.
+Tests for Solvers.Knitro extension.
 
 🧪 **Applying Testing Rule**: Unit Tests + Integration Tests
 
-Tests the complete KnitroSolver functionality including metadata, constructor,
+Tests the complete Solvers.Knitro functionality including metadata, constructor,
 options handling, display flag, and problem solving (requires Knitro license).
 """
 function test_knitro_extension()
@@ -62,7 +62,7 @@ function test_knitro_extension()
         
         # Commented out due to license requirement
         # Test.@testset "Metadata" begin
-        #     meta = Strategies.metadata(Solvers.KnitroSolver)
+        #     meta = Strategies.metadata(Solvers.Knitro)
         #     
         #     Test.@test meta isa Strategies.StrategyMetadata
         #     Test.@test length(meta) > 0
@@ -94,13 +94,13 @@ function test_knitro_extension()
         # Commented out due to license requirement
         # Test.@testset "Constructor" begin
         #     # Default constructor
-        #     solver = Solvers.KnitroSolver()
-        #     Test.@test solver isa Solvers.KnitroSolver
+        #     solver = Solvers.Knitro()
+        #     Test.@test solver isa Solvers.Knitro
         #     Test.@test solver isa Solvers.AbstractOptimizationSolver
         #     
         #     # Constructor with options
-        #     solver_custom = Solvers.KnitroSolver(maxit=100, feastol_abs=1e-6)
-        #     Test.@test solver_custom isa Solvers.KnitroSolver
+        #     solver_custom = Solvers.Knitro(maxit=100, feastol_abs=1e-6)
+        #     Test.@test solver_custom isa Solvers.Knitro
         #     
         #     # Test Strategies.options() returns StrategyOptions
         #     opts = Strategies.options(solver)
@@ -113,7 +113,7 @@ function test_knitro_extension()
         
         # Commented out due to license requirement
         # Test.@testset "Options Extraction" begin
-        #     solver = Solvers.KnitroSolver(maxit=500, feastol_abs=1e-8)
+        #     solver = Solvers.Knitro(maxit=500, feastol_abs=1e-8)
         #     opts = Strategies.options(solver)
         #     
         #     # Extract raw options (returns NamedTuple)
@@ -139,7 +139,7 @@ function test_knitro_extension()
         #     nlp = ADNLPModels.ADNLPModel(x -> sum(x.^2), [1.0, 2.0])
         #     
         #     # Test with display=false sets outlev=0
-        #     solver_verbose = Solvers.KnitroSolver(maxit=10, outlev=2)
+        #     solver_verbose = Solvers.Knitro(maxit=10, outlev=2)
         #     
         #     # Verify the solver accepts the display parameter
         #     # Commented out due to license requirement
@@ -164,7 +164,7 @@ function test_knitro_extension()
         #     nlp = adnlp_builder(ros.init)
         #     
         #     # Create solver with appropriate options
-        #     solver = Solvers.KnitroSolver(
+        #     solver = Solvers.Knitro(
         #         maxit=1000,
         #         feastol_abs=1e-6,
         #         opttol_abs=1e-6,
@@ -199,7 +199,7 @@ function test_knitro_extension()
         #     adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
         #     nlp = adnlp_builder(elec.init)
         #     
-        #     solver = Solvers.KnitroSolver(
+        #     solver = Solvers.Knitro(
         #         maxit=1000,
         #         feastol_abs=1e-6,
         #         opttol_abs=1e-6,
@@ -230,8 +230,8 @@ function test_knitro_extension()
         # Commented out due to license requirement
         # Test.@testset "Option Aliases" begin
         #     # Test that aliases work
-        #     solver1 = Solvers.KnitroSolver(maxit=100)
-        #     solver2 = Solvers.KnitroSolver(maxiter=100)
+        #     solver1 = Solvers.Knitro(maxit=100)
+        #     solver2 = Solvers.Knitro(maxiter=100)
         #     
         #     opts1 = Strategies.options(solver1)
         #     opts2 = Strategies.options(solver2)
@@ -264,7 +264,7 @@ function test_knitro_extension()
         #                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
         #                     local opts = Dict(:maxit => 0, :outlev => 0)
         #                     sol = CommonSolve.solve(
-        #                         ros.prob, ros.sol, modeler, Solvers.KnitroSolver(; opts...)
+        #                         ros.prob, ros.sol, modeler, Solvers.Knitro(; opts...)
         #                     )
         #                     Test.@test sol.solution ≈ ros.sol atol=1e-6
         #                 end
@@ -278,7 +278,7 @@ function test_knitro_extension()
         #                 Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
         #                     local opts = Dict(:maxit => 0, :outlev => 0)
         #                     sol = CommonSolve.solve(
-        #                         elec.prob, elec.init, modeler, Solvers.KnitroSolver(; opts...)
+        #                         elec.prob, elec.init, modeler, Solvers.Knitro(; opts...)
         #                     )
         #                     Test.@test sol.solution ≈ vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
         #                 end
@@ -359,7 +359,7 @@ function test_knitro_extension()
         #                         ros.prob,
         #                         ros.init,
         #                         modeler,
-        #                         Solvers.KnitroSolver(; knitro_options...),
+        #                         Solvers.Knitro(; knitro_options...),
         #                     )
         #                     Test.@test sol.status == :first_order
         #                     Test.@test sol.solution ≈ ros.sol atol=1e-6
@@ -376,7 +376,7 @@ function test_knitro_extension()
         #                         elec.prob,
         #                         elec.init,
         #                         modeler,
-        #                         Solvers.KnitroSolver(; knitro_options...),
+        #                         Solvers.Knitro(; knitro_options...),
         #                     )
         #                     Test.@test sol.status == :first_order
         #                 end
