@@ -24,11 +24,11 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 """
     test_ipopt_extension()
 
-Tests for IpoptSolver extension.
+Tests for Solvers.IpoptSolver extension.
 
 🧪 **Applying Testing Rule**: Unit Tests + Integration Tests
 
-Tests the complete IpoptSolver functionality including metadata, constructor,
+Tests the complete Solvers.IpoptSolver functionality including metadata, constructor,
 options handling, display flag, and problem solving.
 """
 function test_ipopt_extension()

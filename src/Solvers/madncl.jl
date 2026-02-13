@@ -5,9 +5,9 @@
 """
 $(TYPEDEF)
 
-Tag type for Knitro-specific implementation dispatch.
+Tag type for MadNCL-specific implementation dispatch.
 """
-struct KnitroTag <: AbstractTag end
+struct MadNCLTag <: AbstractTag end
 
 # ============================================================================
 # Solver Type Definition
@@ -16,11 +16,11 @@ struct KnitroTag <: AbstractTag end
 """
 $(TYPEDEF)
 
-Commercial optimization solver with advanced algorithms.
+NCL (Non-Convex Lagrangian) variant of MadNLP solver.
 
-Knitro is a commercial solver offering state-of-the-art algorithms for
-nonlinear optimization, including interior point, active set, and SQP methods.
-It provides excellent performance and robustness for large-scale problems.
+MadNCL extends MadNLP with specialized handling for non-convex problems
+using a modified Lagrangian approach, providing improved convergence for
+challenging nonlinear optimization problems.
 
 # Fields
 
@@ -28,23 +28,23 @@ $(TYPEDFIELDS)
 
 # Solver Options
 
-Solver options are defined in the CTSolversKnitro extension.
+Solver options are defined in the CTSolversMadNCL extension.
 Load the extension to access option definitions and documentation:
 ```julia
-using NLPModelsKnitro
+using MadNCL, MadNLP, MadNLPMumps
 ```
 
 # Examples
 
 ```julia
 # Load the extension first
-using NLPModelsKnitro
+using MadNCL, MadNLP, MadNLPMumps
 
 # Create solver with default options
-solver = KnitroSolver()
+solver = MadNCLSolver()
 
 # Create solver with custom options
-solver = KnitroSolver(maxit=1000, maxtime=3600, ftol=1e-10, outlev=2)
+solver = MadNCLSolver(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
 
 # Solve an NLP problem
 using ADNLPModels
@@ -54,24 +54,22 @@ stats = solver(nlp, display=true)
 
 # Extension Required
 
-This solver requires the `NLPModelsKnitro` package:
+This solver requires the `MadNCL`, `MadNLP` and `MadNLPMumps` packages:
 ```julia
-using NLPModelsKnitro
+using MadNCL, MadNLP, MadNLPMumps
 ```
-
-**Note:** Knitro is a commercial solver requiring a valid license.
 
 # Implementation Notes
 
 - Implements the `AbstractStrategy` contract via `Strategies.id()`
-- Metadata and constructor implementation provided by CTSolversKnitro extension
+- Metadata and constructor implementation provided by CTSolversMadNCL extension
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::KnitroSolver)(nlp; display=true)` provided by extension
-- Requires valid Knitro license for operation
+- Callable interface: `(solver::MadNCLSolver)(nlp; display=true)` provided by extension
+- Specialized for non-convex optimization problems
 
-See also: [`AbstractOptimizationSolver`](@ref), [`IpoptSolver`](@ref), [`MadNLPSolver`](@ref)
+See also: [`AbstractOptimizationSolver`](@ref), [`MadNLPSolver`](@ref), [`Solvers.IpoptSolver`](@ref)
 """
-struct KnitroSolver <: AbstractOptimizationSolver
+struct MadNCLSolver <: AbstractOptimizationSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -83,9 +81,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return the unique identifier for KnitroSolver.
+Return the unique identifier for MadNCLSolver.
 """
-Strategies.id(::Type{<:KnitroSolver}) = :knitro
+Strategies.id(::Type{<:MadNCLSolver}) = :madncl
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -94,9 +92,9 @@ Strategies.id(::Type{<:KnitroSolver}) = :knitro
 """
 $(TYPEDSIGNATURES)
 
-Create a KnitroSolver with specified options.
+Create a MadNCLSolver with specified options.
 
-Requires the CTSolversKnitro extension to be loaded.
+Requires the CTSolversMadNCL extension to be loaded.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
@@ -106,36 +104,36 @@ Requires the CTSolversKnitro extension to be loaded.
 
 # Examples
 ```julia
-using NLPModelsKnitro
+using MadNCL, MadNLP, MadNLPMumps
 
 # Strict mode (default) - rejects unknown options
-solver = KnitroSolver(maxit=1000, outlev=2)
+solver = MadNCLSolver(max_iter=1000, tol=1e-6)
 
 # Permissive mode - accepts unknown options with warning
-solver = KnitroSolver(maxit=1000, custom_option=123; mode=:permissive)
+solver = MadNCLSolver(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
+- `Strategies.Exceptions.ExtensionError`: If the MadNCL extension is not loaded
 """
-function KnitroSolver(; mode::Symbol=:strict, kwargs...)
-    return build_knitro_solver(KnitroTag(); mode=mode, kwargs...)
+function MadNCLSolver(; mode::Symbol=:strict, kwargs...)
+    return build_madncl_solver(MadNCLTag(); mode=mode, kwargs...)
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Stub function that throws ExtensionError if CTSolversKnitro extension is not loaded.
+Stub function that throws ExtensionError if CTSolversMadNCL extension is not loaded.
 Real implementation provided by the extension.
 
 # Throws
 - `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
-function build_knitro_solver(::AbstractTag; kwargs...)
+function build_madncl_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
-        :NLPModelsKnitro;
-        message="to create KnitroSolver, access options, and solve problems",
-        feature="KnitroSolver functionality",
-        context="Load NLPModelsKnitro extension first: using NLPModelsKnitro"
+        :MadNCL, :MadNLP, :MadNLPMumps;
+        message="to create MadNCLSolver, access options, and solve problems",
+        feature="MadNCLSolver functionality",
+        context="Load MadNCL extension first: using MadNCL, MadNLP, MadNLPMumps"
     ))
 end

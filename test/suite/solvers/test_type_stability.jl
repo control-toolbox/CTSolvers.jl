@@ -32,7 +32,7 @@ function test_type_stability()
         # ====================================================================
         
         @testset "Solver Construction Type Stability" begin
-            @testset "IpoptSolver construction" begin
+            @testset "Solvers.IpoptSolver construction" begin
                 # Test that constructor returns correct type
                 @test_nowarn @inferred CTSolvers.Solvers.IpoptSolver()
                 @test_nowarn @inferred CTSolvers.Solvers.IpoptSolver(max_iter=100)
@@ -64,7 +64,7 @@ function test_type_stability()
         # ====================================================================
         
         @testset "Strategy Contract Type Stability" begin
-            @testset "IpoptSolver contract" begin
+            @testset "Solvers.IpoptSolver contract" begin
                 # Test id() type stability - simple Symbol return
                 @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.IpoptSolver)
                 @test @inferred(Strategies.id(CTSolvers.Solvers.IpoptSolver)) === :ipopt
@@ -126,7 +126,7 @@ function test_type_stability()
         # ====================================================================
         
         @testset "Options Extraction Type Stability" begin
-            @testset "IpoptSolver options extraction" begin
+            @testset "Solvers.IpoptSolver options extraction" begin
                 solver = CTSolvers.Solvers.IpoptSolver(max_iter=100, tol=1e-6)
                 opts = Strategies.options(solver)
                 

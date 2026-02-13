@@ -186,7 +186,7 @@ sequenceDiagram
     participant Modeler as Modelers.ADNLP
     participant Problem as DOCP
     participant ModelBuilder as ADNLPModelBuilder
-    participant Solver as IpoptSolver
+    participant Solver as Solvers.IpoptSolver
     participant SolBuilder as ADNLPSolutionBuilder
 
     User->>Solve: solve(docp, x0, modeler, solver)

@@ -25,10 +25,10 @@ function test_extension_stubs()
     Test.@testset "Extension Stubs" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
-        # UNIT TESTS - IpoptSolver Stub
+        # UNIT TESTS - Solvers.IpoptSolver Stub
         # ====================================================================
         
-        Test.@testset "IpoptSolver stub" begin
+        Test.@testset "Solvers.IpoptSolver stub" begin
             # Test that build_ipopt_solver throws ExtensionError with IpoptTag
             Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(DummyTag())
             
@@ -44,9 +44,9 @@ function test_extension_stubs()
             
             # Verify error message content
             err_str = string(err)
-            Test.@test occursin("IpoptSolver", err_str)
+            Test.@test occursin("Solvers.IpoptSolver", err_str)
             Test.@test occursin("NLPModelsIpopt", err_str)
-            Test.@test occursin("to create IpoptSolver, access options, and solve problems", err_str)
+            Test.@test occursin("to create Solvers.IpoptSolver, access options, and solve problems", err_str)
         end
         
         # ====================================================================

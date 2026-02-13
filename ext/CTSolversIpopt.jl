@@ -2,7 +2,7 @@
 CTSolversIpopt Extension
 
 Extension providing Ipopt solver metadata, constructor, and backend interface.
-Implements the complete IpoptSolver functionality with proper option definitions.
+Implements the complete Solvers.IpoptSolver functionality with proper option definitions.
 """
 module CTSolversIpopt
 
@@ -23,7 +23,7 @@ using SolverCore
 """
 $(TYPEDSIGNATURES)
 
-Return metadata defining IpoptSolver options and their specifications.
+Return metadata defining Solvers.IpoptSolver options and their specifications.
 """
 function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
     return Strategies.StrategyMetadata(
@@ -41,7 +41,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
-                context="IpoptSolver tol validation"
+                context="Solvers.IpoptSolver tol validation"
             ))
         ),
         
@@ -56,7 +56,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="max_iter=$x",
                 expected="non-negative integer (>= 0)",
                 suggestion="Provide a non-negative value for maximum iterations",
-                context="IpoptSolver max_iter validation"
+                context="Solvers.IpoptSolver max_iter validation"
             ))
         ),
         
@@ -70,7 +70,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="max_wall_time=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive time limit in seconds (e.g., 3600 for 1 hour)",
-                context="IpoptSolver max_wall_time validation"
+                context="Solvers.IpoptSolver max_wall_time validation"
             ))
         ),
         
@@ -84,7 +84,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="max_cpu_time=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive CPU time limit in seconds",
-                context="IpoptSolver max_cpu_time validation"
+                context="Solvers.IpoptSolver max_cpu_time validation"
             ))
         ),
         
@@ -98,7 +98,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="dual_inf_tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1.0 for standard tolerance or smaller for stricter convergence",
-                context="IpoptSolver dual_inf_tol validation"
+                context="Solvers.IpoptSolver dual_inf_tol validation"
             ))
         ),
         
@@ -112,7 +112,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="constr_viol_tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e-4 for standard tolerance or smaller for stricter feasibility",
-                context="IpoptSolver constr_viol_tol validation"
+                context="Solvers.IpoptSolver constr_viol_tol validation"
             ))
         ),
 
@@ -126,7 +126,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="acceptable_tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use roughly 10 orders of magnitude larger than tol",
-                context="IpoptSolver acceptable_tol validation"
+                context="Solvers.IpoptSolver acceptable_tol validation"
             ))
         ), Strategies.OptionDefinition(;
             name=:acceptable_iter,
@@ -138,7 +138,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="acceptable_iter=$x",
                 expected="non-negative integer (>= 0)",
                 suggestion="Use 15 (default) or 0 to disable acceptable termination",
-                context="IpoptSolver acceptable_iter validation"
+                context="Solvers.IpoptSolver acceptable_iter validation"
             ))
         ), Strategies.OptionDefinition(;
             name=:diverging_iterates_tol,
@@ -150,7 +150,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="diverging_iterates_tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use a very large number like 1e20",
-                context="IpoptSolver diverging_iterates_tol validation"
+                context="Solvers.IpoptSolver diverging_iterates_tol validation"
             ))
         ),
 
@@ -168,7 +168,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="derivative_test='$x'",
                 expected="'none', 'first-order', 'second-order', or 'only-second-order'",
                 suggestion="Use 'first-order' to check gradients, or 'none' for normal operation",
-                context="IpoptSolver derivative_test validation"
+                context="Solvers.IpoptSolver derivative_test validation"
             ))
         ), Strategies.OptionDefinition(;
             name=:derivative_test_tol,
@@ -180,7 +180,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="derivative_test_tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e-4 or similar",
-                context="IpoptSolver derivative_test_tol validation"
+                context="Solvers.IpoptSolver derivative_test_tol validation"
             ))
         ), Strategies.OptionDefinition(;
             name=:derivative_test_print_all,
@@ -192,7 +192,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="derivative_test_print_all='$x'",
                 expected="'yes' or 'no'",
                 suggestion="Use 'yes' for verbose derivative debugging",
-                context="IpoptSolver derivative_test_print_all validation"
+                context="Solvers.IpoptSolver derivative_test_print_all validation"
             ))
         ),
 
@@ -210,7 +210,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="hessian_approximation='$x'",
                 expected="'exact' or 'limited-memory'",
                 suggestion="Use 'exact' if derivatives are available, 'limited-memory' otherwise",
-                context="IpoptSolver hessian_approximation validation"
+                context="Solvers.IpoptSolver hessian_approximation validation"
             ))
         ), Strategies.OptionDefinition(;
             name=:limited_memory_update_type,
@@ -222,7 +222,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="limited_memory_update_type='$x'",
                 expected="'bfgs' or 'sr1'",
                 suggestion="Use 'bfgs' for typical problems",
-                context="IpoptSolver limited_memory_update_type validation"
+                context="Solvers.IpoptSolver limited_memory_update_type validation"
             ))
         ),
 
@@ -240,7 +240,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="warm_start_init_point='$x'",
                 expected="'yes' or 'no'",
                 suggestion="Use 'yes' if you provide good initial guesses for all variables",
-                context="IpoptSolver warm_start_init_point validation"
+                context="Solvers.IpoptSolver warm_start_init_point validation"
             ))
         ), Strategies.OptionDefinition(;
             name=:warm_start_bound_push,
@@ -252,7 +252,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="warm_start_bound_push=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use a small positive value like 1e-9",
-                context="IpoptSolver warm_start_bound_push validation"
+                context="Solvers.IpoptSolver warm_start_bound_push validation"
             ))
         ), Strategies.OptionDefinition(;
             name=:warm_start_mult_bound_push,
@@ -264,7 +264,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="warm_start_mult_bound_push=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use a small positive value like 1e-9",
-                context="IpoptSolver warm_start_mult_bound_push validation"
+                context="Solvers.IpoptSolver warm_start_mult_bound_push validation"
             ))
         ),
 
@@ -282,7 +282,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="mu_strategy='$x'",
                 expected="'monotone' or 'adaptive'",
                 suggestion="Use 'adaptive' for most problems or 'monotone' for specific cases",
-                context="IpoptSolver mu_strategy validation"
+                context="Solvers.IpoptSolver mu_strategy validation"
             ))
         ),
 
@@ -296,7 +296,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="mu_init=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 0.1 (default) or smaller for closer start",
-                context="IpoptSolver mu_init validation"
+                context="Solvers.IpoptSolver mu_init validation"
             ))
         ), Strategies.OptionDefinition(;
             name=:mu_max_fact,
@@ -308,7 +308,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="mu_max_fact=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1000.0 (default)",
-                context="IpoptSolver mu_max_fact validation"
+                context="Solvers.IpoptSolver mu_max_fact validation"
             ))
         ), Strategies.OptionDefinition(;
             name=:mu_max,
@@ -320,7 +320,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="mu_max=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e5 (default)",
-                context="IpoptSolver mu_max validation"
+                context="Solvers.IpoptSolver mu_max validation"
             ))
         ), Strategies.OptionDefinition(;
             name=:mu_min,
@@ -332,7 +332,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="mu_min=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e-11 (default)",
-                context="IpoptSolver mu_min validation"
+                context="Solvers.IpoptSolver mu_min validation"
             ))
         ),
         
@@ -346,7 +346,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="timing_statistics='$x'",
                 expected="'yes' or 'no'",
                 suggestion="Use 'yes' to enable component timing or 'no' to disable",
-                context="IpoptSolver timing_statistics validation"
+                context="Solvers.IpoptSolver timing_statistics validation"
             ))
         ),
         
@@ -360,7 +360,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="linear_solver='$x'",
                 expected="one of: ma27, ma57, ma77, ma86, ma97, pardiso, pardisomkl, spral, wsmp, mumps",
                 suggestion="Use 'mumps' for general purpose, 'ma57' for robust performance, or 'pardiso' for Intel MKL",
-                context="IpoptSolver linear_solver validation"
+                context="Solvers.IpoptSolver linear_solver validation"
             ))
         ),
         
@@ -378,7 +378,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="print_level=$x",
                 expected="integer between 0 and 12",
                 suggestion="Use 0 for no output, 5 for standard output, or 12 for maximum verbosity",
-                context="IpoptSolver print_level validation"
+                context="Solvers.IpoptSolver print_level validation"
             ))
         ),
         
@@ -392,7 +392,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="print_timing_statistics='$x'",
                 expected="'yes' or 'no'",
                 suggestion="Use 'yes' to enable timing statistics or 'no' to disable",
-                context="IpoptSolver print_timing_statistics validation"
+                context="Solvers.IpoptSolver print_timing_statistics validation"
             ))
         ),
         
@@ -406,7 +406,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="print_frequency_iter=$x",
                 expected="integer >= 1",
                 suggestion="Use 1 for every iteration, or larger values for less frequent output",
-                context="IpoptSolver print_frequency_iter validation"
+                context="Solvers.IpoptSolver print_frequency_iter validation"
             ))
         ),
         
@@ -420,7 +420,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="print_frequency_time=$x",
                 expected="real number >= 0",
                 suggestion="Use 0 for no time-based filtering, or positive value for time-based output control",
-                context="IpoptSolver print_frequency_time validation"
+                context="Solvers.IpoptSolver print_frequency_time validation"
             ))
         ),
         
@@ -434,7 +434,7 @@ function Strategies.metadata(::Type{<:Solvers.IpoptSolver})
                 got="sb='$x'",
                 expected="'yes' or 'no'",
                 suggestion="Use 'yes' to suppress Ipopt banner or 'no' to show it",
-                context="IpoptSolver sb validation"
+                context="Solvers.IpoptSolver sb validation"
             ))
         )
     )
@@ -447,23 +447,23 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Build an IpoptSolver with validated options.
+Build an Solvers.IpoptSolver with validated options.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Options to pass to the IpoptSolver constructor
+- `kwargs...`: Options to pass to the Solvers.IpoptSolver constructor
 
 # Examples
 ```julia-repl
 # Strict mode (default) - rejects unknown options
 julia> solver = Solvers.build_ipopt_solver(Solvers.IpoptTag; max_iter=1000)
-IpoptSolver(...)
+Solvers.IpoptSolver(...)
 
 # Permissive mode - accepts unknown options with warning
 julia> solver = Solvers.build_ipopt_solver(Solvers.IpoptTag; max_iter=1000, custom_option=123; mode=:permissive)
-IpoptSolver(...)  # with warning about custom_option
+Solvers.IpoptSolver(...)  # with warning about custom_option
 ```
 """
 function Solvers.build_ipopt_solver(::Solvers.IpoptTag; mode::Symbol=:strict, kwargs...)

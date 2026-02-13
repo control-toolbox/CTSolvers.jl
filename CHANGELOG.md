@@ -249,14 +249,14 @@ route_all_options(method, families, action_defs, kwargs, registry; mode::Symbol=
 ### Enhanced Error Messages
 
 ```julia
-ERROR: Unknown options provided for IpoptSolver
+ERROR: Unknown options provided for Solvers.IpoptSolver
 Unrecognized options: [:max_itter]
 Available options: [:max_iter, :tol, :print_level, ...]
 Suggestions for :max_itter:
   - :max_iter (Levenshtein distance: 2)
 If you are certain these options exist for the backend,
 use permissive mode:
-  IpoptSolver(...; mode=:permissive)
+  Solvers.IpoptSolver(...; mode=:permissive)
 ```
 
 ---

@@ -67,7 +67,7 @@ using MadNLP, MadNLPMumps
 - Callable interface: `(solver::MadNLPSolver)(nlp; display=true)`
 - Supports GPU acceleration when appropriate backends are loaded
 
-See also: [`AbstractOptimizationSolver`](@ref), [`IpoptSolver`](@ref), [`MadNCLSolver`](@ref)
+See also: [`AbstractOptimizationSolver`](@ref), [`Solvers.IpoptSolver`](@ref), [`MadNCLSolver`](@ref)
 """
 struct MadNLPSolver <: AbstractOptimizationSolver
     "Solver configuration options containing validated option values"

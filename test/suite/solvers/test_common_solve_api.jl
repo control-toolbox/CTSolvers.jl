@@ -1,14 +1,12 @@
 module TestCommonSolveAPI
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Solvers
-using NLPModels
-using SolverCore
-using ADNLPModels
-using CommonSolve
+import Test
+import CTBase.Exceptions
+import CTSolvers.Solvers
+import NLPModels
+import SolverCore
+import ADNLPModels
+import CommonSolve
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true

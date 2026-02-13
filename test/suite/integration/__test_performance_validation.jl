@@ -22,7 +22,7 @@ using MadNLP
 using MadNLPMumps
 using MadNCL
 
-# To trigger IpoptSolver construction
+# To trigger Solvers.IpoptSolver construction
 using NLPModelsIpopt
 
 # Test options for verbose output

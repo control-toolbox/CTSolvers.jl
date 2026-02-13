@@ -90,10 +90,10 @@ function test_coverage_solvers()
         end
 
         # ====================================================================
-        # UNIT TESTS - IpoptSolver stub (ipopt_solver.jl)
+        # UNIT TESTS - Solvers.IpoptSolver stub (ipopt_solver.jl)
         # ====================================================================
 
-        Test.@testset "IpoptSolver - ExtensionError on construct" begin
+        Test.@testset "Solvers.IpoptSolver - ExtensionError on construct" begin
             # Without NLPModelsIpopt loaded, constructor should throw
             # (NLPModelsIpopt IS loaded in test env, so this tests the stub path)
             # We test the stub directly with a non-IpoptTag

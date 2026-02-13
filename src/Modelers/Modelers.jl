@@ -25,8 +25,8 @@ using ..CTSolvers.Optimization
 # Include submodules
 include(joinpath(@__DIR__, "abstract_modeler.jl"))
 include(joinpath(@__DIR__, "validation.jl"))
-include(joinpath(@__DIR__, "adnlp_modeler.jl"))
-include(joinpath(@__DIR__, "exa_modeler.jl"))
+include(joinpath(@__DIR__, "adnlp.jl"))
+include(joinpath(@__DIR__, "exa.jl"))
 
 # Public API
 export AbstractNLPModeler

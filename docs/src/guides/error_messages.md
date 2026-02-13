@@ -155,14 +155,14 @@ CTSolvers.Solvers.IpoptSolver()
 
 ```julia
 using NLPModelsIpopt  # loads the CTSolversIpopt extension
-solver = IpoptSolver(max_iter = 1000)
+solver = Solvers.IpoptSolver(max_iter = 1000)
 ```
 
 ### Where it's thrown
 
 | Solver | Required package |
 |--------|-----------------|
-| `IpoptSolver` | `NLPModelsIpopt` |
+| `Solvers.IpoptSolver` | `NLPModelsIpopt` |
 | `MadNLPSolver` | `MadNLP` |
 | `KnitroSolver` | `KNITRO` |
 | `MadNCLSolver` | `MadNCL` |

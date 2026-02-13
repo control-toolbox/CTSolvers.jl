@@ -20,7 +20,7 @@ CTSolvers is organized into 7 modules, loaded in strict dependency order:
 | 4 | **Optimization** | Abstract optimization types (`AbstractOptimizationProblem`), builders, `build_model`/`build_solution` |
 | 5 | **Modelers** | NLP model backends: `Modelers.ADNLP`, `Modelers.Exa` |
 | 6 | **DOCP** | `DiscretizedModel` — bridges CTModels and CTSolvers |
-| 7 | **Solvers** | Solver integration: `IpoptSolver`, `MadNLPSolver`, `MadNCLSolver`, `KnitroSolver`, CommonSolve API |
+| 7 | **Solvers** | Solver integration: `Solvers.IpoptSolver`, `MadNLPSolver`, `MadNCLSolver`, `KnitroSolver`, CommonSolve API |
 
 All access is **qualified** — CTSolvers does not export symbols at the top level:
 
@@ -67,7 +67,7 @@ classDiagram
         <<abstract>>
         (solver)(nlp; display) → Stats
     }
-    AbstractOptimizationSolver <|-- IpoptSolver
+    AbstractOptimizationSolver <|-- Solvers.IpoptSolver
     AbstractOptimizationSolver <|-- MadNLPSolver
     AbstractOptimizationSolver <|-- MadNCLSolver
     AbstractOptimizationSolver <|-- KnitroSolver
@@ -248,7 +248,7 @@ Solvers use **Tag Dispatch** to separate type definitions (in `src/Solvers/`) fr
 ```mermaid
 flowchart LR
     subgraph src["src/Solvers/"]
-        SolverType["IpoptSolver <: AbstractOptimizationSolver"]
+        SolverType["Solvers.IpoptSolver <: AbstractOptimizationSolver"]
         Tag["IpoptTag <: AbstractTag"]
         Callable["(solver)(nlp) → _solve(IpoptTag(), nlp, opts)"]
     end
