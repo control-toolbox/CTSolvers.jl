@@ -17,16 +17,16 @@ solver =&gt; 100
 modeler =&gt; 50</code></pre><p>See also: <a href="strategies_api_public.html#route_to"><code>route_to</code></a></p></div></section></details></article><h2 id="StrategyRegistry"><a class="docs-heading-anchor" href="#StrategyRegistry"><code>StrategyRegistry</code></a><a id="StrategyRegistry-1"></a><a class="docs-heading-anchor-permalink" href="#StrategyRegistry" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.StrategyRegistry"><a class="docstring-binding" href="#CTSolvers.Strategies.StrategyRegistry"><code>CTSolvers.Strategies.StrategyRegistry</code></a> — <span class="docstring-category">Type</span></summary><section><div><pre><code class="language-julia hljs">struct StrategyRegistry</code></pre><p>Registry mapping strategy families to their concrete types.</p><p>This type provides an explicit, immutable registry for managing strategy types organized by family. It enables:</p><ul><li><strong>Type lookup by ID</strong>: Find concrete types from symbolic identifiers</li><li><strong>Family introspection</strong>: List all strategies in a family</li><li><strong>Validation</strong>: Ensure ID uniqueness and type hierarchy correctness</li></ul><p><strong>Design Philosophy</strong></p><p>The registry uses an <strong>explicit passing pattern</strong> rather than global mutable state:</p><ul><li>Created once via <code>create_registry</code></li><li>Passed explicitly to functions that need it</li><li>Thread-safe (no shared mutable state)</li><li>Testable (easy to create multiple registries)</li></ul><p><strong>Fields</strong></p><ul><li><code>families::Dict{Type{&lt;:AbstractStrategy}, Vector{Type}}</code>: Maps abstract family types to concrete strategy types</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using CTSolvers.Strategies
 
 julia&gt; registry = create_registry(
-           AbstractOptimizationModeler =&gt; (ADNLPModeler, ExaModeler),
-           AbstractOptimizationSolver =&gt; (IpoptSolver, MadNLPSolver)
+           AbstractNLPModeler =&gt; (Modelers.ADNLP, Modelers.Exa),
+           AbstractOptimizationSolver =&gt; (Solvers.Ipopt, Solvers.MadNLP)
        )
 StrategyRegistry with 2 families
 
-julia&gt; strategy_ids(AbstractOptimizationModeler, registry)
+julia&gt; strategy_ids(AbstractNLPModeler, registry)
 (:adnlp, :exa)
 
-julia&gt; T = type_from_id(:adnlp, AbstractOptimizationModeler, registry)
-ADNLPModeler</code></pre><p>See also: <a href="strategies_api_public.html#create_registry"><code>create_registry</code></a>, <a href="strategies_api_public.html#strategy_ids"><code>strategy_ids</code></a>, <a href="strategies_api_public.html#type_from_id"><code>type_from_id</code></a></p></div></section></details></article><h2 id="build_strategy"><a class="docs-heading-anchor" href="#build_strategy"><code>build_strategy</code></a><a id="build_strategy-1"></a><a class="docs-heading-anchor-permalink" href="#build_strategy" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.build_strategy"><a class="docstring-binding" href="#CTSolvers.Strategies.build_strategy"><code>CTSolvers.Strategies.build_strategy</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">build_strategy(
+julia&gt; T = type_from_id(:adnlp, AbstractNLPModeler, registry)
+Modelers.ADNLP</code></pre><p>See also: <a href="strategies_api_public.html#create_registry"><code>create_registry</code></a>, <a href="strategies_api_public.html#strategy_ids"><code>strategy_ids</code></a>, <a href="strategies_api_public.html#type_from_id"><code>type_from_id</code></a></p></div></section></details></article><h2 id="build_strategy"><a class="docs-heading-anchor" href="#build_strategy"><code>build_strategy</code></a><a id="build_strategy-1"></a><a class="docs-heading-anchor-permalink" href="#build_strategy" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.build_strategy"><a class="docstring-binding" href="#CTSolvers.Strategies.build_strategy"><code>CTSolvers.Strategies.build_strategy</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">build_strategy(
     id::Symbol,
     family::Type{&lt;:CTSolvers.Strategies.AbstractStrategy},
     registry::CTSolvers.Strategies.StrategyRegistry;
@@ -34,15 +34,15 @@ ADNLPModeler</code></pre><p>See also: <a href="strategies_api_public.html#create
     kwargs...
 ) -&gt; Any
 </code></pre><p>Build a strategy instance from its ID and options.</p><p>This function creates a concrete strategy instance by:</p><ol><li>Looking up the strategy type from its ID in the registry</li><li>Constructing the instance with the provided options</li></ol><p><strong>Arguments</strong></p><ul><li><code>id::Symbol</code>: Strategy identifier (e.g., <code>:adnlp</code>, <code>:ipopt</code>)</li><li><code>family::Type{&lt;:AbstractStrategy}</code>: Abstract family type to search within</li><li><code>registry::StrategyRegistry</code>: Registry containing strategy mappings</li><li><code>mode::Symbol=:strict</code>: Validation mode (<code>:strict</code> or <code>:permissive</code>)</li><li><code>kwargs...</code>: Options to pass to the strategy constructor</li></ul><p><strong>Returns</strong></p><ul><li>Concrete strategy instance of the appropriate type</li></ul><p><strong>Throws</strong></p><ul><li><code>KeyError</code>: If the ID is not found in the registry for the given family</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; registry = create_registry(
-           AbstractOptimizationModeler =&gt; (ADNLPModeler, ExaModeler)
+           AbstractNLPModeler =&gt; (Modelers.ADNLP, Modelers.Exa)
        )
 
-julia&gt; modeler = build_strategy(:adnlp, AbstractOptimizationModeler, registry; backend=:sparse)
-ADNLPModeler(options=StrategyOptions{...})
+julia&gt; modeler = build_strategy(:adnlp, AbstractNLPModeler, registry; backend=:sparse)
+Modelers.ADNLP(options=StrategyOptions{...})
 
-julia&gt; modeler = build_strategy(:adnlp, AbstractOptimizationModeler, registry; 
+julia&gt; modeler = build_strategy(:adnlp, AbstractNLPModeler, registry; 
            backend=:sparse, mode=:permissive)
-ADNLPModeler(options=StrategyOptions{...})</code></pre><p>See also: <a href="strategies_api_public.html#type_from_id"><code>type_from_id</code></a>, <a href="strategies_api_public.html#build_strategy_from_method"><code>build_strategy_from_method</code></a></p></div></section></details></article><h2 id="build_strategy_from_method"><a class="docs-heading-anchor" href="#build_strategy_from_method"><code>build_strategy_from_method</code></a><a id="build_strategy_from_method-1"></a><a class="docs-heading-anchor-permalink" href="#build_strategy_from_method" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.build_strategy_from_method"><a class="docstring-binding" href="#CTSolvers.Strategies.build_strategy_from_method"><code>CTSolvers.Strategies.build_strategy_from_method</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">build_strategy_from_method(
+Modelers.ADNLP(options=StrategyOptions{...})</code></pre><p>See also: <a href="strategies_api_public.html#type_from_id"><code>type_from_id</code></a>, <a href="strategies_api_public.html#build_strategy_from_method"><code>build_strategy_from_method</code></a></p></div></section></details></article><h2 id="build_strategy_from_method"><a class="docs-heading-anchor" href="#build_strategy_from_method"><code>build_strategy_from_method</code></a><a id="build_strategy_from_method-1"></a><a class="docs-heading-anchor-permalink" href="#build_strategy_from_method" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.build_strategy_from_method"><a class="docstring-binding" href="#CTSolvers.Strategies.build_strategy_from_method"><code>CTSolvers.Strategies.build_strategy_from_method</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">build_strategy_from_method(
     method::Tuple{Vararg{Symbol}},
     family::Type{&lt;:CTSolvers.Strategies.AbstractStrategy},
     registry::CTSolvers.Strategies.StrategyRegistry;
@@ -53,20 +53,20 @@ ADNLPModeler(options=StrategyOptions{...})</code></pre><p>See also: <a href="str
 
 julia&gt; modeler = build_strategy_from_method(
            method, 
-           AbstractOptimizationModeler, 
+           AbstractNLPModeler, 
            registry; 
            backend=:sparse
        )
-ADNLPModeler(options=StrategyOptions{...})
+Modelers.ADNLP(options=StrategyOptions{...})
 
 julia&gt; modeler = build_strategy_from_method(
            method, 
-           AbstractOptimizationModeler, 
+           AbstractNLPModeler, 
            registry; 
            backend=:sparse,
            mode=:permissive
        )
-ADNLPModeler(options=StrategyOptions{...})</code></pre><p>See also: <a href="strategies_api_public.html#extract_id_from_method"><code>extract_id_from_method</code></a>, <a href="strategies_api_public.html#build_strategy"><code>build_strategy</code></a></p></div></section></details></article><h2 id="build_strategy_options"><a class="docs-heading-anchor" href="#build_strategy_options"><code>build_strategy_options</code></a><a id="build_strategy_options-1"></a><a class="docs-heading-anchor-permalink" href="#build_strategy_options" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.build_strategy_options"><a class="docstring-binding" href="#CTSolvers.Strategies.build_strategy_options"><code>CTSolvers.Strategies.build_strategy_options</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">build_strategy_options(
+Modelers.ADNLP(options=StrategyOptions{...})</code></pre><p>See also: <a href="strategies_api_public.html#extract_id_from_method"><code>extract_id_from_method</code></a>, <a href="strategies_api_public.html#build_strategy"><code>build_strategy</code></a></p></div></section></details></article><h2 id="build_strategy_options"><a class="docs-heading-anchor" href="#build_strategy_options"><code>build_strategy_options</code></a><a id="build_strategy_options-1"></a><a class="docs-heading-anchor-permalink" href="#build_strategy_options" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.build_strategy_options"><a class="docstring-binding" href="#CTSolvers.Strategies.build_strategy_options"><code>CTSolvers.Strategies.build_strategy_options</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">build_strategy_options(
     strategy_type::Type{&lt;:CTSolvers.Strategies.AbstractStrategy};
     mode,
     kwargs...
@@ -95,12 +95,12 @@ StrategyOptions with 2 options:
 </code></pre><p>Create a strategy registry from family-to-strategies mappings.</p><p>This function validates the registry structure and ensures:</p><ul><li>All strategy IDs are unique within each family</li><li>All strategies are subtypes of their declared family</li><li>No duplicate family definitions</li></ul><p><strong>Arguments</strong></p><ul><li><code>pairs...</code>: Pairs of family type =&gt; tuple of strategy types</li></ul><p><strong>Returns</strong></p><ul><li><code>StrategyRegistry</code>: Validated registry ready for use</li></ul><p><strong>Validation Rules</strong></p><ol><li><strong>ID Uniqueness</strong>: Within each family, all strategy <code>id()</code> values must be unique</li><li><strong>Type Hierarchy</strong>: Each strategy must be a subtype of its family</li><li><strong>No Duplicates</strong>: Each family can only appear once in the registry</li></ol><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using CTSolvers.Strategies
 
 julia&gt; registry = create_registry(
-           AbstractOptimizationModeler =&gt; (ADNLPModeler, ExaModeler),
-           AbstractOptimizationSolver =&gt; (IpoptSolver, MadNLPSolver, KnitroSolver)
+           AbstractNLPModeler =&gt; (Modelers.ADNLP, Modelers.Exa),
+           AbstractOptimizationSolver =&gt; (Solvers.Ipopt, Solvers.MadNLP, Solvers.Knitro)
        )
 StrategyRegistry with 2 families
 
-julia&gt; strategy_ids(AbstractOptimizationModeler, registry)
+julia&gt; strategy_ids(AbstractNLPModeler, registry)
 (:adnlp, :exa)</code></pre><p><strong>Throws</strong></p><ul><li><code>ErrorException</code>: If duplicate IDs are found within a family</li><li><code>ErrorException</code>: If a strategy is not a subtype of its family</li><li><code>ErrorException</code>: If a family appears multiple times</li></ul><p>See also: <a href="strategies_api_public.html#StrategyRegistry"><code>StrategyRegistry</code></a>, <a href="strategies_api_public.html#strategy_ids"><code>strategy_ids</code></a>, <a href="strategies_api_public.html#type_from_id"><code>type_from_id</code></a></p></div></section></details></article><h2 id="extract_id_from_method"><a class="docs-heading-anchor" href="#extract_id_from_method"><code>extract_id_from_method</code></a><a id="extract_id_from_method-1"></a><a class="docs-heading-anchor-permalink" href="#extract_id_from_method" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.extract_id_from_method"><a class="docstring-binding" href="#CTSolvers.Strategies.extract_id_from_method"><code>CTSolvers.Strategies.extract_id_from_method</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">extract_id_from_method(
     method::Tuple{Vararg{Symbol}},
     family::Type{&lt;:CTSolvers.Strategies.AbstractStrategy},
@@ -108,7 +108,7 @@ julia&gt; strategy_ids(AbstractOptimizationModeler, registry)
 ) -&gt; Symbol
 </code></pre><p>Extract the strategy ID for a specific family from a method tuple.</p><p>A method tuple contains multiple strategy IDs (e.g., <code>(:collocation, :adnlp, :ipopt)</code>). This function identifies which ID corresponds to the requested family.</p><p><strong>Arguments</strong></p><ul><li><code>method::Tuple{Vararg{Symbol}}</code>: Tuple of strategy IDs</li><li><code>family::Type{&lt;:AbstractStrategy}</code>: Abstract family type to search for</li><li><code>registry::StrategyRegistry</code>: Registry containing strategy mappings</li></ul><p><strong>Returns</strong></p><ul><li><code>Symbol</code>: The ID corresponding to the requested family</li></ul><p><strong>Throws</strong></p><ul><li><code>ErrorException</code>: If no ID or multiple IDs are found for the family</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; method = (:collocation, :adnlp, :ipopt)
 
-julia&gt; extract_id_from_method(method, AbstractOptimizationModeler, registry)
+julia&gt; extract_id_from_method(method, AbstractNLPModeler, registry)
 :adnlp
 
 julia&gt; extract_id_from_method(method, AbstractOptimizationSolver, registry)
@@ -190,7 +190,7 @@ Available option: backend</code></pre><p><strong>Notes</strong></p><ul><li>This 
 ) -&gt; Tuple
 </code></pre><p>Get option names for a strategy family from a method tuple.</p><p>This is a convenience function that combines ID extraction with option introspection.</p><p><strong>Arguments</strong></p><ul><li><code>method::Tuple{Vararg{Symbol}}</code>: Tuple of strategy IDs</li><li><code>family::Type{&lt;:AbstractStrategy}</code>: Abstract family type to search for</li><li><code>registry::StrategyRegistry</code>: Registry containing strategy mappings</li></ul><p><strong>Returns</strong></p><ul><li><code>Tuple{Vararg{Symbol}}</code>: Tuple of option names for the identified strategy</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; method = (:collocation, :adnlp, :ipopt)
 
-julia&gt; option_names_from_method(method, AbstractOptimizationModeler, registry)
+julia&gt; option_names_from_method(method, AbstractNLPModeler, registry)
 (:backend, :show_time)</code></pre><p>See also: <a href="strategies_api_public.html#extract_id_from_method"><code>extract_id_from_method</code></a>, <a href="strategies_api_public.html#option_names"><code>option_names</code></a></p></div></section></details></article><h2 id="option_source"><a class="docs-heading-anchor" href="#option_source"><code>option_source</code></a><a id="option_source-1"></a><a class="docs-heading-anchor-permalink" href="#option_source" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.option_source"><a class="docstring-binding" href="#CTSolvers.Strategies.option_source"><code>CTSolvers.Strategies.option_source</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">option_source(
     strategy::CTSolvers.Strategies.AbstractStrategy,
     key::Symbol
@@ -228,7 +228,7 @@ julia&gt; option_value(strategy, :tol)  # Uses default
 ) -&gt; Dict{Symbol, Any}
 </code></pre><p>Extract strategy options as a mutable Dict, ready for modification.</p><p>This is a convenience method that combines three steps into one:</p><ol><li>Getting <code>StrategyOptions</code> from the strategy</li><li>Extracting raw values (unwrapping <code>OptionValue</code>)</li><li>Converting to <code>Dict</code> for modification</li></ol><p><strong>Arguments</strong></p><ul><li><code>strategy::AbstractStrategy</code>: Strategy instance (solver, modeler, etc.)</li></ul><p><strong>Returns</strong></p><ul><li><code>Dict{Symbol, Any}</code>: Mutable dictionary of option values</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using CTSolvers
 
-julia&gt; solver = Solvers.IpoptSolver(max_iter=1000, tol=1e-8)
+julia&gt; solver = Solvers.Ipopt(max_iter=1000, tol=1e-8)
 
 julia&gt; options = Strategies.options_dict(solver)
 Dict{Symbol, Any} with 6 entries:
@@ -276,7 +276,7 @@ solve(ocp, method;
 ) -&gt; Tuple
 </code></pre><p>Get all strategy IDs for a given family.</p><p>Returns a tuple of symbolic identifiers for all strategies registered under the specified family type. The order matches the registration order.</p><p><strong>Arguments</strong></p><ul><li><code>family::Type{&lt;:AbstractStrategy}</code>: The abstract family type</li><li><code>registry::StrategyRegistry</code>: The registry to query</li></ul><p><strong>Returns</strong></p><ul><li><code>Tuple{Vararg{Symbol}}</code>: Tuple of strategy IDs in registration order</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using CTSolvers.Strategies
 
-julia&gt; ids = strategy_ids(AbstractOptimizationModeler, registry)
+julia&gt; ids = strategy_ids(AbstractNLPModeler, registry)
 (:adnlp, :exa)
 
 julia&gt; for strategy_id in ids
@@ -306,8 +306,8 @@ julia&gt; suggest_options(:adnlp_backen, MyStrategy)
 ) -&gt; Type
 </code></pre><p>Lookup a strategy type from its ID within a family.</p><p>Searches the registry for a strategy with the given symbolic identifier within the specified family. This is the core lookup mechanism used by the builder functions to convert symbolic descriptions to concrete types.</p><p><strong>Arguments</strong></p><ul><li><code>strategy_id::Symbol</code>: The symbolic identifier to look up</li><li><code>family::Type{&lt;:AbstractStrategy}</code>: The family to search within</li><li><code>registry::StrategyRegistry</code>: The registry to query</li></ul><p><strong>Returns</strong></p><ul><li><code>Type{&lt;:AbstractStrategy}</code>: The concrete strategy type matching the ID</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using CTSolvers.Strategies
 
-julia&gt; T = type_from_id(:adnlp, AbstractOptimizationModeler, registry)
-ADNLPModeler
+julia&gt; T = type_from_id(:adnlp, AbstractNLPModeler, registry)
+Modelers.ADNLP
 
 julia&gt; id(T)
 :adnlp</code></pre><p><strong>Throws</strong></p><ul><li><code>ErrorException</code>: If the family is not found in the registry</li><li><code>ErrorException</code>: If the ID is not found within the family (includes suggestions)</li></ul><p>See also: <a href="strategies_api_public.html#strategy_ids"><code>strategy_ids</code></a>, <a href="strategies_api_public.html#build_strategy"><code>build_strategy</code></a></p></div></section></details></article><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
@@ -315,4 +315,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="strategies_contract_private.html">« Private</a><a class="docs-footer-nextpage" href="strategies_api_private.html">Private »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Thursday 12 February 2026 09:33">Thursday 12 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="strategies_contract_private.html">« Private</a><a class="docs-footer-nextpage" href="strategies_api_private.html">Private »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Friday 13 February 2026 17:24">Friday 13 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -19,8 +19,8 @@ ExaSolutionBuilder(...)
 
 julia&gt; solution = builder(nlp_stats)
 OptimalControlSolution(...)</code></pre></div></section></details></article><h2 id="build_model"><a class="docs-heading-anchor" href="#build_model"><code>build_model</code></a><a id="build_model-1"></a><a class="docs-heading-anchor-permalink" href="#build_model" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Optimization.build_model"><a class="docstring-binding" href="#CTSolvers.Optimization.build_model"><code>CTSolvers.Optimization.build_model</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">build_model(prob, initial_guess, modeler) -&gt; Any
-</code></pre><p>Build an NLP model from an optimization problem using the specified modeler.</p><p>This is a general function that works with any <code>AbstractOptimizationProblem</code>. The modeler handles the conversion to the specific NLP backend.</p><p><strong>Arguments</strong></p><ul><li><code>prob::AbstractOptimizationProblem</code>: The optimization problem</li><li><code>initial_guess</code>: Initial guess for the NLP solver</li><li><code>modeler</code>: The modeler strategy (e.g., ADNLPModeler, ExaModeler)</li></ul><p><strong>Returns</strong></p><ul><li>An NLP model suitable for the chosen backend</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; modeler = ADNLPModeler(show_time=false)
-ADNLPModeler(...)
+</code></pre><p>Build an NLP model from an optimization problem using the specified modeler.</p><p>This is a general function that works with any <code>AbstractOptimizationProblem</code>. The modeler handles the conversion to the specific NLP backend.</p><p><strong>Arguments</strong></p><ul><li><code>prob::AbstractOptimizationProblem</code>: The optimization problem</li><li><code>initial_guess</code>: Initial guess for the NLP solver</li><li><code>modeler</code>: The modeler strategy (e.g., Modelers.ADNLP, Modelers.Exa)</li></ul><p><strong>Returns</strong></p><ul><li>An NLP model suitable for the chosen backend</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; modeler = Modelers.ADNLP(show_time=false)
+Modelers.ADNLP(...)
 
 julia&gt; nlp = build_model(prob, initial_guess, modeler)
 ADNLPModel(...)</code></pre></div></section></details></article><h2 id="build_solution"><a class="docs-heading-anchor" href="#build_solution"><code>build_solution</code></a><a id="build_solution-1"></a><a class="docs-heading-anchor-permalink" href="#build_solution" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Optimization.build_solution"><a class="docstring-binding" href="#CTSolvers.Optimization.build_solution"><code>CTSolvers.Optimization.build_solution</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">build_solution(prob, model_solution, modeler) -&gt; Any
@@ -41,9 +41,9 @@ ADNLPModelBuilder(...)
 
 julia&gt; nlp_model = builder(initial_guess; show_time=false, backend=:optimized)
 ADNLPModel(...)</code></pre></div></section><section><div><pre><code class="language-julia hljs">get_adnlp_model_builder(
-    prob::CTSolvers.DOCP.DiscretizedOptimalControlProblem
+    prob::CTSolvers.DOCP.DiscretizedModel
 ) -&gt; CTSolvers.Optimization.AbstractModelBuilder
-</code></pre><p>Get the ADNLPModels model builder from a DiscretizedOptimalControlProblem.</p><p>This implements the <code>AbstractOptimizationProblem</code> contract.</p><p><strong>Arguments</strong></p><ul><li><code>prob::DiscretizedOptimalControlProblem</code>: The discretized problem</li></ul><p><strong>Returns</strong></p><ul><li><code>AbstractModelBuilder</code>: The ADNLP model builder</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; builder = get_adnlp_model_builder(docp)
+</code></pre><p>Get the ADNLPModels model builder from a DiscretizedModel.</p><p>This implements the <code>AbstractOptimizationProblem</code> contract.</p><p><strong>Arguments</strong></p><ul><li><code>prob::DiscretizedModel</code>: The discretized problem</li></ul><p><strong>Returns</strong></p><ul><li><code>AbstractModelBuilder</code>: The ADNLP model builder</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; builder = get_adnlp_model_builder(docp)
 ADNLPModelBuilder(...)
 
 julia&gt; nlp_model = builder(initial_guess; show_time=false)
@@ -55,9 +55,9 @@ ADNLPSolutionBuilder(...)
 
 julia&gt; solution = builder(nlp_stats)
 OptimalControlSolution(...)</code></pre></div></section><section><div><pre><code class="language-julia hljs">get_adnlp_solution_builder(
-    prob::CTSolvers.DOCP.DiscretizedOptimalControlProblem
+    prob::CTSolvers.DOCP.DiscretizedModel
 ) -&gt; CTSolvers.Optimization.AbstractSolutionBuilder
-</code></pre><p>Get the ADNLPModels solution builder from a DiscretizedOptimalControlProblem.</p><p>This implements the <code>AbstractOptimizationProblem</code> contract.</p><p><strong>Arguments</strong></p><ul><li><code>prob::DiscretizedOptimalControlProblem</code>: The discretized problem</li></ul><p><strong>Returns</strong></p><ul><li><code>AbstractSolutionBuilder</code>: The ADNLP solution builder</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; builder = get_adnlp_solution_builder(docp)
+</code></pre><p>Get the ADNLPModels solution builder from a DiscretizedModel.</p><p>This implements the <code>AbstractOptimizationProblem</code> contract.</p><p><strong>Arguments</strong></p><ul><li><code>prob::DiscretizedModel</code>: The discretized problem</li></ul><p><strong>Returns</strong></p><ul><li><code>AbstractSolutionBuilder</code>: The ADNLP solution builder</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; builder = get_adnlp_solution_builder(docp)
 ADNLPSolutionBuilder(...)
 
 julia&gt; solution = builder(nlp_stats)
@@ -69,9 +69,9 @@ ExaModelBuilder(...)
 
 julia&gt; nlp_model = builder(Float64, initial_guess; backend=nothing, minimize=true)
 ExaModel{Float64}(...)</code></pre></div></section><section><div><pre><code class="language-julia hljs">get_exa_model_builder(
-    prob::CTSolvers.DOCP.DiscretizedOptimalControlProblem
+    prob::CTSolvers.DOCP.DiscretizedModel
 ) -&gt; CTSolvers.Optimization.AbstractModelBuilder
-</code></pre><p>Get the ExaModels model builder from a DiscretizedOptimalControlProblem.</p><p>This implements the <code>AbstractOptimizationProblem</code> contract.</p><p><strong>Arguments</strong></p><ul><li><code>prob::DiscretizedOptimalControlProblem</code>: The discretized problem</li></ul><p><strong>Returns</strong></p><ul><li><code>AbstractModelBuilder</code>: The ExaModel builder</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; builder = get_exa_model_builder(docp)
+</code></pre><p>Get the ExaModels model builder from a DiscretizedModel.</p><p>This implements the <code>AbstractOptimizationProblem</code> contract.</p><p><strong>Arguments</strong></p><ul><li><code>prob::DiscretizedModel</code>: The discretized problem</li></ul><p><strong>Returns</strong></p><ul><li><code>AbstractModelBuilder</code>: The ExaModel builder</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; builder = get_exa_model_builder(docp)
 ExaModelBuilder(...)
 
 julia&gt; nlp_model = builder(Float64, initial_guess; backend=nothing)
@@ -83,9 +83,9 @@ ExaSolutionBuilder(...)
 
 julia&gt; solution = builder(nlp_stats)
 OptimalControlSolution(...)</code></pre></div></section><section><div><pre><code class="language-julia hljs">get_exa_solution_builder(
-    prob::CTSolvers.DOCP.DiscretizedOptimalControlProblem
+    prob::CTSolvers.DOCP.DiscretizedModel
 ) -&gt; CTSolvers.Optimization.AbstractSolutionBuilder
-</code></pre><p>Get the ExaModels solution builder from a DiscretizedOptimalControlProblem.</p><p>This implements the <code>AbstractOptimizationProblem</code> contract.</p><p><strong>Arguments</strong></p><ul><li><code>prob::DiscretizedOptimalControlProblem</code>: The discretized problem</li></ul><p><strong>Returns</strong></p><ul><li><code>AbstractSolutionBuilder</code>: The ExaModel solution builder</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; builder = get_exa_solution_builder(docp)
+</code></pre><p>Get the ExaModels solution builder from a DiscretizedModel.</p><p>This implements the <code>AbstractOptimizationProblem</code> contract.</p><p><strong>Arguments</strong></p><ul><li><code>prob::DiscretizedModel</code>: The discretized problem</li></ul><p><strong>Returns</strong></p><ul><li><code>AbstractSolutionBuilder</code>: The ExaModel solution builder</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; builder = get_exa_solution_builder(docp)
 ExaSolutionBuilder(...)
 
 julia&gt; solution = builder(nlp_stats)
@@ -94,4 +94,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="orchestration_private.html">« Private</a><a class="docs-footer-nextpage" href="optimization_private.html">Private »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Thursday 12 February 2026 09:33">Thursday 12 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="orchestration_private.html">« Private</a><a class="docs-footer-nextpage" href="optimization_private.html">Private »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Friday 13 February 2026 17:24">Friday 13 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
