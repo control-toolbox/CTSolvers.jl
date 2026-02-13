@@ -32,7 +32,7 @@ It provides the **solution layer** for optimal control problems:
     ```julia
     using CTSolvers
     CTSolvers.Options.extract_options(kwargs, defs)   # ✓ Qualified
-    CTSolvers.Strategies.id(IpoptSolver)              # ✓ Qualified
+    CTSolvers.Strategies.id(Solvers.Ipopt)              # ✓ Qualified
     ```
 
 ## Modules
@@ -43,9 +43,9 @@ It provides the **solution layer** for optimal control problems:
 | `Strategies` | Abstract strategy contract, metadata, options, registry |
 | `Orchestration` | Option routing, disambiguation, method tuple handling |
 | `Optimization` | Abstract problem types, builder pattern, build/solve API |
-| `Modelers` | ADNLPModeler, ExaModeler — NLP backend adapters |
-| `DOCP` | DiscretizedOptimalControlProblem — concrete problem type |
-| `Solvers` | IpoptSolver, MadNLPSolver, KnitroSolver — NLP solver wrappers |
+| `Modelers` | Modelers.ADNLP, Modelers.Exa — NLP backend adapters |
+| `DOCP` | DiscretizedModel — concrete problem type |
+| `Solvers` | Solvers.Ipopt, Solvers.MadNLP, Solvers.Knitro — NLP solver wrappers |
 
 ## Documentation
 
@@ -71,10 +71,10 @@ using CTSolvers
 using NLPModelsIpopt  # loads the Ipopt extension
 
 # Create a solver with validated options
-solver = CTSolvers.Solvers.IpoptSolver(max_iter = 1000, tol = 1e-8)
+solver = CTSolvers.Solvers.Ipopt(max_iter = 1000, tol = 1e-8)
 
 # Create a modeler
-modeler = CTSolvers.Modelers.ADNLPModeler(backend = :optimized)
+modeler = CTSolvers.Modelers.ADNLP(backend = :optimized)
 
 # Solve (high-level API)
 using CommonSolve

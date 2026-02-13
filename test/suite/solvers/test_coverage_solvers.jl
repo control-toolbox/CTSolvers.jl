@@ -1,16 +1,15 @@
 module TestCoverageSolvers
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Solvers
-using CTSolvers.Strategies
-using CTSolvers.Options
-using NLPModels
-using SolverCore
-using ADNLPModels
-using CommonSolve
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Solvers
+import CTSolvers.Strategies
+import CTSolvers.Options
+import NLPModels
+import SolverCore
+import ADNLPModels
+import CommonSolve
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -49,17 +48,17 @@ function test_coverage_solvers()
         end
 
         # ====================================================================
-        # UNIT TESTS - KnitroSolver (knitro_solver.jl)
+        # UNIT TESTS - Solvers.Knitro (knitro_solver.jl)
         # ====================================================================
 
-        Test.@testset "KnitroSolver" begin
+        Test.@testset "Solvers.Knitro" begin
             # Type hierarchy
-            Test.@test Solvers.KnitroSolver <: Solvers.AbstractOptimizationSolver
-            Test.@test Solvers.KnitroSolver <: Strategies.AbstractStrategy
-            Test.@test !isabstracttype(Solvers.KnitroSolver)
+            Test.@test Solvers.Knitro <: Solvers.AbstractOptimizationSolver
+            Test.@test Solvers.Knitro <: Strategies.AbstractStrategy
+            Test.@test !isabstracttype(Solvers.Knitro)
 
             # id() contract
-            Test.@test Strategies.id(Solvers.KnitroSolver) === :knitro
+            Test.@test Strategies.id(Solvers.Knitro) === :knitro
 
             # Tag type
             Test.@test Solvers.KnitroTag <: Solvers.AbstractTag
@@ -67,11 +66,11 @@ function test_coverage_solvers()
             Test.@test_nowarn Solvers.KnitroTag()
 
             # Struct fields
-            Test.@test :options in fieldnames(Solvers.KnitroSolver)
-            Test.@test length(fieldnames(Solvers.KnitroSolver)) == 1
+            Test.@test :options in fieldnames(Solvers.Knitro)
+            Test.@test length(fieldnames(Solvers.Knitro)) == 1
 
             # Constructor throws ExtensionError (NLPModelsKnitro not loaded)
-            Test.@test_throws Exceptions.ExtensionError Solvers.KnitroSolver()
+            Test.@test_throws Exceptions.ExtensionError Solvers.Knitro()
 
             # build_knitro_solver stub throws ExtensionError
             Test.@test_throws Exceptions.ExtensionError Solvers.build_knitro_solver(Solvers.KnitroTag())
@@ -85,15 +84,15 @@ function test_coverage_solvers()
             end
             Test.@test err isa Exceptions.ExtensionError
             err_str = string(err)
-            Test.@test occursin("KnitroSolver", err_str)
+            Test.@test occursin("Knitro", err_str)
             Test.@test occursin("NLPModelsKnitro", err_str)
         end
 
         # ====================================================================
-        # UNIT TESTS - IpoptSolver stub (ipopt_solver.jl)
+        # UNIT TESTS - Solvers.Ipopt stub (ipopt_solver.jl)
         # ====================================================================
 
-        Test.@testset "IpoptSolver - ExtensionError on construct" begin
+        Test.@testset "Solvers.Ipopt - ExtensionError on construct" begin
             # Without NLPModelsIpopt loaded, constructor should throw
             # (NLPModelsIpopt IS loaded in test env, so this tests the stub path)
             # We test the stub directly with a non-IpoptTag
@@ -101,18 +100,18 @@ function test_coverage_solvers()
         end
 
         # ====================================================================
-        # UNIT TESTS - MadNLPSolver stub (madnlp_solver.jl)
+        # UNIT TESTS - Solvers.MadNLP stub (madnlp_solver.jl)
         # ====================================================================
 
-        Test.@testset "MadNLPSolver - stub with wrong tag" begin
+        Test.@testset "Solvers.MadNLP - stub with wrong tag" begin
             Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(Solvers.KnitroTag())
         end
 
         # ====================================================================
-        # UNIT TESTS - MadNCLSolver stub (madncl_solver.jl)
+        # UNIT TESTS - Solvers.MadNCL stub (madncl_solver.jl)
         # ====================================================================
 
-        Test.@testset "MadNCLSolver - stub with wrong tag" begin
+        Test.@testset "Solvers.MadNCL - stub with wrong tag" begin
             Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(Solvers.KnitroTag())
         end
 
@@ -129,10 +128,10 @@ function test_coverage_solvers()
         # ====================================================================
 
         Test.@testset "Strategies.id() direct calls" begin
-            Test.@test Strategies.id(Solvers.IpoptSolver) === :ipopt
-            Test.@test Strategies.id(Solvers.MadNLPSolver) === :madnlp
-            Test.@test Strategies.id(Solvers.MadNCLSolver) === :madncl
-            Test.@test Strategies.id(Solvers.KnitroSolver) === :knitro
+            Test.@test Strategies.id(Solvers.Ipopt) === :ipopt
+            Test.@test Strategies.id(Solvers.MadNLP) === :madnlp
+            Test.@test Strategies.id(Solvers.MadNCL) === :madncl
+            Test.@test Strategies.id(Solvers.Knitro) === :knitro
         end
 
         # ====================================================================

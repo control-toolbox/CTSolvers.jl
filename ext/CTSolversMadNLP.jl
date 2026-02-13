@@ -2,20 +2,20 @@
 CTSolversMadNLP Extension
 
 Extension providing MadNLP solver metadata, constructor, and backend interface.
-Implements the complete MadNLPSolver functionality with proper option definitions.
+Implements the complete Solvers.MadNLP functionality with proper option definitions.
 """
 module CTSolversMadNLP
 
-using DocStringExtensions
-using CTSolvers
-using CTSolvers.Solvers
-using CTSolvers.Strategies
-using CTSolvers.Options
-using CTBase.Exceptions
-using MadNLP
-using MadNLPMumps
-using NLPModels
-using SolverCore
+import DocStringExtensions: TYPEDSIGNATURES
+import CTSolvers.Optimization
+import CTSolvers.Solvers
+import CTSolvers.Strategies
+import CTSolvers.Options
+import CTBase.Exceptions
+import MadNLP
+import MadNLPMumps
+import NLPModels
+import SolverCore
 
 # ============================================================================
 # Metadata Definition
@@ -24,9 +24,9 @@ using SolverCore
 """
 $(TYPEDSIGNATURES)
 
-Return metadata defining MadNLPSolver options and their specifications.
+Return metadata defining MadNLP options and their specifications.
 """
-function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
+function Strategies.metadata(::Type{<:Solvers.MadNLP})
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:max_iter,
@@ -39,7 +39,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="max_iter=$x",
                 expected="non-negative integer (>= 0)",
                 suggestion="Provide a non-negative value for maximum iterations",
-                context="MadNLPSolver max_iter validation"
+                context="MadNLP max_iter validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -52,7 +52,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
-                context="MadNLPSolver tol validation"
+                context="MadNLP tol validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -79,7 +79,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="acceptable_tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive tolerance (typically 1e-6)",
-                context="MadNLPSolver acceptable_tol validation"
+                context="MadNLP acceptable_tol validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -92,7 +92,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="acceptable_iter=$x",
                 expected="positive integer (>= 1)",
                 suggestion="Provide a positive integer (typically 15)",
-                context="MadNLPSolver acceptable_iter validation"
+                context="MadNLP acceptable_iter validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -106,7 +106,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="max_wall_time=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive time limit in seconds",
-                context="MadNLPSolver max_wall_time validation"
+                context="MadNLP max_wall_time validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -119,7 +119,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="diverging_iterates_tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a large positive value (typically 1e20)",
-                context="MadNLPSolver diverging_iterates_tol validation"
+                context="MadNLP diverging_iterates_tol validation"
             ))
         ),
         # ---- NLP Scaling Options ----
@@ -139,7 +139,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="nlp_scaling_max_gradient=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive value (typically 100.0)",
-                context="MadNLPSolver nlp_scaling_max_gradient validation"
+                context="MadNLP nlp_scaling_max_gradient validation"
             ))
         ),
         # ---- Structural Options ----
@@ -168,7 +168,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="bound_push=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive value (e.g., 0.01)",
-                context="MadNLPSolver bound_push validation"
+                context="MadNLP bound_push validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -181,7 +181,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="bound_fac=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive value (e.g., 0.01)",
-                context="MadNLPSolver bound_fac validation"
+                context="MadNLP bound_fac validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -194,7 +194,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="constr_mult_init_max=$x",
                 expected="non-negative real number (>= 0)",
                 suggestion="Provide a non-negative value (e.g., 1000.0)",
-                context="MadNLPSolver constr_mult_init_max validation"
+                context="MadNLP constr_mult_init_max validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -238,7 +238,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="mu_init=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive value (e.g., 1e-1)",
-                context="MadNLPSolver mu_init validation"
+                context="MadNLP mu_init validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -251,7 +251,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="mu_min=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive value (e.g., 1e-11)",
-                context="MadNLPSolver mu_min validation"
+                context="MadNLP mu_min validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -264,7 +264,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNLPSolver})
                 got="tau_min=$x",
                 expected="real number between 0 and 1 (exclusive)",
                 suggestion="Provide a value between 0 and 1 (e.g., 0.99)",
-                context="MadNLPSolver tau_min validation"
+                context="MadNLP tau_min validation"
             ))
         )
     )
@@ -277,28 +277,28 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Build a MadNLPSolver with validated options.
+Build a MadNLP with validated options.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Options to pass to the MadNLPSolver constructor
+- `kwargs...`: Options to pass to the MadNLP constructor
 
 # Examples
 ```julia-repl
 # Strict mode (default) - rejects unknown options
-julia> solver = Solvers.build_madnlp_solver(Solvers.MadNLPTag; max_iter=1000)
-MadNLPSolver(...)
+julia> solver = build_madnlp_solver(MadNLPTag; max_iter=1000)
+MadNLP(...)
 
 # Permissive mode - accepts unknown options with warning
-julia> solver = Solvers.build_madnlp_solver(Solvers.MadNLPTag; max_iter=1000, custom_option=123; mode=:permissive)
-MadNLPSolver(...)  # with warning about custom_option
+julia> solver = build_madnlp_solver(MadNLPTag; max_iter=1000, custom_option=123; mode=:permissive)
+MadNLP(...)  # with warning about custom_option
 ```
 """
 function Solvers.build_madnlp_solver(::Solvers.MadNLPTag; mode::Symbol=:strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.MadNLPSolver; mode=mode, kwargs...)
-    return Solvers.MadNLPSolver(opts)
+    opts = Strategies.build_strategy_options(Solvers.MadNLP; mode=mode, kwargs...)
+    return Solvers.MadNLP(opts)
 end
 
 # ============================================================================
@@ -317,7 +317,7 @@ Solve an NLP problem using MadNLP.
 # Returns
 - `MadNLP.MadNLPExecutionStats`: MadNLP execution statistics
 """
-function (solver::Solvers.MadNLPSolver)(
+function (solver::Solvers.MadNLP)(
     nlp::NLPModels.AbstractNLPModel;
     display::Bool=true
 )::MadNLP.MadNLPExecutionStats
@@ -369,7 +369,7 @@ A 6-element tuple `(objective, iterations, constraints_violation, message, statu
 - `status::Symbol`: MadNLP termination status
 - `successful::Bool`: Whether the solver converged successfully
 """
-function CTSolvers.extract_solver_infos(
+function Optimization.extract_solver_infos(
     nlp_solution::MadNLP.MadNLPExecutionStats,
     minimize::Bool,
 )

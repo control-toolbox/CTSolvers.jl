@@ -1,14 +1,12 @@
 module TestCoverageModelers
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Modelers
-using CTSolvers.Strategies
-using CTSolvers.Options
-using CTSolvers.Optimization
-using SolverCore
+import Test
+import CTBase.Exceptions
+import CTSolvers.Modelers
+import CTSolvers.Strategies
+import CTSolvers.Options
+import CTSolvers.Optimization
+import SolverCore
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -17,7 +15,7 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 # Fake types for testing (must be at module top-level)
 # ============================================================================
 
-struct CovFakeModeler <: Modelers.AbstractOptimizationModeler
+struct CovFakeModeler <: Modelers.AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 
@@ -29,10 +27,10 @@ function test_coverage_modelers()
     Test.@testset "Coverage: Modelers" verbose=VERBOSE showtiming=SHOWTIMING begin
 
         # ====================================================================
-        # UNIT TESTS - AbstractOptimizationModeler (abstract_modeler.jl)
+        # UNIT TESTS - AbstractNLPModeler (abstract_modeler.jl)
         # ====================================================================
 
-        Test.@testset "AbstractOptimizationModeler - NotImplemented errors" begin
+        Test.@testset "AbstractNLPModeler - NotImplemented errors" begin
             opts = Strategies.StrategyOptions()
             modeler = CovFakeModeler(opts)
             prob = CovFakeProblem()
@@ -45,51 +43,51 @@ function test_coverage_modelers()
             Test.@test_throws Exceptions.NotImplemented modeler(prob, stats)
         end
 
-        Test.@testset "AbstractOptimizationModeler - type hierarchy" begin
-            Test.@test Modelers.AbstractOptimizationModeler <: Strategies.AbstractStrategy
-            Test.@test isabstracttype(Modelers.AbstractOptimizationModeler)
+        Test.@testset "AbstractNLPModeler - type hierarchy" begin
+            Test.@test Modelers.AbstractNLPModeler <: Strategies.AbstractStrategy
+            Test.@test isabstracttype(Modelers.AbstractNLPModeler)
         end
 
         # ====================================================================
-        # UNIT TESTS - ADNLPModeler defaults (adnlp_modeler.jl)
+        # UNIT TESTS - Modelers.ADNLP defaults (adnlp_modeler.jl)
         # ====================================================================
 
-        Test.@testset "ADNLPModeler - default helpers" begin
+        Test.@testset "Modelers.ADNLP - default helpers" begin
             Test.@test Modelers.__adnlp_model_backend() == :optimized
         end
 
         # ====================================================================
-        # UNIT TESTS - ExaModeler defaults (exa_modeler.jl)
+        # UNIT TESTS - Modelers.Exa defaults (exa_modeler.jl)
         # ====================================================================
 
-        Test.@testset "ExaModeler - default helpers" begin
+        Test.@testset "Modelers.Exa - default helpers" begin
             Test.@test Modelers.__exa_model_base_type() == Float64
             Test.@test Modelers.__exa_model_backend() === nothing
         end
 
         # ====================================================================
-        # UNIT TESTS - ExaModeler invalid base_type
+        # UNIT TESTS - Modelers.Exa invalid base_type
         # ====================================================================
 
-        Test.@testset "ExaModeler - invalid base_type" begin
+        Test.@testset "Modelers.Exa - invalid base_type" begin
             redirect_stderr(devnull) do
-                Test.@test_throws Exceptions.IncorrectArgument Modelers.ExaModeler(base_type=Int)
+                Test.@test_throws Exceptions.IncorrectArgument Modelers.Exa(base_type=Int)
             end
         end
 
         # ====================================================================
-        # UNIT TESTS - ADNLPModeler invalid unknown option (strict mode)
+        # UNIT TESTS - Modelers.ADNLP invalid unknown option (strict mode)
         # ====================================================================
 
-        Test.@testset "ADNLPModeler - unknown option strict mode" begin
+        Test.@testset "Modelers.ADNLP - unknown option strict mode" begin
             redirect_stderr(devnull) do
-                Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLPModeler(unknown_opt=42)
+                Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(unknown_opt=42)
             end
         end
 
-        Test.@testset "ExaModeler - unknown option strict mode" begin
+        Test.@testset "Modelers.Exa - unknown option strict mode" begin
             redirect_stderr(devnull) do
-                Test.@test_throws Exceptions.IncorrectArgument Modelers.ExaModeler(unknown_opt=42)
+                Test.@test_throws Exceptions.IncorrectArgument Modelers.Exa(unknown_opt=42)
             end
         end
 
@@ -97,12 +95,12 @@ function test_coverage_modelers()
         # UNIT TESTS - Strategies.id() direct calls (coverage for id lines)
         # ====================================================================
 
-        Test.@testset "ADNLPModeler - Strategies.id() direct" begin
-            Test.@test Strategies.id(Modelers.ADNLPModeler) === :adnlp
+        Test.@testset "Modelers.ADNLP - Strategies.id() direct" begin
+            Test.@test Strategies.id(Modelers.ADNLP) === :adnlp
         end
 
-        Test.@testset "ExaModeler - Strategies.id() direct" begin
-            Test.@test Strategies.id(Modelers.ExaModeler) === :exa
+        Test.@testset "Modelers.Exa - Strategies.id() direct" begin
+            Test.@test Strategies.id(Modelers.Exa) === :exa
         end
     end
 end

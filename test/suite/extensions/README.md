@@ -54,6 +54,6 @@ Each extension test follows the same pattern:
 
 All tests follow the testing rules in `.windsurf/rules/testing.md` with:
 - Module wrapper for isolation
-- Qualified calls (e.g., `Solvers.IpoptSolver`, `Strategies.metadata()`)
+- Qualified calls (e.g., `Solvers.Ipopt`, `Strategies.metadata()`)
 - Fake types at top-level when needed
 - Clear separation between unit and integration tests

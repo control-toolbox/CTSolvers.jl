@@ -80,7 +80,7 @@ This is a convenience method that combines three steps into one:
 ```julia-repl
 julia> using CTSolvers
 
-julia> solver = Solvers.IpoptSolver(max_iter=1000, tol=1e-8)
+julia> solver = Solvers.Ipopt(max_iter=1000, tol=1e-8)
 
 julia> options = Strategies.options_dict(solver)
 Dict{Symbol, Any} with 6 entries:

@@ -110,7 +110,7 @@ julia> method = (:collocation, :adnlp, :ipopt)
 
 julia> families = (
            discretizer = AbstractOptimalControlDiscretizer,
-           modeler = AbstractOptimizationModeler,
+           modeler = AbstractNLPModeler,
            solver = AbstractOptimizationSolver
        )
 

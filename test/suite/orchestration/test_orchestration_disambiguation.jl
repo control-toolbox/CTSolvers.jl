@@ -1,12 +1,11 @@
 module TestOrchestrationDisambiguation
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Orchestration
-using CTSolvers.Strategies
-using CTSolvers.Options
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Orchestration
+import CTSolvers.Strategies
+import CTSolvers.Options
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
@@ -18,13 +17,13 @@ abstract type TestDiscretizer <: Strategies.AbstractStrategy end
 abstract type TestModeler <: Strategies.AbstractStrategy end
 abstract type TestSolver <: Strategies.AbstractStrategy end
 
-struct CollocationDiscretizer <: TestDiscretizer end
-Strategies.id(::Type{CollocationDiscretizer}) = :collocation
-Strategies.metadata(::Type{CollocationDiscretizer}) = Strategies.StrategyMetadata()
+struct CollocationMock <: TestDiscretizer end
+Strategies.id(::Type{CollocationMock}) = :collocation
+Strategies.metadata(::Type{CollocationMock}) = Strategies.StrategyMetadata()
 
-struct ADNLPModeler <: TestModeler end
-Strategies.id(::Type{ADNLPModeler}) = :adnlp
-Strategies.metadata(::Type{ADNLPModeler}) = Strategies.StrategyMetadata(
+struct ADNLPMock <: TestModeler end
+Strategies.id(::Type{ADNLPMock}) = :adnlp
+Strategies.metadata(::Type{ADNLPMock}) = Strategies.StrategyMetadata(
     Options.OptionDefinition(
         name = :backend,
         type = Symbol,
@@ -34,9 +33,9 @@ Strategies.metadata(::Type{ADNLPModeler}) = Strategies.StrategyMetadata(
     )
 )
 
-struct IpoptSolver <: TestSolver end
-Strategies.id(::Type{IpoptSolver}) = :ipopt
-Strategies.metadata(::Type{IpoptSolver}) = Strategies.StrategyMetadata(
+struct IpoptMock <: TestSolver end
+Strategies.id(::Type{IpoptMock}) = :ipopt
+Strategies.metadata(::Type{IpoptMock}) = Strategies.StrategyMetadata(
     Options.OptionDefinition(
         name = :max_iter,
         type = Int,
@@ -53,9 +52,9 @@ Strategies.metadata(::Type{IpoptSolver}) = Strategies.StrategyMetadata(
 )
 
 const TEST_REGISTRY = Strategies.create_registry(
-    TestDiscretizer => (CollocationDiscretizer,),
-    TestModeler => (ADNLPModeler,),
-    TestSolver => (IpoptSolver,)
+    TestDiscretizer => (CollocationMock,),
+    TestModeler => (ADNLPMock,),
+    TestSolver => (IpoptMock,)
 )
 
 const TEST_METHOD = (:collocation, :adnlp, :ipopt)

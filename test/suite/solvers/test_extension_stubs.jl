@@ -1,10 +1,9 @@
 module TestExtensionStubs
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Solvers
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Solvers
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -25,10 +24,10 @@ function test_extension_stubs()
     Test.@testset "Extension Stubs" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
-        # UNIT TESTS - IpoptSolver Stub
+        # UNIT TESTS - Solvers.Ipopt Stub
         # ====================================================================
         
-        Test.@testset "IpoptSolver stub" begin
+        Test.@testset "Solvers.Ipopt stub" begin
             # Test that build_ipopt_solver throws ExtensionError with IpoptTag
             Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(DummyTag())
             
@@ -44,17 +43,17 @@ function test_extension_stubs()
             
             # Verify error message content
             err_str = string(err)
-            Test.@test occursin("IpoptSolver", err_str)
+            Test.@test occursin("Ipopt", err_str)
             Test.@test occursin("NLPModelsIpopt", err_str)
-            Test.@test occursin("to create IpoptSolver, access options, and solve problems", err_str)
+            Test.@test occursin("to create Ipopt, access options, and solve problems", err_str)
         end
         
         # ====================================================================
-        # UNIT TESTS - KnitroSolver Stub (Commented out - no license)
+        # UNIT TESTS - Solvers.Knitro Stub (Commented out - no license)
         # ====================================================================
         
         # Commented out - no Knitro license available
-        # Test.@testset "KnitroSolver stub" begin
+        # Test.@testset "Solvers.Knitro stub" begin
         #     Test.@test_throws Exceptions.ExtensionError Solvers.build_knitro_solver(DummyTag())
         #     
         #     err = nothing
@@ -67,16 +66,16 @@ function test_extension_stubs()
         #     Test.@test err isa Exceptions.ExtensionError
         #     
         #     err_str = string(err)
-        #     Test.@test occursin("KnitroSolver", err_str)
+        #     Test.@test occursin("Knitro", err_str)
         #     Test.@test occursin("NLPModelsKnitro", err_str)
-        #     Test.@test occursin("to create KnitroSolver, access options, and solve problems", err_str)
+        #     Test.@test occursin("to create Knitro, access options, and solve problems", err_str)
         # end
         
         # ====================================================================
-        # UNIT TESTS - MadNLPSolver Stub
+        # UNIT TESTS - Solvers.MadNLP Stub
         # ====================================================================
         
-        Test.@testset "MadNLPSolver stub" begin
+        Test.@testset "Solvers.MadNLP stub" begin
             Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(DummyTag())
             
             err = nothing
@@ -89,16 +88,16 @@ function test_extension_stubs()
             Test.@test err isa Exceptions.ExtensionError
             
             err_str = string(err)
-            Test.@test occursin("MadNLPSolver", err_str)
             Test.@test occursin("MadNLP", err_str)
-            Test.@test occursin("to create MadNLPSolver, access options, and solve problems", err_str)
+            Test.@test occursin("MadNLP", err_str)
+            Test.@test occursin("to create MadNLP, access options, and solve problems", err_str)
         end
         
         # ====================================================================
-        # UNIT TESTS - MadNCLSolver Stub
+        # UNIT TESTS - Solvers.MadNCL Stub
         # ====================================================================
         
-        Test.@testset "MadNCLSolver stub" begin
+        Test.@testset "Solvers.MadNCL stub" begin
             Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(DummyTag())
             
             err = nothing
@@ -111,9 +110,9 @@ function test_extension_stubs()
             Test.@test err isa Exceptions.ExtensionError
             
             err_str = string(err)
-            Test.@test occursin("MadNCLSolver", err_str)
             Test.@test occursin("MadNCL", err_str)
-            Test.@test occursin("to create MadNCLSolver, access options, and solve problems", err_str)
+            Test.@test occursin("MadNCL", err_str)
+            Test.@test occursin("to create MadNCL, access options, and solve problems", err_str)
         end
         
         # ====================================================================

@@ -4,7 +4,7 @@
 CurrentModule = CTSolvers
 ```
 
-This guide explains how to implement an optimization problem in CTSolvers. An optimization problem is a concrete type that carries all the data needed to build NLP models and extract solutions. We use **DiscretizedOptimalControlProblem** (DOCP) as the reference example.
+This guide explains how to implement an optimization problem in CTSolvers. An optimization problem is a concrete type that carries all the data needed to build NLP models and extract solutions. We use **DiscretizedModel** (DOCP) as the reference example.
 
 !!! tip "Prerequisites"
     Read [Architecture](@ref) and [Implementing a Modeler](@ref) first. The optimization problem provides the **builders** that modelers call.
@@ -15,10 +15,10 @@ Every concrete optimization problem must implement **four builder getters** — 
 
 | Method | Returns | Used by |
 |--------|---------|---------|
-| `get_adnlp_model_builder(prob)` | `AbstractModelBuilder` | `ADNLPModeler` |
-| `get_exa_model_builder(prob)` | `AbstractModelBuilder` | `ExaModeler` |
-| `get_adnlp_solution_builder(prob)` | `AbstractSolutionBuilder` | `ADNLPModeler` |
-| `get_exa_solution_builder(prob)` | `AbstractSolutionBuilder` | `ExaModeler` |
+| `get_adnlp_model_builder(prob)` | `AbstractModelBuilder` | `Modelers.ADNLP` |
+| `get_exa_model_builder(prob)` | `AbstractModelBuilder` | `Modelers.Exa` |
+| `get_adnlp_solution_builder(prob)` | `AbstractSolutionBuilder` | `Modelers.ADNLP` |
+| `get_exa_solution_builder(prob)` | `AbstractSolutionBuilder` | `Modelers.Exa` |
 
 All four have default implementations that throw `NotImplemented`:
 
@@ -118,15 +118,15 @@ sol_builder(:converged)  # call the builder
 !!! note "Why callable objects?"
     Builders capture problem-specific data (closures) while presenting a uniform interface to modelers. The modeler doesn't need to know what data the builder needs — it just calls it with the standard arguments.
 
-## Implementing DiscretizedOptimalControlProblem
+## Implementing DiscretizedModel
 
 ### Step 1 — Define the struct
 
 The DOCP stores the original OCP plus one builder per backend:
 
 ```julia
-struct DiscretizedOptimalControlProblem{
-    TO <: AbstractOptimalControlProblem,
+struct DiscretizedModel{
+    TO <: AbstractModel,
     TAMB <: AbstractModelBuilder,
     TEMB <: AbstractModelBuilder,
     TASB <: AbstractSolutionBuilder,
@@ -148,10 +148,10 @@ Each getter simply returns the corresponding field:
 import CTSolvers.Optimization: get_adnlp_model_builder, get_exa_model_builder
 import CTSolvers.Optimization: get_adnlp_solution_builder, get_exa_solution_builder
 
-get_adnlp_model_builder(prob::DiscretizedOptimalControlProblem) = prob.adnlp_model_builder
-get_exa_model_builder(prob::DiscretizedOptimalControlProblem) = prob.exa_model_builder
-get_adnlp_solution_builder(prob::DiscretizedOptimalControlProblem) = prob.adnlp_solution_builder
-get_exa_solution_builder(prob::DiscretizedOptimalControlProblem) = prob.exa_solution_builder
+get_adnlp_model_builder(prob::DiscretizedModel) = prob.adnlp_model_builder
+get_exa_model_builder(prob::DiscretizedModel) = prob.exa_model_builder
+get_adnlp_solution_builder(prob::DiscretizedModel) = prob.adnlp_solution_builder
+get_exa_solution_builder(prob::DiscretizedModel) = prob.exa_solution_builder
 ```
 
 ### Step 3 — Construct with builders
@@ -169,7 +169,7 @@ function discretize(ocp, discretizer::Collocation)
     adnlp_sol_builder = ADNLPSolutionBuilder(stats -> extract_solution(ocp, discretizer, stats))
     exa_sol_builder = ExaSolutionBuilder(stats -> extract_solution(ocp, discretizer, stats))
 
-    return DiscretizedOptimalControlProblem(
+    return DiscretizedModel(
         ocp, adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder,
     )
 end
@@ -183,10 +183,10 @@ The complete data flow from user call to solution:
 sequenceDiagram
     participant User
     participant Solve as CommonSolve.solve
-    participant Modeler as ADNLPModeler
+    participant Modeler as Modelers.ADNLP
     participant Problem as DOCP
     participant ModelBuilder as ADNLPModelBuilder
-    participant Solver as IpoptSolver
+    participant Solver as Solvers.Ipopt
     participant SolBuilder as ADNLPSolutionBuilder
 
     User->>Solve: solve(docp, x0, modeler, solver)

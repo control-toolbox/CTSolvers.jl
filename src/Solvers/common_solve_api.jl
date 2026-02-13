@@ -23,7 +23,7 @@ High-level solve: Build NLP model, solve it, and build solution.
 # Arguments
 - `problem::Optimization.AbstractOptimizationProblem`: The optimization problem
 - `initial_guess`: Initial guess for the solution
-- `modeler::Modelers.AbstractOptimizationModeler`: Modeler to build NLP
+- `modeler::Modelers.AbstractNLPModeler`: Modeler to build NLP
 - `solver::AbstractOptimizationSolver`: Solver to use
 - `display::Bool`: Whether to show solver output (default: true)
 
@@ -37,8 +37,8 @@ using CTSolvers
 # Define problem, initial guess, modeler, solver
 problem = ...
 x0 = ...
-modeler = ADNLPModeler()
-solver = IpoptSolver(max_iter=1000)
+modeler = Modelers.ADNLP()
+solver = Solvers.Ipopt(max_iter=1000)
 
 # Solve
 solution = solve(problem, x0, modeler, solver, display=true)
@@ -47,7 +47,7 @@ solution = solve(problem, x0, modeler, solver, display=true)
 function CommonSolve.solve(
     problem::Optimization.AbstractOptimizationProblem,
     initial_guess,
-    modeler::Modelers.AbstractOptimizationModeler,
+    modeler::Modelers.AbstractNLPModeler,
     solver::AbstractOptimizationSolver;
     display::Bool=__display(),
 )
@@ -81,7 +81,7 @@ Mid-level solve: Solve NLP problem directly.
 using ADNLPModels
 
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-solver = IpoptSolver()
+solver = Solvers.Ipopt()
 stats = solve(nlp, solver, display=false)
 ```
 """

@@ -1,11 +1,10 @@
 module TestCoverageAbstractStrategy
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Strategies
-using CTSolvers.Options
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Strategies
+import CTSolvers.Options
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -222,7 +221,9 @@ function test_coverage_abstract_strategy()
         end
 
         Test.@testset "describe(stdout, strategy_type)" begin
-            Test.@test_nowarn Strategies.describe(CovFakeStrategy)
+            redirect_stdout(devnull) do
+                Test.@test_nowarn Strategies.describe(CovFakeStrategy)
+            end
         end
 
         # ====================================================================

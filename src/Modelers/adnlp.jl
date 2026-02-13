@@ -1,6 +1,6 @@
 # ADNLP Modeler
 #
-# Implementation of ADNLPModeler using the AbstractStrategy contract.
+# Implementation of Modelers.ADNLP using the AbstractStrategy contract.
 # This modeler converts discretized optimal control problems to ADNLPModels.
 #
 # Author: CTSolvers Development Team
@@ -10,7 +10,7 @@
 """
 $(TYPEDSIGNATURES)
 
-Return the default automatic differentiation backend for [`ADNLPModeler`](@ref).
+Return the default automatic differentiation backend for [`Modelers.ADNLP`](@ref).
 
 Default is `:optimized`.
 """
@@ -29,7 +29,7 @@ identification.
 # Constructor
 
 ```julia
-ADNLPModeler(; mode::Symbol=:strict, kwargs...)
+Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
 ```
 
 # Arguments
@@ -67,10 +67,10 @@ ADNLPModeler(; mode::Symbol=:strict, kwargs...)
 ## Basic Usage
 ```julia
 # Default modeler
-modeler = ADNLPModeler()
+modeler = Modelers.ADNLP()
 
 # With custom options
-modeler = ADNLPModeler(
+modeler = Modelers.ADNLP(
     backend=:optimized,
     matrix_free=true,
     name="MyOptimizationProblem"
@@ -80,7 +80,7 @@ modeler = ADNLPModeler(
 ## Advanced Backend Configuration
 ```julia
 # Override specific backends
-modeler = ADNLPModeler(
+modeler = Modelers.ADNLP(
     gradient_backend=nothing,  # Use default gradient backend
     hessian_backend=nothing   # Use default Hessian backend
 )
@@ -89,10 +89,10 @@ modeler = ADNLPModeler(
 ## Validation Modes
 ```julia
 # Strict mode (default) - rejects unknown options
-modeler = ADNLPModeler(backend=:optimized)
+modeler = Modelers.ADNLP(backend=:optimized)
 
 # Permissive mode - accepts unknown options with warning
-modeler = ADNLPModeler(
+modeler = Modelers.ADNLP(
     backend=:optimized,
     custom_option=123;
     mode=:permissive
@@ -106,7 +106,7 @@ modeler = ADNLPModeler(
 
 # See also
 
-- [`ExaModeler`](@ref): Alternative modeler using ExaModels
+- [`Modelers.Exa`](@ref): Alternative modeler using ExaModels
 - [`build_model`](@ref): Build model from problem and modeler
 - [`solve!`](@ref): Solve optimization problem
 
@@ -122,15 +122,15 @@ modeler = ADNLPModeler(
 - ADNLPModels.jl: [https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl)
 - Automatic Differentiation in Julia: [https://github.com/JuliaDiff/](https://github.com/JuliaDiff/)
 """
-struct ADNLPModeler <: AbstractOptimizationModeler
+struct ADNLP <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 
 # Strategy identification
-Strategies.id(::Type{<:ADNLPModeler}) = :adnlp
+Strategies.id(::Type{<:Modelers.ADNLP}) = :adnlp
 
 # Strategy metadata with option definitions
-function Strategies.metadata(::Type{<:ADNLPModeler})
+function Strategies.metadata(::Type{<:Modelers.ADNLP})
     return Strategies.StrategyMetadata(
         # === Existing Options (unchanged) ===
         Strategies.OptionDefinition(;
@@ -267,27 +267,27 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Create an ADNLPModeler with validated options.
+Create an Modelers.ADNLP with validated options.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Modeler options (see [`ADNLPModeler`](@ref) documentation)
+- `kwargs...`: Modeler options (see [`Modelers.ADNLP`](@ref) documentation)
 
 # Returns
-- `ADNLPModeler`: Configured modeler instance
+- `Modelers.ADNLP`: Configured modeler instance
 
 # Examples
 ```julia
 # Default modeler
-modeler = ADNLPModeler()
+modeler = Modelers.ADNLP()
 
 # With custom options
-modeler = ADNLPModeler(backend=:optimized, matrix_free=true)
+modeler = Modelers.ADNLP(backend=:optimized, matrix_free=true)
 
 # With permissive mode
-modeler = ADNLPModeler(backend=:optimized, custom_option=123; mode=:permissive)
+modeler = Modelers.ADNLP(backend=:optimized, custom_option=123; mode=:permissive)
 ```
 
 # Throws
@@ -297,23 +297,23 @@ modeler = ADNLPModeler(backend=:optimized, custom_option=123; mode=:permissive)
 
 # See also
 
-- [`ADNLPModeler`](@ref): Type documentation
+- [`Modelers.ADNLP`](@ref): Type documentation
 - [`Strategies.build_strategy_options`](@ref): Option validation function
 """
-function ADNLPModeler(; mode::Symbol=:strict, kwargs...)
+function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
     # Check for deprecated aliases
     if haskey(kwargs, :adnlp_backend)
         @warn "adnlp_backend is deprecated, use backend instead" maxlog=1
     end
     
     opts = Strategies.build_strategy_options(
-        ADNLPModeler; mode=mode, kwargs...
+        Modelers.ADNLP; mode=mode, kwargs...
     )
-    return ADNLPModeler(opts)
+    return Modelers.ADNLP(opts)
 end
 
 # Access to strategy options
-Strategies.options(m::ADNLPModeler) = m.options
+Strategies.options(m::Modelers.ADNLP) = m.options
 
 # Model building interface
 """
@@ -322,7 +322,7 @@ $(TYPEDSIGNATURES)
 Build an ADNLPModel from a discretized optimal control problem.
 
 # Arguments
-- `modeler::ADNLPModeler`: Configured modeler instance
+- `modeler::Modelers.ADNLP`: Configured modeler instance
 - `prob::AbstractOptimizationProblem`: Discretized optimal control problem
 - `initial_guess`: Initial guess for optimization variables
 
@@ -332,7 +332,7 @@ Build an ADNLPModel from a discretized optimal control problem.
 # Examples
 ```julia
 # Create modeler
-modeler = ADNLPModeler(backend=:optimized)
+modeler = Modelers.ADNLP(backend=:optimized)
 
 # Build model from problem
 nlp = modeler(problem, initial_guess)
@@ -343,11 +343,11 @@ stats = solve(nlp, solver)
 
 # See also
 
-- [`ADNLPModeler`](@ref): Type documentation
+- [`Modelers.ADNLP`](@ref): Type documentation
 - [`build_model`](@ref): Generic model building interface
 - [`ADNLPModels.ADNLPModel`](@ref): NLP model type
 """
-function (modeler::ADNLPModeler)(
+function (modeler::Modelers.ADNLP)(
     prob::AbstractOptimizationProblem,
     initial_guess
 )::ADNLPModels.ADNLPModel
@@ -368,7 +368,7 @@ $(TYPEDSIGNATURES)
 Build a solution object from NLP solver statistics.
 
 # Arguments
-- `modeler::ADNLPModeler`: Configured modeler instance
+- `modeler::Modelers.ADNLP`: Configured modeler instance
 - `prob::AbstractOptimizationProblem`: Original optimization problem
 - `nlp_solution::SolverCore.AbstractExecutionStats`: NLP solver statistics
 
@@ -378,7 +378,7 @@ Build a solution object from NLP solver statistics.
 # Examples
 ```julia
 # Create modeler and solve
-modeler = ADNLPModeler()
+modeler = Modelers.ADNLP()
 nlp = modeler(problem, initial_guess)
 stats = solve(nlp, solver)
 
@@ -388,11 +388,11 @@ solution = modeler(problem, stats)
 
 # See also
 
-- [`ADNLPModeler`](@ref): Type documentation
+- [`Modelers.ADNLP`](@ref): Type documentation
 - [`SolverCore.AbstractExecutionStats`](@ref): Solver statistics type
 - [`solve`](@ref): Generic solve interface
 """
-function (modeler::ADNLPModeler)(
+function (modeler::Modelers.ADNLP)(
     prob::AbstractOptimizationProblem,
     nlp_solution::SolverCore.AbstractExecutionStats
 )

@@ -1,12 +1,11 @@
 module TestCoverageDisambiguation
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Orchestration
-using CTSolvers.Strategies
-using CTSolvers.Options
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Orchestration
+import CTSolvers.Strategies
+import CTSolvers.Options
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true

@@ -1,6 +1,6 @@
 # Abstract Optimization Modeler
 #
-# Defines the AbstractOptimizationModeler strategy contract for all modeler strategies.
+# Defines the AbstractNLPModeler strategy contract for all modeler strategies.
 # This extends the AbstractStrategy contract with modeler-specific interfaces.
 #
 # Author: CTSolvers Development Team
@@ -25,7 +25,7 @@ All concrete modeler strategies must:
 
 # Example
 ```julia
-struct MyModeler <: AbstractOptimizationModeler
+struct MyModeler <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 
@@ -40,7 +40,7 @@ function (modeler::MyModeler)(
 end
 ```
 """
-abstract type AbstractOptimizationModeler <: Strategies.AbstractStrategy end
+abstract type AbstractNLPModeler <: Strategies.AbstractStrategy end
 
 """
 $(TYPEDSIGNATURES)
@@ -48,7 +48,7 @@ $(TYPEDSIGNATURES)
 Build an NLP model from a discretized optimal control problem and initial guess.
 
 # Arguments
-- `modeler::AbstractOptimizationModeler`: The modeler strategy instance
+- `modeler::AbstractNLPModeler`: The modeler strategy instance
 - `prob::AbstractOptimizationProblem`: The discretized optimal control problem
 - `initial_guess`: Initial guess for optimization variables
 
@@ -58,7 +58,7 @@ Build an NLP model from a discretized optimal control problem and initial guess.
 # Throws
 - `Strategies.Exceptions.NotImplemented`: If not implemented by concrete type
 """
-function (modeler::AbstractOptimizationModeler)(
+function (modeler::AbstractNLPModeler)(
     ::AbstractOptimizationProblem, 
     initial_guess
 )
@@ -66,7 +66,7 @@ function (modeler::AbstractOptimizationModeler)(
         "Model building not implemented",
         required_method="(modeler::$(typeof(modeler)))(prob::AbstractOptimizationProblem, initial_guess)",
         suggestion="Implement the callable method for $(typeof(modeler)) to build NLP models",
-        context="AbstractOptimizationModeler - required method implementation"
+        context="AbstractNLPModeler - required method implementation"
     ))
 end
 
@@ -76,7 +76,7 @@ $(TYPEDSIGNATURES)
 Build a solution object from a discretized optimal control problem and NLP solution.
 
 # Arguments
-- `modeler::AbstractOptimizationModeler`: The modeler strategy instance
+- `modeler::AbstractNLPModeler`: The modeler strategy instance
 - `prob::AbstractOptimizationProblem`: The discretized optimal control problem
 - `nlp_solution::SolverCore.AbstractExecutionStats`: Solution from NLP solver
 
@@ -86,7 +86,7 @@ Build a solution object from a discretized optimal control problem and NLP solut
 # Throws
 - `Strategies.Exceptions.NotImplemented`: If not implemented by concrete type
 """
-function (modeler::AbstractOptimizationModeler)(
+function (modeler::AbstractNLPModeler)(
     ::AbstractOptimizationProblem,
     ::SolverCore.AbstractExecutionStats
 )
@@ -94,6 +94,6 @@ function (modeler::AbstractOptimizationModeler)(
         "Solution building not implemented",
         required_method="(modeler::$(typeof(modeler)))(prob::AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats)",
         suggestion="Implement the callable method for $(typeof(modeler)) to build solution objects",
-        context="AbstractOptimizationModeler - required method implementation"
+        context="AbstractNLPModeler - required method implementation"
     ))
 end

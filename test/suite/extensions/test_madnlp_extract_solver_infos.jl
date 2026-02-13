@@ -1,11 +1,11 @@
 module TestExtMadNLP
 
-using Test
-using CTSolvers
-using MadNLP
-using MadNLPMumps # must be removed in the future
-using NLPModels
-using ADNLPModels
+import Test
+import CTSolvers.Optimization
+import MadNLP
+import MadNLPMumps # must be removed in the future
+import NLPModels
+import ADNLPModels
 
 # Default test options (can be overridden by Main.TestOptions if available)
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
@@ -66,7 +66,7 @@ function test_madnlp_extract_solver_infos()
             
             # Extract solver infos using CTSolvers extension
             objective, iterations, constraints_violation, message, status, successful = 
-                CTSolvers.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
             
             # Verify results
             Test.@test objective ≈ 0.0 atol=1e-6  # Optimal objective
@@ -92,7 +92,7 @@ function test_madnlp_extract_solver_infos()
             stats_min = MadNLP.solve!(solver_min)
             
             # Extract solver infos
-            objective_min, _, _, _, _, _ = CTSolvers.extract_solver_infos(stats_min, NLPModels.get_minimize(nlp_min))
+            objective_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min, NLPModels.get_minimize(nlp_min))
             
             # For minimization, objective should equal stats.objective
             Test.@test objective_min ≈ stats_min.objective atol=1e-10
@@ -127,7 +127,7 @@ function test_madnlp_extract_solver_infos()
             nlp_min = ADNLPModels.ADNLPModel(obj, x0; minimize=true)
             solver_min = MadNLP.MadNLPSolver(nlp_min; print_level=MadNLP.ERROR)
             stats_min = MadNLP.solve!(solver_min)
-            obj_min, _, _, _, _, _ = CTSolvers.extract_solver_infos(stats_min, NLPModels.get_minimize(nlp_min))
+            obj_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min, NLPModels.get_minimize(nlp_min))
             
             # For minimization, extracted objective should equal raw stats objective
             Test.@test obj_min ≈ stats_min.objective atol=1e-10
@@ -148,7 +148,7 @@ function test_madnlp_extract_solver_infos()
             solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR)
             stats = MadNLP.solve!(solver)
             
-            _, _, _, _, status, _ = CTSolvers.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            _, _, _, _, status, _ = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
             
             # Status should be a Symbol
             Test.@test status isa Symbol
@@ -168,7 +168,7 @@ function test_madnlp_extract_solver_infos()
             solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR, max_iter=100)
             stats = MadNLP.solve!(solver)
             
-            _, _, _, _, status, successful = CTSolvers.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            _, _, _, _, status, successful = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
             
             # For a simple problem, should succeed
             Test.@test successful == true
@@ -193,7 +193,7 @@ function test_madnlp_extract_solver_infos()
             solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR)
             stats = MadNLP.solve!(solver)
             
-            result = CTSolvers.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            result = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
             
             # Should return a 6-tuple
             Test.@test result isa Tuple
@@ -227,7 +227,7 @@ function test_madnlp_extract_solver_infos()
             stats_max = MadNLP.solve!(solver_max)
             
             # Extract solver infos
-            objective_extracted, _, _, _, _, _ = CTSolvers.extract_solver_infos(stats_max, NLPModels.get_minimize(nlp_max))
+            objective_extracted, _, _, _, _, _ = Optimization.extract_solver_infos(stats_max, NLPModels.get_minimize(nlp_max))
             
             # The extracted objective should be the true maximization objective (≈ 1.0)
             Test.@test objective_extracted ≈ 1.0 atol=1e-6
@@ -273,11 +273,11 @@ function test_madnlp_extract_solver_infos()
             original_objective = stats_min.objective
             
             # Test case 1: minimization (should not flip)
-            obj_min, _, _, _, _, _ = CTSolvers.extract_solver_infos(stats_min, true)
+            obj_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min, true)
             Test.@test obj_min ≈ original_objective atol=1e-10
             
             # Test case 2: maximization (should flip)
-            obj_max, _, _, _, _, _ = CTSolvers.extract_solver_infos(stats_min, false)
+            obj_max, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min, false)
             Test.@test obj_max ≈ -original_objective atol=1e-10
             
             # Verify the flip logic

@@ -1,6 +1,6 @@
 # DOCP Model API
 #
-# Specific API for building NLP models and solutions from DiscretizedOptimalControlProblem.
+# Specific API for building NLP models and solutions from DiscretizedModel.
 # These functions provide convenient wrappers for DOCP-specific operations.
 #
 # Author: CTSolvers Development Team
@@ -12,12 +12,12 @@ $(TYPEDSIGNATURES)
 Build an NLP model from a discretized optimal control problem.
 
 This is a convenience wrapper around `build_model` that provides explicit
-typing for `DiscretizedOptimalControlProblem`.
+typing for `DiscretizedModel`.
 
 # Arguments
-- `prob::DiscretizedOptimalControlProblem`: The discretized OCP
+- `prob::DiscretizedModel`: The discretized OCP
 - `initial_guess`: Initial guess for the NLP solver
-- `modeler`: The modeler to use (e.g., ADNLPModeler, ExaModeler)
+- `modeler`: The modeler to use (e.g., Modelers.ADNLP, Modelers.Exa)
 
 # Returns
 - `NLPModels.AbstractNLPModel`: The NLP model
@@ -29,9 +29,9 @@ ADNLPModel(...)
 ```
 """
 function nlp_model(
-    prob::DiscretizedOptimalControlProblem,
+    prob::DiscretizedModel,
     initial_guess,
-    modeler::Modelers.AbstractOptimizationModeler
+    modeler::Modelers.AbstractNLPModeler
 )::NLPModels.AbstractNLPModel
     return build_model(prob, initial_guess, modeler)
 end
@@ -42,16 +42,16 @@ $(TYPEDSIGNATURES)
 Build an optimal control solution from NLP execution statistics.
 
 This is a convenience wrapper around `build_solution` that provides explicit
-typing for `DiscretizedOptimalControlProblem` and ensures the return type
+typing for `DiscretizedModel` and ensures the return type
 is an optimal control solution.
 
 # Arguments
-- `docp::DiscretizedOptimalControlProblem`: The discretized OCP
+- `docp::DiscretizedModel`: The discretized OCP
 - `model_solution::SolverCore.AbstractExecutionStats`: NLP solver output
 - `modeler`: The modeler used for building
 
 # Returns
-- `AbstractOptimalControlSolution`: The OCP solution
+- `AbstractSolution`: The OCP solution
 
 # Example
 ```julia-repl
@@ -60,9 +60,9 @@ OptimalControlSolution(...)
 ```
 """
 function ocp_solution(
-    docp::DiscretizedOptimalControlProblem,
+    docp::DiscretizedModel,
     model_solution::SolverCore.AbstractExecutionStats,
-    modeler::Modelers.AbstractOptimizationModeler
+    modeler::Modelers.AbstractNLPModeler
 )
     return build_solution(docp, model_solution, modeler)
 end

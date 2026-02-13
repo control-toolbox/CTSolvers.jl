@@ -4,12 +4,12 @@
 CurrentModule = CTSolvers
 ```
 
-This guide explains how to implement an optimization modeler in CTSolvers. Modelers are strategies that convert `AbstractOptimizationProblem` instances into NLP backend models and convert NLP solver results back into problem-specific solutions. We use **ADNLPModeler** and **ExaModeler** as reference examples.
+This guide explains how to implement an optimization modeler in CTSolvers. Modelers are strategies that convert `AbstractOptimizationProblem` instances into NLP backend models and convert NLP solver results back into problem-specific solutions. We use **Modelers.ADNLP** and **Modelers.Exa** as reference examples.
 
 !!! tip "Prerequisites"
     Read [Architecture](@ref) and [Implementing a Strategy](@ref) first. A modeler is a strategy with two additional **callable contracts**.
 
-## The AbstractOptimizationModeler Contract
+## The AbstractNLPModeler Contract
 
 A modeler must satisfy **three contracts**:
 
@@ -26,15 +26,15 @@ classDiagram
         options(instance)::StrategyOptions
     }
 
-    class AbstractOptimizationModeler {
+    class AbstractNLPModeler {
         <<abstract>>
         (modeler)(prob, x0) → NLP
         (modeler)(prob, stats) → Solution
     }
 
-    AbstractStrategy <|-- AbstractOptimizationModeler
-    AbstractOptimizationModeler <|-- ADNLPModeler
-    AbstractOptimizationModeler <|-- ExaModeler
+    AbstractStrategy <|-- AbstractNLPModeler
+    AbstractNLPModeler <|-- Modelers.ADNLP
+    AbstractNLPModeler <|-- Modelers.Exa
 ```
 
 Both callables have default implementations that throw `NotImplemented`.
@@ -47,21 +47,21 @@ nothing # hide
 The `id` is available directly:
 
 ```@example modeler
-CTSolvers.Strategies.id(CTSolvers.Modelers.ADNLPModeler)
+CTSolvers.Strategies.id(CTSolvers.Modelers.ADNLP)
 ```
 
 ```@example modeler
-CTSolvers.Strategies.id(CTSolvers.Modelers.ExaModeler)
+CTSolvers.Strategies.id(CTSolvers.Modelers.Exa)
 ```
 
 ## Step-by-Step Implementation
 
-We walk through the ADNLPModeler implementation as a reference.
+We walk through the Modelers.ADNLP implementation as a reference.
 
 ### Step 1 — Define the struct
 
 ```julia
-struct ADNLPModeler <: AbstractOptimizationModeler
+struct Modelers.ADNLP <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 ```
@@ -69,7 +69,7 @@ end
 ### Step 2 — Implement `id`
 
 ```@example modeler
-CTSolvers.Strategies.id(CTSolvers.Modelers.ADNLPModeler)
+CTSolvers.Strategies.id(CTSolvers.Modelers.ADNLP)
 ```
 
 ### Step 3 — Define defaults and metadata
@@ -77,7 +77,7 @@ CTSolvers.Strategies.id(CTSolvers.Modelers.ADNLPModeler)
 The metadata defines all configurable options with types, defaults, and validators:
 
 ```@example modeler
-CTSolvers.Strategies.metadata(CTSolvers.Modelers.ADNLPModeler)
+CTSolvers.Strategies.metadata(CTSolvers.Modelers.ADNLP)
 ```
 
 ### Step 4 — Constructor and options accessor
@@ -85,7 +85,7 @@ CTSolvers.Strategies.metadata(CTSolvers.Modelers.ADNLPModeler)
 The constructor validates options and stores them:
 
 ```@example modeler
-modeler = CTSolvers.Modelers.ADNLPModeler(backend = :optimized)
+modeler = CTSolvers.Modelers.ADNLP(backend = :optimized)
 ```
 
 ```@example modeler
@@ -97,7 +97,7 @@ CTSolvers.Strategies.options(modeler)
 This is the core of the modeler. It retrieves the appropriate **builder** from the problem and invokes it:
 
 ```julia
-function (modeler::ADNLPModeler)(
+function (modeler::Modelers.ADNLP)(
     prob::AbstractOptimizationProblem,
     initial_guess,
 )::ADNLPModels.ADNLPModel
@@ -119,7 +119,7 @@ The key interaction is with the **Builder pattern**: the modeler doesn't know ho
 Same pattern, but for converting NLP results back into a problem-specific solution:
 
 ```julia
-function (modeler::ADNLPModeler)(
+function (modeler::Modelers.ADNLP)(
     prob::AbstractOptimizationProblem,
     nlp_solution::SolverCore.AbstractExecutionStats,
 )
@@ -128,18 +128,18 @@ function (modeler::ADNLPModeler)(
 end
 ```
 
-## ExaModeler: A Second Example
+## Modelers.Exa: A Second Example
 
-ExaModeler follows the same pattern with different options and a slightly different callable signature:
+Modelers.Exa follows the same pattern with different options and a slightly different callable signature:
 
 ```julia
-struct ExaModeler <: AbstractOptimizationModeler
+struct Modelers.Exa <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 
-Strategies.id(::Type{<:ExaModeler}) = :exa
+Strategies.id(::Type{<:Modelers.Exa}) = :exa
 
-function Strategies.metadata(::Type{<:ExaModeler})
+function Strategies.metadata(::Type{<:Modelers.Exa})
     return Strategies.StrategyMetadata(
         Options.OptionDefinition(
             name = :base_type,
@@ -161,7 +161,7 @@ end
 The model building callable extracts `base_type` as a positional argument:
 
 ```julia
-function (modeler::ExaModeler)(
+function (modeler::Modelers.Exa)(
     prob::AbstractOptimizationProblem,
     initial_guess,
 )::ExaModels.ExaModel
@@ -202,7 +202,7 @@ sequenceDiagram
     participant User
     participant Solve as CommonSolve.solve
     participant BuildModel as build_model
-    participant Modeler as ADNLPModeler
+    participant Modeler as Modelers.ADNLP
     participant Problem as AbstractOptimizationProblem
     participant Builder as ADNLPModelBuilder
 
@@ -221,10 +221,10 @@ sequenceDiagram
 Use `validate_strategy_contract` to verify the strategy contract (but not the callables — those require a real problem):
 
 ```julia
-julia> Strategies.validate_strategy_contract(ADNLPModeler)
+julia> Strategies.validate_strategy_contract(Modelers.ADNLP)
 true
 
-julia> Strategies.validate_strategy_contract(ExaModeler)
+julia> Strategies.validate_strategy_contract(Modelers.Exa)
 true
 ```
 
@@ -238,7 +238,7 @@ For the callables, test with a fake or real problem:
 prob = FakeOptimizationProblem(adnlp_builder, adnlp_solution_builder)
 
 # Test model building
-modeler = ADNLPModeler(backend = :optimized)
+modeler = Modelers.ADNLP(backend = :optimized)
 nlp = modeler(prob, x0)
 @test nlp isa ADNLPModels.ADNLPModel
 
@@ -252,7 +252,7 @@ solution = modeler(prob, stats)
 
 To add a new modeler (e.g., `MyModeler` for a new NLP backend):
 
-1. Define `MyModeler <: AbstractOptimizationModeler` with `options::StrategyOptions`
+1. Define `MyModeler <: AbstractNLPModeler` with `options::StrategyOptions`
 2. Implement `Strategies.id(::Type{<:MyModeler}) = :my_backend`
 3. Implement `Strategies.metadata(::Type{<:MyModeler})` with option definitions
 4. Write constructor: `MyModeler(; mode, kwargs...)`

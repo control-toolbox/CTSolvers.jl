@@ -1,10 +1,8 @@
 module TestCoverageValidation
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Modelers
+import Test
+import CTBase.Exceptions
+import CTSolvers.Modelers
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -23,9 +21,11 @@ function test_coverage_validation()
             Test.@test Modelers.validate_adnlp_backend(:generic) == :generic
             Test.@test Modelers.validate_adnlp_backend(:manual) == :manual
 
-            # Enzyme/Zygote warnings (packages not loaded)
-            Test.@test_logs (:warn,) Modelers.validate_adnlp_backend(:enzyme)
-            Test.@test_logs (:warn,) Modelers.validate_adnlp_backend(:zygote)
+            # Enzyme/Zygote warnings (packages not loaded) - capture to avoid console output
+            redirect_stderr(devnull) do
+                Test.@test_logs (:warn,) Modelers.validate_adnlp_backend(:enzyme)
+                Test.@test_logs (:warn,) Modelers.validate_adnlp_backend(:zygote)
+            end
 
             # Invalid backend
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(:invalid)

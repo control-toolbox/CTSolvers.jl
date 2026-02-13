@@ -22,7 +22,7 @@ using MadNLP
 using MadNLPMumps
 using MadNCL
 
-# To trigger IpoptSolver construction
+# To trigger Solvers.Ipopt construction
 using NLPModelsIpopt
 
 # Test options for verbose output
@@ -73,17 +73,17 @@ function test_performance_validation()
             
             # Test strict mode performance
             println("   Testing strict mode...")
-            strict_time = @benchmark Solvers.IpoptSolver(; $known_opts...) samples=1000 evals=1
+            strict_time = @benchmark Solvers.Ipopt(; $known_opts...) samples=1000 evals=1
             println("   Strict mode median: $(BenchmarkTools.prettytime(median(strict_time.times)))")
             
             # Test permissive mode performance
             println("   Testing permissive mode...")
-            permissive_time = @benchmark Solvers.IpoptSolver(; $known_opts..., mode=:permissive) samples=1000 evals=1
+            permissive_time = @benchmark Solvers.Ipopt(; $known_opts..., mode=:permissive) samples=1000 evals=1
             println("   Permissive mode median: $(BenchmarkTools.prettytime(median(permissive_time.times)))")
             
             # Test permissive mode with unknown options
             println("   Testing permissive mode with unknown options...")
-            permissive_unknown_time = @benchmark Solvers.IpoptSolver(; $mixed_opts..., mode=:permissive) samples=1000 evals=1
+            permissive_unknown_time = @benchmark Solvers.Ipopt(; $mixed_opts..., mode=:permissive) samples=1000 evals=1
             println("   Permissive mode + unknown median: $(BenchmarkTools.prettytime(median(permissive_unknown_time.times)))")
             
             # Calculate overhead
@@ -103,8 +103,8 @@ function test_performance_validation()
             @test overhead_unknown < 300.0 # Permissive mode with unknown options overhead should be < 300%
             
             # Memory allocation check
-            strict_alloc = @allocated Solvers.IpoptSolver(; known_options...)
-            permissive_alloc = @allocated Solvers.IpoptSolver(; known_options..., mode=:permissive)
+            strict_alloc = @allocated Solvers.Ipopt(; known_options...)
+            permissive_alloc = @allocated Solvers.Ipopt(; known_options..., mode=:permissive)
             
             println("\n💾 Memory Allocation:")
             println("   Strict mode: $(strict_alloc) bytes")
@@ -204,11 +204,11 @@ function test_performance_validation()
         #         println("   Generated $n options for testing")
         #         
         #         # Benchmark strict mode
-        #         strict_time = @benchmark Solvers.IpoptSolver(; $test_opts...) samples=100 evals=1
+        #         strict_time = @benchmark Solvers.Ipopt(; $test_opts...) samples=100 evals=1
         #         strict_median = median(strict_time.times)
         #         
         #         # Benchmark permissive mode
-        #         permissive_time = @benchmark Solvers.IpoptSolver(; $test_opts..., mode=:permissive) samples=100 evals=1
+        #         permissive_time = @benchmark Solvers.Ipopt(; $test_opts..., mode=:permissive) samples=100 evals=1
         #         permissive_median = median(permissive_time.times)
         #         
         #         overhead = (permissive_median - strict_median) / strict_median * 100
@@ -265,10 +265,10 @@ function test_performance_validation()
             
             println("   Testing memory usage with different option types...")
             
-            int_alloc = @allocated Solvers.IpoptSolver(; int_options..., mode=:permissive)
-            float_alloc = @allocated Solvers.IpoptSolver(; float_options..., mode=:permissive)
-            string_alloc = @allocated Solvers.IpoptSolver(; string_options..., mode=:permissive)
-            array_alloc = @allocated Solvers.IpoptSolver(; array_options..., mode=:permissive)
+            int_alloc = @allocated Solvers.Ipopt(; int_options..., mode=:permissive)
+            float_alloc = @allocated Solvers.Ipopt(; float_options..., mode=:permissive)
+            string_alloc = @allocated Solvers.Ipopt(; string_options..., mode=:permissive)
+            array_alloc = @allocated Solvers.Ipopt(; array_options..., mode=:permissive)
             
             println("   Integer options: $(int_alloc) bytes")
             println("   Float options: $(float_alloc) bytes")
@@ -305,10 +305,10 @@ function test_performance_validation()
             
             # Test strict mode performance
             println("   Testing strict mode...")
-            strict_time = @benchmark Solvers.IpoptSolver(; $known_opts...) samples=1000 evals=1
+            strict_time = @benchmark Solvers.Ipopt(; $known_opts...) samples=1000 evals=1
             strict_median = median(strict_time.times)
             
-            permissive_time = @benchmark Solvers.IpoptSolver(; $known_opts..., mode=:permissive) samples=1000 evals=1
+            permissive_time = @benchmark Solvers.Ipopt(; $known_opts..., mode=:permissive) samples=1000 evals=1
             permissive_median = median(permissive_time.times)
             
             println("   Baseline: $(BenchmarkTools.prettytime(baseline_median))")

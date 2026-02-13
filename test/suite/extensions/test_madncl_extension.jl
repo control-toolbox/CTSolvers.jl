@@ -1,23 +1,24 @@
 module TestMadNCLExtension
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Solvers
-using CTSolvers.Strategies
-using CTSolvers.Options
-using CTSolvers.Modelers
-using CTSolvers.Optimization
-using CommonSolve
-using CUDA
-using NLPModels
-using ADNLPModels
-using MadNCL
-using MadNLP
-using MadNLPMumps
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Solvers
+import CTSolvers.Strategies
+import CTSolvers.Options
+import CTSolvers.Modelers
+import CTSolvers.Optimization
+import CommonSolve
+import CUDA
+import NLPModels
+import ADNLPModels
+import MadNCL
+import MadNLP
+import MadNLPMumps
 import MadNLPGPU
-using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
+
+include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
+import .TestProblems
 
 # Trigger extension loading
 const CTSolversMadNCL = Base.get_extension(CTSolvers, :CTSolversMadNCL)
@@ -27,20 +28,15 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 
 # CUDA availability check
 is_cuda_on() = CUDA.functional()
-if is_cuda_on()
-    println("✓ CUDA functional, GPU tests enabled")
-else
-    println("⚠️  CUDA not functional, GPU tests will be skipped")
-end
 
 """
     test_madncl_extension()
 
-Tests for MadNCLSolver extension.
+Tests for Solvers.MadNCL extension.
 
 🧪 **Applying Testing Rule**: Unit Tests + Integration Tests
 
-Tests the complete MadNCLSolver functionality including metadata, constructor,
+Tests the complete Solvers.MadNCL functionality including metadata, constructor,
 options handling (including ncl_options), display flag, and problem solving.
 """
 function test_madncl_extension()
@@ -52,7 +48,7 @@ function test_madncl_extension()
         # ====================================================================
         
         Test.@testset "Metadata" begin
-            meta = Strategies.metadata(Solvers.MadNCLSolver)
+            meta = Strategies.metadata(Solvers.MadNCL)
             
             Test.@test meta isa Strategies.StrategyMetadata
             Test.@test length(meta) > 0
@@ -104,13 +100,13 @@ function test_madncl_extension()
         
         Test.@testset "Constructor" begin
             # Default constructor
-            solver = Solvers.MadNCLSolver()
-            Test.@test solver isa Solvers.MadNCLSolver
+            solver = Solvers.MadNCL()
+            Test.@test solver isa Solvers.MadNCL
             Test.@test solver isa Solvers.AbstractOptimizationSolver
             
             # Constructor with options
-            solver_custom = Solvers.MadNCLSolver(max_iter=100, tol=1e-6)
-            Test.@test solver_custom isa Solvers.MadNCLSolver
+            solver_custom = Solvers.MadNCL(max_iter=100, tol=1e-6)
+            Test.@test solver_custom isa Solvers.MadNCL
             
             # Test Strategies.options() returns StrategyOptions
             opts = Strategies.options(solver)
@@ -122,7 +118,7 @@ function test_madncl_extension()
         # ====================================================================
         
         Test.@testset "Options Extraction" begin
-            solver = Solvers.MadNCLSolver(max_iter=500, tol=1e-8)
+            solver = Solvers.MadNCL(max_iter=500, tol=1e-8)
             opts = Strategies.options(solver)
             
             # Extract raw options (returns NamedTuple)
@@ -146,7 +142,7 @@ function test_madncl_extension()
         
         Test.@testset "NCLOptions" begin
             # Test with default ncl_options
-            solver_default = Solvers.MadNCLSolver()
+            solver_default = Solvers.MadNCL()
             opts_default = Strategies.options(solver_default)
             raw_default = Options.extract_raw_options(opts_default.options)
             
@@ -159,7 +155,7 @@ function test_madncl_extension()
                 opt_tol=1e-6,
                 feas_tol=1e-6
             )
-            solver_custom = Solvers.MadNCLSolver(ncl_options=custom_ncl)
+            solver_custom = Solvers.MadNCL(ncl_options=custom_ncl)
             opts_custom = Strategies.options(solver_custom)
             raw_custom = Options.extract_raw_options(opts_custom.options)
             
@@ -173,13 +169,13 @@ function test_madncl_extension()
         Test.@testset "Option Validation" begin
             # Should behave exactly like MadNLP validation
             redirect_stderr(devnull) do
-                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNCLSolver(acceptable_tol=-1.0)
-                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNCLSolver(max_wall_time=0.0)
-                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNCLSolver(bound_push=-1.0)
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNCL(acceptable_tol=-1.0)
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNCL(max_wall_time=0.0)
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNCL(bound_push=-1.0)
             end
 
             # Valid construction
-            Test.@test_nowarn Solvers.MadNCLSolver(acceptable_tol=1e-5, max_wall_time=100.0)
+            Test.@test_nowarn Solvers.MadNCL(acceptable_tol=1e-5, max_wall_time=100.0)
         end
 
         # ====================================================================
@@ -188,12 +184,12 @@ function test_madncl_extension()
 
         Test.@testset "MadNLP Option Pass-through" begin
             # Create a simple dummy problem
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
             nlp = adnlp_builder(ros.init)
 
             # checking that it runs without error with these options
-            solver = Solvers.MadNCLSolver(
+            solver = Solvers.MadNCL(
                 max_iter=1,
                 print_level=MadNLP.ERROR,
                 acceptable_tol=1e-2,
@@ -211,13 +207,13 @@ function test_madncl_extension()
         Test.@testset "Display Flag" begin
             # MadNCL requires problems with constraints
             # Using Elec problem which has constraints
-            elec = Elec()
+            elec = TestProblems.Elec()
             adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
             nlp = adnlp_builder(elec.init)
             
             # Test with display=false sets print_level=MadNLP.ERROR
             # and reconstructs ncl_options with verbose=false
-            solver_verbose = Solvers.MadNCLSolver(
+            solver_verbose = Solvers.MadNCL(
                 max_iter=10,
                 print_level=MadNLP.INFO
             )
@@ -232,13 +228,13 @@ function test_madncl_extension()
         # ====================================================================
         
         Test.@testset "Rosenbrock Problem - CPU" begin
-            ros = Rosenbrock()
+            ros = TestProblems.Rosenbrock()
             
             # Build NLP model
             adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
             nlp = adnlp_builder(ros.init)
             
-            solver = Solvers.MadNCLSolver(
+            solver = Solvers.MadNCL(
                 max_iter=1000,
                 tol=1e-6,
                 print_level=MadNLP.ERROR
@@ -251,13 +247,13 @@ function test_madncl_extension()
         end
         
         Test.@testset "Elec Problem - CPU" begin
-            elec = Elec()
+            elec = TestProblems.Elec()
             
             # Build NLP model
             adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
             nlp = adnlp_builder(elec.init)
             
-            solver = Solvers.MadNCLSolver(
+            solver = Solvers.MadNCL(
                 max_iter=3000,
                 tol=1e-6,
                 print_level=MadNLP.ERROR
@@ -270,13 +266,13 @@ function test_madncl_extension()
         end
         
         Test.@testset "Max1MinusX2 Problem - CPU" begin
-            max_prob = Max1MinusX2()
+            max_prob = TestProblems.Max1MinusX2()
             
             # Build NLP model
             adnlp_builder = CTSolvers.get_adnlp_model_builder(max_prob.prob)
             nlp = adnlp_builder(max_prob.init)
             
-            solver = Solvers.MadNCLSolver(
+            solver = Solvers.MadNCL(
                 max_iter=1000,
                 tol=1e-6,
                 print_level=MadNLP.ERROR
@@ -289,7 +285,7 @@ function test_madncl_extension()
             Test.@test length(stats.solution) == 1
             Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
             # Note: MadNCL does NOT invert the sign (unlike MadNLP)
-            Test.@test stats.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
+            Test.@test stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
         end
         
         # ====================================================================
@@ -300,21 +296,20 @@ function test_madncl_extension()
             # Check if CUDA is available and functional
             if CUDA.functional()
                 Test.@testset "Rosenbrock Problem - GPU" begin
-                    ros = Rosenbrock()
+                    ros = TestProblems.Rosenbrock()
                     
                     # Note: GPU linear solver would need to be configured
                     # For now, just test that the solver can be created
-                    solver = Solvers.MadNCLSolver(
+                    solver = Solvers.MadNCL(
                         max_iter=1000,
                         tol=1e-6,
                         print_level=MadNLP.ERROR
                     )
                     
-                    Test.@test solver isa Solvers.MadNCLSolver
-                    @test_skip "GPU linear solver configuration needed"
+                    Test.@test solver isa Solvers.MadNCL
                 end
             else
-                @test_skip "CUDA not functional, GPU tests skipped"
+                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
         
@@ -324,8 +319,8 @@ function test_madncl_extension()
         
         Test.@testset "Option Aliases" begin
             # Test that aliases work
-            solver1 = Solvers.MadNCLSolver(max_iter=100)
-            solver2 = Solvers.MadNCLSolver(maxiter=100)
+            solver1 = Solvers.MadNCL(max_iter=100)
+            solver2 = Solvers.MadNCL(maxiter=100)
             
             opts1 = Strategies.options(solver1)
             opts2 = Strategies.options(solver2)
@@ -343,15 +338,15 @@ function test_madncl_extension()
         # ====================================================================
         
         Test.@testset "Multiple Solves" begin
-            solver = Solvers.MadNCLSolver(
+            solver = Solvers.MadNCL(
                 max_iter=1000,
                 tol=1e-6,
                 print_level=MadNLP.ERROR
             )
             
             # Solve different problems with same solver
-            elec = Elec()
-            max_prob = Max1MinusX2()
+            elec = TestProblems.Elec()
+            max_prob = TestProblems.Max1MinusX2()
             
             # Build NLP models
             adnlp_builder1 = CTSolvers.get_adnlp_model_builder(elec.prob)
@@ -373,13 +368,13 @@ function test_madncl_extension()
         
         Test.@testset "Initial Guess - NCLOptions" begin
             BaseType = Float64
-            modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler(; base_type=BaseType)]
-            modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+            modelers = [Modelers.ADNLP(), Modelers.Exa(; base_type=BaseType)]
+            modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
             linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
             linear_solver_names = ["Umfpack", "Mumps"]
             
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-                elec = Elec()
+                elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -399,7 +394,7 @@ function test_madncl_extension()
                                 elec.prob,
                                 elec.init,
                                 modeler,
-                                Solvers.MadNCLSolver(; opts..., linear_solver=linear_solver),
+                                Solvers.MadNCL(; opts..., linear_solver=linear_solver),
                             )
                             Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                             Test.@test sol.solution ≈ vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
@@ -415,8 +410,8 @@ function test_madncl_extension()
         
         Test.@testset "solve_with_madncl Function" begin
             BaseType = Float64
-            modelers = [Modelers.ADNLPModeler(), Modelers.ExaModeler(; base_type=BaseType)]
-            modelers_names = ["ADNLPModeler", "ExaModeler (CPU)"]
+            modelers = [Modelers.ADNLP(), Modelers.Exa(; base_type=BaseType)]
+            modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
             madncl_options = Dict(
                 :max_iter => 1000,
                 :tol => 1e-6,
@@ -427,7 +422,7 @@ function test_madncl_extension()
             linear_solver_names = ["Mumps"]
             
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-                elec = Elec()
+                elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -440,7 +435,7 @@ function test_madncl_extension()
             end
             
             Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
-                max_prob = Max1MinusX2()
+                max_prob = TestProblems.Max1MinusX2()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -450,7 +445,7 @@ function test_madncl_extension()
                             Test.@test length(sol.solution) == 1
                             Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
                             # MadNCL does NOT invert sign (unlike MadNLP)
-                            Test.@test sol.objective ≈ max1minusx2_objective(max_prob.sol) atol=1e-6
+                            Test.@test sol.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
                         end
                     end
                 end
@@ -463,8 +458,8 @@ function test_madncl_extension()
         
         Test.@testset "GPU Tests" begin
             if is_cuda_on()
-                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
-                gpu_solver = Solvers.MadNCLSolver(
+                gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
+                gpu_solver = Solvers.MadNCL(
                     max_iter=1000,
                     tol=1e-6,
                     print_level=MadNLP.ERROR,
@@ -473,7 +468,7 @@ function test_madncl_extension()
                 )
 
                 Test.@testset "Elec - GPU" begin
-                    elec = Elec()
+                    elec = TestProblems.Elec()
                     sol = CommonSolve.solve(
                         elec.prob, elec.init, gpu_modeler, gpu_solver;
                         display=false
@@ -488,7 +483,7 @@ function test_madncl_extension()
                 # convergence to constraint bound x≈5 instead of x=0
                 # Test disabled until ExaModels GPU supports maximization correctly
                 # Test.@testset "Max1MinusX2 - GPU" begin
-                #     max_prob = Max1MinusX2()
+                #     max_prob = TestProblems.Max1MinusX2()
                 #     sol = CommonSolve.solve(
                 #         max_prob.prob, max_prob.init, gpu_modeler, gpu_solver;
                 #         display=false
@@ -508,7 +503,7 @@ function test_madncl_extension()
 
         Test.@testset "GPU - solve_with_madncl" begin
             if is_cuda_on()
-                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
+                gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
                 madncl_options = Dict(
                     :max_iter => 1000,
                     :tol => 1e-6,
@@ -518,7 +513,7 @@ function test_madncl_extension()
                 )
 
                 Test.@testset "Elec - GPU" begin
-                    elec = Elec()
+                    elec = TestProblems.Elec()
                     nlp = Optimization.build_model(elec.prob, elec.init, gpu_modeler)
                     sol = CTSolversMadNCL.solve_with_madncl(nlp; madncl_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
@@ -530,7 +525,7 @@ function test_madncl_extension()
                 # convergence to constraint bound x≈5 instead of x=0
                 # Test disabled until ExaModels GPU supports maximization correctly
                 # Test.@testset "Max1MinusX2 - GPU" begin
-                #     max_prob = Max1MinusX2()
+                #     max_prob = TestProblems.Max1MinusX2()
                 #     nlp = Optimization.build_model(max_prob.prob, max_prob.init, gpu_modeler)
                 #     sol = CTSolversMadNCL.solve_with_madncl(nlp; madncl_options...)
                 #     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
@@ -548,12 +543,12 @@ function test_madncl_extension()
 
         Test.@testset "GPU - Initial Guess (max_iter=0)" begin
             if is_cuda_on()
-                gpu_modeler = Modelers.ExaModeler(backend=CUDA.CUDABackend())
+                gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
                 ncl_opts_0 = MadNCL.NCLOptions{Float64}(
                     verbose=false,
                     max_auglag_iter=0
                 )
-                gpu_solver_0 = Solvers.MadNCLSolver(
+                gpu_solver_0 = Solvers.MadNCL(
                     max_iter=0,
                     print_level=MadNLP.ERROR,
                     linear_solver=MadNLPGPU.CUDSSSolver,
@@ -561,7 +556,7 @@ function test_madncl_extension()
                 )
 
                 Test.@testset "Elec - GPU" begin
-                    elec = Elec()
+                    elec = TestProblems.Elec()
                     sol = CommonSolve.solve(
                         elec.prob, elec.init, gpu_modeler, gpu_solver_0;
                         display=false

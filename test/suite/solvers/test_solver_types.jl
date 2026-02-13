@@ -1,11 +1,10 @@
 module TestSolverTypes
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Solvers
-using CTSolvers.Strategies
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Solvers
+import CTSolvers.Strategies
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -29,21 +28,21 @@ function test_solver_types()
         
         Test.@testset "Type Hierarchy" begin
             # All solver types should inherit from AbstractOptimizationSolver
-            Test.@test Solvers.IpoptSolver <: Solvers.AbstractOptimizationSolver
-            Test.@test Solvers.MadNLPSolver <: Solvers.AbstractOptimizationSolver
-            Test.@test Solvers.MadNCLSolver <: Solvers.AbstractOptimizationSolver
+            Test.@test Solvers.Ipopt <: Solvers.AbstractOptimizationSolver
+            Test.@test Solvers.MadNLP <: Solvers.AbstractOptimizationSolver
+            Test.@test Solvers.MadNCL <: Solvers.AbstractOptimizationSolver
             # Commented out - no Knitro license available
-            # Test.@test Solvers.KnitroSolver <: Solvers.AbstractOptimizationSolver
+            # Test.@test Solvers.Knitro <: Solvers.AbstractOptimizationSolver
             
             # AbstractOptimizationSolver should be abstract
             Test.@test isabstracttype(Solvers.AbstractOptimizationSolver)
             
             # Concrete solver types should not be abstract
-            Test.@test !isabstracttype(Solvers.IpoptSolver)
-            Test.@test !isabstracttype(Solvers.MadNLPSolver)
-            Test.@test !isabstracttype(Solvers.MadNCLSolver)
+            Test.@test !isabstracttype(Solvers.Ipopt)
+            Test.@test !isabstracttype(Solvers.MadNLP)
+            Test.@test !isabstracttype(Solvers.MadNCL)
             # Commented out - no Knitro license available
-            # Test.@test !isabstracttype(Solvers.KnitroSolver)
+            # Test.@test !isabstracttype(Solvers.Knitro)
         end
         
         # ====================================================================
@@ -52,28 +51,28 @@ function test_solver_types()
         
             Test.@testset "Strategies.id() Contract" begin
                 # Test that each solver type has a unique identifier
-                Test.@test Strategies.id(Solvers.IpoptSolver) === :ipopt
+                Test.@test Strategies.id(Solvers.Ipopt) === :ipopt
                 # Commented out - no Knitro license available
-                # Test.@test Strategies.id(Solvers.KnitroSolver) === :knitro
-                Test.@test Strategies.id(Solvers.MadNLPSolver) === :madnlp
-                Test.@test Strategies.id(Solvers.MadNCLSolver) === :madncl
+                # Test.@test Strategies.id(Solvers.Knitro) === :knitro
+                Test.@test Strategies.id(Solvers.MadNLP) === :madnlp
+                Test.@test Strategies.id(Solvers.MadNCL) === :madncl
                 
                 # Test that all IDs are unique
                 ids = [
-                    Strategies.id(Solvers.IpoptSolver),
+                    Strategies.id(Solvers.Ipopt),
                     # Commented out - no Knitro license available
-                    # Strategies.id(Solvers.KnitroSolver),
-                    Strategies.id(Solvers.MadNLPSolver),
-                    Strategies.id(Solvers.MadNCLSolver)
+                    # Strategies.id(Solvers.Knitro),
+                    Strategies.id(Solvers.MadNLP),
+                    Strategies.id(Solvers.MadNCL)
                 ]
             Test.@test length(unique(ids)) == 3
             
             # Test that IDs are Symbols
-            Test.@test Strategies.id(Solvers.IpoptSolver) isa Symbol
+            Test.@test Strategies.id(Solvers.Ipopt) isa Symbol
             # Commented out - no Knitro license available
-            # Test.@test Strategies.id(Solvers.KnitroSolver) isa Symbol
-            Test.@test Strategies.id(Solvers.MadNLPSolver) isa Symbol
-            Test.@test Strategies.id(Solvers.MadNCLSolver) isa Symbol
+            # Test.@test Strategies.id(Solvers.Knitro) isa Symbol
+            Test.@test Strategies.id(Solvers.MadNLP) isa Symbol
+            Test.@test Strategies.id(Solvers.MadNCL) isa Symbol
         end
         
         # ====================================================================
@@ -113,18 +112,18 @@ function test_solver_types()
         Test.@testset "Struct Fields" begin
             # All solver structs should have an 'options' field of type StrategyOptions
             # Note: We can't construct solvers without extensions, but we can check field names
-            Test.@test :options in fieldnames(Solvers.IpoptSolver)
+            Test.@test :options in fieldnames(Solvers.Ipopt)
             # Commented out - no Knitro license available
-            # Test.@test :options in fieldnames(Solvers.KnitroSolver)
-            Test.@test :options in fieldnames(Solvers.MadNLPSolver)
-            Test.@test :options in fieldnames(Solvers.MadNCLSolver)
+            # Test.@test :options in fieldnames(Solvers.Knitro)
+            Test.@test :options in fieldnames(Solvers.MadNLP)
+            Test.@test :options in fieldnames(Solvers.MadNCL)
             
             # Check that there's only one field
-            Test.@test length(fieldnames(Solvers.IpoptSolver)) == 1
+            Test.@test length(fieldnames(Solvers.Ipopt)) == 1
             # Commented out - no Knitro license available
-            # Test.@test length(fieldnames(Solvers.KnitroSolver)) == 1
-            Test.@test length(fieldnames(Solvers.MadNLPSolver)) == 1
-            Test.@test length(fieldnames(Solvers.MadNCLSolver)) == 1
+            # Test.@test length(fieldnames(Solvers.Knitro)) == 1
+            Test.@test length(fieldnames(Solvers.MadNLP)) == 1
+            Test.@test length(fieldnames(Solvers.MadNCL)) == 1
         end
     end
 end
