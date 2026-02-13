@@ -132,8 +132,8 @@ Real implementation provided by the extension.
 function build_madncl_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
         :MadNCL, :MadNLP, :MadNLPMumps;
-        message="to create Solvers.MadNCL, access options, and solve problems",
-        feature="Solvers.MadNCL functionality",
+        message="to create MadNCL, access options, and solve problems",
+        feature="MadNCL functionality",
         context="Load MadNCL extension first: using MadNCL, MadNLP, MadNLPMumps"
     ))
 end
