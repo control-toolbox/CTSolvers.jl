@@ -145,34 +145,40 @@ function test_strict_permissive_integration()
                 @test_throws Exception FakeSolver(max_iter=2000, unknown=123)
                 
                 # Should reject invalid type
-                @test_throws Exception FakeSolver(max_iter="invalid")
+                redirect_stderr(devnull) do
+                    @test_throws Exception FakeSolver(max_iter="invalid")
+                end
             end
             
             @testset "Permissive workflow with mixed options" begin
                 # Create solver with mix of known and unknown options
-                solver = FakeSolver(
-                    max_iter=2000,
-                    tol=1e-8,
-                    custom_linear_solver="ma57",
-                    mu_strategy="adaptive";
-                    mode=:permissive
-                )
-                
-                @test solver isa FakeSolver
-                @test Strategies.option_value(solver, :max_iter) == 2000
-                @test Strategies.option_value(solver, :tol) == 1e-8
-                @test Strategies.has_option(solver, :custom_linear_solver)
-                @test Strategies.option_value(solver, :custom_linear_solver) == "ma57"
-                @test Strategies.has_option(solver, :mu_strategy)
+                redirect_stderr(devnull) do
+                    solver = FakeSolver(
+                        max_iter=2000,
+                        tol=1e-8,
+                        custom_linear_solver="ma57",
+                        mu_strategy="adaptive";
+                        mode=:permissive
+                    )
+                    
+                    @test solver isa FakeSolver
+                    @test Strategies.option_value(solver, :max_iter) == 2000
+                    @test Strategies.option_value(solver, :tol) == 1e-8
+                    @test Strategies.has_option(solver, :custom_linear_solver)
+                    @test Strategies.option_value(solver, :custom_linear_solver) == "ma57"
+                    @test Strategies.has_option(solver, :mu_strategy)
+                end
             end
             
             @testset "Permissive still validates known options" begin
                 # Type validation should still work
-                @test_throws Exception FakeSolver(
-                    max_iter="invalid",
-                    custom_option=123;
-                    mode=:permissive
-                )
+                redirect_stderr(devnull) do
+                    @test_throws Exception FakeSolver(
+                        max_iter="invalid",
+                        custom_option=123;
+                        mode=:permissive
+                    )
+                end
             end
         end
         
@@ -188,13 +194,15 @@ function test_strict_permissive_integration()
                 @test solver isa FakeSolver
                 
                 # Modeler in permissive mode
-                modeler = FakeModeler(
-                    backend=:dense,
-                    custom_option="test";
-                    mode=:permissive
-                )
-                @test modeler isa FakeModeler
-                @test Strategies.has_option(modeler, :custom_option)
+                redirect_stderr(devnull) do
+                    modeler = FakeModeler(
+                        backend=:dense,
+                        custom_option="test";
+                        mode=:permissive
+                    )
+                    @test modeler isa FakeModeler
+                    @test Strategies.has_option(modeler, :custom_option)
+                end
                 
                 # Discretizer in strict mode
                 discretizer = FakeDiscretizer(grid_size=200)
@@ -254,16 +262,18 @@ function test_strict_permissive_integration()
             end
             
             @testset "Build from ID in permissive mode" begin
-                solver = Strategies.build_strategy(
-                    :fake_solver,
-                    AbstractTestSolver,
-                    registry;
-                    max_iter=2000,
-                    custom_option=123,
-                    mode=:permissive
-                )
-                @test solver isa FakeSolver
-                @test Strategies.has_option(solver, :custom_option)
+                redirect_stderr(devnull) do
+                    solver = Strategies.build_strategy(
+                        :fake_solver,
+                        AbstractTestSolver,
+                        registry;
+                        max_iter=2000,
+                        custom_option=123,
+                        mode=:permissive
+                    )
+                    @test solver isa FakeSolver
+                    @test Strategies.has_option(solver, :custom_option)
+                end
             end
             
             @testset "Build from method tuple" begin
@@ -339,16 +349,18 @@ function test_strict_permissive_integration()
                 )
                 
                 # Route options in permissive mode
-                routed = Orchestration.route_all_options(
-                    method,
-                    families,
-                    action_defs,
-                    kwargs,
-                    registry;
-                    mode=:permissive
-                )
-                
-                @test haskey(routed.strategies, :solver)
+                redirect_stderr(devnull) do
+                    routed = Orchestration.route_all_options(
+                        method,
+                        families,
+                        action_defs,
+                        kwargs,
+                        registry;
+                        mode=:permissive
+                    )
+                    
+                    @test haskey(routed.strategies, :solver)
+                end
             end
         end
         
@@ -373,17 +385,21 @@ function test_strict_permissive_integration()
                 end
                 
                 # Should work with unknown option via fallback
-                solver = create_solver_safe(max_iter=2000, unknown=123)
-                @test solver isa FakeSolver
-                @test Strategies.has_option(solver, :unknown)
+                redirect_stderr(devnull) do
+                    solver = create_solver_safe(max_iter=2000, unknown=123)
+                    @test solver isa FakeSolver
+                    @test Strategies.has_option(solver, :unknown)
+                end
             end
             
             @testset "Validation errors not masked" begin
                 # Type errors should not be caught by permissive mode
-                @test_throws Exception FakeSolver(
-                    max_iter="invalid";
-                    mode=:permissive
-                )
+                redirect_stderr(devnull) do
+                    @test_throws Exception FakeSolver(
+                        max_iter="invalid";
+                        mode=:permissive
+                    )
+                end
             end
         end
         
@@ -412,21 +428,23 @@ function test_strict_permissive_integration()
             
             @testset "Production workflow (permissive)" begin
                 # Production needs backend-specific options
-                solver = FakeSolver(
-                    max_iter=2000,
-                    tol=1e-8,
-                    # Backend-specific options
-                    linear_solver="ma57",
-                    mu_strategy="adaptive",
-                    warm_start_init_point="yes";
-                    mode=:permissive
-                )
-                
-                @test solver isa FakeSolver
-                @test Strategies.option_value(solver, :max_iter) == 2000
-                @test Strategies.has_option(solver, :linear_solver)
-                @test Strategies.has_option(solver, :mu_strategy)
-                @test Strategies.has_option(solver, :warm_start_init_point)
+                redirect_stderr(devnull) do
+                    solver = FakeSolver(
+                        max_iter=2000,
+                        tol=1e-8,
+                        # Backend-specific options
+                        linear_solver="ma57",
+                        mu_strategy="adaptive",
+                        warm_start_init_point="yes";
+                        mode=:permissive
+                    )
+                    
+                    @test solver isa FakeSolver
+                    @test Strategies.option_value(solver, :max_iter) == 2000
+                    @test Strategies.has_option(solver, :linear_solver)
+                    @test Strategies.has_option(solver, :mu_strategy)
+                    @test Strategies.has_option(solver, :warm_start_init_point)
+                end
             end
             
             @testset "Migration workflow" begin
@@ -441,10 +459,12 @@ function test_strict_permissive_integration()
                     )
                 end
                 
-                solver = create_legacy_solver()
-                @test solver isa FakeSolver
-                @test Strategies.has_option(solver, :old_option)
-                @test Strategies.has_option(solver, :deprecated_flag)
+                redirect_stderr(devnull) do
+                    solver = create_legacy_solver()
+                    @test solver isa FakeSolver
+                    @test Strategies.has_option(solver, :old_option)
+                    @test Strategies.has_option(solver, :deprecated_flag)
+                end
             end
         end
         
@@ -465,16 +485,18 @@ function test_strict_permissive_integration()
             
             @testset "Many options in permissive mode" begin
                 # Should handle many unknown options efficiently
-                solver = FakeSolver(
-                    max_iter=2000,
-                    tol=1e-8,
-                    opt1="a", opt2="b", opt3="c", opt4="d", opt5="e",
-                    opt6="f", opt7="g", opt8="h", opt9="i", opt10="j";
-                    mode=:permissive
-                )
-                @test solver isa FakeSolver
-                @test Strategies.has_option(solver, :opt1)
-                @test Strategies.has_option(solver, :opt10)
+                redirect_stderr(devnull) do
+                    solver = FakeSolver(
+                        max_iter=2000,
+                        tol=1e-8,
+                        opt1="a", opt2="b", opt3="c", opt4="d", opt5="e",
+                        opt6="f", opt7="g", opt8="h", opt9="i", opt10="j";
+                        mode=:permissive
+                    )
+                    @test solver isa FakeSolver
+                    @test Strategies.has_option(solver, :opt1)
+                    @test Strategies.has_option(solver, :opt10)
+                end
             end
         end
         
@@ -493,33 +515,37 @@ function test_strict_permissive_integration()
             
             @testset "Only unknown options in permissive" begin
                 # Should work with only unknown options
-                solver = FakeSolver(
-                    unknown1=1,
-                    unknown2=2,
-                    unknown3=3;
-                    mode=:permissive
-                )
-                @test solver isa FakeSolver
-                @test Strategies.has_option(solver, :unknown1)
-                @test Strategies.has_option(solver, :unknown2)
-                @test Strategies.has_option(solver, :unknown3)
+                redirect_stderr(devnull) do
+                    solver = FakeSolver(
+                        unknown1=1,
+                        unknown2=2,
+                        unknown3=3;
+                        mode=:permissive
+                    )
+                    @test solver isa FakeSolver
+                    @test Strategies.has_option(solver, :unknown1)
+                    @test Strategies.has_option(solver, :unknown2)
+                    @test Strategies.has_option(solver, :unknown3)
+                end
             end
             
             @testset "Complex value types" begin
                 # Should handle various value types
-                solver = FakeSolver(
-                    max_iter=2000,
-                    array_option=[1, 2, 3],
-                    dict_option=Dict(:a => 1),
-                    tuple_option=(1, 2, 3),
-                    function_option=x -> x^2;
-                    mode=:permissive
-                )
-                @test solver isa FakeSolver
-                @test Strategies.has_option(solver, :array_option)
-                @test Strategies.has_option(solver, :dict_option)
-                @test Strategies.has_option(solver, :tuple_option)
-                @test Strategies.has_option(solver, :function_option)
+                redirect_stderr(devnull) do
+                    solver = FakeSolver(
+                        max_iter=2000,
+                        array_option=[1, 2, 3],
+                        dict_option=Dict(:a => 1),
+                        tuple_option=(1, 2, 3),
+                        function_option=x -> x^2;
+                        mode=:permissive
+                    )
+                    @test solver isa FakeSolver
+                    @test Strategies.has_option(solver, :array_option)
+                    @test Strategies.has_option(solver, :dict_option)
+                    @test Strategies.has_option(solver, :tuple_option)
+                    @test Strategies.has_option(solver, :function_option)
+                end
             end
         end
     end

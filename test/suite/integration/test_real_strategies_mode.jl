@@ -71,26 +71,30 @@ function test_real_strategies_mode()
             
             @testset "Permissive mode accepts unknown options" begin
                 # Should work with warning
-                modeler = CTSolvers.Modelers.ADNLP(
-                    backend=:default,
-                    unknown_option=123;
-                    mode=:permissive
-                )
-                @test modeler isa CTSolvers.Modelers.ADNLP
-                
-                # Unknown option should be stored
-                @test Strategies.has_option(modeler, :unknown_option)
-                @test Strategies.option_value(modeler, :unknown_option) == 123
-                @test Strategies.option_source(modeler, :unknown_option) == :user
+                redirect_stderr(devnull) do
+                    modeler = CTSolvers.Modelers.ADNLP(
+                        backend=:default,
+                        unknown_option=123;
+                        mode=:permissive
+                    )
+                    @test modeler isa CTSolvers.Modelers.ADNLP
+                    
+                    # Unknown option should be stored
+                    @test Strategies.has_option(modeler, :unknown_option)
+                    @test Strategies.option_value(modeler, :unknown_option) == 123
+                    @test Strategies.option_source(modeler, :unknown_option) == :user
+                end
             end
             
             @testset "Permissive mode validates known options" begin
                 # Type validation should still work
-                @test_throws Exception CTSolvers.Modelers.ADNLP(
-                    backend=:default,
-                    show_time="invalid";
-                    mode=:permissive
-                )
+                redirect_stderr(devnull) do
+                    @test_throws Exception CTSolvers.Modelers.ADNLP(
+                        backend=:default,
+                        show_time="invalid";
+                        mode=:permissive
+                    )
+                end
             end
         end
         
@@ -115,13 +119,15 @@ function test_real_strategies_mode()
             
             @testset "Permissive mode accepts unknown options" begin
                 # Should work with warning
-                modeler = CTSolvers.Modelers.Exa(
-                    backend=nothing,
-                    unknown_option=123;
-                    mode=:permissive
-                )
-                @test modeler isa CTSolvers.Modelers.Exa
-                @test Strategies.has_option(modeler, :unknown_option)
+                redirect_stderr(devnull) do
+                    modeler = CTSolvers.Modelers.Exa(
+                        backend=nothing,
+                        unknown_option=123;
+                        mode=:permissive
+                    )
+                    @test modeler isa CTSolvers.Modelers.Exa
+                    @test Strategies.has_option(modeler, :unknown_option)
+                end
             end
         end
         
@@ -170,21 +176,25 @@ function test_real_strategies_mode()
                     
                     @testset "Permissive mode accepts unknown options" begin
                         # Should work with warning
-                        solver = solver_type(
-                            max_iter=1000,
-                            unknown_option=123;
-                            mode=:permissive
-                        )
-                        @test solver isa solver_type
-                        @test Strategies.has_option(solver, :unknown_option)
+                        redirect_stderr(devnull) do
+                            solver = solver_type(
+                                max_iter=1000,
+                                unknown_option=123;
+                                mode=:permissive
+                            )
+                            @test solver isa solver_type
+                            @test Strategies.has_option(solver, :unknown_option)
+                        end
                     end
                     
                     @testset "Permissive mode validates known options" begin
                         # Type validation should still work
-                        @test_throws Exception solver_type(
-                            max_iter="invalid";
-                            mode=:permissive
-                        )
+                        redirect_stderr(devnull) do
+                            @test_throws Exception solver_type(
+                                max_iter="invalid";
+                                mode=:permissive
+                            )
+                        end
                     end
                 end
             end
@@ -258,12 +268,14 @@ function test_real_strategies_mode()
             end
             
             @testset "Unknown options have :user source in permissive" begin
-                modeler = CTSolvers.Modelers.ADNLP(
-                    backend=:default,
-                    unknown_option=123;
-                    mode=:permissive
-                )
-                @test Strategies.option_source(modeler, :unknown_option) == :user
+                redirect_stderr(devnull) do
+                    modeler = CTSolvers.Modelers.ADNLP(
+                        backend=:default,
+                        unknown_option=123;
+                        mode=:permissive
+                    )
+                    @test Strategies.option_source(modeler, :unknown_option) == :user
+                end
             end
             
             @testset "Default options have :default source" begin
@@ -289,28 +301,32 @@ function test_real_strategies_mode()
             
             @testset "Permissive mode accepts mix" begin
                 # Should work with both known and unknown
-                modeler = CTSolvers.Modelers.ADNLP(
-                    backend=:default,
-                    show_time=true,
-                    unknown_option=123,
-                    another_unknown="test";
-                    mode=:permissive
-                )
-                @test modeler isa CTSolvers.Modelers.ADNLP
-                @test Strategies.option_value(modeler, :backend) == :default
-                @test Strategies.option_value(modeler, :show_time) == true
-                @test Strategies.option_value(modeler, :unknown_option) == 123
-                @test Strategies.option_value(modeler, :another_unknown) == "test"
+                redirect_stderr(devnull) do
+                    modeler = CTSolvers.Modelers.ADNLP(
+                        backend=:default,
+                        show_time=true,
+                        unknown_option=123,
+                        another_unknown="test";
+                        mode=:permissive
+                    )
+                    @test modeler isa CTSolvers.Modelers.ADNLP
+                    @test Strategies.option_value(modeler, :backend) == :default
+                    @test Strategies.option_value(modeler, :show_time) == true
+                    @test Strategies.option_value(modeler, :unknown_option) == 123
+                    @test Strategies.option_value(modeler, :another_unknown) == "test"
+                end
             end
             
             @testset "Known options still validated in permissive" begin
                 # Type validation should still work for known options
-                @test_throws Exception CTSolvers.Modelers.ADNLP(
-                    backend=:default,
-                    show_time="invalid",  # Wrong type (Bool expected)
-                    unknown_option=123;
-                    mode=:permissive
-                )
+                redirect_stderr(devnull) do
+                    @test_throws Exception CTSolvers.Modelers.ADNLP(
+                        backend=:default,
+                        show_time="invalid",  # Wrong type (Bool expected)
+                        unknown_option=123;
+                        mode=:permissive
+                    )
+                end
             end
         end
     end

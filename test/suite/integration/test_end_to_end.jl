@@ -94,28 +94,30 @@ function test_end_to_end()
             prob = ros.prob
             
             # Step 2: Create modeler with Exa backend (permissive mode for minimize option)
-            modeler = Modelers.Exa(base_type=Float64, minimize=true; mode=:permissive)
-            Test.@test modeler isa Modelers.AbstractNLPModeler
-            Test.@test typeof(modeler) == Modelers.Exa
-            
-            # Step 3: Build NLP model
-            nlp = modeler(prob, ros.init)
-            Test.@test nlp isa ExaModels.ExaModel
-            Test.@test nlp.meta.nvar == 2
-            Test.@test nlp.meta.ncon == 1
-            
-            # Step 4: Verify problem properties
-            Test.@test nlp.meta.minimize == true
-            Test.@test nlp.meta.x0 == Float64.(ros.init)
-            
-            # Step 5: Evaluate at initial point
-            obj_init = NLPModels.obj(nlp, Float64.(ros.init))
-            Test.@test obj_init ≈ rosenbrock_objective(ros.init)
-            
-            # Step 6: Evaluate at solution
-            obj_sol = NLPModels.obj(nlp, Float64.(ros.sol))
-            Test.@test obj_sol ≈ rosenbrock_objective(ros.sol)
-            Test.@test obj_sol < obj_init
+            redirect_stderr(devnull) do
+                modeler = Modelers.Exa(base_type=Float64, minimize=true; mode=:permissive)
+                Test.@test modeler isa Modelers.AbstractNLPModeler
+                Test.@test typeof(modeler) == Modelers.Exa
+                
+                # Step 3: Build NLP model
+                nlp = modeler(prob, ros.init)
+                Test.@test nlp isa ExaModels.ExaModel
+                Test.@test nlp.meta.nvar == 2
+                Test.@test nlp.meta.ncon == 1
+                
+                # Step 4: Verify problem properties
+                Test.@test nlp.meta.minimize == true
+                Test.@test nlp.meta.x0 == Float64.(ros.init)
+                
+                # Step 5: Evaluate at initial point
+                obj_init = NLPModels.obj(nlp, Float64.(ros.init))
+                Test.@test obj_init ≈ rosenbrock_objective(ros.init)
+                
+                # Step 6: Evaluate at solution
+                obj_sol = NLPModels.obj(nlp, Float64.(ros.sol))
+                Test.@test obj_sol ≈ rosenbrock_objective(ros.sol)
+                Test.@test obj_sol < obj_init
+            end
         end
 
         # ====================================================================
@@ -127,27 +129,31 @@ function test_end_to_end()
             prob = ros.prob
             
             Test.@testset "Float32 workflow" begin
-                modeler = Modelers.Exa(base_type=Float32, minimize=true; mode=:permissive)
-                nlp = modeler(prob, ros.init)
-                
-                Test.@test nlp isa ExaModels.ExaModel
-                Test.@test eltype(nlp.meta.x0) == Float32
-                
-                # Evaluate with Float32 (obj may be promoted to Float64 by NLPModels)
-                obj = NLPModels.obj(nlp, Float32.(ros.init))
-                Test.@test obj ≈ rosenbrock_objective(ros.init) rtol = 1e-5
+                redirect_stderr(devnull) do
+                    modeler = Modelers.Exa(base_type=Float32, minimize=true; mode=:permissive)
+                    nlp = modeler(prob, ros.init)
+                    
+                    Test.@test nlp isa ExaModels.ExaModel
+                    Test.@test eltype(nlp.meta.x0) == Float32
+                    
+                    # Evaluate with Float32 (obj may be promoted to Float64 by NLPModels)
+                    obj = NLPModels.obj(nlp, Float32.(ros.init))
+                    Test.@test obj ≈ rosenbrock_objective(ros.init) rtol = 1e-5
+                end
             end
             
             Test.@testset "Float64 workflow" begin
-                modeler = Modelers.Exa(base_type=Float64, minimize=true; mode=:permissive)
-                nlp = modeler(prob, ros.init)
-                
-                Test.@test nlp isa ExaModels.ExaModel
-                Test.@test eltype(nlp.meta.x0) == Float64
-                
-                obj = NLPModels.obj(nlp, Float64.(ros.init))
-                Test.@test obj isa Float64
-                Test.@test obj ≈ rosenbrock_objective(ros.init)
+                redirect_stderr(devnull) do
+                    modeler = Modelers.Exa(base_type=Float64, minimize=true; mode=:permissive)
+                    nlp = modeler(prob, ros.init)
+                    
+                    Test.@test nlp isa ExaModels.ExaModel
+                    Test.@test eltype(nlp.meta.x0) == Float64
+                    
+                    obj = NLPModels.obj(nlp, Float64.(ros.init))
+                    Test.@test obj isa Float64
+                    Test.@test obj ≈ rosenbrock_objective(ros.init)
+                end
             end
         end
 
@@ -198,17 +204,19 @@ function test_end_to_end()
             
             Test.@testset "Modelers.Exa - With Options" begin
                 # Test with multiple options (permissive mode for minimize option)
-                modeler = Modelers.Exa(
-                    base_type=Float64,
-                    minimize=true,
-                    backend=nothing;
-                    mode=:permissive
-                )
-                nlp = modeler(prob, ros.init)
-                
-                Test.@test nlp isa ExaModels.ExaModel
-                obj = NLPModels.obj(nlp, ros.init)
-                Test.@test obj ≈ rosenbrock_objective(ros.init)
+                redirect_stderr(devnull) do
+                    modeler = Modelers.Exa(
+                        base_type=Float64,
+                        minimize=true,
+                        backend=nothing;
+                        mode=:permissive
+                    )
+                    nlp = modeler(prob, ros.init)
+                    
+                    Test.@test nlp isa ExaModels.ExaModel
+                    obj = NLPModels.obj(nlp, ros.init)
+                    Test.@test obj ≈ rosenbrock_objective(ros.init)
+                end
             end
         end
 
@@ -226,17 +234,19 @@ function test_end_to_end()
             obj_adnlp = NLPModels.obj(nlp_adnlp, ros.init)
             
             # Build with Exa (permissive mode for minimize option)
-            modeler_exa = Modelers.Exa(base_type=Float64, minimize=true; mode=:permissive)
-            nlp_exa = modeler_exa(prob, ros.init)
-            obj_exa = NLPModels.obj(nlp_exa, Float64.(ros.init))
-            
-            # Both should give same objective
-            Test.@test obj_adnlp ≈ obj_exa rtol = 1e-10
-            
-            # Both should have same problem structure
-            Test.@test nlp_adnlp.meta.nvar == nlp_exa.meta.nvar
-            Test.@test nlp_adnlp.meta.ncon == nlp_exa.meta.ncon
-            Test.@test nlp_adnlp.meta.minimize == nlp_exa.meta.minimize
+            redirect_stderr(devnull) do
+                modeler_exa = Modelers.Exa(base_type=Float64, minimize=true; mode=:permissive)
+                nlp_exa = modeler_exa(prob, ros.init)
+                obj_exa = NLPModels.obj(nlp_exa, Float64.(ros.init))
+                
+                # Both should give same objective
+                Test.@test obj_adnlp ≈ obj_exa rtol = 1e-10
+                
+                # Both should have same problem structure
+                Test.@test nlp_adnlp.meta.nvar == nlp_exa.meta.nvar
+                Test.@test nlp_adnlp.meta.ncon == nlp_exa.meta.ncon
+                Test.@test nlp_adnlp.meta.minimize == nlp_exa.meta.minimize
+            end
         end
 
         # ====================================================================

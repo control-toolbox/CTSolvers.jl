@@ -26,7 +26,7 @@ using CTSolvers.Options
 # Load extensions if available for real strategy testing
 const IPOPT_AVAILABLE = try
     using NLPModelsIpopt
-    println("✅ NLPModelsIpopt loaded for real strategy tests")
+    # println("✅ NLPModelsIpopt loaded for real strategy tests")
     true
 catch
     println("❌ NLPModelsIpopt not available - skipping real solver tests")
@@ -36,7 +36,7 @@ end
 const MADNLP_AVAILABLE = try
     using MadNLP
     using MadNLPMumps
-    println("✅ MadNLP loaded for real strategy tests")
+    # println("✅ MadNLP loaded for real strategy tests")
     true
 catch
     println("❌ MadNLP not available - skipping real solver tests")
@@ -434,13 +434,15 @@ function test_route_to_comprehensive()
                     fake_option = Strategies.route_to(ipopt=123)  # Unknown option
                 )
                 
-                routed = Orchestration.route_all_options(
-                    MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=:permissive
-                )
-                
-                # Build strategy and verify unknown option is present
-                solver = create_mock_strategy(RouteIpopt; mode=:permissive, routed.strategies.solver...)
-                test_option_routing(solver, :fake_option, 123)
+                redirect_stderr(devnull) do
+                    routed = Orchestration.route_all_options(
+                        MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=:permissive
+                    )
+                    
+                    # Build strategy and verify unknown option is present
+                    solver = create_mock_strategy(RouteIpopt; mode=:permissive, routed.strategies.solver...)
+                    test_option_routing(solver, :fake_option, 123)
+                end
             end
         end
         
