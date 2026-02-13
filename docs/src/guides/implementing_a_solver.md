@@ -34,7 +34,7 @@ classDiagram
     AbstractStrategy <|-- AbstractOptimizationSolver
     AbstractOptimizationSolver <|-- Solvers.Ipopt
     AbstractOptimizationSolver <|-- Solvers.MadNLP
-    AbstractOptimizationSolver <|-- MadNCLSolver
+    AbstractOptimizationSolver <|-- Solvers.MadNCL
     AbstractOptimizationSolver <|-- Solvers.Knitro
 ```
 

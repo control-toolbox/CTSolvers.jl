@@ -30,7 +30,7 @@ function test_solver_types()
             # All solver types should inherit from AbstractOptimizationSolver
             Test.@test Solvers.Ipopt <: Solvers.AbstractOptimizationSolver
             Test.@test Solvers.MadNLP <: Solvers.AbstractOptimizationSolver
-            Test.@test Solvers.MadNCLSolver <: Solvers.AbstractOptimizationSolver
+            Test.@test Solvers.MadNCL <: Solvers.AbstractOptimizationSolver
             # Commented out - no Knitro license available
             # Test.@test Solvers.Knitro <: Solvers.AbstractOptimizationSolver
             
@@ -40,7 +40,7 @@ function test_solver_types()
             # Concrete solver types should not be abstract
             Test.@test !isabstracttype(Solvers.Ipopt)
             Test.@test !isabstracttype(Solvers.MadNLP)
-            Test.@test !isabstracttype(Solvers.MadNCLSolver)
+            Test.@test !isabstracttype(Solvers.MadNCL)
             # Commented out - no Knitro license available
             # Test.@test !isabstracttype(Solvers.Knitro)
         end
@@ -55,7 +55,7 @@ function test_solver_types()
                 # Commented out - no Knitro license available
                 # Test.@test Strategies.id(Solvers.Knitro) === :knitro
                 Test.@test Strategies.id(Solvers.MadNLP) === :madnlp
-                Test.@test Strategies.id(Solvers.MadNCLSolver) === :madncl
+                Test.@test Strategies.id(Solvers.MadNCL) === :madncl
                 
                 # Test that all IDs are unique
                 ids = [
@@ -63,7 +63,7 @@ function test_solver_types()
                     # Commented out - no Knitro license available
                     # Strategies.id(Solvers.Knitro),
                     Strategies.id(Solvers.MadNLP),
-                    Strategies.id(Solvers.MadNCLSolver)
+                    Strategies.id(Solvers.MadNCL)
                 ]
             Test.@test length(unique(ids)) == 3
             
@@ -72,7 +72,7 @@ function test_solver_types()
             # Commented out - no Knitro license available
             # Test.@test Strategies.id(Solvers.Knitro) isa Symbol
             Test.@test Strategies.id(Solvers.MadNLP) isa Symbol
-            Test.@test Strategies.id(Solvers.MadNCLSolver) isa Symbol
+            Test.@test Strategies.id(Solvers.MadNCL) isa Symbol
         end
         
         # ====================================================================
@@ -116,14 +116,14 @@ function test_solver_types()
             # Commented out - no Knitro license available
             # Test.@test :options in fieldnames(Solvers.Knitro)
             Test.@test :options in fieldnames(Solvers.MadNLP)
-            Test.@test :options in fieldnames(Solvers.MadNCLSolver)
+            Test.@test :options in fieldnames(Solvers.MadNCL)
             
             # Check that there's only one field
             Test.@test length(fieldnames(Solvers.Ipopt)) == 1
             # Commented out - no Knitro license available
             # Test.@test length(fieldnames(Solvers.Knitro)) == 1
             Test.@test length(fieldnames(Solvers.MadNLP)) == 1
-            Test.@test length(fieldnames(Solvers.MadNCLSolver)) == 1
+            Test.@test length(fieldnames(Solvers.MadNCL)) == 1
         end
     end
 end

@@ -20,7 +20,7 @@ CTSolvers is organized into 7 modules, loaded in strict dependency order:
 | 4 | **Optimization** | Abstract optimization types (`AbstractOptimizationProblem`), builders, `build_model`/`build_solution` |
 | 5 | **Modelers** | NLP model backends: `Modelers.ADNLP`, `Modelers.Exa` |
 | 6 | **DOCP** | `DiscretizedModel` — bridges CTModels and CTSolvers |
-| 7 | **Solvers** | Solver integration: `Solvers.Ipopt`, `Solvers.MadNLP`, `MadNCLSolver`, `Solvers.Knitro`, CommonSolve API |
+| 7 | **Solvers** | Solver integration: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, CommonSolve API |
 
 All access is **qualified** — CTSolvers does not export symbols at the top level:
 
@@ -69,7 +69,7 @@ classDiagram
     }
     AbstractOptimizationSolver <|-- Solvers.Ipopt
     AbstractOptimizationSolver <|-- Solvers.MadNLP
-    AbstractOptimizationSolver <|-- MadNCLSolver
+    AbstractOptimizationSolver <|-- Solvers.MadNCL
     AbstractOptimizationSolver <|-- Solvers.Knitro
 
     class AbstractOptimalControlDiscretizer {

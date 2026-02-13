@@ -94,10 +94,10 @@ function test_extension_stubs()
         end
         
         # ====================================================================
-        # UNIT TESTS - MadNCLSolver Stub
+        # UNIT TESTS - Solvers.MadNCL Stub
         # ====================================================================
         
-        Test.@testset "MadNCLSolver stub" begin
+        Test.@testset "Solvers.MadNCL stub" begin
             Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(DummyTag())
             
             err = nothing
@@ -110,9 +110,9 @@ function test_extension_stubs()
             Test.@test err isa Exceptions.ExtensionError
             
             err_str = string(err)
-            Test.@test occursin("MadNCLSolver", err_str)
             Test.@test occursin("MadNCL", err_str)
-            Test.@test occursin("to create MadNCLSolver, access options, and solve problems", err_str)
+            Test.@test occursin("MadNCL", err_str)
+            Test.@test occursin("to create MadNCL, access options, and solve problems", err_str)
         end
         
         # ====================================================================

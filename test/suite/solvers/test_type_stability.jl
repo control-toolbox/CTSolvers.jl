@@ -45,10 +45,10 @@ function test_type_stability()
                 Test.@test_nowarn Test.@inferred Solvers.MadNLP(max_iter=100, tol=1e-6)
             end
             
-            Test.@testset "MadNCLSolver construction" begin
-                Test.@test_nowarn Test.@inferred Solvers.MadNCLSolver()
-                Test.@test_nowarn Test.@inferred Solvers.MadNCLSolver(max_iter=100)
-                Test.@test_nowarn Test.@inferred Solvers.MadNCLSolver(max_iter=100, tol=1e-6)
+            Test.@testset "Solvers.MadNCL construction" begin
+                Test.@test_nowarn Test.@inferred Solvers.MadNCL()
+                Test.@test_nowarn Test.@inferred Solvers.MadNCL(max_iter=100)
+                Test.@test_nowarn Test.@inferred Solvers.MadNCL(max_iter=100, tol=1e-6)
             end
             
             # Commented out - no Knitro license available
@@ -93,16 +93,16 @@ function test_type_stability()
                 Test.@test opts isa Strategies.StrategyOptions
             end
             
-            Test.@testset "MadNCLSolver contract" begin
-                Test.@test_nowarn Test.@inferred Strategies.id(Solvers.MadNCLSolver)
-                Test.@test Test.@inferred(Strategies.id(Solvers.MadNCLSolver)) === :madncl
+            Test.@testset "Solvers.MadNCL contract" begin
+                Test.@test_nowarn Test.@inferred Strategies.id(Solvers.MadNCL)
+                Test.@test Test.@inferred(Strategies.id(Solvers.MadNCL)) === :madncl
                 
                 # Metadata returns correct type
-                meta = Strategies.metadata(Solvers.MadNCLSolver)
+                meta = Strategies.metadata(Solvers.MadNCL)
                 Test.@test meta isa Strategies.StrategyMetadata
                 
                 # Options returns correct type
-                opts = Strategies.options(Solvers.MadNCLSolver())
+                opts = Strategies.options(Solvers.MadNCL())
                 Test.@test opts isa Strategies.StrategyOptions
             end
             

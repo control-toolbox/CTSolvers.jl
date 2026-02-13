@@ -2,7 +2,7 @@
 CTSolversMadNCL Extension
 
 Extension providing MadNCL solver metadata, constructor, and backend interface.
-Implements the complete MadNCLSolver functionality with proper option definitions.
+Implements the complete Solvers.MadNCL functionality with proper option definitions.
 """
 module CTSolversMadNCL
 
@@ -35,9 +35,9 @@ base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseT
 """
 $(TYPEDSIGNATURES)
 
-Return metadata defining MadNCLSolver options and their specifications.
+Return metadata defining MadNCL options and their specifications.
 """
-function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
+function Strategies.metadata(::Type{<:Solvers.MadNCL})
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:max_iter,
@@ -50,7 +50,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="max_iter=$x",
                 expected="non-negative integer (>= 0)",
                 suggestion="Provide a non-negative value for maximum iterations",
-                context="MadNCLSolver max_iter validation"
+                context="MadNCL max_iter validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -63,7 +63,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
-                context="MadNCLSolver tol validation"
+                context="MadNCL tol validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -90,7 +90,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="acceptable_tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive tolerance (typically 1e-6)",
-                context="MadNCLSolver acceptable_tol validation"
+                context="MadNCL acceptable_tol validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -103,7 +103,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="acceptable_iter=$x",
                 expected="positive integer (>= 1)",
                 suggestion="Provide a positive integer (typically 15)",
-                context="MadNCLSolver acceptable_iter validation"
+                context="MadNCL acceptable_iter validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -117,7 +117,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="max_wall_time=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive time limit in seconds",
-                context="MadNCLSolver max_wall_time validation"
+                context="MadNCL max_wall_time validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -130,7 +130,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="diverging_iterates_tol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a large positive value (typically 1e20)",
-                context="MadNCLSolver diverging_iterates_tol validation"
+                context="MadNCL diverging_iterates_tol validation"
             ))
         ),
         # ---- NLP Scaling Options ----
@@ -150,7 +150,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="nlp_scaling_max_gradient=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive value (typically 100.0)",
-                context="MadNCLSolver nlp_scaling_max_gradient validation"
+                context="MadNCL nlp_scaling_max_gradient validation"
             ))
         ),
         # ---- Structural Options ----
@@ -179,7 +179,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="bound_push=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive value (e.g., 0.01)",
-                context="MadNCLSolver bound_push validation"
+                context="MadNCL bound_push validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -192,7 +192,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="bound_fac=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive value (e.g., 0.01)",
-                context="MadNCLSolver bound_fac validation"
+                context="MadNCL bound_fac validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -205,7 +205,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="constr_mult_init_max=$x",
                 expected="non-negative real number (>= 0)",
                 suggestion="Provide a non-negative value (e.g., 1000.0)",
-                context="MadNCLSolver constr_mult_init_max validation"
+                context="MadNCL constr_mult_init_max validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -249,7 +249,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="mu_init=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive value (e.g., 1e-1)",
-                context="MadNCLSolver mu_init validation"
+                context="MadNCL mu_init validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -262,7 +262,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="mu_min=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive value (e.g., 1e-11)",
-                context="MadNCLSolver mu_min validation"
+                context="MadNCL mu_min validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -275,7 +275,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCLSolver})
                 got="tau_min=$x",
                 expected="real number between 0 and 1 (exclusive)",
                 suggestion="Provide a value between 0 and 1 (e.g., 0.99)",
-                context="MadNCLSolver tau_min validation"
+                context="MadNCL tau_min validation"
             ))
         ),
         Strategies.OptionDefinition(;
@@ -305,28 +305,28 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Build a MadNCLSolver with validated options.
+Build a MadNCL with validated options.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Options to pass to the MadNCLSolver constructor
+- `kwargs...`: Options to pass to the MadNCL constructor
 
 # Examples
 ```julia-repl
 # Strict mode (default) - rejects unknown options
 julia> solver = build_madncl_solver(MadNCLTag; max_iter=1000)
-MadNCLSolver(...)
+MadNCL(...)
 
 # Permissive mode - accepts unknown options with warning
 julia> solver = build_madncl_solver(MadNCLTag; max_iter=1000, custom_option=123; mode=:permissive)
-MadNCLSolver(...)  # with warning about custom_option
+MadNCL(...)  # with warning about custom_option
 ```
 """
 function Solvers.build_madncl_solver(::Solvers.MadNCLTag; mode::Symbol=:strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.MadNCLSolver; mode=mode, kwargs...)
-    return Solvers.MadNCLSolver(opts)
+    opts = Strategies.build_strategy_options(Solvers.MadNCL; mode=mode, kwargs...)
+    return Solvers.MadNCL(opts)
 end
 
 # ============================================================================
@@ -345,7 +345,7 @@ Solve an NLP problem using MadNCL.
 # Returns
 - `MadNCL.NCLStats`: MadNCL execution statistics
 """
-function (solver::Solvers.MadNCLSolver)(
+function (solver::Solvers.MadNCL)(
     nlp::NLPModels.AbstractNLPModel;
     display::Bool=true
 )::MadNCL.NCLStats

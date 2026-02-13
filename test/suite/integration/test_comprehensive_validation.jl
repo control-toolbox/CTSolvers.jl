@@ -297,7 +297,7 @@ function test_comprehensive_validation()
         solver_types = []
         IPOPT_AVAILABLE && push!(solver_types, Solvers.Ipopt)
         MADNLP_AVAILABLE && push!(solver_types, Solvers.MadNLP)
-        MADNCL_AVAILABLE && push!(solver_types, Solvers.MadNCLSolver)
+        MADNCL_AVAILABLE && push!(solver_types, Solvers.MadNCL)
         # KNITRO_AVAILABLE && push!(solver_types, Solvers.Knitro)  # Never available - no license
         
         solver_registry = if isempty(solver_types)
@@ -463,35 +463,35 @@ function test_comprehensive_validation()
             end
             
             # ----------------------------------------------------------------
-            # MadNCLSolver Tests (if available)
+            # Solvers.MadNCL Tests (if available)
             # ----------------------------------------------------------------
             
             if MADNCL_AVAILABLE
-                Test.@testset "MadNCLSolver" begin
+                Test.@testset "Solvers.MadNCL" begin
                     known_options = (max_iter=300, tol=1e-10)
                     unknown_options = (madncl_fake=222, custom_ncl_opt=3.14)
                     
                     redirect_stderr(devnull) do
                         test_strategy_construction(
-                            Solvers.MadNCLSolver, :madncl, Solvers.AbstractOptimizationSolver,
+                            Solvers.MadNCL, :madncl, Solvers.AbstractOptimizationSolver,
                             known_options, unknown_options, solver_registry
                         )
                     end
                     
                     Test.@testset "Option Recovery" begin
-                        strategy_strict = Solvers.MadNCLSolver(; known_options...)
+                        strategy_strict = Solvers.MadNCL(; known_options...)
                         test_option_recovery(strategy_strict, known_options, NamedTuple(), :strict)
                         
                         redirect_stderr(devnull) do
-                            strategy_permissive = Solvers.MadNCLSolver(; known_options..., unknown_options..., mode=:permissive)
+                            strategy_permissive = Solvers.MadNCL(; known_options..., unknown_options..., mode=:permissive)
                             test_option_recovery(strategy_permissive, known_options, unknown_options, :permissive)
                         end
                     end
                     
-                    test_invalid_mode(Solvers.MadNCLSolver)
+                    test_invalid_mode(Solvers.MadNCL)
                 end
             else
-                Test.@testset "MadNCLSolver (Not Available)" begin
+                Test.@testset "Solvers.MadNCL (Not Available)" begin
                     Test.@test_skip "MadNCL not available"
                 end
             end

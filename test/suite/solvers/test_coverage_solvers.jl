@@ -108,10 +108,10 @@ function test_coverage_solvers()
         end
 
         # ====================================================================
-        # UNIT TESTS - MadNCLSolver stub (madncl_solver.jl)
+        # UNIT TESTS - Solvers.MadNCL stub (madncl_solver.jl)
         # ====================================================================
 
-        Test.@testset "MadNCLSolver - stub with wrong tag" begin
+        Test.@testset "Solvers.MadNCL - stub with wrong tag" begin
             Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(Solvers.KnitroTag())
         end
 
@@ -130,7 +130,7 @@ function test_coverage_solvers()
         Test.@testset "Strategies.id() direct calls" begin
             Test.@test Strategies.id(Solvers.Ipopt) === :ipopt
             Test.@test Strategies.id(Solvers.MadNLP) === :madnlp
-            Test.@test Strategies.id(Solvers.MadNCLSolver) === :madncl
+            Test.@test Strategies.id(Solvers.MadNCL) === :madncl
             Test.@test Strategies.id(Solvers.Knitro) === :knitro
         end
 

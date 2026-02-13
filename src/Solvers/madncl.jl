@@ -41,10 +41,10 @@ using MadNCL, MadNLP, MadNLPMumps
 using MadNCL, MadNLP, MadNLPMumps
 
 # Create solver with default options
-solver = MadNCLSolver()
+solver = Solvers.MadNCL()
 
 # Create solver with custom options
-solver = MadNCLSolver(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
+solver = Solvers.MadNCL(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
 
 # Solve an NLP problem
 using ADNLPModels
@@ -64,12 +64,12 @@ using MadNCL, MadNLP, MadNLPMumps
 - Implements the `AbstractStrategy` contract via `Strategies.id()`
 - Metadata and constructor implementation provided by CTSolversMadNCL extension
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::MadNCLSolver)(nlp; display=true)` provided by extension
+- Callable interface: `(solver::Solvers.MadNCL)(nlp; display=true)` provided by extension
 - Specialized for non-convex optimization problems
 
 See also: [`AbstractOptimizationSolver`](@ref), [`Solvers.MadNLP`](@ref), [`Solvers.Ipopt`](@ref)
 """
-struct MadNCLSolver <: AbstractOptimizationSolver
+struct MadNCL <: AbstractOptimizationSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -81,9 +81,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return the unique identifier for MadNCLSolver.
+Return the unique identifier for Solvers.MadNCL.
 """
-Strategies.id(::Type{<:MadNCLSolver}) = :madncl
+Strategies.id(::Type{<:Solvers.MadNCL}) = :madncl
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -92,7 +92,7 @@ Strategies.id(::Type{<:MadNCLSolver}) = :madncl
 """
 $(TYPEDSIGNATURES)
 
-Create a MadNCLSolver with specified options.
+Create a Solvers.MadNCL with specified options.
 
 Requires the CTSolversMadNCL extension to be loaded.
 
@@ -107,16 +107,16 @@ Requires the CTSolversMadNCL extension to be loaded.
 using MadNCL, MadNLP, MadNLPMumps
 
 # Strict mode (default) - rejects unknown options
-solver = MadNCLSolver(max_iter=1000, tol=1e-6)
+solver = Solvers.MadNCL(max_iter=1000, tol=1e-6)
 
 # Permissive mode - accepts unknown options with warning
-solver = MadNCLSolver(max_iter=1000, custom_option=123; mode=:permissive)
+solver = Solvers.MadNCL(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
 # Throws
 - `Strategies.Exceptions.ExtensionError`: If the MadNCL extension is not loaded
 """
-function MadNCLSolver(; mode::Symbol=:strict, kwargs...)
+function Solvers.MadNCL(; mode::Symbol=:strict, kwargs...)
     return build_madncl_solver(MadNCLTag(); mode=mode, kwargs...)
 end
 
@@ -132,8 +132,8 @@ Real implementation provided by the extension.
 function build_madncl_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
         :MadNCL, :MadNLP, :MadNLPMumps;
-        message="to create MadNCLSolver, access options, and solve problems",
-        feature="MadNCLSolver functionality",
+        message="to create Solvers.MadNCL, access options, and solve problems",
+        feature="Solvers.MadNCL functionality",
         context="Load MadNCL extension first: using MadNCL, MadNLP, MadNLPMumps"
     ))
 end
