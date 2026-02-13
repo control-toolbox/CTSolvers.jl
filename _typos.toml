@@ -1,0 +1,6 @@
+[default]
+extend-ignore-re = [
+    # Test examples with intentional typos for suggestion testing
+    "adnlp_backen",
+    "ipopt_backen",
+]
