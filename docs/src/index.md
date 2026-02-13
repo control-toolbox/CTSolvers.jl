@@ -45,7 +45,7 @@ It provides the **solution layer** for optimal control problems:
 | `Optimization` | Abstract problem types, builder pattern, build/solve API |
 | `Modelers` | Modelers.ADNLP, Modelers.Exa — NLP backend adapters |
 | `DOCP` | DiscretizedModel — concrete problem type |
-| `Solvers` | Solvers.Ipopt, MadNLPSolver, Solvers.Knitro — NLP solver wrappers |
+| `Solvers` | Solvers.Ipopt, Solvers.MadNLP, Solvers.Knitro — NLP solver wrappers |
 
 ## Documentation
 

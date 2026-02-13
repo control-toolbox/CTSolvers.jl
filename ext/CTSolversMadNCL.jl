@@ -6,17 +6,16 @@ Implements the complete MadNCLSolver functionality with proper option definition
 """
 module CTSolversMadNCL
 
-using DocStringExtensions
-using CTSolvers
-using CTSolvers.Solvers
-using CTSolvers.Strategies
-using CTSolvers.Options
-using CTBase.Exceptions
-using MadNCL
-using MadNLP
-using MadNLPMumps
-using NLPModels
-using SolverCore
+import DocStringExtensions: TYPEDSIGNATURES
+import CTSolvers.Solvers
+import CTSolvers.Strategies
+import CTSolvers.Options
+import CTBase.Exceptions
+import MadNCL
+import MadNLP
+import MadNLPMumps
+import NLPModels
+import SolverCore
 
 # ============================================================================
 # Helper Functions
@@ -317,11 +316,11 @@ Build a MadNCLSolver with validated options.
 # Examples
 ```julia-repl
 # Strict mode (default) - rejects unknown options
-julia> solver = Solvers.build_madncl_solver(Solvers.MadNCLTag; max_iter=1000)
+julia> solver = build_madncl_solver(MadNCLTag; max_iter=1000)
 MadNCLSolver(...)
 
 # Permissive mode - accepts unknown options with warning
-julia> solver = Solvers.build_madncl_solver(Solvers.MadNCLTag; max_iter=1000, custom_option=123; mode=:permissive)
+julia> solver = build_madncl_solver(MadNCLTag; max_iter=1000, custom_option=123; mode=:permissive)
 MadNCLSolver(...)  # with warning about custom_option
 ```
 """

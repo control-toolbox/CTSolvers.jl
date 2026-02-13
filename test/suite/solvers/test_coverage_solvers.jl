@@ -1,16 +1,15 @@
 module TestCoverageSolvers
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Solvers
-using CTSolvers.Strategies
-using CTSolvers.Options
-using NLPModels
-using SolverCore
-using ADNLPModels
-using CommonSolve
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Solvers
+import CTSolvers.Strategies
+import CTSolvers.Options
+import NLPModels
+import SolverCore
+import ADNLPModels
+import CommonSolve
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -101,10 +100,10 @@ function test_coverage_solvers()
         end
 
         # ====================================================================
-        # UNIT TESTS - MadNLPSolver stub (madnlp_solver.jl)
+        # UNIT TESTS - Solvers.MadNLP stub (madnlp_solver.jl)
         # ====================================================================
 
-        Test.@testset "MadNLPSolver - stub with wrong tag" begin
+        Test.@testset "Solvers.MadNLP - stub with wrong tag" begin
             Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(Solvers.KnitroTag())
         end
 
@@ -130,7 +129,7 @@ function test_coverage_solvers()
 
         Test.@testset "Strategies.id() direct calls" begin
             Test.@test Strategies.id(Solvers.Ipopt) === :ipopt
-            Test.@test Strategies.id(Solvers.MadNLPSolver) === :madnlp
+            Test.@test Strategies.id(Solvers.MadNLP) === :madnlp
             Test.@test Strategies.id(Solvers.MadNCLSolver) === :madncl
             Test.@test Strategies.id(Solvers.Knitro) === :knitro
         end

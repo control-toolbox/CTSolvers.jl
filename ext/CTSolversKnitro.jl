@@ -6,15 +6,14 @@ Implements the complete Solvers.Knitro functionality with proper option definiti
 """
 module CTSolversKnitro
 
-using DocStringExtensions
-using CTSolvers
-using CTSolvers.Solvers
-using CTSolvers.Strategies
-using CTSolvers.Options
-using CTBase.Exceptions
-using NLPModelsKnitro
-using NLPModels
-using SolverCore
+import DocStringExtensions: TYPEDSIGNATURES
+import CTSolvers.Solvers
+import CTSolvers.Strategies
+import CTSolvers.Options
+import CTBase.Exceptions
+import NLPModelsKnitro
+import NLPModels
+import SolverCore
 
 # ============================================================================
 # Metadata Definition
@@ -23,7 +22,7 @@ using SolverCore
 """
 $(TYPEDSIGNATURES)
 
-Return metadata defining Solvers.Knitro options and their specifications.
+Return metadata defining Knitro options and their specifications.
 """
 function Strategies.metadata(::Type{<:Solvers.Knitro})
     return Strategies.StrategyMetadata(
@@ -42,7 +41,7 @@ function Strategies.metadata(::Type{<:Solvers.Knitro})
                 got="maxit=$x",
                 expected="non-negative integer (>= 0)",
                 suggestion="Provide a non-negative value for maximum iterations",
-                context="Solvers.Knitro maxit validation"
+                context="Knitro maxit validation"
             ))
         ),
         
@@ -56,7 +55,7 @@ function Strategies.metadata(::Type{<:Solvers.Knitro})
                 got="maxtime=$x",
                 expected="positive real number (> 0)",
                 suggestion="Provide a positive time limit in seconds (e.g., 3600 for 1 hour)",
-                context="Solvers.Knitro maxtime validation"
+                context="Knitro maxtime validation"
             ))
         ),
         
@@ -70,7 +69,7 @@ function Strategies.metadata(::Type{<:Solvers.Knitro})
                 got="maxfevals=$x",
                 expected="integer >= -1 (-1 for unlimited)",
                 suggestion="Use -1 for unlimited or positive integer for limit",
-                context="Solvers.Knitro maxfevals validation"
+                context="Knitro maxfevals validation"
             ))
         ),
         
@@ -84,7 +83,7 @@ function Strategies.metadata(::Type{<:Solvers.Knitro})
                 got="feastol_abs=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e-8 for standard tolerance or smaller for stricter feasibility",
-                context="Solvers.Knitro feastol_abs validation"
+                context="Knitro feastol_abs validation"
             ))
         ),
         
@@ -98,7 +97,7 @@ function Strategies.metadata(::Type{<:Solvers.Knitro})
                 got="opttol_abs=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e-8 for standard tolerance or smaller for stricter optimality",
-                context="Solvers.Knitro opttol_abs validation"
+                context="Knitro opttol_abs validation"
             ))
         ),
         
@@ -112,7 +111,7 @@ function Strategies.metadata(::Type{<:Solvers.Knitro})
                 got="ftol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e-12 for standard tolerance or smaller for stricter convergence",
-                context="Solvers.Knitro ftol validation"
+                context="Knitro ftol validation"
             ))
         ),
         
@@ -126,7 +125,7 @@ function Strategies.metadata(::Type{<:Solvers.Knitro})
                 got="xtol=$x",
                 expected="positive real number (> 0)",
                 suggestion="Use 1e-12 for standard tolerance or smaller for stricter convergence",
-                context="Solvers.Knitro xtol validation"
+                context="Knitro xtol validation"
             ))
         ),
         
@@ -144,7 +143,7 @@ function Strategies.metadata(::Type{<:Solvers.Knitro})
                 got="soltype=$x",
                 expected="0 (final) or 1 (bestfeas)",
                 suggestion="Use 0 for final solution or 1 for best feasible encountered",
-                context="Solvers.Knitro soltype validation"
+                context="Knitro soltype validation"
             ))
         ),
         
@@ -163,7 +162,7 @@ function Strategies.metadata(::Type{<:Solvers.Knitro})
                 got="outlev=$x",
                 expected="integer between 0 and 6",
                 suggestion="Use 0 for no output, 2 for every 10 iterations, 3 for each iteration, or higher for more details",
-                context="Solvers.Knitro outlev validation"
+                context="Knitro outlev validation"
             ))
         )
     )
@@ -176,23 +175,23 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Build a Solvers.Knitro with validated options.
+Build a Knitro with validated options.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Options to pass to the Solvers.Knitro constructor
+- `kwargs...`: Options to pass to the Knitro constructor
 
 # Examples
 ```julia-repl
 # Strict mode (default) - rejects unknown options
-julia> solver = Solvers.build_knitro_solver(Solvers.KnitroTag; max_iter=1000)
-Solvers.Knitro(...)
+julia> solver = build_knitro_solver(KnitroTag; max_iter=1000)
+Knitro(...)
 
 # Permissive mode - accepts unknown options with warning
-julia> solver = Solvers.build_knitro_solver(Solvers.KnitroTag; max_iter=1000, custom_option=123; mode=:permissive)
-Solvers.Knitro(...)  # with warning about custom_option
+julia> solver = build_knitro_solver(KnitroTag; max_iter=1000, custom_option=123; mode=:permissive)
+Knitro(...)  # with warning about custom_option
 ```
 """
 function Solvers.build_knitro_solver(::Solvers.KnitroTag; mode::Symbol=:strict, kwargs...)

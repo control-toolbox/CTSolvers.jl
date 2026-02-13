@@ -33,7 +33,7 @@ classDiagram
 
     AbstractStrategy <|-- AbstractOptimizationSolver
     AbstractOptimizationSolver <|-- Solvers.Ipopt
-    AbstractOptimizationSolver <|-- MadNLPSolver
+    AbstractOptimizationSolver <|-- Solvers.MadNLP
     AbstractOptimizationSolver <|-- MadNCLSolver
     AbstractOptimizationSolver <|-- Solvers.Knitro
 ```
@@ -103,7 +103,7 @@ end
 Live demonstration of the `ExtensionError` for all solvers:
 
 ```@repl solver
-CTSolvers.Solvers.MadNLPSolver()
+CTSolvers.Solvers.MadNLP()
 ```
 
 !!! note "Why Tag Dispatch?"

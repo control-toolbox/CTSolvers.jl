@@ -1,15 +1,15 @@
 module TestEndToEnd
 
-using Test
-using CTSolvers
-using CTBase
-using NLPModels
-using SolverCore
-using ADNLPModels
-using ExaModels
-using MadNLP
-using MadNLPMumps # must be removed in the future
-using Main.TestProblems
+import Test
+import CTSolvers
+import CTBase
+import NLPModels
+import SolverCore
+import ADNLPModels
+import ExaModels
+import MadNLP
+import MadNLPMumps # must be removed in the future
+import Main.TestProblems
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
@@ -17,7 +17,6 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 import CTSolvers.Modelers
 import CTSolvers.Optimization
 import CTSolvers.DOCP
-import CTSolvers.DOCP: DiscretizedModel, ocp_model, nlp_model, ocp_solution
 
 # ============================================================================
 # TEST FUNCTION
@@ -67,7 +66,7 @@ function test_end_to_end()
             
             # Step 9: Solve with MadNLP (optional, if solver available)
             try
-                solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR)
+                solver = MadNLP.Solvers.MadNLP(nlp; print_level=MadNLP.ERROR)
                 result = MadNLP.solve!(solver)
                 
                 # Step 10: Extract solver info

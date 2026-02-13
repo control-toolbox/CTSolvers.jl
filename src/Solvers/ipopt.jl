@@ -41,10 +41,10 @@ using NLPModelsIpopt
 using NLPModelsIpopt
 
 # Create solver with default options
-solver = Solvers.Ipopt()
+solver = Ipopt()
 
 # Create solver with custom options
-solver = Solvers.Ipopt(max_iter=1000, tol=1e-6, print_level=3)
+solver = Ipopt(max_iter=1000, tol=1e-6, print_level=3)
 
 # Solve an NLP problem
 using ADNLPModels
@@ -64,9 +64,9 @@ using NLPModelsIpopt
 - Implements the `AbstractStrategy` contract via `Strategies.id()`
 - Metadata and constructor implementation provided by CTSolversIpopt extension
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::Solvers.Ipopt)(nlp; display=true)` provided by extension
+- Callable interface: `(solver::Ipopt)(nlp; display=true)` provided by extension
 
-See also: [`AbstractOptimizationSolver`](@ref), [`MadNLPSolver`](@ref), [`Solvers.Knitro`](@ref)
+See also: [`AbstractOptimizationSolver`](@ref), [`MadNLP`](@ref), [`Knitro`](@ref)
 """
 struct Ipopt <: AbstractOptimizationSolver
     "Solver configuration options containing validated option values"
@@ -80,7 +80,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return the unique identifier for Solvers.Ipopt.
+Return the unique identifier for Ipopt.
 """
 Strategies.id(::Type{<:Solvers.Ipopt}) = :ipopt
 
@@ -91,7 +91,7 @@ Strategies.id(::Type{<:Solvers.Ipopt}) = :ipopt
 """
 $(TYPEDSIGNATURES)
 
-Create an Solvers.Ipopt with specified options.
+Create an Ipopt with specified options.
 
 Requires the CTSolversIpopt extension to be loaded.
 
@@ -106,10 +106,10 @@ Requires the CTSolversIpopt extension to be loaded.
 using NLPModelsIpopt
 
 # Strict mode (default) - rejects unknown options
-solver = Solvers.Ipopt(max_iter=1000, tol=1e-6)
+solver = Ipopt(max_iter=1000, tol=1e-6)
 
 # Permissive mode - accepts unknown options with warning
-solver = Solvers.Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
+solver = Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
 # Throws
@@ -131,8 +131,8 @@ Real implementation provided by the extension.
 function build_ipopt_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
         :NLPModelsIpopt;
-        message="to create Solvers.Ipopt, access options, and solve problems",
-        feature="Solvers.Ipopt functionality",
+        message="to create Ipopt, access options, and solve problems",
+        feature="Ipopt functionality",
         context="Load NLPModelsIpopt extension first: using NLPModelsIpopt"
     ))
 end

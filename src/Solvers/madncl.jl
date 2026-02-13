@@ -67,7 +67,7 @@ using MadNCL, MadNLP, MadNLPMumps
 - Callable interface: `(solver::MadNCLSolver)(nlp; display=true)` provided by extension
 - Specialized for non-convex optimization problems
 
-See also: [`AbstractOptimizationSolver`](@ref), [`MadNLPSolver`](@ref), [`Solvers.Ipopt`](@ref)
+See also: [`AbstractOptimizationSolver`](@ref), [`Solvers.MadNLP`](@ref), [`Solvers.Ipopt`](@ref)
 """
 struct MadNCLSolver <: AbstractOptimizationSolver
     "Solver configuration options containing validated option values"

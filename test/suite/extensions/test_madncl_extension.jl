@@ -1,23 +1,22 @@
 module TestMadNCLExtension
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Solvers
-using CTSolvers.Strategies
-using CTSolvers.Options
-using CTSolvers.Modelers
-using CTSolvers.Optimization
-using CommonSolve
-using CUDA
-using NLPModels
-using ADNLPModels
-using MadNCL
-using MadNLP
-using MadNLPMumps
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Solvers
+import CTSolvers.Strategies
+import CTSolvers.Options
+import CTSolvers.Modelers
+import CTSolvers.Optimization
+import CommonSolve
+import CUDA
+import NLPModels
+import ADNLPModels
+import MadNCL
+import MadNLP
+import MadNLPMumps
 import MadNLPGPU
-using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
+import Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
 
 # Trigger extension loading
 const CTSolversMadNCL = Base.get_extension(CTSolvers, :CTSolversMadNCL)
@@ -311,10 +310,10 @@ function test_madncl_extension()
                     )
                     
                     Test.@test solver isa Solvers.MadNCLSolver
-                    @test_skip "GPU linear solver configuration needed"
+                    Test.@test_skip "GPU linear solver configuration needed"
                 end
             else
-                @test_skip "CUDA not functional, GPU tests skipped"
+                Test.@test_skip "CUDA not functional, GPU tests skipped"
             end
         end
         

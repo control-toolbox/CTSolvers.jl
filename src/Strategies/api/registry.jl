@@ -30,7 +30,7 @@ julia> using CTSolvers.Strategies
 
 julia> registry = create_registry(
            AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa),
-           AbstractOptimizationSolver => (Solvers.Ipopt, MadNLPSolver)
+           AbstractOptimizationSolver => (Solvers.Ipopt, Solvers.MadNLP)
        )
 StrategyRegistry with 2 families
 
@@ -75,7 +75,7 @@ julia> using CTSolvers.Strategies
 
 julia> registry = create_registry(
            AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa),
-           AbstractOptimizationSolver => (Solvers.Ipopt, MadNLPSolver, Solvers.Knitro)
+           AbstractOptimizationSolver => (Solvers.Ipopt, Solvers.MadNLP, Solvers.Knitro)
        )
 StrategyRegistry with 2 families
 

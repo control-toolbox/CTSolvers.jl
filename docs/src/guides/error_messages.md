@@ -163,7 +163,7 @@ solver = Solvers.Ipopt(max_iter = 1000)
 | Solver | Required package |
 |--------|-----------------|
 | `Solvers.Ipopt` | `NLPModelsIpopt` |
-| `MadNLPSolver` | `MadNLP` |
+| `Solvers.MadNLP` | `MadNLP` |
 | `Solvers.Knitro` | `KNITRO` |
 | `MadNCLSolver` | `MadNCL` |
 

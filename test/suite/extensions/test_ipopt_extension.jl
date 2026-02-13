@@ -1,18 +1,17 @@
 module TestIpoptExtension
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Solvers
-using CTSolvers.Strategies
-using CTSolvers.Options
-using CTSolvers.Modelers
-using CTSolvers.Optimization
-using CommonSolve
-using NLPModels
-using ADNLPModels
-using Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Solvers
+import CTSolvers.Strategies
+import CTSolvers.Options
+import CTSolvers.Modelers
+import CTSolvers.Optimization
+import CommonSolve
+import NLPModels
+import ADNLPModels
+import Main.TestProblems: Rosenbrock, Elec, Max1MinusX2, rosenbrock_objective, max1minusx2_objective
 
 # Get extension to access solve_with_ipopt
 using NLPModelsIpopt

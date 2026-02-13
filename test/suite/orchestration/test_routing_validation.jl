@@ -6,11 +6,11 @@ ensuring unknown options are handled correctly in both strict and permissive mod
 """
 module TestRoutingValidation
 
-using Test
-using CTSolvers
-using CTSolvers.Strategies
-using CTSolvers.Orchestration
-using CTSolvers.Options
+import Test
+import CTSolvers
+import CTSolvers.Strategies
+import CTSolvers.Orchestration
+import CTSolvers.Options
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
@@ -65,30 +65,30 @@ function create_test_setup()
 end
 
 function test_routing_validation()
-    @testset "Routing Validation Modes" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Routing Validation Modes" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
         # UNIT TESTS - Mode Parameter Validation
         # ====================================================================
         
-        @testset "Mode Parameter Validation" begin
+        Test.@testset "Mode Parameter Validation" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             kwargs = (display = true,)
             
             # Valid modes should work
-            @test_nowarn Orchestration.route_all_options(
+            Test.@test_nowarn Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry;
                 mode = :strict
             )
             
-            @test_nowarn Orchestration.route_all_options(
+            Test.@test_nowarn Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry;
                 mode = :permissive
             )
             
             # Invalid mode should throw Exception
-            @test_throws Exception Orchestration.route_all_options(
+            Test.@test_throws Exception Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry;
                 mode = :invalid
             )
@@ -98,27 +98,27 @@ function test_routing_validation()
         # UNIT TESTS - Strict Mode (Default)
         # ====================================================================
         
-        @testset "Strict Mode - Unknown Option Rejected" begin
+        Test.@testset "Strict Mode - Unknown Option Rejected" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
             # Unknown option without disambiguation should fail in strict mode
             kwargs = (unknown_option = 123,)
             
-            @test_throws Exception Orchestration.route_all_options(
+            Test.@test_throws Exception Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry;
                 mode = :strict
             )
         end
         
-        @testset "Strict Mode - Unknown Disambiguated Option Rejected" begin
+        Test.@testset "Strict Mode - Unknown Disambiguated Option Rejected" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
             # Unknown option with disambiguation should still fail in strict mode
             kwargs = (unknown_option = Strategies.route_to(test_solver=123),)
             
-            @test_throws Exception Orchestration.route_all_options(
+            Test.@test_throws Exception Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry;
                 mode = :strict
             )
@@ -128,7 +128,7 @@ function test_routing_validation()
         # UNIT TESTS - Permissive Mode
         # ====================================================================
         
-        @testset "Permissive Mode - Unknown Disambiguated Option Accepted" begin
+        Test.@testset "Permissive Mode - Unknown Disambiguated Option Accepted" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
@@ -136,7 +136,7 @@ function test_routing_validation()
             kwargs = (custom_option = Strategies.route_to(test_solver=123),)
             
             # Should emit warning but not throw
-            result = @test_logs (:warn, r"Unknown option routed in permissive mode") begin
+            result = Test.@test_logs (:warn, r"Unknown option routed in permissive mode") begin
                 Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
                     mode = :permissive
@@ -144,11 +144,11 @@ function test_routing_validation()
             end
             
             # Option should be routed to solver
-            @test haskey(result.strategies.solver, :custom_option)
-            @test result.strategies.solver.custom_option == 123
+            Test.@test haskey(result.strategies.solver, :custom_option)
+            Test.@test result.strategies.solver.custom_option == 123
         end
         
-        @testset "Permissive Mode - Multiple Unknown Options" begin
+        Test.@testset "Permissive Mode - Multiple Unknown Options" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
@@ -158,18 +158,18 @@ function test_routing_validation()
                 custom2 = Strategies.route_to(test_modeler=200)
             )
             
-            result = @test_logs (:warn,) (:warn,) match_mode=:any begin
+            result = Test.@test_logs (:warn,) (:warn,) match_mode=:any begin
                 Orchestration.route_all_options(
                     method, families, action_defs, kwargs, registry;
                     mode = :permissive
                 )
             end
             
-            @test result.strategies.solver.custom1 == 100
-            @test result.strategies.modeler.custom2 == 200
+            Test.@test result.strategies.solver.custom1 == 100
+            Test.@test result.strategies.modeler.custom2 == 200
         end
         
-        @testset "Permissive Mode - Unknown Without Disambiguation Still Fails" begin
+        Test.@testset "Permissive Mode - Unknown Without Disambiguation Still Fails" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
@@ -177,7 +177,7 @@ function test_routing_validation()
             # (can't route without knowing which strategy)
             kwargs = (unknown_option = 123,)
             
-            @test_throws Exception Orchestration.route_all_options(
+            Test.@test_throws Exception Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry;
                 mode = :permissive
             )
@@ -187,7 +187,7 @@ function test_routing_validation()
         # UNIT TESTS - Invalid Routing Detection
         # ====================================================================
         
-        @testset "Invalid Routing - Wrong Strategy in Permissive Mode" begin
+        Test.@testset "Invalid Routing - Wrong Strategy in Permissive Mode" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
@@ -202,21 +202,21 @@ function test_routing_validation()
                 mode = :permissive
             )
             
-            @test result.action[:display].value == true
+            Test.@test result.action[:display].value == true
         end
         
         # ====================================================================
         # UNIT TESTS - Default Mode is Strict
         # ====================================================================
         
-        @testset "Default Mode is Strict" begin
+        Test.@testset "Default Mode is Strict" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
             # Without mode parameter, should behave as strict
             kwargs = (unknown_option = Strategies.route_to(test_solver=123),)
             
-            @test_throws Exception Orchestration.route_all_options(
+            Test.@test_throws Exception Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
         end

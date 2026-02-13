@@ -1,11 +1,11 @@
 module TestCoverageOptions
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Options
-using CTSolvers.Strategies
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Options
+import CTSolvers.Strategies
+import CTSolvers.Modelers
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -230,7 +230,7 @@ function test_coverage_options()
                 Strategies.AbstractStrategy => (CovOptFakeStrategy,)
             )
             Test.@test_throws Exceptions.IncorrectArgument Strategies.strategy_ids(
-                CTSolvers.Modelers.AbstractNLPModeler, registry
+                Modelers.AbstractNLPModeler, registry
             )
 
             # Unknown strategy ID
@@ -240,7 +240,7 @@ function test_coverage_options()
 
             # Family not found in type_from_id
             Test.@test_throws Exceptions.IncorrectArgument Strategies.type_from_id(
-                :cov_opt_fake, CTSolvers.Modelers.AbstractNLPModeler, registry
+                :cov_opt_fake, Modelers.AbstractNLPModeler, registry
             )
         end
     end

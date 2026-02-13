@@ -9,7 +9,7 @@ the `AbstractStrategy` contract and provide a unified callable interface.
 
 # Solver Types
 - `Solvers.Ipopt` - Interior point optimizer (requires NLPModelsIpopt)
-- `MadNLPSolver` - Matrix-free augmented Lagrangian (requires MadNLP, MadNLPMumps)
+- `Solvers.MadNLP` - Matrix-free augmented Lagrangian (requires MadNLP, MadNLPMumps)
 - `MadNCLSolver` - NCL variant of MadNLP (requires MadNCL, MadNLP, MadNLPMumps)
 - `Solvers.Knitro` - Commercial solver (requires NLPModelsKnitro)
 
@@ -72,6 +72,6 @@ include(joinpath(@__DIR__, "common_solve_api.jl"))
 
 # Public API - abstract and concrete types
 export AbstractOptimizationSolver
-export Ipopt, MadNLPSolver, MadNCLSolver, Knitro
+export Ipopt, MadNLP, MadNCLSolver, Knitro
 
 end # module Solvers

@@ -41,10 +41,10 @@ using NLPModelsKnitro
 using NLPModelsKnitro
 
 # Create solver with default options
-solver = Solvers.Knitro()
+solver = Knitro()
 
 # Create solver with custom options
-solver = Solvers.Knitro(maxit=1000, maxtime=3600, ftol=1e-10, outlev=2)
+solver = Knitro(maxit=1000, maxtime=3600, ftol=1e-10, outlev=2)
 
 # Solve an NLP problem
 using ADNLPModels
@@ -66,10 +66,10 @@ using NLPModelsKnitro
 - Implements the `AbstractStrategy` contract via `Strategies.id()`
 - Metadata and constructor implementation provided by CTSolversKnitro extension
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::Solvers.Knitro)(nlp; display=true)` provided by extension
+- Callable interface: `(solver::Knitro)(nlp; display=true)` provided by extension
 - Requires valid Knitro license for operation
 
-See also: [`AbstractOptimizationSolver`](@ref), [`Solvers.Ipopt`](@ref), [`MadNLPSolver`](@ref)
+See also: [`AbstractOptimizationSolver`](@ref), [`Ipopt`](@ref), [`MadNLP`](@ref)
 """
 struct Knitro <: AbstractOptimizationSolver
     "Solver configuration options containing validated option values"
@@ -83,7 +83,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return the unique identifier for Solvers.Knitro.
+Return the unique identifier for Knitro.
 """
 Strategies.id(::Type{<:Solvers.Knitro}) = :knitro
 
@@ -94,7 +94,7 @@ Strategies.id(::Type{<:Solvers.Knitro}) = :knitro
 """
 $(TYPEDSIGNATURES)
 
-Create a Solvers.Knitro with specified options.
+Create a Knitro with specified options.
 
 Requires the CTSolversKnitro extension to be loaded.
 
@@ -109,10 +109,10 @@ Requires the CTSolversKnitro extension to be loaded.
 using NLPModelsKnitro
 
 # Strict mode (default) - rejects unknown options
-solver = Solvers.Knitro(maxit=1000, outlev=2)
+solver = Knitro(maxit=1000, outlev=2)
 
 # Permissive mode - accepts unknown options with warning
-solver = Solvers.Knitro(maxit=1000, custom_option=123; mode=:permissive)
+solver = Knitro(maxit=1000, custom_option=123; mode=:permissive)
 ```
 
 # Throws
@@ -134,8 +134,8 @@ Real implementation provided by the extension.
 function build_knitro_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
         :NLPModelsKnitro;
-        message="to create Solvers.Knitro, access options, and solve problems",
-        feature="Solvers.Knitro functionality",
+        message="to create Knitro, access options, and solve problems",
+        feature="Knitro functionality",
         context="Load NLPModelsKnitro extension first: using NLPModelsKnitro"
     ))
 end

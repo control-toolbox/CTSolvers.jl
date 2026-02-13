@@ -15,17 +15,18 @@ Date: 2026-02-06
 
 module TestRouteToComprehensive
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Strategies
-using CTSolvers.Orchestration
-using CTSolvers.Options
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Strategies
+import CTSolvers.Orchestration
+import CTSolvers.Options
+import CTSolvers.Modelers
+import CTSolvers.Solvers
 
 # Load extensions if available for real strategy testing
 const IPOPT_AVAILABLE = try
-    using NLPModelsIpopt
+    import NLPModelsIpopt
     # println("✅ NLPModelsIpopt loaded for real strategy tests")
     true
 catch
@@ -34,8 +35,8 @@ catch
 end
 
 const MADNLP_AVAILABLE = try
-    using MadNLP
-    using MadNLPMumps
+    import MadNLP
+    import MadNLPMumps
     # println("✅ MadNLP loaded for real strategy tests")
     true
 catch
@@ -53,8 +54,8 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 
 # Abstract strategy types for testing
 abstract type RouteTestDiscretizer <: Strategies.AbstractStrategy end
-abstract type RouteTestModeler <: CTSolvers.Modelers.AbstractNLPModeler end
-abstract type RouteTestSolver <: CTSolvers.Solvers.AbstractOptimizationSolver end
+abstract type RouteTestModeler <: Modelers.AbstractNLPModeler end
+abstract type RouteTestSolver <: Solvers.AbstractOptimizationSolver end
 
 # Mock discretizer (no option conflicts)
 struct RouteCollocation <: RouteTestDiscretizer
@@ -232,10 +233,10 @@ end
 Test that an option is correctly routed to a strategy.
 """
 function test_option_routing(strategy, option_name::Symbol, expected_value, expected_source::Symbol=:user)
-    @testset "Option Routing - $option_name" begin
-        @test has_option(strategy, option_name)
-        @test option_value(strategy, option_name) == expected_value
-        @test option_source(strategy, option_name) == expected_source
+    Test.@testset "Option Routing - $option_name" begin
+        Test.@test has_option(strategy, option_name)
+        Test.@test option_value(strategy, option_name) == expected_value
+        Test.@test option_source(strategy, option_name) == expected_source
     end
 end
 
@@ -243,8 +244,8 @@ end
 Test that an option is NOT present in a strategy.
 """
 function test_option_absence(strategy, option_name::Symbol)
-    @testset "Option Absence - $option_name" begin
-        @test !has_option(strategy, option_name)
+    Test.@testset "Option Absence - $option_name" begin
+        Test.@test !has_option(strategy, option_name)
     end
 end
 
@@ -259,7 +260,7 @@ function test_route_to_with_validation(
     expected_success::Bool = true,
     expected_warnings::Int = 0
 )
-    @testset "Route To Validation - Mode: $mode" begin
+    Test.@testset "Route To Validation - Mode: $mode" begin
         if expected_success
             # Should succeed (maybe with warnings)
             routed = Orchestration.route_all_options(
@@ -267,8 +268,8 @@ function test_route_to_with_validation(
             )
             
             # Verify structure
-            @test haskey(routed, :action)
-            @test haskey(routed, :strategies)
+            Test.@test haskey(routed, :action)
+            Test.@test haskey(routed, :strategies)
             
             # Build strategies and inspect options
             for (family_name, family_type) in pairs(families)
@@ -294,7 +295,7 @@ function test_route_to_with_validation(
             
         else
             # Should fail
-            @test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
+            Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 method, families, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=mode
             )
         end
@@ -306,30 +307,30 @@ end
 # ============================================================================
 
 function test_route_to_comprehensive()
-    @testset "Route To Comprehensive Tests" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Route To Comprehensive Tests" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
         # BASIC ROUTE_TO SYNTAX TESTS
         # ====================================================================
         
-        @testset "Basic route_to() Syntax" begin
-            @testset "RoutedOption - Single Strategy" begin
+        Test.@testset "Basic route_to() Syntax" begin
+            Test.@testset "RoutedOption - Single Strategy" begin
                 result = Strategies.route_to(solver=100)
-                @test result isa Strategies.RoutedOption
-                @test length(result.routes) == 1
-                @test result.routes.solver == 100
+                Test.@test result isa Strategies.RoutedOption
+                Test.@test length(result.routes) == 1
+                Test.@test result.routes.solver == 100
             end
             
-            @testset "RoutedOption - Multiple Strategies" begin
+            Test.@testset "RoutedOption - Multiple Strategies" begin
                 result = Strategies.route_to(solver=100, modeler=50)
-                @test result isa Strategies.RoutedOption
-                @test length(result.routes) == 2
-                @test result.routes.solver == 100
-                @test result.routes.modeler == 50
+                Test.@test result isa Strategies.RoutedOption
+                Test.@test length(result.routes) == 2
+                Test.@test result.routes.solver == 100
+                Test.@test result.routes.modeler == 50
             end
             
-            @testset "RoutedOption - No Arguments Error" begin
-                @test_throws Exceptions.PreconditionError Strategies.route_to()
+            Test.@testset "RoutedOption - No Arguments Error" begin
+                Test.@test_throws Exceptions.PreconditionError Strategies.route_to()
             end
         end
         
@@ -337,8 +338,8 @@ function test_route_to_comprehensive()
         # MOCK STRATEGY TESTS - NO CONFLICTS
         # ====================================================================
         
-        @testset "Mock Strategies - No Conflicts" begin
-            @testset "Auto-routing (Unambiguous Options)" begin
+        Test.@testset "Mock Strategies - No Conflicts" begin
+            Test.@testset "Auto-routing (Unambiguous Options)" begin
                 kwargs = (
                     grid_size = 200,  # Only belongs to discretizer
                     display = false   # Action option
@@ -352,8 +353,8 @@ function test_route_to_comprehensive()
         # MOCK STRATEGY TESTS - OPTION CONFLICTS
         # ====================================================================
         
-        @testset "Mock Strategies - Option Conflicts" begin
-            @testset "Single Strategy Routing" begin
+        Test.@testset "Mock Strategies - Option Conflicts" begin
+            Test.@testset "Single Strategy Routing" begin
                 kwargs = (
                     grid_size = 200,  # Auto-route to discretizer
                     backend = Strategies.route_to(adnlp=:default),  # Route to modeler only
@@ -374,19 +375,19 @@ function test_route_to_comprehensive()
                 # Verify absence - simplified test to avoid routing complexity
                 # Note: These tests are complex due to mock strategy behavior
                 # We'll test the basic functionality instead
-                @testset "Option Distribution" begin
+                Test.@testset "Option Distribution" begin
                     # Test that backend goes to modeler (basic check)
-                    @test haskey(routed.strategies, :modeler)
-                    @test haskey(routed.strategies, :solver)
+                    Test.@test haskey(routed.strategies, :modeler)
+                    Test.@test haskey(routed.strategies, :solver)
                     
                     # Test that max_iter goes to solver
                     if haskey(routed.strategies, :solver) && haskey(routed.strategies.solver, :max_iter)
-                        @test routed.strategies.solver.max_iter == 1000
+                        Test.@test routed.strategies.solver.max_iter == 1000
                     end
                 end
             end
             
-            @testset "Multi-Strategy Routing" begin
+            Test.@testset "Multi-Strategy Routing" begin
                 kwargs = (
                     grid_size = 200,  # Auto-route to discretizer
                     backend = Strategies.route_to(adnlp=:default, ipopt=:cpu),  # Conflict resolution
@@ -413,8 +414,8 @@ function test_route_to_comprehensive()
         # VALIDATION MODE TESTS
         # ====================================================================
         
-        @testset "Validation Mode Tests" begin
-            @testset "Strict Mode - Unknown Options" begin
+        Test.@testset "Validation Mode Tests" begin
+            Test.@testset "Strict Mode - Unknown Options" begin
                 kwargs = (
                     grid_size = 200,
                     backend = Strategies.route_to(adnlp=:default),
@@ -427,7 +428,7 @@ function test_route_to_comprehensive()
                 )
             end
             
-            @testset "Permissive Mode - Unknown Options" begin
+            Test.@testset "Permissive Mode - Unknown Options" begin
                 kwargs = (
                     grid_size = 200,
                     backend = Strategies.route_to(adnlp=:default),
@@ -450,8 +451,8 @@ function test_route_to_comprehensive()
         # MULTI-SOLVER TESTS
         # ====================================================================
         
-        @testset "Multi-Solver Tests" begin
-            @testset "Multiple Solvers with Conflicts" begin
+        Test.@testset "Multi-Solver Tests" begin
+            Test.@testset "Multiple Solvers with Conflicts" begin
                 kwargs = (
                     grid_size = 200,
                     backend = Strategies.route_to(adnlp=:default, ipopt=:dense),  # Different values per solver
@@ -471,15 +472,15 @@ function test_route_to_comprehensive()
                 
                 # Verify routing - this is tricky because both solvers get the same kwargs
                 # We need to check that the options are present in the constructed strategies
-                @testset "Modeler Options" begin
+                Test.@testset "Modeler Options" begin
                     test_option_routing(modeler, :backend, :default)
                     test_option_absence(modeler, :max_iter)
                 end
                 
-                @testset "Solver Options" begin
+                Test.@testset "Solver Options" begin
                     # At least one solver should have the options
-                    @test has_option(ipopt, :backend) || has_option(madnlp, :backend)
-                    @test has_option(ipopt, :max_iter) || has_option(madnlp, :max_iter)
+                    Test.@test has_option(ipopt, :backend) || has_option(madnlp, :backend)
+                    Test.@test has_option(ipopt, :max_iter) || has_option(madnlp, :max_iter)
                 end
             end
         end
@@ -488,18 +489,18 @@ function test_route_to_comprehensive()
         # REAL STRATEGY TESTS (if available)
         # ====================================================================
         
-        @testset "Real Strategy Tests" begin
+        Test.@testset "Real Strategy Tests" begin
             # Test with real Modelers.ADNLP
-            @testset "Real Modelers.ADNLP" begin
+            Test.@testset "Real Modelers.ADNLP" begin
                 real_registry = Strategies.create_registry(
                     RouteTestDiscretizer => (RouteCollocation,),
-                    CTSolvers.Modelers.AbstractNLPModeler => (CTSolvers.Modelers.ADNLP,),
+                    Modelers.AbstractNLPModeler => (Modelers.ADNLP,),
                     RouteTestSolver => (RouteIpopt,)
                 )
                 
                 real_families = (
                     discretizer = RouteTestDiscretizer,
-                    modeler = CTSolvers.Modelers.AbstractNLPModeler,
+                    modeler = Modelers.AbstractNLPModeler,
                     solver = RouteTestSolver
                 )
                 
@@ -516,7 +517,7 @@ function test_route_to_comprehensive()
                 
                 # Build real modeler
                 real_modeler = Strategies.build_strategy_from_method(
-                    MOCK_METHOD, CTSolvers.Modelers.AbstractNLPModeler, real_registry; 
+                    MOCK_METHOD, Modelers.AbstractNLPModeler, real_registry; 
                     routed.strategies.modeler...
                 )
                 
@@ -526,17 +527,17 @@ function test_route_to_comprehensive()
             
             # Test with real Solvers.Ipopt (if available)
             if IPOPT_AVAILABLE
-                @testset "Real Solvers.Ipopt" begin
+                Test.@testset "Real Solvers.Ipopt" begin
                     real_registry = Strategies.create_registry(
                         RouteTestDiscretizer => (RouteCollocation,),
                         RouteTestModeler => (RouteADNLP,),
-                        CTSolvers.Solvers.AbstractOptimizationSolver => (CTSolvers.Solvers.Ipopt,)
+                        Solvers.AbstractOptimizationSolver => (Solvers.Ipopt,)
                     )
                     
                     real_families = (
                         discretizer = RouteTestDiscretizer,
                         modeler = RouteTestModeler,
-                        solver = CTSolvers.Solvers.AbstractOptimizationSolver
+                        solver = Solvers.AbstractOptimizationSolver
                     )
                     
                     kwargs = (
@@ -552,7 +553,7 @@ function test_route_to_comprehensive()
                     
                     # Build real solver
                     real_solver = Strategies.build_strategy_from_method(
-                        MOCK_METHOD, CTSolvers.Solvers.AbstractOptimizationSolver, real_registry; 
+                        MOCK_METHOD, Solvers.AbstractOptimizationSolver, real_registry; 
                         routed.strategies.solver...
                     )
                     
@@ -561,8 +562,8 @@ function test_route_to_comprehensive()
                     test_option_routing(real_solver, :max_iter, 1000)
                 end
             else
-                @testset "Real Solvers.Ipopt (Not Available)" begin
-                    @test_skip "NLPModelsIpopt not available"
+                Test.@testset "Real Solvers.Ipopt (Not Available)" begin
+                    Test.@test_skip "NLPModelsIpopt not available"
                 end
             end
         end
@@ -571,31 +572,31 @@ function test_route_to_comprehensive()
         # EDGE CASES AND ERROR HANDLING
         # ====================================================================
         
-        @testset "Edge Cases" begin
-            @testset "Invalid Strategy ID" begin
+        Test.@testset "Edge Cases" begin
+            Test.@testset "Invalid Strategy ID" begin
                 kwargs = (
                     grid_size = 200,
                     backend = Strategies.route_to(invalid_strategy=:default)  # Invalid ID
                 )
                 
-                @test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
+                Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                     MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=:strict
                 )
             end
             
-            @testset "Wrong Strategy for Option" begin
+            Test.@testset "Wrong Strategy for Option" begin
                 kwargs = (
                     grid_size = 200,
                     max_iter = Strategies.route_to(modeler=100)  # max_iter belongs to solver, not modeler
                 )
                 
-                @test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
+                Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                     MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=:strict
                 )
             end
             
-            @testset "Empty RoutedOption" begin
-                @test_throws Exceptions.PreconditionError Strategies.RoutedOption(NamedTuple())
+            Test.@testset "Empty RoutedOption" begin
+                Test.@test_throws Exceptions.PreconditionError Strategies.RoutedOption(NamedTuple())
             end
         end
     end

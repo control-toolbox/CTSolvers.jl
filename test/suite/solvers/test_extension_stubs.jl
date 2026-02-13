@@ -1,10 +1,9 @@
 module TestExtensionStubs
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Solvers
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Solvers
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -73,10 +72,10 @@ function test_extension_stubs()
         # end
         
         # ====================================================================
-        # UNIT TESTS - MadNLPSolver Stub
+        # UNIT TESTS - Solvers.MadNLP Stub
         # ====================================================================
         
-        Test.@testset "MadNLPSolver stub" begin
+        Test.@testset "Solvers.MadNLP stub" begin
             Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(DummyTag())
             
             err = nothing
@@ -89,9 +88,9 @@ function test_extension_stubs()
             Test.@test err isa Exceptions.ExtensionError
             
             err_str = string(err)
-            Test.@test occursin("MadNLPSolver", err_str)
+            Test.@test occursin("Solvers.MadNLP", err_str)
             Test.@test occursin("MadNLP", err_str)
-            Test.@test occursin("to create MadNLPSolver, access options, and solve problems", err_str)
+            Test.@test occursin("to create Solvers.MadNLP, access options, and solve problems", err_str)
         end
         
         # ====================================================================

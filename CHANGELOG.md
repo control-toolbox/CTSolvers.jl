@@ -52,7 +52,7 @@ import NLPModels
 
 # After (functional)
 import MadNLPGPU
-gpu_solver = Solvers.MadNLPSolver(linear_solver=MadNLPGPU.CUDSSSolver)
+gpu_solver = Solvers.MadNLP(linear_solver=MadNLPGPU.CUDSSSolver)
 ```
 
 #### CUDA Availability Helper

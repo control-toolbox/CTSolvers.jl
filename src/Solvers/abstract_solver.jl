@@ -14,7 +14,7 @@ All concrete solver types must:
 
 # Solver Types
 - `Solvers.Ipopt` - Interior point optimizer (Ipopt backend)
-- `MadNLPSolver` - Matrix-free augmented Lagrangian (MadNLP backend)
+- `Solvers.MadNLP` - Matrix-free augmented Lagrangian (MadNLP backend)
 - `MadNCLSolver` - NCL variant of MadNLP
 - `Solvers.Knitro` - Commercial solver (Knitro backend)
 
@@ -28,7 +28,7 @@ nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
 stats = solver(nlp, display=true)
 ```
 
-See also: [`Solvers.Ipopt`](@ref), [`MadNLPSolver`](@ref), [`MadNCLSolver`](@ref), [`Solvers.Knitro`](@ref)
+See also: [`Solvers.Ipopt`](@ref), [`Solvers.MadNLP`](@ref), [`MadNCLSolver`](@ref), [`Solvers.Knitro`](@ref)
 """
 abstract type AbstractOptimizationSolver <: Strategies.AbstractStrategy end
 
