@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Public · CTSolvers.jl</title><meta name="title" content="Public · CTSolvers.jl"/><meta property="og:title" content="Public · CTSolvers.jl"/><meta property="twitter:title" content="Public · CTSolvers.jl"/><meta name="description" content="Documentation for CTSolvers.jl."/><meta property="og:description" content="Documentation for CTSolvers.jl."/><meta property="twitter:description" content="Documentation for CTSolvers.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="https://control-toolbox.org/assets/css/documentation.css" rel="stylesheet" type="text/css"/><script src="https://control-toolbox.org/assets/js/documentation.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../index.html">CTSolvers.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../index.html">Introduction</a></li><li><a class="tocitem" href="../architecture.html">Architecture</a></li><li><span class="tocitem">Developer Guides</span><ul><li><a class="tocitem" href="../guides/options_system.html">Options System</a></li><li><a class="tocitem" href="../guides/implementing_a_strategy.html">Implementing a Strategy</a></li><li><a class="tocitem" href="../guides/implementing_a_solver.html">Implementing a Solver</a></li><li><a class="tocitem" href="../guides/implementing_a_modeler.html">Implementing a Modeler</a></li><li><a class="tocitem" href="../guides/implementing_an_optimization_problem.html">Implementing an Optimization Problem</a></li><li><a class="tocitem" href="../guides/orchestration_and_routing.html">Orchestration &amp; Routing</a></li><li><a class="tocitem" href="../guides/error_messages.html">Error Messages Reference</a></li></ul></li><li><span class="tocitem">API Reference</span><ul><li><input class="collapse-toggle" id="menuitem-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-1"><span class="docs-label">Options</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="options_public.html">Public</a></li><li><a class="tocitem" href="options_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-2" type="checkbox" checked/><label class="tocitem" for="menuitem-4-2"><span class="docs-label">Strategies (Contract)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href="strategies_contract_public.html">Public</a><ul class="internal"><li><a class="tocitem" href="#AbstractStrategy"><span><code>AbstractStrategy</code></span></a></li><li><a class="tocitem" href="#StrategyMetadata"><span><code>StrategyMetadata</code></span></a></li><li><a class="tocitem" href="#StrategyOptions"><span><code>StrategyOptions</code></span></a></li><li><a class="tocitem" href="#describe"><span><code>describe</code></span></a></li><li><a class="tocitem" href="#id"><span><code>id</code></span></a></li><li><a class="tocitem" href="#is_computed"><span><code>is_computed</code></span></a></li><li><a class="tocitem" href="#is_default"><span><code>is_default</code></span></a></li><li><a class="tocitem" href="#is_user"><span><code>is_user</code></span></a></li><li><a class="tocitem" href="#metadata"><span><code>metadata</code></span></a></li><li><a class="tocitem" href="#options"><span><code>options</code></span></a></li></ul></li><li><a class="tocitem" href="strategies_contract_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3" type="checkbox"/><label class="tocitem" for="menuitem-4-3"><span class="docs-label">Strategies (API)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="strategies_api_public.html">Public</a></li><li><a class="tocitem" href="strategies_api_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-4" type="checkbox"/><label class="tocitem" for="menuitem-4-4"><span class="docs-label">Orchestration</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="orchestration_public.html">Public</a></li><li><a class="tocitem" href="orchestration_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-5" type="checkbox"/><label class="tocitem" for="menuitem-4-5"><span class="docs-label">Optimization</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="optimization_public.html">Public</a></li><li><a class="tocitem" href="optimization_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-6" type="checkbox"/><label class="tocitem" for="menuitem-4-6"><span class="docs-label">Modelers</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="modelers_public.html">Public</a></li><li><a class="tocitem" href="modelers_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-7" type="checkbox"/><label class="tocitem" for="menuitem-4-7"><span class="docs-label">DOCP</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="docp_public.html">Public</a></li><li><a class="tocitem" href="docp_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-8" type="checkbox"/><label class="tocitem" for="menuitem-4-8"><span class="docs-label">Solvers</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="solvers_public.html">Public</a></li><li><a class="tocitem" href="solvers_private.html">Private</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">API Reference</a></li><li><a class="is-disabled">Strategies (Contract)</a></li><li class="is-active"><a href="strategies_contract_public.html">Public</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="strategies_contract_public.html">Public</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/control-toolbox/CTSolvers.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Public-API"><a class="docs-heading-anchor" href="#Public-API">Public API</a><a id="Public-API-1"></a><a class="docs-heading-anchor-permalink" href="#Public-API" title="Permalink"></a></h1><p>This page lists <strong>exported</strong> symbols of <code>CTSolvers.Strategies</code>.</p><hr/><h3 id="From-CTSolvers.Strategies"><a class="docs-heading-anchor" href="#From-CTSolvers.Strategies">From <code>CTSolvers.Strategies</code></a><a id="From-CTSolvers.Strategies-1"></a><a class="docs-heading-anchor-permalink" href="#From-CTSolvers.Strategies" title="Permalink"></a></h3><h2 id="AbstractStrategy"><a class="docs-heading-anchor" href="#AbstractStrategy"><code>AbstractStrategy</code></a><a id="AbstractStrategy-1"></a><a class="docs-heading-anchor-permalink" href="#AbstractStrategy" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.AbstractStrategy"><a class="docstring-binding" href="#CTSolvers.Strategies.AbstractStrategy"><code>CTSolvers.Strategies.AbstractStrategy</code></a> — <span class="docstring-category">Type</span></summary><section><div><pre><code class="language-julia hljs">abstract type AbstractStrategy</code></pre><p>Abstract base type for all strategies in the CTSolvers ecosystem.</p><p>Every concrete strategy must implement a <strong>two-level contract</strong> separating static type metadata from dynamic instance configuration.</p><p><strong>Contract Overview</strong></p><p><strong>Type-Level Contract (Static Metadata)</strong></p><p>Methods defined on the <strong>type</strong> that describe what the strategy can do:</p><ul><li><code>id(::Type{&lt;:MyStrategy})::Symbol</code> - Unique identifier for routing and introspection</li><li><code>metadata(::Type{&lt;:MyStrategy})::StrategyMetadata</code> - Option specifications and validation rules</li></ul><p><strong>Why type-level?</strong> These methods enable:</p><ul><li><strong>Introspection without instantiation</strong> - Query capabilities without creating objects</li><li><strong>Routing and dispatch</strong> - Select strategies by symbol for automated construction</li><li><strong>Validation before construction</strong> - Verify compatibility before resource allocation</li></ul><p><strong>Instance-Level Contract (Configured State)</strong></p><p>Methods defined on <strong>instances</strong> that provide the actual configuration:</p><ul><li><code>options(strategy::MyStrategy)::StrategyOptions</code> - Current option values with provenance tracking</li></ul><p><strong>Why instance-level?</strong> These methods enable:</p><ul><li><strong>Multiple configurations</strong> - Different instances with different settings</li><li><strong>Provenance tracking</strong> - Know which options came from user vs defaults</li><li><strong>Encapsulation</strong> - Configuration state belongs to the executing object</li></ul><p><strong>Implementation Requirements</strong></p><p>Every concrete strategy must provide:</p><ol><li><strong>Type definition</strong> with an <code>options::StrategyOptions</code> field (recommended)</li><li><strong>Type-level methods</strong> for <code>id</code> and <code>metadata</code></li><li><strong>Constructor</strong> accepting keyword arguments (uses <code>build_strategy_options</code>)</li><li><strong>Instance-level access</strong> to configured options</li></ol><p><strong>Validation Modes</strong></p><p>The strategy system supports two validation modes for option handling:</p><ul><li><p><strong>Strict Mode (default)</strong>: Rejects unknown options with detailed error messages</p><ul><li>Provides early error detection and safety</li><li>Suggests corrections for typos using Levenshtein distance</li><li>Ideal for development and production environments</li></ul></li><li><p><strong>Permissive Mode</strong>: Accepts unknown options with warnings</p><ul><li>Allows backend-specific options without breaking changes</li><li>Maintains validation for known options (types, custom validators)</li><li>Ideal for advanced users and experimental features</li></ul></li></ul><p>The validation mode is controlled by the <code>mode</code> parameter in constructors:</p><pre><code class="language-julia-repl hljs"># Strict mode (default) - rejects unknown options
+julia&gt; MyStrategy(unknown_option=123)  # ERROR
+
+# Permissive mode - accepts unknown options with warning
+julia&gt; MyStrategy(unknown_option=123; mode=:permissive)  # WARNING but works</code></pre><p><strong>API Methods</strong></p><p>The Strategies module provides these methods for working with strategies:</p><ul><li><code>id(strategy_type)</code> - Get the unique identifier</li><li><code>metadata(strategy_type)</code> - Get option specifications  </li><li><code>options(strategy)</code> - Get current configuration</li><li><code>build_strategy_options(Type; mode=:strict, kwargs...)</code> - Validate and merge options</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs"># Define strategy type
+julia&gt; struct MyStrategy &lt;: AbstractStrategy
+           options::StrategyOptions
+       end
+
+# Implement type-level contract
+julia&gt; id(::Type{&lt;:MyStrategy}) = :mystrategy
+julia&gt; metadata(::Type{&lt;:MyStrategy}) = StrategyMetadata(
+           OptionDefinition(name=:max_iter, type=Int, default=100, description=&quot;Max iterations&quot;)
+       )
+
+# Implement constructor (required)
+julia&gt; function MyStrategy(; mode::Symbol=:strict, kwargs...)
+           options = build_strategy_options(MyStrategy; mode=mode, kwargs...)
+           return MyStrategy(options)
+       end
+
+# Use the strategy
+julia&gt; strategy = MyStrategy(max_iter=200)  # Instance with custom config (strict mode)
+julia&gt; id(typeof(strategy))                 # =&gt; :mystrategy (type-level)
+julia&gt; options(strategy)                    # =&gt; StrategyOptions (instance-level)
+
+# Use with permissive mode for unknown options
+julia&gt; strategy = MyStrategy(max_iter=200, custom_option=123; mode=:permissive)</code></pre><p><strong>Notes</strong></p><ul><li><strong>Type-level methods</strong> are called on the type: <code>id(MyStrategy)</code></li><li><strong>Instance-level methods</strong> are called on instances: <code>options(strategy)</code></li><li><strong>Constructor pattern</strong> is required for registry-based construction</li><li><strong>Strategy families</strong> can be created with intermediate abstract types</li></ul><p><strong>References</strong></p><p>See the <a href="@ref">Strategies module documentation</a> for complete API reference and examples.</p></div></section></details></article><h2 id="StrategyMetadata"><a class="docs-heading-anchor" href="#StrategyMetadata"><code>StrategyMetadata</code></a><a id="StrategyMetadata-1"></a><a class="docs-heading-anchor-permalink" href="#StrategyMetadata" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.StrategyMetadata"><a class="docstring-binding" href="#CTSolvers.Strategies.StrategyMetadata"><code>CTSolvers.Strategies.StrategyMetadata</code></a> — <span class="docstring-category">Type</span></summary><section><div><pre><code class="language-julia hljs">struct StrategyMetadata{NT&lt;:NamedTuple}</code></pre><p>Metadata about a strategy type, wrapping option definitions.</p><p>This type serves as a container for <code>OptionDefinition</code> objects that define the contract for a strategy&#39;s configuration options. It is returned by the type-level <code>metadata(::Type{&lt;:AbstractStrategy})</code> method and provides a convenient interface for accessing and managing option definitions.</p><p><strong>Strategy Contract</strong></p><p>Every concrete strategy type must implement the <code>metadata</code> method to return a <code>StrategyMetadata</code> instance describing its configurable options:</p><pre><code class="language-julia hljs">function metadata(::Type{&lt;:MyStrategy})
+    return StrategyMetadata(
+        OptionDefinition(...),
+        OptionDefinition(...),
+        # ... more option definitions
+    )
+end</code></pre><p>This metadata is used by:</p><ul><li><strong>Validation</strong>: Check option types and values before construction</li><li><strong>Documentation</strong>: Auto-generate option documentation</li><li><strong>Introspection</strong>: Query available options without instantiation</li><li><strong>Construction</strong>: Build <code>StrategyOptions</code> with <code>build_strategy_options</code></li></ul><p><strong>Fields</strong></p><ul><li><code>specs::NamedTuple</code>: NamedTuple mapping option names to their definitions (type-stable)</li></ul><p><strong>Type Parameter</strong></p><ul><li><code>NT &lt;: NamedTuple</code>: The concrete NamedTuple type holding the option definitions</li></ul><p><strong>Constructor</strong></p><p>The constructor accepts a variable number of <code>OptionDefinition</code> arguments and automatically builds the internal NamedTuple, validating that all option names are unique. The type parameter is inferred automatically.</p><p><strong>Collection Interface</strong></p><p><code>StrategyMetadata</code> implements standard Julia collection interfaces:</p><ul><li><code>meta[:option_name]</code> - Access definition by name</li><li><code>keys(meta)</code> - Get all option names</li><li><code>values(meta)</code> - Get all definitions</li><li><code>pairs(meta)</code> - Iterate over name-definition pairs</li><li><code>length(meta)</code> - Number of options</li></ul><p><strong>Example - Standalone Usage</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using CTSolvers.Strategies
+
+julia&gt; meta = StrategyMetadata(
+           OptionDefinition(
+               name = :max_iter,
+               type = Int,
+               default = 100,
+               description = &quot;Maximum iterations&quot;,
+               aliases = (:max, :maxiter),
+               validator = x -&gt; x &gt; 0 || throw(ArgumentError(&quot;$x must be positive&quot;))
+           ),
+           OptionDefinition(
+               name = :tol,
+               type = Float64,
+               default = 1e-6,
+               description = &quot;Convergence tolerance&quot;
+           )
+       )
+StrategyMetadata with 2 options:
+  max_iter (max, maxiter) :: Int64
+    default: 100
+    description: Maximum iterations
+  tol :: Float64
+    default: 1.0e-6
+    description: Convergence tolerance
+
+julia&gt; meta[:max_iter].name
+:max_iter
+
+julia&gt; collect(keys(meta))
+2-element Vector{Symbol}:
+ :max_iter
+ :tol</code></pre><p><strong>Example - Strategy Implementation</strong></p><pre><code class="language-julia hljs"># Define a concrete strategy type
+struct MyOptimizer &lt;: AbstractStrategy
+    options::StrategyOptions
+end
+
+# Implement the metadata contract (type-level)
+function metadata(::Type{&lt;:MyOptimizer})
+    return StrategyMetadata(
+        OptionDefinition(
+            name = :max_iter,
+            type = Int,
+            default = 100,
+            description = &quot;Maximum number of iterations&quot;,
+            validator = x -&gt; x &gt; 0 || throw(ArgumentError(&quot;max_iter must be positive&quot;))
+        ),
+        OptionDefinition(
+            name = :tol,
+            type = Float64,
+            default = 1e-6,
+            description = &quot;Convergence tolerance&quot;,
+            validator = x -&gt; x &gt; 0 || throw(ArgumentError(&quot;tol must be positive&quot;))
+        )
+    )
+end
+
+# Implement the id contract (type-level)
+id(::Type{&lt;:MyOptimizer}) = :myoptimizer
+
+# Implement constructor using build_strategy_options
+function MyOptimizer(; kwargs...)
+    options = build_strategy_options(MyOptimizer; kwargs...)
+    return MyOptimizer(options)
+end
+
+# Now the strategy can be used with automatic validation
+julia&gt; strategy = MyOptimizer(max_iter=200, tol=1e-8)
+julia&gt; options(strategy)
+StrategyOptions(max_iter=200, tol=1.0e-8)</code></pre><p><strong>Throws</strong></p><ul><li><code>Exceptions.IncorrectArgument</code>: If duplicate option names are provided</li></ul><p>See also: <a href="@ref"><code>OptionDefinition</code></a>, <a href="strategies_contract_public.html#AbstractStrategy"><code>AbstractStrategy</code></a>, <a href="strategies_api_public.html#build_strategy_options"><code>build_strategy_options</code></a></p></div></section></details></article><h2 id="StrategyOptions"><a class="docs-heading-anchor" href="#StrategyOptions"><code>StrategyOptions</code></a><a id="StrategyOptions-1"></a><a class="docs-heading-anchor-permalink" href="#StrategyOptions" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.StrategyOptions"><a class="docstring-binding" href="#CTSolvers.Strategies.StrategyOptions"><code>CTSolvers.Strategies.StrategyOptions</code></a> — <span class="docstring-category">Type</span></summary><section><div><pre><code class="language-julia hljs">struct StrategyOptions{NT&lt;:NamedTuple}</code></pre><p>Wrapper for strategy option values with provenance tracking.</p><p>This type stores options as a collection of <code>OptionValue</code> objects, each containing both the value and its source (<code>:user</code>, <code>:default</code>, or <code>:computed</code>).</p><p><strong>Validation Modes</strong></p><p>Strategy options are built using <code>build_strategy_options()</code> which supports two validation modes:</p><ul><li><p><strong>Strict Mode (default)</strong>: Only known options are accepted</p><ul><li>Unknown options trigger detailed error messages with suggestions</li><li>Type validation and custom validators are enforced</li><li>Provides early error detection and safety</li></ul></li><li><p><strong>Permissive Mode</strong>: Unknown options are accepted with warnings</p><ul><li>Unknown options are stored with <code>:user</code> source</li><li>Type validation and custom validators still apply to known options</li><li>Allows backend-specific options without breaking changes</li></ul></li></ul><p><strong>Fields</strong></p><ul><li><code>options::NamedTuple</code>: NamedTuple of OptionValue objects with provenance</li></ul><p><strong>Construction</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using CTSolvers.Strategies, CTSolvers.Options
+
+julia&gt; opts = StrategyOptions(
+           max_iter = OptionValue(200, :user),
+           tol = OptionValue(1e-6, :default)
+       )
+StrategyOptions with 2 options:
+  max_iter = 200  [user]
+  tol = 1.0e-6  [default]</code></pre><p><strong>Building Options with Validation</strong></p><pre><code class="language-julia-repl hljs"># Strict mode (default) - rejects unknown options
+julia&gt; opts = build_strategy_options(MyStrategy; max_iter=200)
+StrategyOptions(...)
+
+# Permissive mode - accepts unknown options with warning
+julia&gt; opts = build_strategy_options(MyStrategy; max_iter=200, custom_opt=123; mode=:permissive)
+StrategyOptions(...)  # with warning about custom_opt</code></pre><p><strong>Access patterns</strong></p><pre><code class="language-julia-repl hljs"># Get value only
+julia&gt; opts[:max_iter]
+200
+
+# Get OptionValue (value + source)
+julia&gt; opts.max_iter
+OptionValue(200, :user)
+
+# Get source only
+julia&gt; source(opts, :max_iter)
+:user
+
+# Check if user-provided
+julia&gt; is_user(opts, :max_iter)
+true</code></pre><p><strong>Iteration</strong></p><pre><code class="language-julia-repl hljs"># Iterate over values
+julia&gt; for value in opts
+           println(value)
+       end
+
+# Iterate over (name, value) pairs
+julia&gt; for (name, value) in opts
+           println(&quot;$name = $value&quot;)
+       end</code></pre><p>See also: <a href="options_public.html#OptionValue"><code>OptionValue</code></a>, <a href="strategies_contract_private.html#source"><code>source</code></a>, <a href="strategies_contract_public.html#is_user"><code>is_user</code></a>, <a href="strategies_contract_public.html#is_default"><code>is_default</code></a>, <a href="strategies_contract_public.html#is_computed"><code>is_computed</code></a></p></div></section></details></article><h2 id="describe"><a class="docs-heading-anchor" href="#describe"><code>describe</code></a><a id="describe-1"></a><a class="docs-heading-anchor-permalink" href="#describe" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.describe"><a class="docstring-binding" href="#CTSolvers.Strategies.describe"><code>CTSolvers.Strategies.describe</code></a> — <span class="docstring-category">Function</span></summary><section><div><p>Display detailed information about a strategy type, including its id, supertype, and full metadata with all available option definitions.</p><p>This function is useful for discovering what options a strategy accepts before constructing an instance.</p><p><strong>Arguments</strong></p><ul><li><code>strategy_type::Type{&lt;:AbstractStrategy}</code>: The strategy type to describe</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; describe(ADNLPModeler)
+ADNLPModeler (strategy type)
+├─ id: :adnlp
+├─ supertype: AbstractOptimizationModeler
+└─ metadata: 4 options defined
+   ├─ show_time :: Bool (default: false)
+   │  description: Whether to show timing information
+   ├─ backend :: Symbol (default: optimized)
+   │  description: AD backend used by ADNLPModels
+   └─ matrix_free :: Bool (default: false)
+      description: Enable matrix-free mode</code></pre><p>See also: <a href="strategies_contract_public.html#metadata"><code>metadata</code></a>, <a href="strategies_contract_public.html#id"><code>id</code></a>, <a href="strategies_contract_public.html#options"><code>options</code></a></p></div></section></details></article><h2 id="id"><a class="docs-heading-anchor" href="#id"><code>id</code></a><a id="id-1"></a><a class="docs-heading-anchor-permalink" href="#id" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.id"><a class="docstring-binding" href="#CTSolvers.Strategies.id"><code>CTSolvers.Strategies.id</code></a> — <span class="docstring-category">Function</span></summary><section><div><p>Return the unique identifier for this strategy type.</p><p><strong>Arguments</strong></p><ul><li><code>strategy_type::Type{&lt;:AbstractStrategy}</code>: The strategy type</li></ul><p><strong>Returns</strong></p><ul><li><code>Symbol</code>: Unique identifier for the strategy</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs"># For a concrete strategy type MyStrategy:
+julia&gt; id(MyStrategy)
+:mystrategy</code></pre></div></section></details></article><h2 id="is_computed"><a class="docs-heading-anchor" href="#is_computed"><code>is_computed</code></a><a id="is_computed-1"></a><a class="docs-heading-anchor-permalink" href="#is_computed" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.is_computed"><a class="docstring-binding" href="#CTSolvers.Strategies.is_computed"><code>CTSolvers.Strategies.is_computed</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">is_computed(
+    opts::CTSolvers.Strategies.StrategyOptions,
+    key::Symbol
+) -&gt; Bool
+</code></pre><p>Check if an option was computed.</p><p><strong>Arguments</strong></p><ul><li><code>opts::StrategyOptions</code>: Strategy options</li><li><code>key::Symbol</code>: Option name</li></ul><p><strong>Returns</strong></p><ul><li><code>Bool</code>: <code>true</code> if the option was computed</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; is_computed(opts, :step)
+true</code></pre><p>See also: <a href="strategies_contract_private.html#source"><code>source</code></a>, <a href="strategies_contract_public.html#is_user"><code>is_user</code></a>, <a href="strategies_contract_public.html#is_default"><code>is_default</code></a></p></div></section><section><div><pre><code class="language-julia hljs">is_computed(
+    strategy::CTSolvers.Strategies.AbstractStrategy,
+    key::Symbol
+) -&gt; Bool
+</code></pre><p>Check if an option value was computed from other options.</p><p>Returns <code>true</code> if the option was calculated based on other option values, <code>false</code> if it was provided by the user or is using the default.</p><p><strong>Arguments</strong></p><ul><li><code>strategy::AbstractStrategy</code>: The strategy instance</li><li><code>key::Symbol</code>: The option name</li></ul><p><strong>Returns</strong></p><ul><li><code>Bool</code>: <code>true</code> if the option source is <code>:computed</code></li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using CTSolvers.Strategies
+
+julia&gt; strategy = MyStrategy()
+julia&gt; is_computed(strategy, :derived_value)
+true</code></pre><p>See also: <a href="strategies_contract_public.html#is_user"><code>is_user</code></a>, <a href="strategies_contract_public.html#is_default"><code>is_default</code></a>, <a href="strategies_api_public.html#option_source"><code>option_source</code></a></p></div></section></details></article><h2 id="is_default"><a class="docs-heading-anchor" href="#is_default"><code>is_default</code></a><a id="is_default-1"></a><a class="docs-heading-anchor-permalink" href="#is_default" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.is_default"><a class="docstring-binding" href="#CTSolvers.Strategies.is_default"><code>CTSolvers.Strategies.is_default</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">is_default(
+    opts::CTSolvers.Strategies.StrategyOptions,
+    key::Symbol
+) -&gt; Bool
+</code></pre><p>Check if an option is using its default value.</p><p><strong>Arguments</strong></p><ul><li><code>opts::StrategyOptions</code>: Strategy options</li><li><code>key::Symbol</code>: Option name</li></ul><p><strong>Returns</strong></p><ul><li><code>Bool</code>: <code>true</code> if the option is using its default value</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; is_default(opts, :tol)
+true</code></pre><p>See also: <a href="strategies_contract_private.html#source"><code>source</code></a>, <a href="strategies_contract_public.html#is_user"><code>is_user</code></a>, <a href="strategies_contract_public.html#is_computed"><code>is_computed</code></a></p></div></section><section><div><pre><code class="language-julia hljs">is_default(
+    strategy::CTSolvers.Strategies.AbstractStrategy,
+    key::Symbol
+) -&gt; Bool
+</code></pre><p>Check if an option value is using its default.</p><p>Returns <code>true</code> if the option is using the default value from metadata, <code>false</code> if it was provided by the user or computed.</p><p><strong>Arguments</strong></p><ul><li><code>strategy::AbstractStrategy</code>: The strategy instance</li><li><code>key::Symbol</code>: The option name</li></ul><p><strong>Returns</strong></p><ul><li><code>Bool</code>: <code>true</code> if the option source is <code>:default</code></li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using CTSolvers.Strategies
+
+julia&gt; strategy = MyStrategy(max_iter=200)
+julia&gt; is_default(strategy, :max_iter)
+false
+
+julia&gt; is_default(strategy, :tol)
+true</code></pre><p>See also: <a href="strategies_contract_public.html#is_user"><code>is_user</code></a>, <a href="strategies_contract_public.html#is_computed"><code>is_computed</code></a>, <a href="strategies_api_public.html#option_source"><code>option_source</code></a></p></div></section></details></article><h2 id="is_user"><a class="docs-heading-anchor" href="#is_user"><code>is_user</code></a><a id="is_user-1"></a><a class="docs-heading-anchor-permalink" href="#is_user" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.is_user"><a class="docstring-binding" href="#CTSolvers.Strategies.is_user"><code>CTSolvers.Strategies.is_user</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">is_user(
+    opts::CTSolvers.Strategies.StrategyOptions,
+    key::Symbol
+) -&gt; Bool
+</code></pre><p>Check if an option was provided by the user.</p><p><strong>Arguments</strong></p><ul><li><code>opts::StrategyOptions</code>: Strategy options</li><li><code>key::Symbol</code>: Option name</li></ul><p><strong>Returns</strong></p><ul><li><code>Bool</code>: <code>true</code> if the option was provided by the user</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; is_user(opts, :max_iter)
+true</code></pre><p>See also: <a href="strategies_contract_private.html#source"><code>source</code></a>, <a href="strategies_contract_public.html#is_default"><code>is_default</code></a>, <a href="strategies_contract_public.html#is_computed"><code>is_computed</code></a></p></div></section><section><div><pre><code class="language-julia hljs">is_user(
+    strategy::CTSolvers.Strategies.AbstractStrategy,
+    key::Symbol
+) -&gt; Bool
+</code></pre><p>Check if an option value was provided by the user.</p><p>Returns <code>true</code> if the option was explicitly set by the user during construction, <code>false</code> if it&#39;s using the default value or was computed.</p><p><strong>Arguments</strong></p><ul><li><code>strategy::AbstractStrategy</code>: The strategy instance</li><li><code>key::Symbol</code>: The option name</li></ul><p><strong>Returns</strong></p><ul><li><code>Bool</code>: <code>true</code> if the option source is <code>:user</code></li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs">julia&gt; using CTSolvers.Strategies
+
+julia&gt; strategy = MyStrategy(max_iter=200)
+julia&gt; is_user(strategy, :max_iter)
+true
+
+julia&gt; is_user(strategy, :tol)
+false</code></pre><p>See also: <a href="strategies_contract_public.html#is_default"><code>is_default</code></a>, <a href="strategies_contract_public.html#is_computed"><code>is_computed</code></a>, <a href="strategies_api_public.html#option_source"><code>option_source</code></a></p></div></section></details></article><h2 id="metadata"><a class="docs-heading-anchor" href="#metadata"><code>metadata</code></a><a id="metadata-1"></a><a class="docs-heading-anchor-permalink" href="#metadata" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.metadata"><a class="docstring-binding" href="#CTSolvers.Strategies.metadata"><code>CTSolvers.Strategies.metadata</code></a> — <span class="docstring-category">Function</span></summary><section><div><p>Return metadata about a strategy type.</p><p><strong>Arguments</strong></p><ul><li><code>strategy_type::Type{&lt;:AbstractStrategy}</code>: The strategy type</li></ul><p><strong>Returns</strong></p><ul><li><code>StrategyMetadata</code>: Option specifications and validation rules</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs"># For a concrete strategy type MyStrategy:
+julia&gt; meta = metadata(MyStrategy)
+julia&gt; meta
+StrategyMetadata with option definitions for max_iter, etc.</code></pre></div></section></details></article><h2 id="options"><a class="docs-heading-anchor" href="#options"><code>options</code></a><a id="options-1"></a><a class="docs-heading-anchor-permalink" href="#options" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="CTSolvers.Strategies.options"><a class="docstring-binding" href="#CTSolvers.Strategies.options"><code>CTSolvers.Strategies.options</code></a> — <span class="docstring-category">Function</span></summary><section><div><p>Return the current options of a strategy as a StrategyOptions.</p><p><strong>Arguments</strong></p><ul><li><code>strategy::AbstractStrategy</code>: The strategy instance</li></ul><p><strong>Returns</strong></p><ul><li><code>StrategyOptions</code>: Current option values with provenance tracking</li></ul><p><strong>Example</strong></p><pre><code class="language-julia-repl hljs"># For a concrete strategy instance:
+julia&gt; strategy = MyStrategy(backend=:sparse)
+julia&gt; opts = options(strategy)
+julia&gt; opts
+StrategyOptions with values=(backend=:sparse), sources=(backend=:user)</code></pre></div></section></details></article><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="options_private.html">« Private</a><a class="docs-footer-nextpage" href="strategies_contract_private.html">Private »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 14 February 2026 09:14">Saturday 14 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
