@@ -18,9 +18,9 @@ CTSolvers is organized into 7 modules, loaded in strict dependency order:
 | 2 | **Strategies** | Strategy contract (`AbstractStrategy`), registry, metadata, options building |
 | 3 | **Orchestration** | Multi-strategy option routing and disambiguation |
 | 4 | **Optimization** | Abstract optimization types (`AbstractOptimizationProblem`), builders, `build_model`/`build_solution` |
-| 5 | **Modelers** | NLP model backends: `ADNLPModeler`, `ExaModeler` |
-| 6 | **DOCP** | `DiscretizedOptimalControlProblem` — bridges CTModels and CTSolvers |
-| 7 | **Solvers** | Solver integration: `IpoptSolver`, `MadNLPSolver`, `MadNCLSolver`, `KnitroSolver`, CommonSolve API |
+| 5 | **Modelers** | NLP model backends: `Modelers.ADNLP`, `Modelers.Exa` |
+| 6 | **DOCP** | `DiscretizedModel` — bridges CTModels and CTSolvers |
+| 7 | **Solvers** | Solver integration: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, CommonSolve API |
 
 All access is **qualified** — CTSolvers does not export symbols at the top level:
 
@@ -51,26 +51,26 @@ classDiagram
         options(instance)::StrategyOptions
     }
 
-    AbstractStrategy <|-- AbstractOptimizationModeler
+    AbstractStrategy <|-- AbstractNLPModeler
     AbstractStrategy <|-- AbstractOptimizationSolver
     AbstractStrategy <|-- AbstractOptimalControlDiscretizer
 
-    class AbstractOptimizationModeler {
+    class AbstractNLPModeler {
         <<abstract>>
         (modeler)(prob, x0) → NLP
         (modeler)(prob, stats) → Solution
     }
-    AbstractOptimizationModeler <|-- ADNLPModeler
-    AbstractOptimizationModeler <|-- ExaModeler
+    AbstractNLPModeler <|-- Modelers.ADNLP
+    AbstractNLPModeler <|-- Modelers.Exa
 
     class AbstractOptimizationSolver {
         <<abstract>>
         (solver)(nlp; display) → Stats
     }
-    AbstractOptimizationSolver <|-- IpoptSolver
-    AbstractOptimizationSolver <|-- MadNLPSolver
-    AbstractOptimizationSolver <|-- MadNCLSolver
-    AbstractOptimizationSolver <|-- KnitroSolver
+    AbstractOptimizationSolver <|-- Solvers.Ipopt
+    AbstractOptimizationSolver <|-- Solvers.MadNLP
+    AbstractOptimizationSolver <|-- Solvers.MadNCL
+    AbstractOptimizationSolver <|-- Solvers.Knitro
 
     class AbstractOptimalControlDiscretizer {
         <<abstract>>
@@ -80,7 +80,7 @@ classDiagram
     AbstractOptimalControlDiscretizer <|-- DirectShooting
 ```
 
-- **`AbstractOptimizationModeler`** (in `Modelers`): converts problems into NLP models and back into solutions.
+- **`AbstractNLPModeler`** (in `Modelers`): converts problems into NLP models and back into solutions.
 - **`AbstractOptimizationSolver`** (in `Solvers`): solves NLP models via backend libraries.
 - **`AbstractOptimalControlDiscretizer`** (in CTDirect, external): discretizes continuous-time OCP into finite-dimensional problems. See [Implementing a Strategy](@ref) for a complete tutorial.
 
@@ -98,7 +98,7 @@ classDiagram
         get_adnlp_solution_builder()
         get_exa_solution_builder()
     }
-    AbstractOptimizationProblem <|-- DiscretizedOptimalControlProblem
+    AbstractOptimizationProblem <|-- DiscretizedModel
 
     class AbstractBuilder {
         <<abstract>>
@@ -124,7 +124,7 @@ classDiagram
 - **`AbstractOptimizationProblem`**: any problem that can provide builders for NLP model construction and solution conversion.
 - **`AbstractModelBuilder`**: callable that constructs an NLP model (ADNLPModel or ExaModel).
 - **`AbstractSolutionBuilder`**: callable that converts NLP solver results into problem-specific solutions.
-- **`DiscretizedOptimalControlProblem`** (in `DOCP`): the concrete implementation that bridges CTModels OCP with CTSolvers builders.
+- **`DiscretizedModel`** (in `DOCP`): the concrete implementation that bridges CTModels OCP with CTSolvers builders.
 
 ## Module Dependencies
 
@@ -162,7 +162,7 @@ The complete resolution pipeline transforms an optimal control problem into a so
 sequenceDiagram
     participant User
     participant Solve as CommonSolve.solve
-    participant Modeler as AbstractOptimizationModeler
+    participant Modeler as AbstractNLPModeler
     participant Problem as AbstractOptimizationProblem
     participant Builder as AbstractModelBuilder
     participant Solver as AbstractOptimizationSolver
@@ -248,7 +248,7 @@ Solvers use **Tag Dispatch** to separate type definitions (in `src/Solvers/`) fr
 ```mermaid
 flowchart LR
     subgraph src["src/Solvers/"]
-        SolverType["IpoptSolver <: AbstractOptimizationSolver"]
+        SolverType["Solvers.Ipopt <: AbstractOptimizationSolver"]
         Tag["IpoptTag <: AbstractTag"]
         Callable["(solver)(nlp) → _solve(IpoptTag(), nlp, opts)"]
     end

@@ -1,7 +1,7 @@
 module TestOptionsNotProvided
 
-using Test
-using CTSolvers.Options
+import Test
+import CTSolvers.Options
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
@@ -173,7 +173,7 @@ function test_not_provided()
         end
         
         Test.@testset "Complete workflow: NotProvided never stored" begin
-            # Define options like ExaModeler
+            # Define options like Modelers.Exa
             defs_nt = (
                 base_type=Options.OptionDefinition(
                     name = :base_type,

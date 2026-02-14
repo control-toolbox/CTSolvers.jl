@@ -29,16 +29,16 @@ The registry uses an **explicit passing pattern** rather than global mutable sta
 julia> using CTSolvers.Strategies
 
 julia> registry = create_registry(
-           AbstractOptimizationModeler => (ADNLPModeler, ExaModeler),
-           AbstractOptimizationSolver => (IpoptSolver, MadNLPSolver)
+           AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa),
+           AbstractOptimizationSolver => (Solvers.Ipopt, Solvers.MadNLP)
        )
 StrategyRegistry with 2 families
 
-julia> strategy_ids(AbstractOptimizationModeler, registry)
+julia> strategy_ids(AbstractNLPModeler, registry)
 (:adnlp, :exa)
 
-julia> T = type_from_id(:adnlp, AbstractOptimizationModeler, registry)
-ADNLPModeler
+julia> T = type_from_id(:adnlp, AbstractNLPModeler, registry)
+Modelers.ADNLP
 ```
 
 See also: [`create_registry`](@ref), [`strategy_ids`](@ref), [`type_from_id`](@ref)
@@ -74,12 +74,12 @@ This function validates the registry structure and ensures:
 julia> using CTSolvers.Strategies
 
 julia> registry = create_registry(
-           AbstractOptimizationModeler => (ADNLPModeler, ExaModeler),
-           AbstractOptimizationSolver => (IpoptSolver, MadNLPSolver, KnitroSolver)
+           AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa),
+           AbstractOptimizationSolver => (Solvers.Ipopt, Solvers.MadNLP, Solvers.Knitro)
        )
 StrategyRegistry with 2 families
 
-julia> strategy_ids(AbstractOptimizationModeler, registry)
+julia> strategy_ids(AbstractNLPModeler, registry)
 (:adnlp, :exa)
 ```
 
@@ -179,7 +179,7 @@ the specified family type. The order matches the registration order.
 ```julia-repl
 julia> using CTSolvers.Strategies
 
-julia> ids = strategy_ids(AbstractOptimizationModeler, registry)
+julia> ids = strategy_ids(AbstractNLPModeler, registry)
 (:adnlp, :exa)
 
 julia> for strategy_id in ids
@@ -230,8 +230,8 @@ functions to convert symbolic descriptions to concrete types.
 ```julia-repl
 julia> using CTSolvers.Strategies
 
-julia> T = type_from_id(:adnlp, AbstractOptimizationModeler, registry)
-ADNLPModeler
+julia> T = type_from_id(:adnlp, AbstractNLPModeler, registry)
+Modelers.ADNLP
 
 julia> id(T)
 :adnlp

@@ -9,6 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0-beta] - 2026-02-13
+
+### 🎉 BREAKING CHANGES
+
+See [BREAKING.md](BREAKING.md) for a detailed migration guide.
+
+- **Type renaming** — all public types have been renamed for consistency and clarity:
+  - `ADNLPModeler` → `Modelers.ADNLP`
+  - `ExaModeler` → `Modelers.Exa`
+  - `AbstractOptimizationModeler` → `AbstractNLPModeler`
+  - `IpoptSolver` → `Solvers.Ipopt`
+  - `MadNLPSolver` → `Solvers.MadNLP`
+  - `MadNCLSolver` → `Solvers.MadNCL`
+  - `KnitroSolver` → `Solvers.Knitro`
+  - `DiscretizedOptimalControlProblem` → `DiscretizedModel`
+- **File renaming** — source files renamed to match new type names:
+  - `adnlp_modeler.jl` → `adnlp.jl`
+  - `exa_modeler.jl` → `exa.jl`
+  - `ipopt_solver.jl` → `ipopt.jl`
+  - `madnlp_solver.jl` → `madnlp.jl`
+  - `madncl_solver.jl` → `madncl.jl`
+  - `knitro_solver.jl` → `knitro.jl`
+- **Removed** `src/Solvers/validation.jl` (validation now handled by strategy framework)
+- **CTModels 0.9 compatibility** — upgraded to match CTModels 0.9-beta API
+
+### Changed
+
+- **Test output** cleaned up: suppressed noisy stdout/stderr from strategy display, validation errors, and GPU skip messages
+- **CUDA status** now reported once in `runtests.jl` instead of per-extension file
+- **Spell check** configured with custom `_typos.toml` for intentional typos in test examples
+- **Test imports** refactored to use local `TestProblems` module instead of `Main.TestProblems`
+
+### Fixed
+
+- **Extension stub error messages** updated to match renamed types
+- **Import references** fixed across all test files for renamed modules and types
+- **Namespace pollution** reduced by using `import` instead of `using` in test modules
+
+---
+
 ## [0.2.4-beta] - 2026-02-11
 
 ### Added
@@ -52,7 +92,7 @@ import NLPModels
 
 # After (functional)
 import MadNLPGPU
-gpu_solver = Solvers.MadNLPSolver(linear_solver=MadNLPGPU.CUDSSSolver)
+gpu_solver = Solvers.MadNLP(linear_solver=MadNLPGPU.CUDSSSolver)
 ```
 
 #### CUDA Availability Helper
@@ -189,10 +229,10 @@ If you need backend-specific options:
 
 ```julia
 # Before (would error)
-solver = Solvers.IpoptSolver(custom_option="value")
+solver = Solvers.Ipopt(custom_option="value")
 
 # After (works with warning)
-solver = Solvers.IpoptSolver(
+solver = Solvers.Ipopt(
     custom_option="value";
     mode=:permissive
 )
@@ -249,14 +289,14 @@ route_all_options(method, families, action_defs, kwargs, registry; mode::Symbol=
 ### Enhanced Error Messages
 
 ```julia
-ERROR: Unknown options provided for IpoptSolver
+ERROR: Unknown options provided for Solvers.Ipopt
 Unrecognized options: [:max_itter]
 Available options: [:max_iter, :tol, :print_level, ...]
 Suggestions for :max_itter:
   - :max_iter (Levenshtein distance: 2)
 If you are certain these options exist for the backend,
 use permissive mode:
-  IpoptSolver(...; mode=:permissive)
+  Solvers.Ipopt(...; mode=:permissive)
 ```
 
 ---

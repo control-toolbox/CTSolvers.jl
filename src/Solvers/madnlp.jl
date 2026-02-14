@@ -41,11 +41,11 @@ $(TYPEDFIELDS)
 
 ```julia
 # Create solver with default options
-solver = MadNLPSolver()
+solver = MadNLP()
 
 # Create solver with custom options
 using MadNLP, MadNLPMumps
-solver = MadNLPSolver(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
+solver = MadNLP(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
 
 # Solve an NLP problem
 using ADNLPModels
@@ -64,12 +64,12 @@ using MadNLP, MadNLPMumps
 
 - Implements the `AbstractStrategy` contract via `Strategies.id`, `Strategies.metadata`, and `Strategies.options`
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::MadNLPSolver)(nlp; display=true)`
+- Callable interface: `(solver::MadNLP)(nlp; display=true)`
 - Supports GPU acceleration when appropriate backends are loaded
 
-See also: [`AbstractOptimizationSolver`](@ref), [`IpoptSolver`](@ref), [`MadNCLSolver`](@ref)
+See also: [`AbstractOptimizationSolver`](@ref), [`Ipopt`](@ref), [`Solvers.MadNCL`](@ref)
 """
-struct MadNLPSolver <: AbstractOptimizationSolver
+struct MadNLP <: AbstractOptimizationSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -81,9 +81,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return the unique identifier for MadNLPSolver.
+Return the unique identifier for MadNLP.
 """
-Strategies.id(::Type{<:MadNLPSolver}) = :madnlp
+Strategies.id(::Type{<:Solvers.MadNLP}) = :madnlp
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -92,7 +92,7 @@ Strategies.id(::Type{<:MadNLPSolver}) = :madnlp
 """
 $(TYPEDSIGNATURES)
 
-Create a MadNLPSolver with specified options.
+Create a MadNLP with specified options.
 
 Requires the CTSolversMadNLP extension to be loaded.
 
@@ -107,16 +107,16 @@ Requires the CTSolversMadNLP extension to be loaded.
 using MadNLP, MadNLPMumps
 
 # Strict mode (default) - rejects unknown options
-solver = MadNLPSolver(max_iter=1000, tol=1e-6)
+solver = MadNLP(max_iter=1000, tol=1e-6)
 
 # Permissive mode - accepts unknown options with warning
-solver = MadNLPSolver(max_iter=1000, custom_option=123; mode=:permissive)
+solver = MadNLP(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
 # Throws
 - `Strategies.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
 """
-function MadNLPSolver(; mode::Symbol=:strict, kwargs...)
+function Solvers.MadNLP(; mode::Symbol=:strict, kwargs...)
     return build_madnlp_solver(MadNLPTag(); mode=mode, kwargs...)
 end
 
@@ -132,8 +132,8 @@ Real implementation provided by the extension.
 function build_madnlp_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
         :MadNLP, :MadNLPMumps;
-        message="to create MadNLPSolver, access options, and solve problems",
-        feature="MadNLPSolver functionality",
+        message="to create MadNLP, access options, and solve problems",
+        feature="MadNLP functionality",
         context="Load MadNLP extension first: using MadNLP, MadNLPMumps"
     ))
 end

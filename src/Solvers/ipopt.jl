@@ -5,9 +5,9 @@
 """
 $(TYPEDEF)
 
-Tag type for Knitro-specific implementation dispatch.
+Tag type for Ipopt-specific implementation dispatch.
 """
-struct KnitroTag <: AbstractTag end
+struct IpoptTag <: AbstractTag end
 
 # ============================================================================
 # Solver Type Definition
@@ -16,11 +16,11 @@ struct KnitroTag <: AbstractTag end
 """
 $(TYPEDEF)
 
-Commercial optimization solver with advanced algorithms.
+Interior point optimization solver using the Ipopt backend.
 
-Knitro is a commercial solver offering state-of-the-art algorithms for
-nonlinear optimization, including interior point, active set, and SQP methods.
-It provides excellent performance and robustness for large-scale problems.
+Ipopt (Interior Point OPTimizer) is an open-source software package for large-scale
+nonlinear optimization. It implements a primal-dual interior point method with proven
+global convergence properties.
 
 # Fields
 
@@ -28,23 +28,23 @@ $(TYPEDFIELDS)
 
 # Solver Options
 
-Solver options are defined in the CTSolversKnitro extension.
+Solver options are defined in the CTSolversIpopt extension.
 Load the extension to access option definitions and documentation:
 ```julia
-using NLPModelsKnitro
+using NLPModelsIpopt
 ```
 
 # Examples
 
 ```julia
 # Load the extension first
-using NLPModelsKnitro
+using NLPModelsIpopt
 
 # Create solver with default options
-solver = KnitroSolver()
+solver = Ipopt()
 
 # Create solver with custom options
-solver = KnitroSolver(maxit=1000, maxtime=3600, ftol=1e-10, outlev=2)
+solver = Ipopt(max_iter=1000, tol=1e-6, print_level=3)
 
 # Solve an NLP problem
 using ADNLPModels
@@ -54,24 +54,21 @@ stats = solver(nlp, display=true)
 
 # Extension Required
 
-This solver requires the `NLPModelsKnitro` package:
+This solver requires the `NLPModelsIpopt` package to be loaded:
 ```julia
-using NLPModelsKnitro
+using NLPModelsIpopt
 ```
-
-**Note:** Knitro is a commercial solver requiring a valid license.
 
 # Implementation Notes
 
 - Implements the `AbstractStrategy` contract via `Strategies.id()`
-- Metadata and constructor implementation provided by CTSolversKnitro extension
+- Metadata and constructor implementation provided by CTSolversIpopt extension
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::KnitroSolver)(nlp; display=true)` provided by extension
-- Requires valid Knitro license for operation
+- Callable interface: `(solver::Ipopt)(nlp; display=true)` provided by extension
 
-See also: [`AbstractOptimizationSolver`](@ref), [`IpoptSolver`](@ref), [`MadNLPSolver`](@ref)
+See also: [`AbstractOptimizationSolver`](@ref), [`MadNLP`](@ref), [`Knitro`](@ref)
 """
-struct KnitroSolver <: AbstractOptimizationSolver
+struct Ipopt <: AbstractOptimizationSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -83,9 +80,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return the unique identifier for KnitroSolver.
+Return the unique identifier for Ipopt.
 """
-Strategies.id(::Type{<:KnitroSolver}) = :knitro
+Strategies.id(::Type{<:Solvers.Ipopt}) = :ipopt
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -94,9 +91,9 @@ Strategies.id(::Type{<:KnitroSolver}) = :knitro
 """
 $(TYPEDSIGNATURES)
 
-Create a KnitroSolver with specified options.
+Create an Ipopt with specified options.
 
-Requires the CTSolversKnitro extension to be loaded.
+Requires the CTSolversIpopt extension to be loaded.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
@@ -106,36 +103,36 @@ Requires the CTSolversKnitro extension to be loaded.
 
 # Examples
 ```julia
-using NLPModelsKnitro
+using NLPModelsIpopt
 
 # Strict mode (default) - rejects unknown options
-solver = KnitroSolver(maxit=1000, outlev=2)
+solver = Ipopt(max_iter=1000, tol=1e-6)
 
 # Permissive mode - accepts unknown options with warning
-solver = KnitroSolver(maxit=1000, custom_option=123; mode=:permissive)
+solver = Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
+- `Strategies.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
 """
-function KnitroSolver(; mode::Symbol=:strict, kwargs...)
-    return build_knitro_solver(KnitroTag(); mode=mode, kwargs...)
+function Solvers.Ipopt(; mode::Symbol=:strict, kwargs...)
+    return build_ipopt_solver(IpoptTag(); mode=mode, kwargs...)
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Stub function that throws ExtensionError if CTSolversKnitro extension is not loaded.
+Stub function that throws ExtensionError if CTSolversIpopt extension is not loaded.
 Real implementation provided by the extension.
 
 # Throws
 - `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
-function build_knitro_solver(::AbstractTag; kwargs...)
+function build_ipopt_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
-        :NLPModelsKnitro;
-        message="to create KnitroSolver, access options, and solve problems",
-        feature="KnitroSolver functionality",
-        context="Load NLPModelsKnitro extension first: using NLPModelsKnitro"
+        :NLPModelsIpopt;
+        message="to create Ipopt, access options, and solve problems",
+        feature="Ipopt functionality",
+        context="Load NLPModelsIpopt extension first: using NLPModelsIpopt"
     ))
 end

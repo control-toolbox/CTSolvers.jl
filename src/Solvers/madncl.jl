@@ -5,9 +5,9 @@
 """
 $(TYPEDEF)
 
-Tag type for Ipopt-specific implementation dispatch.
+Tag type for MadNCL-specific implementation dispatch.
 """
-struct IpoptTag <: AbstractTag end
+struct MadNCLTag <: AbstractTag end
 
 # ============================================================================
 # Solver Type Definition
@@ -16,11 +16,11 @@ struct IpoptTag <: AbstractTag end
 """
 $(TYPEDEF)
 
-Interior point optimization solver using the Ipopt backend.
+NCL (Non-Convex Lagrangian) variant of MadNLP solver.
 
-Ipopt (Interior Point OPTimizer) is an open-source software package for large-scale
-nonlinear optimization. It implements a primal-dual interior point method with proven
-global convergence properties.
+MadNCL extends MadNLP with specialized handling for non-convex problems
+using a modified Lagrangian approach, providing improved convergence for
+challenging nonlinear optimization problems.
 
 # Fields
 
@@ -28,23 +28,23 @@ $(TYPEDFIELDS)
 
 # Solver Options
 
-Solver options are defined in the CTSolversIpopt extension.
+Solver options are defined in the CTSolversMadNCL extension.
 Load the extension to access option definitions and documentation:
 ```julia
-using NLPModelsIpopt
+using MadNCL, MadNLP, MadNLPMumps
 ```
 
 # Examples
 
 ```julia
 # Load the extension first
-using NLPModelsIpopt
+using MadNCL, MadNLP, MadNLPMumps
 
 # Create solver with default options
-solver = IpoptSolver()
+solver = Solvers.MadNCL()
 
 # Create solver with custom options
-solver = IpoptSolver(max_iter=1000, tol=1e-6, print_level=3)
+solver = Solvers.MadNCL(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
 
 # Solve an NLP problem
 using ADNLPModels
@@ -54,21 +54,22 @@ stats = solver(nlp, display=true)
 
 # Extension Required
 
-This solver requires the `NLPModelsIpopt` package to be loaded:
+This solver requires the `MadNCL`, `MadNLP` and `MadNLPMumps` packages:
 ```julia
-using NLPModelsIpopt
+using MadNCL, MadNLP, MadNLPMumps
 ```
 
 # Implementation Notes
 
 - Implements the `AbstractStrategy` contract via `Strategies.id()`
-- Metadata and constructor implementation provided by CTSolversIpopt extension
+- Metadata and constructor implementation provided by CTSolversMadNCL extension
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::IpoptSolver)(nlp; display=true)` provided by extension
+- Callable interface: `(solver::Solvers.MadNCL)(nlp; display=true)` provided by extension
+- Specialized for non-convex optimization problems
 
-See also: [`AbstractOptimizationSolver`](@ref), [`MadNLPSolver`](@ref), [`KnitroSolver`](@ref)
+See also: [`AbstractOptimizationSolver`](@ref), [`Solvers.MadNLP`](@ref), [`Solvers.Ipopt`](@ref)
 """
-struct IpoptSolver <: AbstractOptimizationSolver
+struct MadNCL <: AbstractOptimizationSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -80,9 +81,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return the unique identifier for IpoptSolver.
+Return the unique identifier for Solvers.MadNCL.
 """
-Strategies.id(::Type{<:IpoptSolver}) = :ipopt
+Strategies.id(::Type{<:Solvers.MadNCL}) = :madncl
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -91,9 +92,9 @@ Strategies.id(::Type{<:IpoptSolver}) = :ipopt
 """
 $(TYPEDSIGNATURES)
 
-Create an IpoptSolver with specified options.
+Create a Solvers.MadNCL with specified options.
 
-Requires the CTSolversIpopt extension to be loaded.
+Requires the CTSolversMadNCL extension to be loaded.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
@@ -103,36 +104,36 @@ Requires the CTSolversIpopt extension to be loaded.
 
 # Examples
 ```julia
-using NLPModelsIpopt
+using MadNCL, MadNLP, MadNLPMumps
 
 # Strict mode (default) - rejects unknown options
-solver = IpoptSolver(max_iter=1000, tol=1e-6)
+solver = Solvers.MadNCL(max_iter=1000, tol=1e-6)
 
 # Permissive mode - accepts unknown options with warning
-solver = IpoptSolver(max_iter=1000, custom_option=123; mode=:permissive)
+solver = Solvers.MadNCL(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
+- `Strategies.Exceptions.ExtensionError`: If the MadNCL extension is not loaded
 """
-function IpoptSolver(; mode::Symbol=:strict, kwargs...)
-    return build_ipopt_solver(IpoptTag(); mode=mode, kwargs...)
+function Solvers.MadNCL(; mode::Symbol=:strict, kwargs...)
+    return build_madncl_solver(MadNCLTag(); mode=mode, kwargs...)
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Stub function that throws ExtensionError if CTSolversIpopt extension is not loaded.
+Stub function that throws ExtensionError if CTSolversMadNCL extension is not loaded.
 Real implementation provided by the extension.
 
 # Throws
 - `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
-function build_ipopt_solver(::AbstractTag; kwargs...)
+function build_madncl_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
-        :NLPModelsIpopt;
-        message="to create IpoptSolver, access options, and solve problems",
-        feature="IpoptSolver functionality",
-        context="Load NLPModelsIpopt extension first: using NLPModelsIpopt"
+        :MadNCL, :MadNLP, :MadNLPMumps;
+        message="to create MadNCL, access options, and solve problems",
+        feature="MadNCL functionality",
+        context="Load MadNCL extension first: using MadNCL, MadNLP, MadNLPMumps"
     ))
 end

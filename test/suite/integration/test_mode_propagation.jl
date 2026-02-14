@@ -8,10 +8,11 @@ end-to-end.
 
 module TestModePropagation
 
-using Test
-using CTSolvers
-using CTSolvers.Strategies
-using CTSolvers.Options
+import Test
+import CTSolvers
+import CTSolvers.Strategies
+import CTSolvers.Options
+import CTSolvers.Orchestration
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
@@ -55,49 +56,49 @@ end
 # ============================================================================
 
 function test_mode_propagation()
-    @testset "Mode Propagation Integration" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Mode Propagation Integration" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
         # INTEGRATION TESTS - Direct Constructor
         # ====================================================================
         
-        @testset "Direct Constructor Propagation" begin
+        Test.@testset "Direct Constructor Propagation" begin
             
-            @testset "Strict mode rejects unknown options" begin
+            Test.@testset "Strict mode rejects unknown options" begin
                 # Should throw error for unknown option
-                @test_throws Exception FakeStrategy(unknown_option=123)
+                Test.@test_throws Exception FakeStrategy(unknown_option=123)
                 
                 # Verify it's the right kind of error
                 try
                     FakeStrategy(unknown_option=123)
-                    @test false  # Should not reach here
+                    Test.@test false  # Should not reach here
                 catch e
-                    @test occursin("Unknown", string(e)) || occursin("Unrecognized", string(e))
+                    Test.@test occursin("Unknown", string(e)) || occursin("Unrecognized", string(e))
                 end
             end
             
-            @testset "Strict mode accepts known options" begin
+            Test.@testset "Strict mode accepts known options" begin
                 # Should work with known option
                 strategy = FakeStrategy(known_option=200)
-                @test strategy isa FakeStrategy
-                @test Strategies.option_value(strategy, :known_option) == 200
-                @test Strategies.option_source(strategy, :known_option) == :user
+                Test.@test strategy isa FakeStrategy
+                Test.@test Strategies.option_value(strategy, :known_option) == 200
+                Test.@test Strategies.option_source(strategy, :known_option) == :user
             end
             
-            @testset "Permissive mode accepts unknown options" begin
+            Test.@testset "Permissive mode accepts unknown options" begin
                 # Should work with warning
                 strategy = FakeStrategy(unknown_option=123; mode=:permissive)
-                @test strategy isa FakeStrategy
+                Test.@test strategy isa FakeStrategy
                 
                 # Unknown option should be stored
-                @test Strategies.has_option(strategy, :unknown_option)
-                @test Strategies.option_value(strategy, :unknown_option) == 123
-                @test Strategies.option_source(strategy, :unknown_option) == :user
+                Test.@test Strategies.has_option(strategy, :unknown_option)
+                Test.@test Strategies.option_value(strategy, :unknown_option) == 123
+                Test.@test Strategies.option_source(strategy, :unknown_option) == :user
             end
             
-            @testset "Permissive mode validates known options" begin
+            Test.@testset "Permissive mode validates known options" begin
                 # Type validation should still work
-                @test_throws Exception FakeStrategy(known_option="invalid"; mode=:permissive)
+                Test.@test_throws Exception FakeStrategy(known_option="invalid"; mode=:permissive)
             end
         end
         
@@ -105,15 +106,15 @@ function test_mode_propagation()
         # INTEGRATION TESTS - build_strategy()
         # ====================================================================
         
-        @testset "build_strategy() Propagation" begin
+        Test.@testset "build_strategy() Propagation" begin
             # Create a fake registry
             registry = Strategies.create_registry(
                 Strategies.AbstractStrategy => (FakeStrategy,)
             )
             
-            @testset "Strict mode via build_strategy()" begin
+            Test.@testset "Strict mode via build_strategy()" begin
                 # Should throw for unknown option
-                @test_throws Exception Strategies.build_strategy(
+                Test.@test_throws Exception Strategies.build_strategy(
                     :fake, 
                     Strategies.AbstractStrategy, 
                     registry; 
@@ -121,7 +122,7 @@ function test_mode_propagation()
                 )
             end
             
-            @testset "Permissive mode via build_strategy()" begin
+            Test.@testset "Permissive mode via build_strategy()" begin
                 # Should work with warning
                 strategy = Strategies.build_strategy(
                     :fake, 
@@ -130,11 +131,11 @@ function test_mode_propagation()
                     unknown_option=123,
                     mode=:permissive
                 )
-                @test strategy isa FakeStrategy
-                @test Strategies.has_option(strategy, :unknown_option)
+                Test.@test strategy isa FakeStrategy
+                Test.@test Strategies.has_option(strategy, :unknown_option)
             end
             
-            @testset "Known options work in both modes" begin
+            Test.@testset "Known options work in both modes" begin
                 # Strict mode
                 strategy1 = Strategies.build_strategy(
                     :fake, 
@@ -142,7 +143,7 @@ function test_mode_propagation()
                     registry; 
                     known_option=200
                 )
-                @test Strategies.option_value(strategy1, :known_option) == 200
+                Test.@test Strategies.option_value(strategy1, :known_option) == 200
                 
                 # Permissive mode
                 strategy2 = Strategies.build_strategy(
@@ -152,7 +153,7 @@ function test_mode_propagation()
                     known_option=300,
                     mode=:permissive
                 )
-                @test Strategies.option_value(strategy2, :known_option) == 300
+                Test.@test Strategies.option_value(strategy2, :known_option) == 300
             end
         end
         
@@ -160,7 +161,7 @@ function test_mode_propagation()
         # INTEGRATION TESTS - build_strategy_from_method()
         # ====================================================================
         
-        @testset "build_strategy_from_method() Propagation" begin
+        Test.@testset "build_strategy_from_method() Propagation" begin
             # Create a fake registry
             registry = Strategies.create_registry(
                 Strategies.AbstractStrategy => (FakeStrategy,)
@@ -168,9 +169,9 @@ function test_mode_propagation()
             
             method = (:fake,)
             
-            @testset "Strict mode via build_strategy_from_method()" begin
+            Test.@testset "Strict mode via build_strategy_from_method()" begin
                 # Should throw for unknown option
-                @test_throws Exception Strategies.build_strategy_from_method(
+                Test.@test_throws Exception Strategies.build_strategy_from_method(
                     method,
                     Strategies.AbstractStrategy, 
                     registry; 
@@ -178,7 +179,7 @@ function test_mode_propagation()
                 )
             end
             
-            @testset "Permissive mode via build_strategy_from_method()" begin
+            Test.@testset "Permissive mode via build_strategy_from_method()" begin
                 # Should work with warning
                 strategy = Strategies.build_strategy_from_method(
                     method,
@@ -187,11 +188,11 @@ function test_mode_propagation()
                     unknown_option=123,
                     mode=:permissive
                 )
-                @test strategy isa FakeStrategy
-                @test Strategies.has_option(strategy, :unknown_option)
+                Test.@test strategy isa FakeStrategy
+                Test.@test Strategies.has_option(strategy, :unknown_option)
             end
             
-            @testset "Mode propagates through method extraction" begin
+            Test.@testset "Mode propagates through method extraction" begin
                 # Test that mode is preserved when extracting ID from method
                 strategy = Strategies.build_strategy_from_method(
                     method,
@@ -201,9 +202,9 @@ function test_mode_propagation()
                     unknown_option=456,
                     mode=:permissive
                 )
-                @test strategy isa FakeStrategy
-                @test Strategies.option_value(strategy, :known_option) == 400
-                @test Strategies.option_value(strategy, :unknown_option) == 456
+                Test.@test strategy isa FakeStrategy
+                Test.@test Strategies.option_value(strategy, :known_option) == 400
+                Test.@test Strategies.option_value(strategy, :unknown_option) == 456
             end
         end
         
@@ -211,7 +212,7 @@ function test_mode_propagation()
         # INTEGRATION TESTS - Orchestration Wrapper
         # ====================================================================
         
-        @testset "Orchestration Wrapper Propagation" begin
+        Test.@testset "Orchestration Wrapper Propagation" begin
             # Create a fake registry
             registry = Strategies.create_registry(
                 Strategies.AbstractStrategy => (FakeStrategy,)
@@ -219,9 +220,9 @@ function test_mode_propagation()
             
             method = (:fake,)
             
-            @testset "Strict mode via Orchestration wrapper" begin
+            Test.@testset "Strict mode via Orchestration wrapper" begin
                 # Should throw for unknown option
-                @test_throws Exception CTSolvers.Orchestration.build_strategy_from_method(
+                Test.@test_throws Exception Orchestration.build_strategy_from_method(
                     method,
                     Strategies.AbstractStrategy, 
                     registry; 
@@ -229,17 +230,17 @@ function test_mode_propagation()
                 )
             end
             
-            @testset "Permissive mode via Orchestration wrapper" begin
+            Test.@testset "Permissive mode via Orchestration wrapper" begin
                 # Should work with warning
-                strategy = CTSolvers.Orchestration.build_strategy_from_method(
+                strategy = Orchestration.build_strategy_from_method(
                     method,
                     Strategies.AbstractStrategy, 
                     registry; 
                     unknown_option=123,
                     mode=:permissive
                 )
-                @test strategy isa FakeStrategy
-                @test Strategies.has_option(strategy, :unknown_option)
+                Test.@test strategy isa FakeStrategy
+                Test.@test Strategies.has_option(strategy, :unknown_option)
             end
         end
         
@@ -247,14 +248,14 @@ function test_mode_propagation()
         # INTEGRATION TESTS - Mixed Options
         # ====================================================================
         
-        @testset "Mixed Known/Unknown Options" begin
+        Test.@testset "Mixed Known/Unknown Options" begin
             registry = Strategies.create_registry(
                 Strategies.AbstractStrategy => (FakeStrategy,)
             )
             
-            @testset "Strict mode rejects mix" begin
+            Test.@testset "Strict mode rejects mix" begin
                 # Should throw even with known options present
-                @test_throws Exception Strategies.build_strategy(
+                Test.@test_throws Exception Strategies.build_strategy(
                     :fake, 
                     Strategies.AbstractStrategy, 
                     registry; 
@@ -263,7 +264,7 @@ function test_mode_propagation()
                 )
             end
             
-            @testset "Permissive mode accepts mix" begin
+            Test.@testset "Permissive mode accepts mix" begin
                 # Should work with both known and unknown
                 strategy = Strategies.build_strategy(
                     :fake, 
@@ -274,15 +275,15 @@ function test_mode_propagation()
                     another_unknown="test",
                     mode=:permissive
                 )
-                @test strategy isa FakeStrategy
-                @test Strategies.option_value(strategy, :known_option) == 200
-                @test Strategies.option_value(strategy, :unknown_option) == 123
-                @test Strategies.option_value(strategy, :another_unknown) == "test"
+                Test.@test strategy isa FakeStrategy
+                Test.@test Strategies.option_value(strategy, :known_option) == 200
+                Test.@test Strategies.option_value(strategy, :unknown_option) == 123
+                Test.@test Strategies.option_value(strategy, :another_unknown) == "test"
             end
             
-            @testset "Known options still validated in permissive" begin
+            Test.@testset "Known options still validated in permissive" begin
                 # Type validation should still work for known options
-                @test_throws Exception Strategies.build_strategy(
+                Test.@test_throws Exception Strategies.build_strategy(
                     :fake, 
                     Strategies.AbstractStrategy, 
                     registry; 
@@ -297,14 +298,14 @@ function test_mode_propagation()
         # INTEGRATION TESTS - Default Behavior
         # ====================================================================
         
-        @testset "Default Mode Behavior" begin
+        Test.@testset "Default Mode Behavior" begin
             registry = Strategies.create_registry(
                 Strategies.AbstractStrategy => (FakeStrategy,)
             )
             
-            @testset "Default is strict" begin
+            Test.@testset "Default is strict" begin
                 # Without specifying mode, should be strict
-                @test_throws Exception Strategies.build_strategy(
+                Test.@test_throws Exception Strategies.build_strategy(
                     :fake, 
                     Strategies.AbstractStrategy, 
                     registry; 
@@ -312,7 +313,7 @@ function test_mode_propagation()
                 )
             end
             
-            @testset "Explicit strict same as default" begin
+            Test.@testset "Explicit strict same as default" begin
                 # Explicit :strict should behave same as default
                 error1 = nothing
                 error2 = nothing
@@ -340,9 +341,9 @@ function test_mode_propagation()
                     error2 = e
                 end
                 
-                @test error1 !== nothing
-                @test error2 !== nothing
-                @test typeof(error1) == typeof(error2)
+                Test.@test error1 !== nothing
+                Test.@test error2 !== nothing
+                Test.@test typeof(error1) == typeof(error2)
             end
         end
         
@@ -350,22 +351,22 @@ function test_mode_propagation()
         # INTEGRATION TESTS - Option Sources
         # ====================================================================
         
-        @testset "Option Source Tracking" begin
+        Test.@testset "Option Source Tracking" begin
             registry = Strategies.create_registry(
                 Strategies.AbstractStrategy => (FakeStrategy,)
             )
             
-            @testset "Known options have :user source" begin
+            Test.@testset "Known options have :user source" begin
                 strategy = Strategies.build_strategy(
                     :fake, 
                     Strategies.AbstractStrategy, 
                     registry; 
                     known_option=200
                 )
-                @test Strategies.option_source(strategy, :known_option) == :user
+                Test.@test Strategies.option_source(strategy, :known_option) == :user
             end
             
-            @testset "Unknown options have :user source in permissive" begin
+            Test.@testset "Unknown options have :user source in permissive" begin
                 strategy = Strategies.build_strategy(
                     :fake, 
                     Strategies.AbstractStrategy, 
@@ -373,16 +374,16 @@ function test_mode_propagation()
                     unknown_option=123,
                     mode=:permissive
                 )
-                @test Strategies.option_source(strategy, :unknown_option) == :user
+                Test.@test Strategies.option_source(strategy, :unknown_option) == :user
             end
             
-            @testset "Default options have :default source" begin
+            Test.@testset "Default options have :default source" begin
                 strategy = Strategies.build_strategy(
                     :fake, 
                     Strategies.AbstractStrategy, 
                     registry
                 )
-                @test Strategies.option_source(strategy, :known_option) == :default
+                Test.@test Strategies.option_source(strategy, :known_option) == :default
             end
         end
         
@@ -390,16 +391,16 @@ function test_mode_propagation()
         # INTEGRATION TESTS - Complete Workflow
         # ====================================================================
         
-        @testset "Complete Workflow End-to-End" begin
+        Test.@testset "Complete Workflow End-to-End" begin
             registry = Strategies.create_registry(
                 Strategies.AbstractStrategy => (FakeStrategy,)
             )
             
             method = (:fake,)
             
-            @testset "Full chain: Orchestration → Strategies → Options" begin
+            Test.@testset "Full chain: Orchestration → Strategies → Options" begin
                 # Test complete propagation chain with known options first
-                strategy = CTSolvers.Orchestration.build_strategy_from_method(
+                strategy = Orchestration.build_strategy_from_method(
                     method,
                     Strategies.AbstractStrategy, 
                     registry; 
@@ -408,10 +409,10 @@ function test_mode_propagation()
                 )
 
                 # Verify strategy created
-                @test strategy isa FakeStrategy
+                Test.@test strategy isa FakeStrategy
 
                 # Test with unknown options in permissive mode
-                strategy2 = CTSolvers.Orchestration.build_strategy_from_method(
+                strategy2 = Orchestration.build_strategy_from_method(
                     method,
                     Strategies.AbstractStrategy,
                     registry;
@@ -421,17 +422,17 @@ function test_mode_propagation()
                     mode=:permissive
                 )
                 
-                @test strategy2 isa FakeStrategy
+                Test.@test strategy2 isa FakeStrategy
                 
                 # Verify known option validated
-                @test Strategies.option_value(strategy, :known_option) == 500
-                @test Strategies.option_source(strategy, :known_option) == :user
+                Test.@test Strategies.option_value(strategy, :known_option) == 500
+                Test.@test Strategies.option_source(strategy, :known_option) == :user
                 
                 # Verify unknown options accepted
-                @test Strategies.has_option(strategy2, :custom_backend_option)
-                @test Strategies.option_value(strategy2, :custom_backend_option) == "advanced"
-                @test Strategies.has_option(strategy2, :experimental_feature)
-                @test Strategies.option_value(strategy2, :experimental_feature) == true
+                Test.@test Strategies.has_option(strategy2, :custom_backend_option)
+                Test.@test Strategies.option_value(strategy2, :custom_backend_option) == "advanced"
+                Test.@test Strategies.has_option(strategy2, :experimental_feature)
+                Test.@test Strategies.option_value(strategy2, :experimental_feature) == true
             end
         end
     end

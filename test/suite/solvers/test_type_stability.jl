@@ -1,19 +1,19 @@
 module TestTypeStability
 
-using Test
-using CTSolvers
-using CTSolvers.Solvers
-using CTSolvers.Strategies
-using CTSolvers.Options
+import Test
+import CTSolvers
+import CTSolvers.Solvers
+import CTSolvers.Strategies
+import CTSolvers.Options
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
 # Load extensions to trigger dependencies
-using NLPModelsIpopt
-using MadNLP
-using MadNLPMumps
-using MadNCL
+import NLPModelsIpopt
+import MadNLP
+import MadNLPMumps
+import MadNCL
 # using NLPModelsKnitro
 
 """
@@ -21,41 +21,41 @@ using MadNCL
 
 Test type stability of critical solver functions.
 
-🔧 **Applying Type Stability Rule**: Testing type stability with @inferred
+🔧 **Applying Type Stability Rule**: Testing type stability with Test.@inferred
 for performance-critical functions.
 """
 function test_type_stability()
-    @testset "Type Stability Tests" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Type Stability Tests" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
         # UNIT TESTS - Solver Construction Type Stability
         # ====================================================================
         
-        @testset "Solver Construction Type Stability" begin
-            @testset "IpoptSolver construction" begin
+        Test.@testset "Solver Construction Type Stability" begin
+            Test.@testset "Solvers.Ipopt construction" begin
                 # Test that constructor returns correct type
-                @test_nowarn @inferred CTSolvers.Solvers.IpoptSolver()
-                @test_nowarn @inferred CTSolvers.Solvers.IpoptSolver(max_iter=100)
-                @test_nowarn @inferred CTSolvers.Solvers.IpoptSolver(max_iter=100, tol=1e-6)
+                Test.@test_nowarn Test.@inferred Solvers.Ipopt()
+                Test.@test_nowarn Test.@inferred Solvers.Ipopt(max_iter=100)
+                Test.@test_nowarn Test.@inferred Solvers.Ipopt(max_iter=100, tol=1e-6)
             end
             
-            @testset "MadNLPSolver construction" begin
-                @test_nowarn @inferred CTSolvers.Solvers.MadNLPSolver()
-                @test_nowarn @inferred CTSolvers.Solvers.MadNLPSolver(max_iter=100)
-                @test_nowarn @inferred CTSolvers.Solvers.MadNLPSolver(max_iter=100, tol=1e-6)
+            Test.@testset "Solvers.MadNLP construction" begin
+                Test.@test_nowarn Test.@inferred Solvers.MadNLP()
+                Test.@test_nowarn Test.@inferred Solvers.MadNLP(max_iter=100)
+                Test.@test_nowarn Test.@inferred Solvers.MadNLP(max_iter=100, tol=1e-6)
             end
             
-            @testset "MadNCLSolver construction" begin
-                @test_nowarn @inferred CTSolvers.Solvers.MadNCLSolver()
-                @test_nowarn @inferred CTSolvers.Solvers.MadNCLSolver(max_iter=100)
-                @test_nowarn @inferred CTSolvers.Solvers.MadNCLSolver(max_iter=100, tol=1e-6)
+            Test.@testset "Solvers.MadNCL construction" begin
+                Test.@test_nowarn Test.@inferred Solvers.MadNCL()
+                Test.@test_nowarn Test.@inferred Solvers.MadNCL(max_iter=100)
+                Test.@test_nowarn Test.@inferred Solvers.MadNCL(max_iter=100, tol=1e-6)
             end
             
             # Commented out - no Knitro license available
-            # @testset "KnitroSolver construction" begin
-            #     @test_nowarn @inferred CTSolvers.Solvers.KnitroSolver()
-            #     @test_nowarn @inferred CTSolvers.Solvers.KnitroSolver(max_iter=100)
-            #     @test_nowarn @inferred CTSolvers.Solvers.KnitroSolver(max_iter=100, ftol=1e-6)
+            # Test.@testset "Solvers.Knitro construction" begin
+            #     Test.@test_nowarn Test.@inferred Solvers.Knitro()
+            #     Test.@test_nowarn Test.@inferred Solvers.Knitro(max_iter=100)
+            #     Test.@test_nowarn Test.@inferred Solvers.Knitro(max_iter=100, ftol=1e-6)
             # end
         end
         
@@ -63,61 +63,61 @@ function test_type_stability()
         # UNIT TESTS - Strategy Contract Type Stability
         # ====================================================================
         
-        @testset "Strategy Contract Type Stability" begin
-            @testset "IpoptSolver contract" begin
+        Test.@testset "Strategy Contract Type Stability" begin
+            Test.@testset "Solvers.Ipopt contract" begin
                 # Test id() type stability - simple Symbol return
-                @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.IpoptSolver)
-                @test @inferred(Strategies.id(CTSolvers.Solvers.IpoptSolver)) === :ipopt
+                Test.@test_nowarn Test.@inferred Strategies.id(Solvers.Ipopt)
+                Test.@test Test.@inferred(Strategies.id(Solvers.Ipopt)) === :ipopt
                 
                 # Test metadata() returns correct type
-                meta = Strategies.metadata(CTSolvers.Solvers.IpoptSolver)
-                @test meta isa Strategies.StrategyMetadata
+                meta = Strategies.metadata(Solvers.Ipopt)
+                Test.@test meta isa Strategies.StrategyMetadata
                 
                 # Test options() returns correct type
-                # Note: @inferred is too strict for parametric types, we verify concrete type
-                solver = CTSolvers.Solvers.IpoptSolver()
+                # Note: Test.@inferred is too strict for parametric types, we verify concrete type
+                solver = Solvers.Ipopt()
                 opts = Strategies.options(solver)
-                @test opts isa Strategies.StrategyOptions
+                Test.@test opts isa Strategies.StrategyOptions
             end
             
-            @testset "MadNLPSolver contract" begin
-                @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.MadNLPSolver)
-                @test @inferred(Strategies.id(CTSolvers.Solvers.MadNLPSolver)) === :madnlp
+            Test.@testset "Solvers.MadNLP contract" begin
+                Test.@test_nowarn Test.@inferred Strategies.id(Solvers.MadNLP)
+                Test.@test Test.@inferred(Strategies.id(Solvers.MadNLP)) === :madnlp
                 
                 # Metadata returns correct type
-                meta = Strategies.metadata(CTSolvers.Solvers.MadNLPSolver)
-                @test meta isa Strategies.StrategyMetadata
+                meta = Strategies.metadata(Solvers.MadNLP)
+                Test.@test meta isa Strategies.StrategyMetadata
                 
                 # Options returns correct type
-                opts = Strategies.options(CTSolvers.Solvers.MadNLPSolver())
-                @test opts isa Strategies.StrategyOptions
+                opts = Strategies.options(Solvers.MadNLP())
+                Test.@test opts isa Strategies.StrategyOptions
             end
             
-            @testset "MadNCLSolver contract" begin
-                @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.MadNCLSolver)
-                @test @inferred(Strategies.id(CTSolvers.Solvers.MadNCLSolver)) === :madncl
+            Test.@testset "Solvers.MadNCL contract" begin
+                Test.@test_nowarn Test.@inferred Strategies.id(Solvers.MadNCL)
+                Test.@test Test.@inferred(Strategies.id(Solvers.MadNCL)) === :madncl
                 
                 # Metadata returns correct type
-                meta = Strategies.metadata(CTSolvers.Solvers.MadNCLSolver)
-                @test meta isa Strategies.StrategyMetadata
+                meta = Strategies.metadata(Solvers.MadNCL)
+                Test.@test meta isa Strategies.StrategyMetadata
                 
                 # Options returns correct type
-                opts = Strategies.options(CTSolvers.Solvers.MadNCLSolver())
-                @test opts isa Strategies.StrategyOptions
+                opts = Strategies.options(Solvers.MadNCL())
+                Test.@test opts isa Strategies.StrategyOptions
             end
             
             # Commented out - no Knitro license available
-            # @testset "KnitroSolver contract" begin
-            #     @test_nowarn @inferred Strategies.id(CTSolvers.Solvers.KnitroSolver)
-            #     @test @inferred(Strategies.id(CTSolvers.Solvers.KnitroSolver)) === :knitro
+            # Test.@testset "Solvers.Knitro contract" begin
+            #     Test.@test_nowarn Test.@inferred Strategies.id(Solvers.Knitro)
+            #     Test.@test Test.@inferred(Strategies.id(Solvers.Knitro)) === :knitro
                 
             #     # Metadata returns correct type
-            #     meta = Strategies.metadata(CTSolvers.Solvers.KnitroSolver)
-            #     @test meta isa Strategies.StrategyMetadata
+            #     meta = Strategies.metadata(Solvers.Knitro)
+            #     Test.@test meta isa Strategies.StrategyMetadata
                 
             #     # Options returns correct type
-            #     opts = Strategies.options(CTSolvers.Solvers.KnitroSolver())
-            #     @test opts isa Strategies.StrategyOptions
+            #     opts = Strategies.options(Solvers.Knitro())
+            #     Test.@test opts isa Strategies.StrategyOptions
             # end
         end
         
@@ -125,28 +125,28 @@ function test_type_stability()
         # UNIT TESTS - Options Extraction Type Stability
         # ====================================================================
         
-        @testset "Options Extraction Type Stability" begin
-            @testset "IpoptSolver options extraction" begin
-                solver = CTSolvers.Solvers.IpoptSolver(max_iter=100, tol=1e-6)
+        Test.@testset "Options Extraction Type Stability" begin
+            Test.@testset "Solvers.Ipopt options extraction" begin
+                solver = Solvers.Ipopt(max_iter=100, tol=1e-6)
                 opts = Strategies.options(solver)
                 
                 # Test that extract_raw_options returns correct type
                 # Note: NamedTuple field names are not inferable, so we check the type
                 raw_opts = Options.extract_raw_options(opts.options)
-                @test raw_opts isa NamedTuple
-                @test haskey(raw_opts, :max_iter)
-                @test haskey(raw_opts, :tol)
+                Test.@test raw_opts isa NamedTuple
+                Test.@test haskey(raw_opts, :max_iter)
+                Test.@test haskey(raw_opts, :tol)
             end
             
-            @testset "MadNLPSolver options extraction" begin
-                solver = CTSolvers.Solvers.MadNLPSolver(max_iter=100, tol=1e-6)
+            Test.@testset "Solvers.MadNLP options extraction" begin
+                solver = Solvers.MadNLP(max_iter=100, tol=1e-6)
                 opts = Strategies.options(solver)
                 
                 # Test that extract_raw_options returns correct type
                 raw_opts = Options.extract_raw_options(opts.options)
-                @test raw_opts isa NamedTuple
-                @test haskey(raw_opts, :max_iter)
-                @test haskey(raw_opts, :tol)
+                Test.@test raw_opts isa NamedTuple
+                Test.@test haskey(raw_opts, :max_iter)
+                Test.@test haskey(raw_opts, :tol)
             end
         end
         

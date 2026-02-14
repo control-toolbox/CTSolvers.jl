@@ -1,11 +1,10 @@
 module TestStrategiesAbstractStrategy
 
-using Test
-using CTBase: CTBase
-const Exceptions = CTBase.Exceptions
-using CTSolvers
-using CTSolvers.Strategies
-using CTSolvers.Options
+import Test
+import CTBase.Exceptions
+import CTSolvers
+import CTSolvers.Strategies
+import CTSolvers.Options
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
@@ -167,8 +166,10 @@ function test_abstract_strategy()
                 strategy = FakeStrategy(opts)
                 
                 # Test that strategy components can be displayed
-                Test.@test_nowarn show(stdout, Strategies.metadata(typeof(strategy)))
-                Test.@test_nowarn show(stdout, Strategies.options(strategy))
+                redirect_stdout(devnull) do
+                    Test.@test_nowarn show(stdout, Strategies.metadata(typeof(strategy)))
+                    Test.@test_nowarn show(stdout, Strategies.options(strategy))
+                end
             end
         end
     end

@@ -1,6 +1,6 @@
 # Validation Functions for Enhanced Modelers
 #
-# This module provides validation functions for the enhanced ADNLPModeler and ExaModeler
+# This module provides validation functions for the enhanced Modelers.ADNLP and Modelers.Exa
 # options. These functions provide robust error checking and user guidance.
 #
 # Author: CTSolvers Development Team
@@ -35,7 +35,7 @@ function validate_adnlp_backend(backend::Symbol)
             got="backend=$backend",
             expected="one of $(valid_backends)",
             suggestion="Use :default for general purpose, :optimized for performance, or :enzyme/:zygote for specific AD backends",
-            context="ADNLPModeler backend validation"
+            context="Modelers.ADNLP backend validation"
         ))
     end
     
@@ -83,11 +83,11 @@ ERROR: ArgumentError: base_type must be a subtype of AbstractFloat, got: Int
 function validate_exa_base_type(T::Type)
     if !(T <: AbstractFloat)
         throw(Exceptions.IncorrectArgument(
-            "Invalid base type for ExaModeler",
+            "Invalid base type for Modelers.Exa",
             got="base_type=$T",
             expected="subtype of AbstractFloat (e.g., Float64, Float32)",
             suggestion="Use Float64 for standard precision or Float32 for GPU performance",
-            context="ExaModeler base type validation"
+            context="Modelers.Exa base type validation"
         ))
     end
     
@@ -130,7 +130,7 @@ function validate_gpu_preference(preference::Symbol)
             got="gpu_preference=$preference",
             expected="one of $(valid_preferences)",
             suggestion="Use :cuda for NVIDIA GPUs, :rocm for AMD GPUs, or :oneapi for Intel GPUs",
-            context="ExaModeler GPU preference validation"
+            context="Modelers.Exa GPU preference validation"
         ))
     end
     
@@ -166,7 +166,7 @@ function validate_precision_mode(mode::Symbol)
             got="precision_mode=$mode",
             expected="one of $(valid_modes)",
             suggestion="Use :standard for default precision, :high for maximum accuracy, or :mixed for performance",
-            context="ExaModeler precision mode validation"
+            context="Modelers.Exa precision mode validation"
         ))
     end
     
