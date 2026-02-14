@@ -310,34 +310,42 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Validate that a backend override is either nothing or a valid type.
+Validate that a backend override is either `nothing`, a `Type{<:ADBackend}`, or an `ADBackend` instance.
+
+ADNLPModels.jl accepts both types (to be constructed internally) and pre-constructed instances.
 
 # Arguments
-- `backend`: The backend type to validate (any type accepted)
+- `backend`: The backend to validate (any value accepted for dispatch)
 
 # Throws
-- `IncorrectArgument`: If the backend is not nothing or a valid type
+- `IncorrectArgument`: If the backend is not `nothing`, a `Type{<:ADBackend}`, or an `ADBackend` instance
 
 # Examples
 ```julia
 julia> validate_backend_override(nothing)
 nothing
 
-julia> validate_backend_override(ForwardDiffADGradient)
+julia> validate_backend_override(ForwardDiffADGradient)  # Type
 ForwardDiffADGradient
 
+julia> validate_backend_override(ForwardDiffADGradient())  # Instance
+ForwardDiffADGradient()
+
 julia> validate_backend_override("invalid")
-ERROR: Exceptions.IncorrectArgument: Backend override must be a Type or nothing
+ERROR: Exceptions.IncorrectArgument: Backend override must be nothing, a Type{<:ADBackend}, or an ADBackend instance
 ```
 """
 function validate_backend_override(backend)
-    if backend !== nothing && !isa(backend, Type)
-        throw(Exceptions.IncorrectArgument(
-            "Backend override must be a Type or nothing",
-            got=string(typeof(backend)),
-            expected="Type or nothing",
-            suggestion="Use nothing for default backend or provide a valid backend Type"
-        ))
-    end
-    return backend
+    # nothing means "use default backend"
+    backend === nothing && return backend
+    # Accept a Type that is a subtype of ADBackend (e.g., ForwardDiffADGradient)
+    isa(backend, Type) && backend <: ADNLPModels.ADBackend && return backend
+    # Accept an ADBackend instance (e.g., ForwardDiffADGradient())
+    isa(backend, ADNLPModels.ADBackend) && return backend
+    throw(Exceptions.IncorrectArgument(
+        "Backend override must be nothing, a Type{<:ADBackend}, or an ADBackend instance",
+        got=string(typeof(backend)),
+        expected="nothing, Type{<:ADBackend}, or ADBackend instance",
+        suggestion="Use nothing for default backend, a Type like ForwardDiffADGradient, or an instance like ForwardDiffADGradient()"
+    ))
 end

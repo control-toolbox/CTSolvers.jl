@@ -47,20 +47,17 @@ Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
 - `name::String`: Model name for identification (default: `"CTSolvers-ADNLP"`)
 
 ## Advanced Backend Overrides (expert users)
-- `gradient_backend::Union{Nothing, Type}`: Override backend for gradient computation
-- `hprod_backend::Union{Nothing, Type}`: Override backend for Hessian-vector product
-- `jprod_backend::Union{Nothing, Type}`: Override backend for Jacobian-vector product
-- `jtprod_backend::Union{Nothing, Type}`: Override backend for transpose Jacobian-vector product
-- `jacobian_backend::Union{Nothing, Type}`: Override backend for Jacobian matrix computation
-- `hessian_backend::Union{Nothing, Type}`: Override backend for Hessian matrix computation
 
-## Advanced Backend Overrides for NLS (expert users)
-- `ghjvprod_backend::Union{Nothing, Type}`: Override backend for g^T ∇²c(x)v computation
-- `hprod_residual_backend::Union{Nothing, Type}`: Override backend for Hessian-vector product of residuals
-- `jprod_residual_backend::Union{Nothing, Type}`: Override backend for Jacobian-vector product of residuals
-- `jtprod_residual_backend::Union{Nothing, Type}`: Override backend for transpose Jacobian-vector product of residuals
-- `jacobian_residual_backend::Union{Nothing, Type}`: Override backend for Jacobian matrix of residuals
-- `hessian_residual_backend::Union{Nothing, Type}`: Override backend for Hessian matrix of residuals
+Each backend option accepts `nothing` (use default), a `Type{<:ADBackend}` (constructed by ADNLPModels),
+or an `ADBackend` instance (used directly).
+
+- `gradient_backend`: Override backend for gradient computation
+- `hprod_backend`: Override backend for Hessian-vector product
+- `jprod_backend`: Override backend for Jacobian-vector product
+- `jtprod_backend`: Override backend for transpose Jacobian-vector product
+- `jacobian_backend`: Override backend for Jacobian matrix computation
+- `hessian_backend`: Override backend for Hessian matrix computation
+- `ghjvprod_backend`: Override backend for g^T ∇²c(x)v computation
 
 # Examples
 
@@ -79,10 +76,20 @@ modeler = Modelers.ADNLP(
 
 ## Advanced Backend Configuration
 ```julia
-# Override specific backends
+# Override with nothing (use default)
 modeler = Modelers.ADNLP(
-    gradient_backend=nothing,  # Use default gradient backend
-    hessian_backend=nothing   # Use default Hessian backend
+    gradient_backend=nothing,
+    hessian_backend=nothing
+)
+
+# Override with a Type (ADNLPModels constructs it)
+modeler = Modelers.ADNLP(
+    gradient_backend=ADNLPModels.ForwardDiffADGradient
+)
+
+# Override with an instance (used directly)
+modeler = Modelers.ADNLP(
+    gradient_backend=ADNLPModels.ForwardDiffADGradient()
 )
 ```
 
@@ -176,90 +183,90 @@ function Strategies.metadata(::Type{<:Modelers.ADNLP})
         # === Advanced Backend Overrides (expert users) ===
         Strategies.OptionDefinition(;
             name=:gradient_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
+            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for gradient computation (advanced users only)",
             validator=validate_backend_override
         ),
         Strategies.OptionDefinition(;
             name=:hprod_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
+            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for Hessian-vector product (advanced users only)",
             validator=validate_backend_override
         ),
         Strategies.OptionDefinition(;
             name=:jprod_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
+            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for Jacobian-vector product (advanced users only)",
             validator=validate_backend_override
         ),
         Strategies.OptionDefinition(;
             name=:jtprod_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
+            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for transpose Jacobian-vector product (advanced users only)",
             validator=validate_backend_override
         ),
         Strategies.OptionDefinition(;
             name=:jacobian_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
+            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for Jacobian matrix computation (advanced users only)",
             validator=validate_backend_override
         ),
         Strategies.OptionDefinition(;
             name=:hessian_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
+            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for Hessian matrix computation (advanced users only)",
             validator=validate_backend_override
         ),
-        
-        # === Advanced Backend Overrides for NLS (expert users) ===
         Strategies.OptionDefinition(;
             name=:ghjvprod_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
+            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for g^T ∇²c(x)v computation (advanced users only)",
             validator=validate_backend_override
-        ),
-        Strategies.OptionDefinition(;
-            name=:hprod_residual_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
-            default=Options.NotProvided,
-            description="Override backend for Hessian-vector product of residuals (NLS) (advanced users only)",
-            validator=validate_backend_override
-        ),
-        Strategies.OptionDefinition(;
-            name=:jprod_residual_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
-            default=Options.NotProvided,
-            description="Override backend for Jacobian-vector product of residuals (NLS) (advanced users only)",
-            validator=validate_backend_override
-        ),
-        Strategies.OptionDefinition(;
-            name=:jtprod_residual_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
-            default=Options.NotProvided,
-            description="Override backend for transpose Jacobian-vector product of residuals (NLS) (advanced users only)",
-            validator=validate_backend_override
-        ),
-        Strategies.OptionDefinition(;
-            name=:jacobian_residual_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
-            default=Options.NotProvided,
-            description="Override backend for Jacobian matrix of residuals (NLS) (advanced users only)",
-            validator=validate_backend_override
-        ),
-        Strategies.OptionDefinition(;
-            name=:hessian_residual_backend,
-            type=Union{Nothing, ADNLPModels.ADBackend},
-            default=Options.NotProvided,
-            description="Override backend for Hessian matrix of residuals (NLS) (advanced users only)",
-            validator=validate_backend_override
         )
+        
+        # # === Advanced Backend Overrides for NLS (expert users) ===
+        # Strategies.OptionDefinition(;
+        #     name=:hprod_residual_backend,
+        #     type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+        #     default=Options.NotProvided,
+        #     description="Override backend for Hessian-vector product of residuals (NLS) (advanced users only)",
+        #     validator=validate_backend_override
+        # ),
+        # Strategies.OptionDefinition(;
+        #     name=:jprod_residual_backend,
+        #     type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+        #     default=Options.NotProvided,
+        #     description="Override backend for Jacobian-vector product of residuals (NLS) (advanced users only)",
+        #     validator=validate_backend_override
+        # ),
+        # Strategies.OptionDefinition(;
+        #     name=:jtprod_residual_backend,
+        #     type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+        #     default=Options.NotProvided,
+        #     description="Override backend for transpose Jacobian-vector product of residuals (NLS) (advanced users only)",
+        #     validator=validate_backend_override
+        # ),
+        # Strategies.OptionDefinition(;
+        #     name=:jacobian_residual_backend,
+        #     type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+        #     default=Options.NotProvided,
+        #     description="Override backend for Jacobian matrix of residuals (NLS) (advanced users only)",
+        #     validator=validate_backend_override
+        # ),
+        # Strategies.OptionDefinition(;
+        #     name=:hessian_residual_backend,
+        #     type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+        #     default=Options.NotProvided,
+        #     description="Override backend for Hessian matrix of residuals (NLS) (advanced users only)",
+        #     validator=validate_backend_override
+        # )
     )
 end
 

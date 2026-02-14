@@ -14,13 +14,16 @@ const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
 # Import the specific types we need
+import ADNLPModels
 import CTSolvers.Modelers
-import CTSolvers.Modelers: Modelers.Exa
 import KernelAbstractions
 import CTSolvers.Strategies
 
 # Define structs at top-level (crucial!)
 struct TestDummyModel end
+
+# Fake ADBackend for testing Type and instance acceptance
+struct FakeTestBackend <: ADNLPModels.ADBackend end
 
 function test_enhanced_options()
     Test.@testset "Enhanced Modelers Options" verbose = VERBOSE showtiming = SHOWTIMING begin
@@ -180,22 +183,15 @@ function test_enhanced_options()
         end
 
         Test.@testset "Advanced Backend Overrides" begin
-            Test.@testset "Backend Override Validation" begin
-                # Valid backend overrides should work
+            Test.@testset "Backend Override with nothing" begin
+                # Valid backend overrides with nothing should work
                 Test.@test_nowarn Modelers.ADNLP(gradient_backend=nothing)
                 Test.@test_nowarn Modelers.ADNLP(hprod_backend=nothing)
                 Test.@test_nowarn Modelers.ADNLP(jprod_backend=nothing)
                 Test.@test_nowarn Modelers.ADNLP(jtprod_backend=nothing)
                 Test.@test_nowarn Modelers.ADNLP(jacobian_backend=nothing)
                 Test.@test_nowarn Modelers.ADNLP(hessian_backend=nothing)
-
-                # NLS backend overrides should work
                 Test.@test_nowarn Modelers.ADNLP(ghjvprod_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLP(hprod_residual_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLP(jprod_residual_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLP(jtprod_residual_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLP(jacobian_residual_backend=nothing)
-                Test.@test_nowarn Modelers.ADNLP(hessian_residual_backend=nothing)
 
                 # Test that options are accessible
                 modeler = Modelers.ADNLP(
@@ -207,6 +203,29 @@ function test_enhanced_options()
                 Test.@test opts[:gradient_backend] === nothing
                 Test.@test opts[:hprod_backend] === nothing
                 Test.@test opts[:ghjvprod_backend] === nothing
+            end
+
+            Test.@testset "Backend Override with Type{<:ADBackend}" begin
+                # Passing a Type (subtype of ADBackend) should work
+                Test.@test_nowarn Modelers.ADNLP(gradient_backend=FakeTestBackend)
+                Test.@test_nowarn Modelers.ADNLP(hprod_backend=FakeTestBackend)
+                Test.@test_nowarn Modelers.ADNLP(jacobian_backend=FakeTestBackend)
+                Test.@test_nowarn Modelers.ADNLP(ghjvprod_backend=FakeTestBackend)
+
+                modeler = Modelers.ADNLP(gradient_backend=FakeTestBackend)
+                Test.@test Strategies.options(modeler)[:gradient_backend] === FakeTestBackend
+            end
+
+            Test.@testset "Backend Override with ADBackend instance" begin
+                # Passing an ADBackend instance should work
+                instance = FakeTestBackend()
+                Test.@test_nowarn Modelers.ADNLP(gradient_backend=instance)
+                Test.@test_nowarn Modelers.ADNLP(hprod_backend=instance)
+                Test.@test_nowarn Modelers.ADNLP(jacobian_backend=instance)
+                Test.@test_nowarn Modelers.ADNLP(ghjvprod_backend=instance)
+
+                modeler = Modelers.ADNLP(gradient_backend=instance)
+                Test.@test Strategies.options(modeler)[:gradient_backend] isa ADNLPModels.ADBackend
             end
 
             Test.@testset "Backend Override Type Validation" begin
@@ -221,12 +240,13 @@ function test_enhanced_options()
 
             Test.@testset "Combined Advanced Options" begin
                 # Test advanced options with basic options
+                instance = FakeTestBackend()
                 modeler = Modelers.ADNLP(
                     backend=:optimized,
                     matrix_free=true,
                     name="AdvancedTest",
-                    gradient_backend=nothing,
-                    hprod_backend=nothing,
+                    gradient_backend=FakeTestBackend,
+                    hprod_backend=instance,
                     jacobian_backend=nothing,
                     ghjvprod_backend=nothing
                 )
@@ -235,9 +255,8 @@ function test_enhanced_options()
                 Test.@test opts[:backend] == :optimized
                 Test.@test opts[:matrix_free] == true
                 Test.@test opts[:name] == "AdvancedTest"
-                # Options with NotProvided default are only stored when explicitly set
-                Test.@test opts[:gradient_backend] === nothing
-                Test.@test opts[:hprod_backend] === nothing
+                Test.@test opts[:gradient_backend] === FakeTestBackend
+                Test.@test opts[:hprod_backend] isa ADNLPModels.ADBackend
                 Test.@test opts[:jacobian_backend] === nothing
                 Test.@test opts[:ghjvprod_backend] === nothing
             end
