@@ -1,4 +1,21 @@
-# Breaking Changes — v0.3.0-beta
+# Breaking Changes
+
+This document describes all breaking changes introduced in CTSolvers.jl releases
+and provides migration guides for users upgrading between versions.
+
+---
+
+## v0.3.1-beta (2026-02-14)
+
+**No breaking changes** — This release only adds enhancements:
+
+- Backend override options now accept both `Type{<:ADBackend}` and `ADBackend` instances
+- Improved validation and error messages
+- Better test coverage and documentation
+
+---
+
+## Breaking Changes — v0.3.0-beta
 
 This document describes all breaking changes introduced in CTSolvers.jl v0.3.0-beta
 and provides a migration guide for users upgrading from v0.2.x.

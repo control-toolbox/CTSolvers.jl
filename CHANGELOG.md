@@ -9,6 +9,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1-beta] - 2026-02-14
+
+### Added
+
+- **Backend override flexibility** — `Modelers.ADNLP` now accepts both `Type{<:ADBackend}` and `ADBackend` instances for advanced backend options
+- **Comprehensive test coverage** for backend override validation with `nothing`, types, and instances
+- **Detailed documentation** with examples for all three backend override patterns
+- **Technical report** documenting the backend override implementation (`.reports/2026-02_14_backend/`)
+
+### Changed
+
+- **Backend option types** — Updated type declarations for all 7 active backend options:
+  - `gradient_backend`, `hprod_backend`, `jprod_backend`, `jtprod_backend`
+  - `jacobian_backend`, `hessian_backend`, `ghjvprod_backend`
+  - From: `Union{Nothing, ADNLPModels.ADBackend}`
+  - To: `Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend}`
+- **Validation logic** — `validate_backend_override()` now correctly handles three forms:
+  - `nothing` (use default)
+  - `Type{<:ADBackend}` (constructed by ADNLPModels)
+  - `ADBackend` instance (used directly)
+- **Test imports** — Refactored to use `import` instead of `using` in test modules for better namespace control
+- **Coverage tracking** — Removed coverage directory from version control (added to `.gitignore`)
+
+### Fixed
+
+- **Test compatibility** — Fixed `@testset` macro calls after import refactoring
+- **Validation tests** — Updated tests to use proper `ADBackend` subtypes instead of generic types
+- **Error messages** — Enhanced backend override validation with clear error messages and suggestions
+
+### Technical Details
+
+#### Backend Override Usage
+```julia
+# Three accepted forms:
+Modelers.ADNLP(gradient_backend=nothing)                              # Use default
+Modelers.ADNLP(gradient_backend=ADNLPModels.ForwardDiffADGradient)   # Type
+Modelers.ADNLP(gradient_backend=ADNLPModels.ForwardDiffADGradient())  # Instance
+```
+
+#### Type Declaration Change
+```julia
+# Before
+type=Union{Nothing, ADNLPModels.ADBackend}
+
+# After  
+type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend}
+```
+
+---
+
 ## [0.3.0-beta] - 2026-02-13
 
 ### 🎉 BREAKING CHANGES
