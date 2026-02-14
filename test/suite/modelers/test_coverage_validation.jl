@@ -3,6 +3,10 @@ module TestCoverageValidation
 import Test
 import CTBase.Exceptions
 import CTSolvers.Modelers
+import ADNLPModels
+
+# Fake ADBackend for testing (must be at top-level)
+struct FakeCoverageBackend <: ADNLPModels.ADBackend end
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -133,12 +137,17 @@ function test_coverage_validation()
         # ====================================================================
 
         Test.@testset "validate_backend_override" begin
-            # Valid overrides
+            # Valid overrides: nothing
             Test.@test Modelers.validate_backend_override(nothing) === nothing
-            Test.@test Modelers.validate_backend_override(Float64) == Float64
-            Test.@test Modelers.validate_backend_override(Int) == Int
+            # Valid overrides: Type{<:ADBackend}
+            Test.@test Modelers.validate_backend_override(FakeCoverageBackend) == FakeCoverageBackend
+            # Valid overrides: ADBackend instance
+            Test.@test Modelers.validate_backend_override(FakeCoverageBackend()) isa ADNLPModels.ADBackend
 
-            # Invalid overrides
+            # Invalid overrides: non-ADBackend types
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(Float64)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(Int)
+            # Invalid overrides: other values
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override("invalid")
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(123)
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(:symbol)

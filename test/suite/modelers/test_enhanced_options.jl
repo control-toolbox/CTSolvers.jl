@@ -14,6 +14,7 @@ const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
 # Import the specific types we need
+import ADNLPModels
 import CTSolvers.Modelers
 import KernelAbstractions
 import CTSolvers.Strategies
@@ -204,7 +205,7 @@ function test_enhanced_options()
                 Test.@test opts[:ghjvprod_backend] === nothing
             end
 
-            @testset "Backend Override with Type{<:ADBackend}" begin
+            Test.@testset "Backend Override with Type{<:ADBackend}" begin
                 # Passing a Type (subtype of ADBackend) should work
                 Test.@test_nowarn Modelers.ADNLP(gradient_backend=FakeTestBackend)
                 Test.@test_nowarn Modelers.ADNLP(hprod_backend=FakeTestBackend)
@@ -215,7 +216,7 @@ function test_enhanced_options()
                 Test.@test Strategies.options(modeler)[:gradient_backend] === FakeTestBackend
             end
 
-            @testset "Backend Override with ADBackend instance" begin
+            Test.@testset "Backend Override with ADBackend instance" begin
                 # Passing an ADBackend instance should work
                 instance = FakeTestBackend()
                 Test.@test_nowarn Modelers.ADNLP(gradient_backend=instance)
@@ -227,7 +228,7 @@ function test_enhanced_options()
                 Test.@test Strategies.options(modeler)[:gradient_backend] isa ADNLPModels.ADBackend
             end
 
-            @testset "Backend Override Type Validation" begin
+            Test.@testset "Backend Override Type Validation" begin
                 # Invalid types should throw enriched exceptions (redirect stderr to hide error logs)
                 redirect_stderr(devnull) do
                     Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(gradient_backend="invalid")
