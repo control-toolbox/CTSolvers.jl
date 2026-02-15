@@ -201,18 +201,18 @@ opt = OptionValue(200, :user)
 
 ### Encapsulation Best Practices (Strategies)
 
-- Pour récupérer un `OptionValue` d’une stratégie : `opt = Strategies.option(opts, :max_iter)`
-- Pour lire valeur/provenance : `Options.value(opt)`, `Options.source(opt)` ou directement `Options.value(opts, :max_iter)`
-- Pour les prédicats sur une stratégie : `Strategies.option_is_user(strategy, key)` (ou `Options.is_user(options(strategy), key)`).
-- Éviter les accès directs aux champs (`.value`, `.source`, `.options`), réservés au module propriétaire.
+- To retrieve an `OptionValue` from a strategy: `opt = Strategies.option(opts, :max_iter)`
+- To read value/provenance: `Options.value(opt)`, `Options.source(opt)` or directly `Options.value(opts, :max_iter)`
+- For predicates on a strategy: `Strategies.option_is_user(strategy, key)` (or `Options.is_user(options(strategy), key)`).
+- Avoid direct field access (`.value`, `.source`, `.options`), which is reserved for the owning module.
 
 ```@example options
 using CTSolvers.Strategies
 
-# Suppose DemoStrategy is defined plus haut
+# Suppose DemoStrategy is defined above
 opts = Strategies.build_strategy_options(DemoStrategy; max_iter=250, tol=1e-7)
 
-# Accès encapsulé
+# Encapsulated access
 opt = Strategies.option(opts, :max_iter)
 @show Options.value(opt)
 @show Options.source(opt)
