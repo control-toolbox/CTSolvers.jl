@@ -153,6 +153,42 @@ function test_option_definition()
             )
             Test.@test def.validator === nothing
         end
+
+        # ========================================================================
+        # Getters and introspection
+        # ========================================================================
+
+        Test.@testset "Getters and introspection" begin
+            validator = x -> x > 0
+            def = Options.OptionDefinition(
+                name = :max_iter,
+                type = Int,
+                default = 100,
+                description = "Maximum iterations",
+                aliases = (:max, :maxiter),
+                validator = validator
+            )
+
+            Test.@test Options.name(def) === :max_iter
+            Test.@test Options.type(def) === Int
+            Test.@test Options.default(def) === 100
+            Test.@test Options.description(def) == "Maximum iterations"
+            Test.@test Options.aliases(def) == (:max, :maxiter)
+            Test.@test Options.validator(def) === validator
+            Test.@test Options.has_default(def) === true
+            Test.@test Options.is_required(def) === false
+            Test.@test Options.has_validator(def) === true
+
+            required_def = Options.OptionDefinition(
+                name = :input,
+                type = String,
+                default = Options.NotProvided,
+                description = "Input file"
+            )
+            Test.@test Options.has_default(required_def) === false
+            Test.@test Options.is_required(required_def) === true
+            Test.@test Options.has_validator(required_def) === false
+        end
         
         # ========================================================================
         # Type stability tests

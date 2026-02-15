@@ -73,6 +73,120 @@ julia> OptionValue(42)
 """
 OptionValue(value) = OptionValue(value, :user)
 
+# =============================================================================
+# OptionValue getters and introspection
+# =============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the value from this option value wrapper.
+
+# Returns
+- The stored option value
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> opt = OptionValue(100, :user)
+
+julia> value(opt)
+100
+```
+
+See also: [`source`](@ref), [`is_user`](@ref)
+"""
+value(opt::OptionValue) = opt.value
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the source provenance of this option value.
+
+# Returns
+- `Symbol`: `:default`, `:user`, or `:computed`
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> opt = OptionValue(100, :user)
+
+julia> source(opt)
+:user
+```
+
+See also: [`value`](@ref), [`is_user`](@ref)
+"""
+source(opt::OptionValue) = opt.source
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if this option value was explicitly provided by the user.
+
+# Returns
+- `Bool`: `true` if the source is `:user`
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> opt = OptionValue(100, :user)
+
+julia> is_user(opt)
+true
+```
+
+See also: [`is_default`](@ref), [`is_computed`](@ref), [`source`](@ref)
+"""
+is_user(opt::OptionValue) = opt.source === :user
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if this option value is using its default.
+
+# Returns
+- `Bool`: `true` if the source is `:default`
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> opt = OptionValue(100, :default)
+
+julia> is_default(opt)
+true
+```
+
+See also: [`is_user`](@ref), [`is_computed`](@ref), [`source`](@ref)
+"""
+is_default(opt::OptionValue) = opt.source === :default
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if this option value was computed from other options.
+
+# Returns
+- `Bool`: `true` if the source is `:computed`
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> opt = OptionValue(100, :computed)
+
+julia> is_computed(opt)
+true
+```
+
+See also: [`is_user`](@ref), [`is_default`](@ref), [`source`](@ref)
+"""
+is_computed(opt::OptionValue) = opt.source === :computed
+
 """
 $(TYPEDSIGNATURES)
 

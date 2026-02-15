@@ -158,6 +158,225 @@ function OptionDefinition(;
     )
 end
 
+# =============================================================================
+# OptionDefinition getters and introspection
+# =============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the primary name of this option definition.
+
+# Returns
+- `Symbol`: The option name
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                              description="Maximum iterations")
+
+julia> name(def)
+:max_iter
+```
+
+See also: [`type`](@ref), [`default`](@ref), [`aliases`](@ref)
+"""
+name(def::OptionDefinition) = def.name
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the expected type for this option definition.
+
+# Returns
+- `Type`: The expected type
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                              description="Maximum iterations")
+
+julia> type(def)
+Int64
+```
+
+See also: [`name`](@ref), [`default`](@ref)
+"""
+type(def::OptionDefinition) = def.type
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the default value for this option definition.
+
+# Returns
+- The default value
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                              description="Maximum iterations")
+
+julia> default(def)
+100
+```
+
+See also: [`name`](@ref), [`type`](@ref), [`is_required`](@ref)
+"""
+default(def::OptionDefinition) = def.default
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the description for this option definition.
+
+# Returns
+- `String`: The option description
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                              description="Maximum iterations")
+
+julia> description(def)
+"Maximum iterations"
+```
+
+See also: [`name`](@ref), [`type`](@ref)
+"""
+description(def::OptionDefinition) = def.description
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the validator function for this option definition.
+
+# Returns
+- `Union{Function, Nothing}`: The validator function or `nothing`
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> validator_fn = x -> x > 0
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                              description="Maximum iterations",
+                              validator=validator_fn)
+
+julia> validator(def) === validator_fn
+true
+```
+
+See also: [`has_validator`](@ref), [`name`](@ref)
+"""
+validator(def::OptionDefinition) = def.validator
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the aliases for this option definition.
+
+# Returns
+- `Tuple{Vararg{Symbol}}`: Tuple of alias names
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                              description="Maximum iterations",
+                              aliases=(:max, :maxiter))
+
+julia> aliases(def)
+(:max, :maxiter)
+```
+
+See also: [`all_names`](@ref), [`name`](@ref)
+"""
+aliases(def::OptionDefinition) = def.aliases
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if this option is required (has no default value).
+
+Returns `true` when the default value is `NotProvided`.
+
+# Returns
+- `Bool`: `true` if the option is required
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:input, type=String, default=NotProvided,
+                              description="Input file")
+
+julia> is_required(def)
+true
+```
+
+See also: [`has_default`](@ref), [`default`](@ref)
+"""
+is_required(def::OptionDefinition) = def.default isa NotProvidedType
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if this option definition has a default value.
+
+Returns `false` when the default value is `NotProvided`.
+
+# Returns
+- `Bool`: `true` if a default value is defined
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                              description="Maximum iterations")
+
+julia> has_default(def)
+true
+```
+
+See also: [`is_required`](@ref), [`default`](@ref)
+"""
+has_default(def::OptionDefinition) = !(def.default isa NotProvidedType)
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if this option definition has a validator function.
+
+# Returns
+- `Bool`: `true` if a validator is defined
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                              description="Maximum iterations",
+                              validator=x -> x > 0)
+
+julia> has_validator(def)
+true
+```
+
+See also: [`validator`](@ref), [`name`](@ref)
+"""
+has_validator(def::OptionDefinition) = def.validator !== nothing
+
 # Get all names (primary + aliases) for extraction
 """
 $(TYPEDSIGNATURES)
