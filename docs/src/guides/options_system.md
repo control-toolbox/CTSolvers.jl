@@ -47,14 +47,14 @@ def = OptionDefinition(
 
 ### Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | `Symbol` | Primary option name |
-| `type` | `Type` | Expected Julia type |
-| `default` | `Any` | Default value (or `NotProvided`) |
-| `description` | `String` | Human-readable description |
-| `aliases` | `Tuple{Vararg{Symbol}}` | Alternative names |
-| `validator` | `Function` or `nothing` | Validation function |
+| Field         | Type                      | Description                           |
+|-------------- |---------------------------|---------------------------------------|
+| `name`        | `Symbol`                  | Primary option name                   |
+| `type`        | `Type`                    | Expected Julia type                   |
+| `default`     | `Any`                     | Default value (or `NotProvided`)      |
+| `description` | `String`                  | Human-readable description            |
+| `aliases`     | `Tuple{Vararg{Symbol}}`   | Alternative names                     |
+| `validator`   | `Function` or `nothing`   | Validation function                   |
 
 ### Constructor validation
 
@@ -149,11 +149,11 @@ OptionValue(42, :computed)
 
 ### Three sources
 
-| Source | Meaning |
-|--------|---------|
-| `:user` | Explicitly provided by the user |
-| `:default` | Came from the `OptionDefinition` default |
-| `:computed` | Derived or computed from other options |
+| Source     | Meaning                                   |
+|----------- |-------------------------------------------|
+| `:user`    | Explicitly provided by the user           |
+| `:default` | Came from the `OptionDefinition` default  |
+| `:computed`| Derived or computed from other options    |
 
 Invalid source:
 
@@ -169,7 +169,59 @@ println("Value: ", opt.value)
 println("Source: ", opt.source)
 ```
 
-## StrategyMetadata
+## Accessing Option Properties (Getters)
+
+Use the getters in `Options` to access `OptionDefinition` and `OptionValue` fields instead of reading struct fields directly. This keeps encapsulation intact and aligns with Strategies overrides.
+
+```@example options
+using CTSolvers.Options
+
+def = OptionDefinition(
+    name = :max_iter,
+    type = Int,
+    default = 100,
+    description = "Maximum iterations",
+    aliases = (:maxiter,),
+)
+
+@show Options.name(def)
+@show Options.type(def)
+@show Options.default(def)
+@show Options.description(def)
+@show Options.aliases(def)
+@show Options.is_required(def)
+
+opt = OptionValue(200, :user)
+@show Options.value(opt)
+@show Options.source(opt)
+@show Options.is_user(opt)
+@show Options.is_default(opt)
+@show Options.is_computed(opt)
+```
+
+### Encapsulation Best Practices (Strategies)
+
+- Pour récupérer un `OptionValue` d’une stratégie : `opt = Strategies.option(opts, :max_iter)`
+- Pour lire valeur/provenance : `Options.value(opt)`, `Options.source(opt)` ou directement `Options.value(opts, :max_iter)`
+- Pour les prédicats sur une stratégie : `Strategies.option_is_user(strategy, key)` (ou `Options.is_user(options(strategy), key)`).
+- Éviter les accès directs aux champs (`.value`, `.source`, `.options`), réservés au module propriétaire.
+
+```@example options
+using CTSolvers.Strategies
+
+# Suppose DemoStrategy is defined plus haut
+opts = Strategies.build_strategy_options(DemoStrategy; max_iter=250, tol=1e-7)
+
+# Accès encapsulé
+opt = Strategies.option(opts, :max_iter)
+@show Options.value(opt)
+@show Options.source(opt)
+
+@show Options.is_user(opts, :max_iter)
+@show Options.is_default(opts, :tol)
+```
+
+## StrategyMetadata Overview (Strategies)
 
 `StrategyMetadata` is a collection of `OptionDefinition` objects that describes all configurable options for a strategy. It is returned by `Strategies.metadata(::Type)`.
 
