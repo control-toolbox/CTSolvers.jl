@@ -192,9 +192,59 @@ See also: [`Base.getindex`](@ref), [`source`](@ref)
 Base.getproperty(opts::StrategyOptions, key::Symbol) = 
     key === :options ? getfield(opts, :options) : getfield(opts, :options)[key]
 
+# ==========================================================================
+# OptionValue access helpers
+# ==========================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the `OptionValue` wrapper for an option.
+
+# Arguments
+- `opts::StrategyOptions`: Strategy options
+- `key::Symbol`: Option name
+
+# Returns
+- `Options.OptionValue`: The option value wrapper
+
+# Example
+```julia-repl
+julia> opt = option(opts, :max_iter)
+julia> Options.value(opt)
+200
+```
+
+See also: [`Base.getproperty`](@ref), [`Options.source`](@ref)
+"""
+option(opts::StrategyOptions, key::Symbol) = opts.options[key]
+
 # ============================================================================
 # Source access helpers
 # ============================================================================
+"""
+$(TYPEDSIGNATURES)
+
+Get the value of an option.
+
+# Arguments
+- `opts::StrategyOptions`: Strategy options
+- `key::Symbol`: Option name
+
+# Returns
+- `Any`: Value of the option
+
+# Example
+```julia-repl
+julia> Options.value(opts, :max_iter)
+200
+```
+
+See also: [`Options.is_user`](@ref), [`Options.is_default`](@ref), [`Options.is_computed`](@ref)
+"""
+function Options.value(opts::StrategyOptions, key::Symbol)
+    return Options.value(option(opts, key))
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -210,13 +260,16 @@ Get the source of an option.
 
 # Example
 ```julia-repl
-julia> source(opts, :max_iter)
+julia> Options.source(opts, :max_iter)
 :user
 ```
 
-See also: [`is_user`](@ref), [`is_default`](@ref), [`is_computed`](@ref)
+See also: [`Options.is_user`](@ref), [`Options.is_default`](@ref), [`Options.is_computed`](@ref)
 """
-source(opts::StrategyOptions, key::Symbol) = opts.options[key].source
+function Options.source(opts::StrategyOptions, key::Symbol)
+    return Options.source(option(opts, key))
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -231,13 +284,16 @@ Check if an option was provided by the user.
 
 # Example
 ```julia-repl
-julia> is_user(opts, :max_iter)
+julia> Options.is_user(opts, :max_iter)
 true
 ```
 
-See also: [`source`](@ref), [`is_default`](@ref), [`is_computed`](@ref)
+See also: [`Options.source`](@ref), [`Options.is_default`](@ref), [`Options.is_computed`](@ref)
 """
-is_user(opts::StrategyOptions, key::Symbol) = source(opts, key) === :user
+function Options.is_user(opts::StrategyOptions, key::Symbol)
+    return Options.is_user(option(opts, key))
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -252,13 +308,16 @@ Check if an option is using its default value.
 
 # Example
 ```julia-repl
-julia> is_default(opts, :tol)
+julia> Options.is_default(opts, :tol)
 true
 ```
 
-See also: [`source`](@ref), [`is_user`](@ref), [`is_computed`](@ref)
+See also: [`Options.source`](@ref), [`Options.is_user`](@ref), [`Options.is_computed`](@ref)
 """
-is_default(opts::StrategyOptions, key::Symbol) = source(opts, key) === :default
+function Options.is_default(opts::StrategyOptions, key::Symbol)
+    return Options.is_default(option(opts, key))
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -273,13 +332,15 @@ Check if an option was computed.
 
 # Example
 ```julia-repl
-julia> is_computed(opts, :step)
+julia> Options.is_computed(opts, :step)
 true
 ```
 
-See also: [`source`](@ref), [`is_user`](@ref), [`is_default`](@ref)
+See also: [`Options.source`](@ref), [`Options.is_user`](@ref), [`Options.is_default`](@ref)
 """
-is_computed(opts::StrategyOptions, key::Symbol) = source(opts, key) === :computed
+function Options.is_computed(opts::StrategyOptions, key::Symbol)
+    return Options.is_computed(option(opts, key))
+end
 
 # ============================================================================
 # Private Helper for Internal Use

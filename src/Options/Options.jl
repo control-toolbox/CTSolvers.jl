@@ -35,5 +35,6 @@ export OptionValue, OptionDefinition, extract_option, extract_options, extract_r
 export all_names, aliases
 export is_user, is_default, is_computed
 export is_required, has_default, has_validator
+export name, type, default, description, validator, value, source
 
 end # module Options
