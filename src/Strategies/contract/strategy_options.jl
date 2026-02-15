@@ -137,7 +137,7 @@ julia> get(opts, Val(:max_iter))  # Type-stable
 
 See also: [`Base.getproperty`](@ref), [`source`](@ref), [`get(::StrategyOptions, ::Val)`](@ref)
 """
-Base.getindex(opts::StrategyOptions, key::Symbol) = opts.options[key].value
+Base.getindex(opts::StrategyOptions, key::Symbol) = Options.value(option(opts, key))
 
 """
 $(TYPEDSIGNATURES)
@@ -160,7 +160,7 @@ julia> get(opts, Val(:max_iter))
 See also: [`Base.getindex`](@ref), [`Base.getproperty`](@ref)
 """
 function Base.get(opts::StrategyOptions{NT}, ::Val{key}) where {NT <: NamedTuple, key}
-    return getfield(opts, :options)[key].value
+    return Options.value(option(opts, key))
 end
 
 """
@@ -190,7 +190,7 @@ julia> opts.max_iter.source
 See also: [`Base.getindex`](@ref), [`source`](@ref)
 """
 Base.getproperty(opts::StrategyOptions, key::Symbol) = 
-    key === :options ? getfield(opts, :options) : getfield(opts, :options)[key]
+    key === :options ? _raw_options(opts) : _raw_options(opts)[key]
 
 # ==========================================================================
 # OptionValue access helpers
@@ -217,7 +217,7 @@ julia> Options.value(opt)
 
 See also: [`Base.getproperty`](@ref), [`Options.source`](@ref)
 """
-option(opts::StrategyOptions, key::Symbol) = opts.options[key]
+option(opts::StrategyOptions, key::Symbol) = _raw_options(opts)[key]
 
 # ============================================================================
 # Source access helpers
@@ -362,7 +362,7 @@ full OptionValue objects, not just their `.value` fields.
 # Returns
 - NamedTuple of `(Symbol => OptionValue)` from the internal storage
 """
-_raw_options(opts::StrategyOptions) = opts.options
+_raw_options(opts::StrategyOptions) = getfield(opts, :options)
 
 # ============================================================================
 # Collection interface
@@ -387,7 +387,7 @@ julia> collect(keys(opts))
 
 See also: [`Base.values`](@ref), [`Base.pairs`](@ref)
 """
-Base.keys(opts::StrategyOptions) = keys(opts.options)
+Base.keys(opts::StrategyOptions) = keys(_raw_options(opts))
 """
 $(TYPEDSIGNATURES)
 
@@ -407,7 +407,7 @@ julia> collect(values(opts))
 
 See also: [`Base.keys`](@ref), [`Base.pairs`](@ref)
 """
-Base.values(opts::StrategyOptions) = (opt.value for opt in values(opts.options))
+Base.values(opts::StrategyOptions) = (Options.value(opt) for opt in values(_raw_options(opts)))
 """
 $(TYPEDSIGNATURES)
 
@@ -427,7 +427,7 @@ julia> collect(pairs(opts))
 
 See also: [`Base.keys`](@ref), [`Base.values`](@ref)
 """
-Base.pairs(opts::StrategyOptions) = (k => v.value for (k, v) in pairs(opts.options))
+Base.pairs(opts::StrategyOptions) = (k => Options.value(v) for (k, v) in pairs(_raw_options(opts)))
 
 """
 $(TYPEDSIGNATURES)
@@ -453,10 +453,10 @@ julia> for value in opts
 See also: [`Base.keys`](@ref), [`Base.values`](@ref), [`Base.pairs`](@ref)
 """
 Base.iterate(opts::StrategyOptions, state...) = begin
-    result = iterate(values(opts.options), state...)
+    result = iterate(values(_raw_options(opts)), state...)
     result === nothing && return nothing
     (opt, newstate) = result
-    return (opt.value, newstate)
+    return (Options.value(opt), newstate)
 end
 
 """
@@ -478,7 +478,7 @@ julia> length(opts)
 
 See also: [`Base.isempty`](@ref), [`Base.haskey`](@ref)
 """
-Base.length(opts::StrategyOptions) = length(opts.options)
+Base.length(opts::StrategyOptions) = length(_raw_options(opts))
 """
 $(TYPEDSIGNATURES)
 
@@ -498,7 +498,7 @@ false
 
 See also: [`Base.length`](@ref), [`Base.haskey`](@ref)
 """
-Base.isempty(opts::StrategyOptions) = isempty(opts.options)
+Base.isempty(opts::StrategyOptions) = isempty(_raw_options(opts))
 """
 $(TYPEDSIGNATURES)
 
@@ -522,7 +522,7 @@ false
 
 See also: [`Base.length`](@ref), [`Base.isempty`](@ref)
 """
-Base.haskey(opts::StrategyOptions, key::Symbol) = haskey(opts.options, key)
+Base.haskey(opts::StrategyOptions, key::Symbol) = haskey(_raw_options(opts), key)
 
 # ============================================================================
 # Display
@@ -554,11 +554,11 @@ See also: [`Base.show`](@ref)
 function Base.show(io::IO, ::MIME"text/plain", opts::StrategyOptions)
     n = length(opts)
     println(io, "StrategyOptions with $n option$(n == 1 ? "" : "s"):")
-    items = collect(pairs(opts.options))
+    items = collect(pairs(_raw_options(opts)))
     for (i, (key, opt)) in enumerate(items)
         is_last = i == length(items)
         prefix = is_last ? "└─ " : "├─ "
-        println(io, prefix, key, " = ", opt.value, "  [", opt.source, "]")
+        println(io, prefix, key, " = ", Options.value(opt), "  [", Options.source(opt), "]")
     end
 end
 
@@ -581,6 +581,6 @@ See also: [`Base.show(::IO, ::MIME"text/plain", ::StrategyOptions)`](@ref)
 """
 function Base.show(io::IO, opts::StrategyOptions)
     print(io, "StrategyOptions(")
-    print(io, join(("$k=$(v.value)" for (k, v) in pairs(opts.options)), ", "))
+    print(io, join(("$k=$(Options.value(v))" for (k, v) in pairs(_raw_options(opts))), ", "))
     print(io, ")")
 end

@@ -311,7 +311,7 @@ function Base.show(io::IO, ::MIME"text/plain", strategy::T) where {T<:AbstractSt
         for (i, (key, opt)) in enumerate(items)
             is_last = i == length(items)
             prefix = is_last ? "└─ " : "├─ "
-            println(io, prefix, key, " = ", opt.value, "  [", opt.source, "]")
+            println(io, prefix, key, " = ", Options.value(opt), "  [", Options.source(opt), "]")
         end
     end
 
@@ -341,7 +341,7 @@ function Base.show(io::IO, strategy::T) where {T<:AbstractStrategy}
 
     print(io, type_name, "(")
     if opts !== nothing
-        print(io, join(("$k=$(v.value)" for (k, v) in pairs(opts.options)), ", "))
+        print(io, join(("$k=$(Options.value(v))" for (k, v) in pairs(opts.options)), ", "))
     end
     print(io, ")")
 end
