@@ -124,7 +124,7 @@ function test_coverage_disambiguation()
                 COV_REGISTRY
             )
 
-            Test.@test result.action.display.value == false
+            Test.@test Options.value(result.action.display) == false
             Test.@test result.strategies.discretizer.grid_size == 200
             Test.@test result.strategies.solver.max_iter == 500
         end
@@ -221,7 +221,7 @@ function test_coverage_disambiguation()
                 COV_REGISTRY
             )
 
-            Test.@test result.action.display.value == true
+            Test.@test Options.value(result.action.display) == true
             Test.@test isempty(result.strategies.discretizer)
             Test.@test isempty(result.strategies.modeler)
             Test.@test isempty(result.strategies.solver)

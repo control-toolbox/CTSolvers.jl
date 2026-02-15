@@ -39,10 +39,10 @@ function test_metadata()
             
             Test.@test length(meta) == 2
             Test.@test Set(keys(meta)) == Set((:max_iter, :tol))
-            Test.@test meta[:max_iter].name == :max_iter
-            Test.@test meta[:max_iter].type == Int
-            Test.@test meta[:max_iter].default == 100
-            Test.@test meta[:tol].type == Float64
+            Test.@test Options.name(meta[:max_iter]) == :max_iter
+            Test.@test Options.type(meta[:max_iter]) == Int
+            Test.@test Options.default(meta[:max_iter]) == 100
+            Test.@test Options.type(meta[:tol]) == Float64
             Test.@test meta[:tol].default == 1e-6
         end
         

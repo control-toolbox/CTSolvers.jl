@@ -69,7 +69,7 @@ function test_coverage_options()
             )
             Test.@test opts.options isa NamedTuple
             Test.@test opts.alpha isa Options.OptionValue
-            Test.@test opts.alpha.value == 1.0
+            Test.@test Options.value(opts.alpha) == 1.0
         end
 
         Test.@testset "StrategyOptions - getindex" begin

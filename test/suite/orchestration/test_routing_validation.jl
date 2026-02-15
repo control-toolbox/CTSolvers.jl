@@ -202,7 +202,7 @@ function test_routing_validation()
                 mode = :permissive
             )
             
-            Test.@test result.action[:display].value == true
+            Test.@test Options.value(result.action[:display]) == true
         end
         
         # ====================================================================

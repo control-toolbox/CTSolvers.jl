@@ -61,37 +61,41 @@ function test_madncl_extension()
             Test.@test :ncl_options in keys(meta)
             
             # Test Imported MadNLP Options
-            Test.@test :acceptable_tol in keys(meta)
-            Test.@test :acceptable_iter in keys(meta)
-            Test.@test :max_wall_time in keys(meta)
-            Test.@test :diverging_iterates_tol in keys(meta)
+            Test.@test Options.default(meta[:acceptable_iter]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:acceptable_tol]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:max_wall_time]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:diverging_iterates_tol]) isa Options.NotProvidedType
             Test.@test :nlp_scaling in keys(meta)
             Test.@test :jacobian_constant in keys(meta)
-            Test.@test :bound_push in keys(meta)
+            Test.@test Options.default(meta[:bound_push]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:bound_fac]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:constr_mult_init_max]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:fixed_variable_treatment]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:equality_treatment]) isa Options.NotProvidedType
             Test.@test :kkt_system in keys(meta)
             Test.@test :hessian_approximation in keys(meta)
             Test.@test :mu_init in keys(meta)
 
             # Test option types
-            Test.@test meta[:max_iter].type == Integer
-            Test.@test meta[:tol].type == Real
-            Test.@test meta[:print_level].type == MadNLP.LogLevels
-            Test.@test meta[:linear_solver].type == Type{<:MadNLP.AbstractLinearSolver}
-            Test.@test meta[:ncl_options].type == MadNCL.NCLOptions
-            Test.@test meta[:acceptable_tol].type == Real
-            Test.@test meta[:kkt_system].type == Union{Type{<:MadNLP.AbstractKKTSystem},UnionAll}
+            Test.@test Options.type(meta[:max_iter]) == Integer
+            Test.@test Options.type(meta[:tol]) == Real
+            Test.@test Options.type(meta[:print_level]) == MadNLP.LogLevels
+            Test.@test Options.type(meta[:linear_solver]) == Type{<:MadNLP.AbstractLinearSolver}
+            Test.@test Options.type(meta[:ncl_options]) == MadNCL.NCLOptions
+            Test.@test Options.type(meta[:acceptable_tol]) == Real
+            Test.@test Options.type(meta[:kkt_system]) == Union{Type{<:MadNLP.AbstractKKTSystem},UnionAll}
 
             # Check ncl_options description
-            Test.@test occursin("rho_init", meta[:ncl_options].description)
+            Test.@test occursin("rho_init", Options.description(meta[:ncl_options]))
             Test.@test occursin("max_auglag_iter", meta[:ncl_options].description)
-            Test.@test occursin("opt_tol", meta[:ncl_options].description)
+            Test.@test occursin("opt_tol", Options.description(meta[:ncl_options]))
             
             # Test default values
-            Test.@test meta[:max_iter].default isa Integer
-            Test.@test meta[:tol].default isa Real
-            Test.@test meta[:print_level].default isa MadNLP.LogLevels
-            Test.@test meta[:linear_solver].default == MadNLPMumps.MumpsSolver
-            Test.@test meta[:ncl_options].default isa MadNCL.NCLOptions
+            Test.@test Options.default(meta[:max_iter]) isa Integer
+            Test.@test Options.default(meta[:tol]) isa Real
+            Test.@test Options.default(meta[:print_level]) isa MadNLP.LogLevels
+            Test.@test Options.default(meta[:linear_solver]) == MadNLPMumps.MumpsSolver
+            Test.@test Options.default(meta[:ncl_options]) isa MadNCL.NCLOptions
         end
         
         # ====================================================================

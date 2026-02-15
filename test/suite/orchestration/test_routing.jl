@@ -115,8 +115,8 @@ function test_routing()
             
             # Check action options (Dict of OptionValue wrappers)
             Test.@test haskey(routed.action, :display)
-            Test.@test routed.action[:display].value === false
-            Test.@test routed.action[:display].source === :user
+            Test.@test Options.value(routed.action[:display]) === false
+            Test.@test Options.source(routed.action[:display]) === :user
             
             # Check strategy options (raw NamedTuples)
             Test.@test haskey(routed.strategies, :discretizer)
@@ -333,8 +333,8 @@ function test_routing()
             )
             
             # Action options (Dict of OptionValue wrappers)
-            Test.@test routed.action[:display].value === false
-            Test.@test routed.action[:initial_guess].value === :warm
+            Test.@test Options.value(routed.action[:display]) === false
+            Test.@test Options.value(routed.action[:initial_guess]) === :warm
             
             # Strategy options (raw NamedTuples)
             Test.@test routed.strategies.discretizer[:grid_size] == 150

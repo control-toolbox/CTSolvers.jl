@@ -22,12 +22,12 @@ function test_option_definition()
                 default = 42,
                 description = "Test option"
             )
-            Test.@test def.name == :test_option
-            Test.@test def.type == Int
-            Test.@test def.default == 42
-            Test.@test def.description == "Test option"
-            Test.@test def.aliases == ()
-            Test.@test def.validator === nothing
+            Test.@test Options.name(def) == :test_option
+            Test.@test Options.type(def) == Int
+            Test.@test Options.default(def) == 42
+            Test.@test Options.description(def) == "Test option"
+            Test.@test Options.aliases(def) == ()
+            Test.@test Options.validator(def) === nothing
         end
         
         # ========================================================================
@@ -44,12 +44,12 @@ function test_option_definition()
                 aliases = (:max, :maxiter),
                 validator = validator
             )
-            Test.@test def.name == :max_iter
-            Test.@test def.type == Int
-            Test.@test def.default == 100
-            Test.@test def.description == "Maximum iterations"
-            Test.@test def.aliases == (:max, :maxiter)
-            Test.@test def.validator === validator
+            Test.@test Options.name(def) == :max_iter
+            Test.@test Options.type(def) == Int
+            Test.@test Options.default(def) == 100
+            Test.@test Options.description(def) == "Maximum iterations"
+            Test.@test Options.aliases(def) == (:max, :maxiter)
+            Test.@test Options.validator(def) === validator
         end
         
         # ========================================================================
@@ -63,12 +63,12 @@ function test_option_definition()
                 default = "default",
                 description = "Test option"
             )
-            Test.@test def.name == :test
-            Test.@test def.type == String
-            Test.@test def.default == "default"
-            Test.@test def.description == "Test option"
-            Test.@test def.aliases == ()
-            Test.@test def.validator === nothing
+            Test.@test Options.name(def) == :test
+            Test.@test Options.type(def) == String
+            Test.@test Options.default(def) == "default"
+            Test.@test Options.description(def) == "Test option"
+            Test.@test Options.aliases(def) == ()
+            Test.@test Options.validator(def) === nothing
         end
         
         # ========================================================================

@@ -27,8 +27,8 @@ function test_not_provided()
                 description = "Optional parameter"
             )
             
-            Test.@test def_not_provided.default === Options.NotProvided
-            Test.@test def_not_provided.default isa Options.NotProvidedType
+            Test.@test Options.default(def_not_provided) === Options.NotProvided
+            Test.@test Options.default(def_not_provided) isa Options.NotProvidedType
             
             # Option with nothing default (different!)
             def_nothing = Options.OptionDefinition(
@@ -38,8 +38,8 @@ function test_not_provided()
                 description = "Nullable parameter"
             )
             
-            Test.@test def_nothing.default === nothing
-            Test.@test !(def_nothing.default isa Options.NotProvidedType)
+            Test.@test Options.default(def_nothing) === nothing
+            Test.@test !(Options.default(def_nothing) isa Options.NotProvidedType)
         end
         
         Test.@testset "extract_option with NotProvided" begin
@@ -56,8 +56,8 @@ function test_not_provided()
             
             Test.@test opt_val !== nothing  # Should return OptionValue
             Test.@test opt_val isa Options.OptionValue
-            Test.@test opt_val.value == 42
-            Test.@test opt_val.source == :user
+            Test.@test Options.value(opt_val) == 42
+            Test.@test Options.source(opt_val) == :user
             Test.@test !haskey(remaining, :optional)
             
             # Case 2: User does NOT provide value
@@ -99,12 +99,12 @@ function test_not_provided()
             Test.@test !haskey(extracted, :optional)  # NotProvided + not provided = not stored
             Test.@test haskey(extracted, :nullable)   # nothing default = always stored
             
-            Test.@test extracted[:required].value == 200
-            Test.@test extracted[:nullable].value === nothing
+            Test.@test Options.value(extracted[:required]) == 200
+            Test.@test Options.value(extracted[:nullable]) === nothing
             
             # Verify NO NotProvidedType in extracted values
             for (k, v) in pairs(extracted)
-                Test.@test !(v.value isa Options.NotProvidedType)
+                Test.@test !(Options.value(v) isa Options.NotProvidedType)
             end
         end
         
@@ -131,8 +131,8 @@ function test_not_provided()
             
             # backend should be stored with nothing value
             Test.@test haskey(extracted, :backend)
-            Test.@test extracted[:backend].value === nothing
-            Test.@test extracted[:backend].source == :default
+            Test.@test Options.value(extracted[:backend]) === nothing
+            Test.@test Options.source(extracted[:backend]) == :default
             
             # minimize should NOT be stored
             Test.@test !haskey(extracted, :minimize)
@@ -143,8 +143,8 @@ function test_not_provided()
             
             # backend should be stored with nothing value from user
             Test.@test haskey(extracted2, :backend)
-            Test.@test extracted2[:backend].value === nothing
-            Test.@test extracted2[:backend].source == :user  # User provided it
+            Test.@test Options.value(extracted2[:backend]) === nothing
+            Test.@test Options.source(extracted2[:backend]) == :user  # User provided it
             
             # minimize still not stored
             Test.@test !haskey(extracted2, :minimize)
@@ -167,8 +167,8 @@ function test_not_provided()
             Test.@test raw.nullable_opt === nothing
             
             # Verify NO NotProvidedType in raw values
-            for (k, v) in pairs(raw)
-                Test.@test !(v isa Options.NotProvidedType)
+            for (k, v) in pairs(stored_options)
+                Test.@test !(Options.value(v) isa Options.NotProvidedType)
             end
         end
         
