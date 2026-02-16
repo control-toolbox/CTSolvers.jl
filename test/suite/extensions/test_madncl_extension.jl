@@ -497,7 +497,7 @@ function test_madncl_extension()
                 #     Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
                 # end
             else
-                @info "CUDA not functional, skipping GPU tests."
+                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
 
@@ -537,7 +537,7 @@ function test_madncl_extension()
                 #     Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
                 # end
             else
-                @info "CUDA not functional, skipping GPU solve_with_madncl tests."
+                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
 
@@ -570,7 +570,7 @@ function test_madncl_extension()
                     Test.@test Array(sol.solution) ≈ expected atol=1e-6
                 end
             else
-                @info "CUDA not functional, skipping GPU initial guess tests."
+                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
     end

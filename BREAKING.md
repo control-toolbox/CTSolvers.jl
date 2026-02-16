@@ -5,13 +5,34 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.3.3-beta (2026-02-16)
+
+**Breaking change:** The base solver abstract type was renamed from
+`AbstractOptimizationSolver` to `AbstractNLPSolver` for consistency with the
+`AbstractNLPModeler` naming introduced in v0.3.0.
+
+### Migration
+
+Replace any references to the old abstract type:
+
+```text
+AbstractOptimizationSolver → AbstractNLPSolver
+```
+
+No other API changes are required.
+
+---
+
+## v0.3.2-beta (2026-02-15)
+
+No breaking changes. This release focused on options getters/encapsulation
+and documentation updates.
+
+---
+
 ## v0.3.1-beta (2026-02-14)
 
-**No breaking changes** — This release only adds enhancements:
-
-- Backend override options now accept both `Type{<:ADBackend}` and `ADBackend` instances
-- Improved validation and error messages
-- Better test coverage and documentation
+No breaking changes.
 
 ---
 
@@ -33,25 +54,25 @@ This aligns with Julia conventions (`Module.Type`) and improves readability.
 
 ### Modelers
 
-| v0.2.x | v0.3.0 |
-|--------|--------|
-| `ADNLPModeler` | `Modelers.ADNLP` |
-| `ExaModeler` | `Modelers.Exa` |
-| `AbstractOptimizationModeler` | `AbstractNLPModeler` |
+| v0.2.x                       | v0.3.0                 |
+|------------------------------|------------------------|
+| `ADNLPModeler`               | `Modelers.ADNLP`       |
+| `ExaModeler`                 | `Modelers.Exa`         |
+| `AbstractOptimizationModeler`| `AbstractNLPModeler`   |
 
 ### Solvers
 
-| v0.2.x | v0.3.0 |
-|--------|--------|
-| `IpoptSolver` | `Solvers.Ipopt` |
-| `MadNLPSolver` | `Solvers.MadNLP` |
-| `MadNCLSolver` | `Solvers.MadNCL` |
-| `KnitroSolver` | `Solvers.Knitro` |
+| v0.2.x        | v0.3.0           |
+|---------------|------------------|
+| `IpoptSolver` | `Solvers.Ipopt`  |
+| `MadNLPSolver`| `Solvers.MadNLP` |
+| `MadNCLSolver`| `Solvers.MadNCL` |
+| `KnitroSolver`| `Solvers.Knitro` |
 
 ### DOCP
 
-| v0.2.x | v0.3.0 |
-|--------|--------|
+| v0.2.x                             | v0.3.0             |
+|------------------------------------|--------------------|
 | `DiscretizedOptimalControlProblem` | `DiscretizedModel` |
 
 ---
@@ -62,7 +83,7 @@ This aligns with Julia conventions (`Module.Type`) and improves readability.
 
 The simplest migration is a global search-and-replace in your codebase:
 
-```
+```text
 ADNLPModeler                      →  Modelers.ADNLP
 ExaModeler                        →  Modelers.Exa
 AbstractOptimizationModeler       →  AbstractNLPModeler

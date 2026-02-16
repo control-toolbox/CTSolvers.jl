@@ -1,4 +1,5 @@
 # Changelog
+<!-- markdownlint-disable MD024 -->
 
 All notable changes to CTSolvers.jl will be documented in this file.
 
@@ -8,6 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [Unreleased]
+
+## [0.3.3-beta] - 2026-02-16
+
+### Changed
+
+- **Solver abstract type rename** — `AbstractOptimizationSolver` was renamed to
+  `AbstractNLPSolver` for consistency with `AbstractNLPModeler` naming
+- **Docs maintenance** — Updated references to the new abstract solver type
+  across orchestration/routing examples and solver documentation
+
+### Fixed
+
+- **Test alignment** — Tests updated to use `AbstractNLPSolver`, keeping
+  inheritance and contract checks consistent with the new naming
+
+---
+
+## [0.3.2-beta] - 2026-02-15
+
+### Added
+
+- **Options getters** — New getters/exported helpers for `StrategyOptions`
+
+### Changed
+
+- **Encapsulation** — Internal access to strategy options now goes through
+  `_raw_options`/getter helpers; docs updated accordingly
+- **Docs** — Options system guide expanded and translated to English sections
+
+### Fixed
+
+- **Test refactor** — Tests updated to use the new getters and encapsulation
+  pattern
+
+---
 
 ## [0.3.1-beta] - 2026-02-14
 
@@ -25,6 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `jacobian_backend`, `hessian_backend`, `ghjvprod_backend`
   - From: `Union{Nothing, ADNLPModels.ADBackend}`
   - To: `Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend}`
+- **Solver abstract type rename** — `AbstractOptimizationSolver` was renamed to
+  `AbstractNLPSolver` for consistency with `AbstractNLPModeler` naming
 - **Validation logic** — `validate_backend_override()` now correctly handles three forms:
   - `nothing` (use default)
   - `Type{<:ADBackend}` (constructed by ADNLPModels)
@@ -41,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Technical Details
 
 #### Backend Override Usage
+
 ```julia
 # Three accepted forms:
 Modelers.ADNLP(gradient_backend=nothing)                              # Use default
@@ -49,6 +88,7 @@ Modelers.ADNLP(gradient_backend=ADNLPModels.ForwardDiffADGradient())  # Instance
 ```
 
 #### Type Declaration Change
+
 ```julia
 # Before
 type=Union{Nothing, ADNLPModels.ADBackend}
@@ -124,6 +164,7 @@ See [BREAKING.md](BREAKING.md) for a detailed migration guide.
 ### Technical Details
 
 #### Import Refactoring
+
 ```julia
 # Before
 using DocStringExtensions
@@ -135,6 +176,7 @@ import NLPModels
 ```
 
 #### GPU Test Implementation
+
 ```julia
 # Before (dead code)
 # using MadNLPGPU
@@ -146,6 +188,7 @@ gpu_solver = Solvers.MadNLP(linear_solver=MadNLPGPU.CUDSSSolver)
 ```
 
 #### CUDA Availability Helper
+
 ```julia
 is_cuda_on() = CUDA.functional()
 if is_cuda_on()
@@ -205,6 +248,7 @@ end
 ### 🎉 BREAKING CHANGES
 
 ### Added
+
 - **New option validation system** with strict and permissive modes
 - **`mode::Symbol` parameter** to strategy constructors (`:strict` default, `:permissive`)
 - **`route_to()` helper function** for option disambiguation
@@ -213,6 +257,7 @@ end
 - **Comprehensive test suite** with 66 tests covering all scenarios
 
 ### Changed
+
 - **`build_strategy_options()`** now supports `mode` parameter
 - **`route_all_options()`** now supports `mode` parameter
 - **Error handling** uses CTBase `Exceptions.IncorrectArgument` and `Exceptions.PreconditionError`
@@ -220,27 +265,32 @@ end
 - **Documentation** completely updated with examples and tutorials
 
 ### Deprecated
+
 - **Tuple syntax for disambiguation** (still supported but deprecated)
   - Old: `max_iter = (1000, :solver)`
   - New: `max_iter = route_to(solver=1000)`
 
 ### Fixed
+
 - **Option validation** now provides helpful error messages
 - **Disambiguation** works clearly with `route_to()`
 - **Type safety** improved with `RoutedOption` type
 - **Memory usage** optimized for validation system
 
 ### Security
+
 - **Strict mode by default** prevents unknown option errors
 - **Input validation** enhanced with type checking
 - **Error messages** don't leak sensitive information
 
 ### Performance
+
 - **Minimal overhead**: < 1% for strict mode, < 5% for permissive mode
 - **Type stability** maintained throughout validation system
 - **Memory efficiency** optimized for large option sets
 
 ### Documentation
+
 - **Complete user guide** with examples and best practices
 - **Migration guide** for existing code
 - **API reference** with detailed examples
@@ -252,6 +302,7 @@ end
 ## [0.1.0] - 2025-XX-XX
 
 ### Added
+
 - Initial release of CTSolvers.jl
 - Basic strategy construction and management
 - Option handling and validation
@@ -259,6 +310,7 @@ end
 - Integration with NLPModels and solvers
 
 ### Features
+
 - Strategy builders and constructors
 - Option extraction and validation
 - Strategy registry with metadata
@@ -354,7 +406,7 @@ use permissive mode:
 ## Performance Impact
 
 | Operation | Before | After (Strict) | After (Permissive) | Overhead |
-|-----------|--------|----------------|-------------------|----------|
+| ----------- | -------- | ---------------- | -------------------- | ---------- |
 | Strategy construction | 100μs | 101μs | 105μs | < 1% / < 5% |
 | Option validation | 50μs | 50μs | 52μs | 0% / < 4% |
 | Disambiguation | N/A | 1μs | 1μs | < 1% |
@@ -390,6 +442,6 @@ use permissive mode:
 
 ## Questions?
 
-- **GitHub Issues**: https://github.com/control-toolbox/CTSolvers.jl/issues
-- **Discord**: https://discord.gg/control-toolbox
-- **Documentation**: https://control-toolbox.github.io/CTSolvers.jl/
+- **GitHub Issues**: <https://github.com/control-toolbox/CTSolvers.jl/issues>
+- **Discord**: <https://discord.gg/control-toolbox>
+- **Documentation**: <https://control-toolbox.github.io/CTSolvers.jl/>

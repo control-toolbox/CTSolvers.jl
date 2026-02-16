@@ -142,8 +142,10 @@ function test_optimization()
                 Test.@test nlp.meta.x0 == x0
                 
                 # Test with kwargs
-                nlp2 = builder(x0; show_time=true)
-                Test.@test calls[] == 2
+                redirect_stdout(devnull) do
+                    nlp2 = builder(x0; show_time=true)
+                    Test.@test calls[] == 2
+                end
             end
             
             Test.@testset "ExaModelBuilder" begin
