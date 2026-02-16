@@ -206,19 +206,22 @@ opt = OptionValue(200, :user)
 - For predicates on a strategy: `Strategies.option_is_user(strategy, key)` (or `Options.is_user(options(strategy), key)`).
 - Avoid direct field access (`.value`, `.source`, `.options`), which is reserved for the owning module.
 
-```@example options
+**Example usage** (using `DemoStrategy` defined below):
+
+```julia
 using CTSolvers.Strategies
 
-# Suppose DemoStrategy is defined above
+# Build strategy options with user-provided values
 opts = Strategies.build_strategy_options(DemoStrategy; max_iter=250, tol=1e-7)
 
-# Encapsulated access
+# Encapsulated access to option values
 opt = Strategies.option(opts, :max_iter)
-@show Options.value(opt)
-@show Options.source(opt)
+Options.value(opt)    # Returns: 250
+Options.source(opt)   # Returns: :user
 
-@show Options.is_user(opts, :max_iter)
-@show Options.is_default(opts, :tol)
+# Check provenance
+Options.is_user(opts, :max_iter)    # Returns: true
+Options.is_default(opts, :tol)      # Returns: false (user provided)
 ```
 
 ## StrategyMetadata Overview (Strategies)
