@@ -22,12 +22,11 @@ module Orchestration
 
 # Importing to avoid namespace pollution
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
-import CTBase
-const Exceptions = CTBase.Exceptions
+import CTBase.Exceptions
 
 # Using CTSolvers modules to get access to the api
-using ..CTSolvers.Options
-using ..CTSolvers.Strategies
+using ..Options
+using ..Strategies
 
 # ---------------------------------------------------------------------------
 # Submodules / helper source files

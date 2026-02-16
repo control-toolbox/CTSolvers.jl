@@ -107,10 +107,6 @@ julia> strategy = MyStrategy(max_iter=200, custom_option=123; mode=:permissive)
 - **Instance-level methods** are called on instances: `options(strategy)`
 - **Constructor pattern** is required for registry-based construction
 - **Strategy families** can be created with intermediate abstract types
-
-# References
-
-See the [Strategies module documentation](@ref) for complete API reference and examples.
 """
 abstract type AbstractStrategy end
 
@@ -311,7 +307,7 @@ function Base.show(io::IO, ::MIME"text/plain", strategy::T) where {T<:AbstractSt
         for (i, (key, opt)) in enumerate(items)
             is_last = i == length(items)
             prefix = is_last ? "└─ " : "├─ "
-            println(io, prefix, key, " = ", opt.value, "  [", opt.source, "]")
+            println(io, prefix, key, " = ", Options.value(opt), "  [", Options.source(opt), "]")
         end
     end
 
@@ -341,7 +337,7 @@ function Base.show(io::IO, strategy::T) where {T<:AbstractStrategy}
 
     print(io, type_name, "(")
     if opts !== nothing
-        print(io, join(("$k=$(v.value)" for (k, v) in pairs(opts.options)), ", "))
+        print(io, join(("$k=$(Options.value(v))" for (k, v) in pairs(opts.options)), ", "))
     end
     print(io, ")")
 end

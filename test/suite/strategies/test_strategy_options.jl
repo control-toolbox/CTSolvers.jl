@@ -97,18 +97,32 @@ function test_strategy_options()
                 Test.@test Strategies.source(opts, :max_iter) == :user
                 Test.@test Strategies.source(opts, :tol) == :default
                 Test.@test Strategies.source(opts, :step) == :computed
+
+                # Test Options-level helpers on StrategyOptions
+                Test.@test Options.value(opts, :max_iter) == 200
+                Test.@test Options.value(opts, :tol) == 1e-8
+                Test.@test Options.value(opts, :step) == 0.01
+                Test.@test Options.source(opts, :max_iter) == :user
+                Test.@test Options.source(opts, :tol) == :default
+                Test.@test Options.source(opts, :step) == :computed
                 
                 # Test is_user() helper
                 Test.@test Strategies.is_user(opts, :max_iter) == true
                 Test.@test Strategies.is_user(opts, :tol) == false
+                Test.@test Options.is_user(opts, :max_iter) == true
+                Test.@test Options.is_user(opts, :tol) == false
                 
                 # Test is_default() helper
                 Test.@test Strategies.is_default(opts, :tol) == true
                 Test.@test Strategies.is_default(opts, :max_iter) == false
+                Test.@test Options.is_default(opts, :tol) == true
+                Test.@test Options.is_default(opts, :max_iter) == false
                 
                 # Test is_computed() helper
                 Test.@test Strategies.is_computed(opts, :step) == true
                 Test.@test Strategies.is_computed(opts, :tol) == false
+                Test.@test Options.is_computed(opts, :step) == true
+                Test.@test Options.is_computed(opts, :tol) == false
             end
             
             Test.@testset "Collection interface" begin

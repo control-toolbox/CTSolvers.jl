@@ -80,7 +80,7 @@ See also: [`option_description`](@ref), [`option_default`](@ref)
 """
 function option_type(strategy_type::Type{<:AbstractStrategy}, key::Symbol)
     meta = metadata(strategy_type)
-    return meta[key].type
+    return Options.type(meta[key])
 end
 
 """
@@ -120,7 +120,7 @@ See also: [`option_type`](@ref), [`option_default`](@ref)
 """
 function option_description(strategy_type::Type{<:AbstractStrategy}, key::Symbol)
     meta = metadata(strategy_type)
-    return meta[key].description
+    return Options.description(meta[key])
 end
 
 """
@@ -160,7 +160,7 @@ See also: [`option_defaults`](@ref), [`option_type`](@ref)
 """
 function option_default(strategy_type::Type{<:AbstractStrategy}, key::Symbol)
     meta = metadata(strategy_type)
-    return meta[key].default
+    return Options.default(meta[key])
 end
 
 """
@@ -199,7 +199,7 @@ See also: [`option_default`](@ref), [`option_names`](@ref)
 function option_defaults(strategy_type::Type{<:AbstractStrategy})
     meta = metadata(strategy_type)
     defaults = NamedTuple(
-        key => spec.default
+        key => Options.default(spec)
         for (key, spec) in pairs(meta)
     )
     return defaults
@@ -277,8 +277,7 @@ julia> option_source(strategy, :tol)
 See also: [`option_value`](@ref), [`is_user`](@ref), [`is_default`](@ref)
 """
 function option_source(strategy::AbstractStrategy, key::Symbol)
-    opts = options(strategy)
-    return source(opts, key)
+    return Options.source(options(strategy), key)
 end
 
 """
@@ -315,8 +314,7 @@ false
 See also: [`option_value`](@ref), [`option_source`](@ref)
 """
 function has_option(strategy::AbstractStrategy, key::Symbol)
-    opts = options(strategy)
-    return haskey(opts, key)
+    return haskey(options(strategy), key)
 end
 
 
@@ -349,8 +347,8 @@ false
 
 See also: [`is_default`](@ref), [`is_computed`](@ref), [`option_source`](@ref)
 """
-function is_user(strategy::AbstractStrategy, key::Symbol)
-    return option_source(strategy, key) === :user
+function option_is_user(strategy::AbstractStrategy, key::Symbol)
+    return Options.is_user(options(strategy), key)
 end
 
 """
@@ -382,8 +380,8 @@ true
 
 See also: [`is_user`](@ref), [`is_computed`](@ref), [`option_source`](@ref)
 """
-function is_default(strategy::AbstractStrategy, key::Symbol)
-    return option_source(strategy, key) === :default
+function option_is_default(strategy::AbstractStrategy, key::Symbol)
+    return Options.is_default(options(strategy), key)
 end
 
 """
@@ -412,6 +410,6 @@ true
 
 See also: [`is_user`](@ref), [`is_default`](@ref), [`option_source`](@ref)
 """
-function is_computed(strategy::AbstractStrategy, key::Symbol)
-    return option_source(strategy, key) === :computed
+function option_is_computed(strategy::AbstractStrategy, key::Symbol)
+    return Options.is_computed(options(strategy), key)
 end

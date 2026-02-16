@@ -9,8 +9,7 @@
 module Optimization
 
 # Importing to avoid namespace pollution
-import CTBase
-const Exceptions = CTBase.Exceptions
+import CTBase.Exceptions
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 import NLPModels
 import SolverCore

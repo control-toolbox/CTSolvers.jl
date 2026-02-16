@@ -137,7 +137,7 @@ julia> get(opts, Val(:max_iter))  # Type-stable
 
 See also: [`Base.getproperty`](@ref), [`source`](@ref), [`get(::StrategyOptions, ::Val)`](@ref)
 """
-Base.getindex(opts::StrategyOptions, key::Symbol) = opts.options[key].value
+Base.getindex(opts::StrategyOptions, key::Symbol) = Options.value(option(opts, key))
 
 """
 $(TYPEDSIGNATURES)
@@ -160,7 +160,7 @@ julia> get(opts, Val(:max_iter))
 See also: [`Base.getindex`](@ref), [`Base.getproperty`](@ref)
 """
 function Base.get(opts::StrategyOptions{NT}, ::Val{key}) where {NT <: NamedTuple, key}
-    return getfield(opts, :options)[key].value
+    return Options.value(option(opts, key))
 end
 
 """
@@ -190,11 +190,61 @@ julia> opts.max_iter.source
 See also: [`Base.getindex`](@ref), [`source`](@ref)
 """
 Base.getproperty(opts::StrategyOptions, key::Symbol) = 
-    key === :options ? getfield(opts, :options) : getfield(opts, :options)[key]
+    key === :options ? _raw_options(opts) : _raw_options(opts)[key]
+
+# ==========================================================================
+# OptionValue access helpers
+# ==========================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the `OptionValue` wrapper for an option.
+
+# Arguments
+- `opts::StrategyOptions`: Strategy options
+- `key::Symbol`: Option name
+
+# Returns
+- `Options.OptionValue`: The option value wrapper
+
+# Example
+```julia-repl
+julia> opt = option(opts, :max_iter)
+julia> Options.value(opt)
+200
+```
+
+See also: [`Base.getproperty`](@ref), [`Options.source`](@ref)
+"""
+option(opts::StrategyOptions, key::Symbol) = _raw_options(opts)[key]
 
 # ============================================================================
 # Source access helpers
 # ============================================================================
+"""
+$(TYPEDSIGNATURES)
+
+Get the value of an option.
+
+# Arguments
+- `opts::StrategyOptions`: Strategy options
+- `key::Symbol`: Option name
+
+# Returns
+- `Any`: Value of the option
+
+# Example
+```julia-repl
+julia> Options.value(opts, :max_iter)
+200
+```
+
+See also: [`Options.is_user`](@ref), [`Options.is_default`](@ref), [`Options.is_computed`](@ref)
+"""
+function Options.value(opts::StrategyOptions, key::Symbol)
+    return Options.value(option(opts, key))
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -210,13 +260,16 @@ Get the source of an option.
 
 # Example
 ```julia-repl
-julia> source(opts, :max_iter)
+julia> Options.source(opts, :max_iter)
 :user
 ```
 
-See also: [`is_user`](@ref), [`is_default`](@ref), [`is_computed`](@ref)
+See also: [`Options.is_user`](@ref), [`Options.is_default`](@ref), [`Options.is_computed`](@ref)
 """
-source(opts::StrategyOptions, key::Symbol) = opts.options[key].source
+function Options.source(opts::StrategyOptions, key::Symbol)
+    return Options.source(option(opts, key))
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -231,13 +284,16 @@ Check if an option was provided by the user.
 
 # Example
 ```julia-repl
-julia> is_user(opts, :max_iter)
+julia> Options.is_user(opts, :max_iter)
 true
 ```
 
-See also: [`source`](@ref), [`is_default`](@ref), [`is_computed`](@ref)
+See also: [`Options.source`](@ref), [`Options.is_default`](@ref), [`Options.is_computed`](@ref)
 """
-is_user(opts::StrategyOptions, key::Symbol) = source(opts, key) === :user
+function Options.is_user(opts::StrategyOptions, key::Symbol)
+    return Options.is_user(option(opts, key))
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -252,13 +308,16 @@ Check if an option is using its default value.
 
 # Example
 ```julia-repl
-julia> is_default(opts, :tol)
+julia> Options.is_default(opts, :tol)
 true
 ```
 
-See also: [`source`](@ref), [`is_user`](@ref), [`is_computed`](@ref)
+See also: [`Options.source`](@ref), [`Options.is_user`](@ref), [`Options.is_computed`](@ref)
 """
-is_default(opts::StrategyOptions, key::Symbol) = source(opts, key) === :default
+function Options.is_default(opts::StrategyOptions, key::Symbol)
+    return Options.is_default(option(opts, key))
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -273,13 +332,15 @@ Check if an option was computed.
 
 # Example
 ```julia-repl
-julia> is_computed(opts, :step)
+julia> Options.is_computed(opts, :step)
 true
 ```
 
-See also: [`source`](@ref), [`is_user`](@ref), [`is_default`](@ref)
+See also: [`Options.source`](@ref), [`Options.is_user`](@ref), [`Options.is_default`](@ref)
 """
-is_computed(opts::StrategyOptions, key::Symbol) = source(opts, key) === :computed
+function Options.is_computed(opts::StrategyOptions, key::Symbol)
+    return Options.is_computed(option(opts, key))
+end
 
 # ============================================================================
 # Private Helper for Internal Use
@@ -301,7 +362,7 @@ full OptionValue objects, not just their `.value` fields.
 # Returns
 - NamedTuple of `(Symbol => OptionValue)` from the internal storage
 """
-_raw_options(opts::StrategyOptions) = opts.options
+_raw_options(opts::StrategyOptions) = getfield(opts, :options)
 
 # ============================================================================
 # Collection interface
@@ -326,7 +387,7 @@ julia> collect(keys(opts))
 
 See also: [`Base.values`](@ref), [`Base.pairs`](@ref)
 """
-Base.keys(opts::StrategyOptions) = keys(opts.options)
+Base.keys(opts::StrategyOptions) = keys(_raw_options(opts))
 """
 $(TYPEDSIGNATURES)
 
@@ -346,7 +407,7 @@ julia> collect(values(opts))
 
 See also: [`Base.keys`](@ref), [`Base.pairs`](@ref)
 """
-Base.values(opts::StrategyOptions) = (opt.value for opt in values(opts.options))
+Base.values(opts::StrategyOptions) = (Options.value(opt) for opt in values(_raw_options(opts)))
 """
 $(TYPEDSIGNATURES)
 
@@ -366,7 +427,7 @@ julia> collect(pairs(opts))
 
 See also: [`Base.keys`](@ref), [`Base.values`](@ref)
 """
-Base.pairs(opts::StrategyOptions) = (k => v.value for (k, v) in pairs(opts.options))
+Base.pairs(opts::StrategyOptions) = (k => Options.value(v) for (k, v) in pairs(_raw_options(opts)))
 
 """
 $(TYPEDSIGNATURES)
@@ -392,10 +453,10 @@ julia> for value in opts
 See also: [`Base.keys`](@ref), [`Base.values`](@ref), [`Base.pairs`](@ref)
 """
 Base.iterate(opts::StrategyOptions, state...) = begin
-    result = iterate(values(opts.options), state...)
+    result = iterate(values(_raw_options(opts)), state...)
     result === nothing && return nothing
     (opt, newstate) = result
-    return (opt.value, newstate)
+    return (Options.value(opt), newstate)
 end
 
 """
@@ -417,7 +478,7 @@ julia> length(opts)
 
 See also: [`Base.isempty`](@ref), [`Base.haskey`](@ref)
 """
-Base.length(opts::StrategyOptions) = length(opts.options)
+Base.length(opts::StrategyOptions) = length(_raw_options(opts))
 """
 $(TYPEDSIGNATURES)
 
@@ -437,7 +498,7 @@ false
 
 See also: [`Base.length`](@ref), [`Base.haskey`](@ref)
 """
-Base.isempty(opts::StrategyOptions) = isempty(opts.options)
+Base.isempty(opts::StrategyOptions) = isempty(_raw_options(opts))
 """
 $(TYPEDSIGNATURES)
 
@@ -461,7 +522,7 @@ false
 
 See also: [`Base.length`](@ref), [`Base.isempty`](@ref)
 """
-Base.haskey(opts::StrategyOptions, key::Symbol) = haskey(opts.options, key)
+Base.haskey(opts::StrategyOptions, key::Symbol) = haskey(_raw_options(opts), key)
 
 # ============================================================================
 # Display
@@ -493,11 +554,11 @@ See also: [`Base.show`](@ref)
 function Base.show(io::IO, ::MIME"text/plain", opts::StrategyOptions)
     n = length(opts)
     println(io, "StrategyOptions with $n option$(n == 1 ? "" : "s"):")
-    items = collect(pairs(opts.options))
+    items = collect(pairs(_raw_options(opts)))
     for (i, (key, opt)) in enumerate(items)
         is_last = i == length(items)
         prefix = is_last ? "└─ " : "├─ "
-        println(io, prefix, key, " = ", opt.value, "  [", opt.source, "]")
+        println(io, prefix, key, " = ", Options.value(opt), "  [", Options.source(opt), "]")
     end
 end
 
@@ -520,6 +581,6 @@ See also: [`Base.show(::IO, ::MIME"text/plain", ::StrategyOptions)`](@ref)
 """
 function Base.show(io::IO, opts::StrategyOptions)
     print(io, "StrategyOptions(")
-    print(io, join(("$k=$(v.value)" for (k, v) in pairs(opts.options)), ", "))
+    print(io, join(("$k=$(Options.value(v))" for (k, v) in pairs(_raw_options(opts))), ", "))
     print(io, ")")
 end

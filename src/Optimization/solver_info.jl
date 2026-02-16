@@ -22,12 +22,6 @@ A 6-element tuple `(objective, iterations, constraints_violation, message, statu
 - `status::Symbol`: Termination status (e.g., `:first_order`, `:acceptable`)
 - `successful::Bool`: Whether the solver converged successfully
 
-# Notes
-
-The tuple order is different from the `SolverInfos` struct constructor. This function
-returns `(objective, ...)` first, but the struct doesn't have an `objective` field
-(it's stored separately in the `Solution` object).
-
 # Example
 
 ```julia-repl
@@ -37,8 +31,6 @@ julia> # After solving an NLP problem with a solver
 julia> obj, iter, viol, msg, stat, success = extract_solver_infos(nlp_solution, minimize)
 (1.23, 15, 1.0e-6, "Ipopt/generic", :first_order, true)
 ```
-
-See also: [`SolverInfos`](@ref)
 """
 function extract_solver_infos(
     nlp_solution::SolverCore.AbstractExecutionStats,

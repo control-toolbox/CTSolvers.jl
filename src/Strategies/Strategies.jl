@@ -14,11 +14,10 @@ module Strategies
 
 # Importing to avoid namespace pollution
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
-import CTBase
-const Exceptions = CTBase.Exceptions
+import CTBase.Exceptions
 
 # Using CTSolvers modules to get access to the api
-using ..CTSolvers.Options
+using ..Options
 
 # ==============================================================================
 # Include submodules
@@ -58,8 +57,10 @@ export create_registry, strategy_ids, type_from_id
 
 # Introspection functions
 export option_names, option_type, option_description, option_default, option_defaults
+export option_is_user, option_is_default, option_is_computed
 export option_value, option_source, has_option
-export is_user, is_default, is_computed
+# export is_user, is_default, is_computed # no need to re-export
+# export value, source # no need to re-export
 
 # Builder functions
 export build_strategy, build_strategy_from_method

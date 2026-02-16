@@ -139,7 +139,7 @@ struct StrategyMetadata{NT <: NamedTuple}
     
     function StrategyMetadata(defs::OptionDefinition...)
         # Check for duplicate names
-        names = [def.name for def in defs]
+        names = [Options.name(def) for def in defs]
         if length(names) != length(unique(names))
             duplicates = [n for n in names if count(==(n), names) > 1]
             throw(Exceptions.IncorrectArgument(
@@ -152,7 +152,7 @@ struct StrategyMetadata{NT <: NamedTuple}
         end
         
         # Convert to NamedTuple using names as keys
-        names_tuple = Tuple(def.name for def in defs)
+        names_tuple = Tuple(Options.name(def) for def in defs)
         specs_nt = NamedTuple{names_tuple}(defs)
         NT = typeof(specs_nt)
         
@@ -350,6 +350,6 @@ function Base.show(io::IO, ::MIME"text/plain", meta::StrategyMetadata)
         prefix = is_last ? "└─ " : "├─ "
         cont   = is_last ? "   " : "│  "
         println(io, prefix, def)
-        println(io, cont, "description: ", def.description)
+        println(io, cont, "description: ", Options.description(def))
     end
 end

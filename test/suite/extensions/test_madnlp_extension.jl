@@ -78,60 +78,60 @@ function test_madnlp_extension()
             Test.@test :equality_treatment in keys(meta)
 
             # Test option types
-            Test.@test meta[:max_iter].type == Integer
-            Test.@test meta[:tol].type == Real
-            Test.@test meta[:print_level].type == MadNLP.LogLevels
-            Test.@test meta[:linear_solver].type == Type{<:MadNLP.AbstractLinearSolver}
+            Test.@test Options.type(meta[:max_iter]) == Integer
+            Test.@test Options.type(meta[:tol]) == Real
+            Test.@test Options.type(meta[:print_level]) == MadNLP.LogLevels
+            Test.@test Options.type(meta[:linear_solver]) == Type{<:MadNLP.AbstractLinearSolver}
             
             # Test termination option types
-            Test.@test meta[:acceptable_tol].type == Real
-            Test.@test meta[:acceptable_iter].type == Integer
-            Test.@test meta[:max_wall_time].type == Real
-            Test.@test meta[:diverging_iterates_tol].type == Real
+            Test.@test Options.type(meta[:acceptable_tol]) == Real
+            Test.@test Options.type(meta[:acceptable_iter]) == Integer
+            Test.@test Options.type(meta[:max_wall_time]) == Real
+            Test.@test Options.type(meta[:diverging_iterates_tol]) == Real
 
             # Test scaling and structure types
-            Test.@test meta[:nlp_scaling].type == Bool
-            Test.@test meta[:nlp_scaling_max_gradient].type == Real
-            Test.@test meta[:jacobian_constant].type == Bool
-            Test.@test meta[:hessian_constant].type == Bool
+            Test.@test Options.type(meta[:nlp_scaling]) == Bool
+            Test.@test Options.type(meta[:nlp_scaling_max_gradient]) == Real
+            Test.@test Options.type(meta[:jacobian_constant]) == Bool
+            Test.@test Options.type(meta[:hessian_constant]) == Bool
 
             # Test initialization types
-            Test.@test meta[:bound_push].type == Real
-            Test.@test meta[:bound_fac].type == Real
-            Test.@test meta[:constr_mult_init_max].type == Real
-            Test.@test meta[:fixed_variable_treatment].type == Type{<:MadNLP.AbstractFixedVariableTreatment}
-            Test.@test meta[:equality_treatment].type == Type{<:MadNLP.AbstractEqualityTreatment}
-            Test.@test meta[:kkt_system].type == Union{Type{<:MadNLP.AbstractKKTSystem},UnionAll}
-            Test.@test meta[:hessian_approximation].type == Union{Type{<:MadNLP.AbstractHessian},UnionAll}
-            Test.@test meta[:inertia_correction_method].type == Type{<:MadNLP.AbstractInertiaCorrector}
-            Test.@test meta[:mu_init].type == Real
-            Test.@test meta[:mu_min].type == Real
-            Test.@test meta[:tau_min].type == Real
+            Test.@test Options.type(meta[:bound_push]) == Real
+            Test.@test Options.type(meta[:bound_fac]) == Real
+            Test.@test Options.type(meta[:constr_mult_init_max]) == Real
+            Test.@test Options.type(meta[:fixed_variable_treatment]) == Type{<:MadNLP.AbstractFixedVariableTreatment}
+            Test.@test Options.type(meta[:equality_treatment]) == Type{<:MadNLP.AbstractEqualityTreatment}
+            Test.@test Options.type(meta[:kkt_system]) == Union{Type{<:MadNLP.AbstractKKTSystem},UnionAll}
+            Test.@test Options.type(meta[:hessian_approximation]) == Union{Type{<:MadNLP.AbstractHessian},UnionAll}
+            Test.@test Options.type(meta[:inertia_correction_method]) == Type{<:MadNLP.AbstractInertiaCorrector}
+            Test.@test Options.type(meta[:mu_init]) == Real
+            Test.@test Options.type(meta[:mu_min]) == Real
+            Test.@test Options.type(meta[:tau_min]) == Real
 
             # Test default values
-            Test.@test meta[:max_iter].default isa Integer
-            Test.@test meta[:tol].default isa Real
-            Test.@test meta[:print_level].default isa MadNLP.LogLevels
-            Test.@test meta[:linear_solver].default == MadNLPMumps.MumpsSolver
+            Test.@test Options.default(meta[:max_iter]) isa Integer
+            Test.@test Options.default(meta[:tol]) isa Real
+            Test.@test Options.default(meta[:print_level]) isa MadNLP.LogLevels
+            Test.@test Options.default(meta[:linear_solver]) == MadNLPMumps.MumpsSolver
 
             # Test termination option defaults - all use NotProvided to let MadNLP use its own defaults
-            Test.@test meta[:acceptable_iter].default isa Options.NotProvidedType
-            Test.@test meta[:acceptable_tol].default isa Options.NotProvidedType
-            Test.@test meta[:max_wall_time].default isa Options.NotProvidedType
-            Test.@test meta[:diverging_iterates_tol].default isa Options.NotProvidedType
+            Test.@test Options.default(meta[:acceptable_iter]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:acceptable_tol]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:max_wall_time]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:diverging_iterates_tol]) isa Options.NotProvidedType
 
             # Test scaling and structure defaults - all use NotProvided
-            Test.@test meta[:nlp_scaling].default isa Options.NotProvidedType
-            Test.@test meta[:nlp_scaling_max_gradient].default isa Options.NotProvidedType
-            Test.@test meta[:jacobian_constant].default isa Options.NotProvidedType
-            Test.@test meta[:hessian_constant].default isa Options.NotProvidedType
+            Test.@test Options.default(meta[:nlp_scaling]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:nlp_scaling_max_gradient]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:jacobian_constant]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:hessian_constant]) isa Options.NotProvidedType
 
             # Test initialization defaults
-            Test.@test meta[:bound_push].default isa Options.NotProvidedType
-            Test.@test meta[:bound_fac].default isa Options.NotProvidedType
-            Test.@test meta[:constr_mult_init_max].default isa Options.NotProvidedType
-            Test.@test meta[:fixed_variable_treatment].default isa Options.NotProvidedType
-            Test.@test meta[:equality_treatment].default isa Options.NotProvidedType
+            Test.@test Options.default(meta[:bound_push]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:bound_fac]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:constr_mult_init_max]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:fixed_variable_treatment]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:equality_treatment]) isa Options.NotProvidedType
         end
         
         # ====================================================================

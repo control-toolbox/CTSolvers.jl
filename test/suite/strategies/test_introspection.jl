@@ -180,9 +180,9 @@ function test_introspection()
                 )
                 strategy = IntrospectionTestStrategy(opts)
                 
-                Test.@test Strategies.is_user(strategy, :max_iter) === true
-                Test.@test Strategies.is_user(strategy, :tol) === false
-                Test.@test Strategies.is_user(strategy, :backend) === false
+                Test.@test Strategies.option_is_user(strategy, :max_iter) === true
+                Test.@test Strategies.option_is_user(strategy, :tol) === false
+                Test.@test Strategies.option_is_user(strategy, :backend) === false
             end
             
             Test.@testset "is_default - instance-level" begin
@@ -193,9 +193,9 @@ function test_introspection()
                 )
                 strategy = IntrospectionTestStrategy(opts)
                 
-                Test.@test Strategies.is_default(strategy, :max_iter) === false
-                Test.@test Strategies.is_default(strategy, :tol) === true
-                Test.@test Strategies.is_default(strategy, :backend) === false
+                Test.@test Strategies.option_is_default(strategy, :max_iter) === false
+                Test.@test Strategies.option_is_default(strategy, :tol) === true
+                Test.@test Strategies.option_is_default(strategy, :backend) === false
             end
             
             Test.@testset "is_computed - instance-level" begin
@@ -206,9 +206,9 @@ function test_introspection()
                 )
                 strategy = IntrospectionTestStrategy(opts)
                 
-                Test.@test Strategies.is_computed(strategy, :max_iter) === false
-                Test.@test Strategies.is_computed(strategy, :tol) === false
-                Test.@test Strategies.is_computed(strategy, :backend) === true
+                Test.@test Strategies.option_is_computed(strategy, :max_iter) === false
+                Test.@test Strategies.option_is_computed(strategy, :tol) === false
+                Test.@test Strategies.option_is_computed(strategy, :backend) === true
             end
         end
         
@@ -253,9 +253,9 @@ function test_introspection()
                 # Verify provenance predicates are mutually exclusive
                 for key in (:max_iter, :tol, :backend)
                     sources = [
-                        Strategies.is_user(strategy, key),
-                        Strategies.is_default(strategy, key),
-                        Strategies.is_computed(strategy, key)
+                        Strategies.option_is_user(strategy, key),
+                        Strategies.option_is_default(strategy, key),
+                        Strategies.option_is_computed(strategy, key)
                     ]
                     Test.@test count(sources) == 1  # Exactly one should be true
                 end

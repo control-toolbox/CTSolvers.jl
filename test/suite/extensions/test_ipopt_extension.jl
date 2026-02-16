@@ -54,14 +54,14 @@ function test_ipopt_extension()
             Test.@test :sb in keys(meta)
             
             # Test option types
-            Test.@test meta[:max_iter].type == Integer
-            Test.@test meta[:tol].type == Real
-            Test.@test meta[:print_level].type == Integer
+            Test.@test Options.type(meta[:max_iter]) == Integer
+            Test.@test Options.type(meta[:tol]) == Real
+            Test.@test Options.type(meta[:print_level]) == Integer
             
             # Test default values exist
-            Test.@test meta[:max_iter].default isa Integer
-            Test.@test meta[:tol].default isa Real
-            Test.@test meta[:print_level].default isa Integer
+            Test.@test Options.default(meta[:max_iter]) isa Integer
+            Test.@test Options.default(meta[:tol]) isa Real
+            Test.@test Options.default(meta[:print_level]) isa Integer
         end
         
         # ====================================================================
@@ -95,7 +95,7 @@ function test_ipopt_extension()
             opts = Strategies.options(solver)
             
             # Extract raw options (returns NamedTuple)
-            raw_opts = Options.extract_raw_options(opts.options)
+            raw_opts = Options.extract_raw_options(Strategies._raw_options(opts))
             Test.@test raw_opts isa NamedTuple
             Test.@test haskey(raw_opts, :max_iter)
             Test.@test haskey(raw_opts, :tol)
@@ -207,8 +207,8 @@ function test_ipopt_extension()
             opts1 = Strategies.options(solver1)
             opts2 = Strategies.options(solver2)
             
-            raw1 = Options.extract_raw_options(opts1.options)
-            raw2 = Options.extract_raw_options(opts2.options)
+            raw1 = Options.extract_raw_options(Strategies._raw_options(opts1))
+            raw2 = Options.extract_raw_options(Strategies._raw_options(opts2))
             
             # Both should set max_iter
             Test.@test raw1[:max_iter] == 100

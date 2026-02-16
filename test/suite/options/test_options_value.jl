@@ -67,6 +67,34 @@ function test_options_value()
             Test.@test typeof(opt_int) == Options.OptionValue{Int}
             Test.@test typeof(opt_float) == Options.OptionValue{Float64}
         end
+
+        # ========================================================================
+        # Getters and introspection
+        # ========================================================================
+
+        Test.@testset "Getters and introspection" begin
+            opt_user = Options.OptionValue(42, :user)
+            opt_default = Options.OptionValue(3.14, :default)
+            opt_computed = Options.OptionValue(true, :computed)
+
+            Test.@test Options.value(opt_user) === 42
+            Test.@test Options.source(opt_user) === :user
+            Test.@test Options.is_user(opt_user) === true
+            Test.@test Options.is_default(opt_user) === false
+            Test.@test Options.is_computed(opt_user) === false
+
+            Test.@test Options.value(opt_default) === 3.14
+            Test.@test Options.source(opt_default) === :default
+            Test.@test Options.is_user(opt_default) === false
+            Test.@test Options.is_default(opt_default) === true
+            Test.@test Options.is_computed(opt_default) === false
+
+            Test.@test Options.value(opt_computed) === true
+            Test.@test Options.source(opt_computed) === :computed
+            Test.@test Options.is_user(opt_computed) === false
+            Test.@test Options.is_default(opt_computed) === false
+            Test.@test Options.is_computed(opt_computed) === true
+        end
     end
 end
 
