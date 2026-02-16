@@ -14,8 +14,7 @@ module Options
 
 # Importing to avoid namespace pollution
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
-import CTBase
-const Exceptions = CTBase.Exceptions
+import CTBase.Exceptions
 
 # ==============================================================================
 # Include submodules

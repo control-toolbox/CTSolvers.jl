@@ -45,14 +45,13 @@ import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES, TYPEDFIELDS
 import NLPModels
 import SolverCore
 import CommonSolve
-import CTBase
-const Exceptions = CTBase.Exceptions
+import CTBase.Exceptions
 
 # Using CTSolvers modules to get access to the api
-using ..CTSolvers.Strategies
-using ..CTSolvers.Options
-using ..CTSolvers.Optimization
-using ..CTSolvers.Modelers
+using ..Strategies
+using ..Options
+using ..Optimization
+using ..Modelers
 
 # Tag Dispatch Infrastructure
 """

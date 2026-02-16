@@ -107,10 +107,6 @@ julia> strategy = MyStrategy(max_iter=200, custom_option=123; mode=:permissive)
 - **Instance-level methods** are called on instances: `options(strategy)`
 - **Constructor pattern** is required for registry-based construction
 - **Strategy families** can be created with intermediate abstract types
-
-# References
-
-See the [Strategies module documentation](@ref) for complete API reference and examples.
 """
 abstract type AbstractStrategy end
 

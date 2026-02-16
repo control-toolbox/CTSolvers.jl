@@ -9,8 +9,7 @@
 module Modelers
 
 # Importing to avoid namespace pollution
-import CTBase
-const Exceptions = CTBase.Exceptions
+import CTBase.Exceptions
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 import SolverCore
 import ADNLPModels
@@ -18,9 +17,9 @@ import ExaModels
 import KernelAbstractions
 
 # Using CTSolvers modules to get access to the api
-using ..CTSolvers.Options
-using ..CTSolvers.Strategies
-using ..CTSolvers.Optimization
+using ..Options
+using ..Strategies
+using ..Optimization
 
 # Include submodules
 include(joinpath(@__DIR__, "abstract_modeler.jl"))
