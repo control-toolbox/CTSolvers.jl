@@ -27,15 +27,15 @@ function test_solver_types()
         # ====================================================================
         
         Test.@testset "Type Hierarchy" begin
-            # All solver types should inherit from AbstractOptimizationSolver
-            Test.@test Solvers.Ipopt <: Solvers.AbstractOptimizationSolver
-            Test.@test Solvers.MadNLP <: Solvers.AbstractOptimizationSolver
-            Test.@test Solvers.MadNCL <: Solvers.AbstractOptimizationSolver
+            # All solver types should inherit from AbstractNLPSolver
+            Test.@test Solvers.Ipopt <: Solvers.AbstractNLPSolver
+            Test.@test Solvers.MadNLP <: Solvers.AbstractNLPSolver
+            Test.@test Solvers.MadNCL <: Solvers.AbstractNLPSolver
             # Commented out - no Knitro license available
-            # Test.@test Solvers.Knitro <: Solvers.AbstractOptimizationSolver
+            # Test.@test Solvers.Knitro <: Solvers.AbstractNLPSolver
             
-            # AbstractOptimizationSolver should be abstract
-            Test.@test isabstracttype(Solvers.AbstractOptimizationSolver)
+            # AbstractNLPSolver should be abstract
+            Test.@test isabstracttype(Solvers.AbstractNLPSolver)
             
             # Concrete solver types should not be abstract
             Test.@test !isabstracttype(Solvers.Ipopt)

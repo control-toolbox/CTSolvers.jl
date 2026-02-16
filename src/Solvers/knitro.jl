@@ -69,9 +69,9 @@ using NLPModelsKnitro
 - Callable interface: `(solver::Knitro)(nlp; display=true)` provided by extension
 - Requires valid Knitro license for operation
 
-See also: [`AbstractOptimizationSolver`](@ref), [`Ipopt`](@ref), [`MadNLP`](@ref)
+See also: [`AbstractNLPSolver`](@ref), [`Ipopt`](@ref), [`MadNLP`](@ref)
 """
-struct Knitro <: AbstractOptimizationSolver
+struct Knitro <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end

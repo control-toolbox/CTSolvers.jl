@@ -77,7 +77,7 @@ julia> method = (:collocation, :adnlp, :ipopt)
 julia> extract_id_from_method(method, AbstractNLPModeler, registry)
 :adnlp
 
-julia> extract_id_from_method(method, AbstractOptimizationSolver, registry)
+julia> extract_id_from_method(method, AbstractNLPSolver, registry)
 :ipopt
 ```
 

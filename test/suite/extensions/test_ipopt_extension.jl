@@ -72,7 +72,7 @@ function test_ipopt_extension()
             # Default constructor
             solver = Solvers.Ipopt()
             Test.@test solver isa Solvers.Ipopt
-            Test.@test solver isa Solvers.AbstractOptimizationSolver
+            Test.@test solver isa Solvers.AbstractNLPSolver
             
             # Constructor with options
             solver_custom = Solvers.Ipopt(max_iter=100, tol=1e-6)

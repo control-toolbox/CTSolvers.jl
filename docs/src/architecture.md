@@ -52,7 +52,7 @@ classDiagram
     }
 
     AbstractStrategy <|-- AbstractNLPModeler
-    AbstractStrategy <|-- AbstractOptimizationSolver
+    AbstractStrategy <|-- AbstractNLPSolver
     AbstractStrategy <|-- AbstractOptimalControlDiscretizer
 
     class AbstractNLPModeler {
@@ -63,14 +63,14 @@ classDiagram
     AbstractNLPModeler <|-- Modelers.ADNLP
     AbstractNLPModeler <|-- Modelers.Exa
 
-    class AbstractOptimizationSolver {
+    class AbstractNLPSolver {
         <<abstract>>
         (solver)(nlp; display) → Stats
     }
-    AbstractOptimizationSolver <|-- Solvers.Ipopt
-    AbstractOptimizationSolver <|-- Solvers.MadNLP
-    AbstractOptimizationSolver <|-- Solvers.MadNCL
-    AbstractOptimizationSolver <|-- Solvers.Knitro
+    AbstractNLPSolver <|-- Solvers.Ipopt
+    AbstractNLPSolver <|-- Solvers.MadNLP
+    AbstractNLPSolver <|-- Solvers.MadNCL
+    AbstractNLPSolver <|-- Solvers.Knitro
 
     class AbstractOptimalControlDiscretizer {
         <<abstract>>
@@ -81,7 +81,7 @@ classDiagram
 ```
 
 - **`AbstractNLPModeler`** (in `Modelers`): converts problems into NLP models and back into solutions.
-- **`AbstractOptimizationSolver`** (in `Solvers`): solves NLP models via backend libraries.
+- **`AbstractNLPSolver`** (in `Solvers`): solves NLP models via backend libraries.
 - **`AbstractOptimalControlDiscretizer`** (in CTDirect, external): discretizes continuous-time OCP into finite-dimensional problems. See [Implementing a Strategy](@ref) for a complete tutorial.
 
 ### Optimization / Builder Branch
@@ -165,7 +165,7 @@ sequenceDiagram
     participant Modeler as AbstractNLPModeler
     participant Problem as AbstractOptimizationProblem
     participant Builder as AbstractModelBuilder
-    participant Solver as AbstractOptimizationSolver
+    participant Solver as AbstractNLPSolver
     participant SolBuilder as AbstractSolutionBuilder
 
     User->>Solve: solve(problem, x0, modeler, solver)
@@ -248,7 +248,7 @@ Solvers use **Tag Dispatch** to separate type definitions (in `src/Solvers/`) fr
 ```mermaid
 flowchart LR
     subgraph src["src/Solvers/"]
-        SolverType["Solvers.Ipopt <: AbstractOptimizationSolver"]
+        SolverType["Solvers.Ipopt <: AbstractNLPSolver"]
         Tag["IpoptTag <: AbstractTag"]
         Callable["(solver)(nlp) → _solve(IpoptTag(), nlp, opts)"]
     end

@@ -4,7 +4,7 @@ $(TYPEDEF)
 Abstract base type for optimization solvers in the Control Toolbox.
 
 All concrete solver types must:
-1. Be a subtype of `AbstractOptimizationSolver`
+1. Be a subtype of `AbstractNLPSolver`
 2. Implement the `AbstractStrategy` contract:
    - `Strategies.id(::Type{<:MySolver})` - Return unique Symbol identifier
    - `Strategies.metadata(::Type{<:MySolver})` - Return StrategyMetadata with options
@@ -30,7 +30,7 @@ stats = solver(nlp, display=true)
 
 See also: [`Solvers.Ipopt`](@ref), [`Solvers.MadNLP`](@ref), [`Solvers.MadNCL`](@ref), [`Solvers.Knitro`](@ref)
 """
-abstract type AbstractOptimizationSolver <: Strategies.AbstractStrategy end
+abstract type AbstractNLPSolver <: Strategies.AbstractStrategy end
 
 """
 $(TYPEDSIGNATURES)
@@ -60,11 +60,11 @@ nlp = ADNLPModel(x -> sum(x.^2), zeros(5))
 stats = solver(nlp, display=false)
 ```
 """
-function (solver::AbstractOptimizationSolver)(nlp; display::Bool=true)
+function (solver::AbstractNLPSolver)(nlp; display::Bool=true)
     throw(Exceptions.NotImplemented(
         "Solver callable not implemented",
         required_method="(solver::$(typeof(solver)))(nlp; display=Bool)",
         suggestion="Implement the callable method for $(typeof(solver))",
-        context="AbstractOptimizationSolver - required method"
+        context="AbstractNLPSolver - required method"
     ))
 end

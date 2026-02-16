@@ -66,9 +66,9 @@ using NLPModelsIpopt
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
 - Callable interface: `(solver::Ipopt)(nlp; display=true)` provided by extension
 
-See also: [`AbstractOptimizationSolver`](@ref), [`MadNLP`](@ref), [`Knitro`](@ref)
+See also: [`AbstractNLPSolver`](@ref), [`MadNLP`](@ref), [`Knitro`](@ref)
 """
-struct Ipopt <: AbstractOptimizationSolver
+struct Ipopt <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end

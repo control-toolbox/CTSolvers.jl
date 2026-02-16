@@ -142,7 +142,7 @@ function test_madnlp_extension()
             # Default constructor
             solver = Solvers.MadNLP(print_level=MadNLP.ERROR)
             Test.@test solver isa Solvers.MadNLP
-            Test.@test solver isa Solvers.AbstractOptimizationSolver
+            Test.@test solver isa Solvers.AbstractNLPSolver
             
             # Constructor with options
             solver_custom = Solvers.MadNLP(max_iter=100, tol=1e-6, print_level=MadNLP.ERROR)

@@ -36,7 +36,7 @@ using CommonSolve
 stats = solve(nlp, solver, display=false)
 ```
 
-See also: [`AbstractOptimizationSolver`](@ref), [`Solvers.Ipopt`](@ref)
+See also: [`AbstractNLPSolver`](@ref), [`Solvers.Ipopt`](@ref)
 """
 module Solvers
 
@@ -70,7 +70,7 @@ include(joinpath(@__DIR__, "knitro.jl"))
 include(joinpath(@__DIR__, "common_solve_api.jl"))
 
 # Public API - abstract and concrete types
-export AbstractOptimizationSolver
+export AbstractNLPSolver
 export Ipopt, MadNLP, MadNCL, Knitro
 
 end # module Solvers

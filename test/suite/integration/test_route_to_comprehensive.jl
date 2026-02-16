@@ -55,7 +55,7 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 # Abstract strategy types for testing
 abstract type RouteTestDiscretizer <: Strategies.AbstractStrategy end
 abstract type RouteTestModeler <: Modelers.AbstractNLPModeler end
-abstract type RouteTestSolver <: Solvers.AbstractOptimizationSolver end
+abstract type RouteTestSolver <: Solvers.AbstractNLPSolver end
 
 # Mock discretizer (no option conflicts)
 struct RouteCollocation <: RouteTestDiscretizer
@@ -531,13 +531,13 @@ function test_route_to_comprehensive()
                     real_registry = Strategies.create_registry(
                         RouteTestDiscretizer => (RouteCollocation,),
                         RouteTestModeler => (RouteADNLP,),
-                        Solvers.AbstractOptimizationSolver => (Solvers.Ipopt,)
+                        Solvers.AbstractNLPSolver => (Solvers.Ipopt,)
                     )
                     
                     real_families = (
                         discretizer = RouteTestDiscretizer,
                         modeler = RouteTestModeler,
-                        solver = Solvers.AbstractOptimizationSolver
+                        solver = Solvers.AbstractNLPSolver
                     )
                     
                     kwargs = (
@@ -553,7 +553,7 @@ function test_route_to_comprehensive()
                     
                     # Build real solver
                     real_solver = Strategies.build_strategy_from_method(
-                        MOCK_METHOD, Solvers.AbstractOptimizationSolver, real_registry; 
+                        MOCK_METHOD, Solvers.AbstractNLPSolver, real_registry; 
                         routed.strategies.solver...
                     )
                     

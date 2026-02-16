@@ -108,7 +108,7 @@ docp = DiscretizedModel(ocp, builder)
 ```julia
 registry = create_registry(
     AbstractOptimizationModeler => (ADNLPModeler, ExaModeler),
-    AbstractOptimizationSolver => (IpoptSolver, MadNLPSolver)
+    AbstractNLPSolver => (IpoptSolver, MadNLPSolver)
 )
 ```
 
@@ -117,7 +117,7 @@ registry = create_registry(
 ```julia
 registry = create_registry(
     AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa),
-    AbstractOptimizationSolver => (Solvers.Ipopt, Solvers.MadNLP)
+    AbstractNLPSolver => (Solvers.Ipopt, Solvers.MadNLP)
 )
 ```
 

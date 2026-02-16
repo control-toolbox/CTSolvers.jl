@@ -98,7 +98,7 @@ function test_knitro_extension()
         #     # Default constructor
         #     solver = Solvers.Knitro()
         #     Test.@test solver isa Solvers.Knitro
-        #     Test.@test solver isa Solvers.AbstractOptimizationSolver
+        #     Test.@test solver isa Solvers.AbstractNLPSolver
         #     
         #     # Constructor with options
         #     solver_custom = Solvers.Knitro(maxit=100, feastol_abs=1e-6)

@@ -18,11 +18,11 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 # Fake types for testing (must be at module top-level)
 # ============================================================================
 
-struct CovUnimplementedSolver <: Solvers.AbstractOptimizationSolver
+struct CovUnimplementedSolver <: Solvers.AbstractNLPSolver
     options::Strategies.StrategyOptions
 end
 
-struct CovCallableSolver <: Solvers.AbstractOptimizationSolver
+struct CovCallableSolver <: Solvers.AbstractNLPSolver
     options::Strategies.StrategyOptions
 end
 
@@ -35,10 +35,10 @@ function test_coverage_solvers()
     Test.@testset "Coverage: Solvers" verbose=VERBOSE showtiming=SHOWTIMING begin
 
         # ====================================================================
-        # UNIT TESTS - AbstractOptimizationSolver callable (abstract_solver.jl)
+        # UNIT TESTS - AbstractNLPSolver callable (abstract_solver.jl)
         # ====================================================================
 
-        Test.@testset "AbstractOptimizationSolver callable - NotImplemented" begin
+        Test.@testset "AbstractNLPSolver callable - NotImplemented" begin
             opts = Strategies.StrategyOptions()
             solver = CovUnimplementedSolver(opts)
             nlp = ADNLPModels.ADNLPModel(x -> sum(x.^2), [1.0])
@@ -53,7 +53,7 @@ function test_coverage_solvers()
 
         Test.@testset "Solvers.Knitro" begin
             # Type hierarchy
-            Test.@test Solvers.Knitro <: Solvers.AbstractOptimizationSolver
+            Test.@test Solvers.Knitro <: Solvers.AbstractNLPSolver
             Test.@test Solvers.Knitro <: Strategies.AbstractStrategy
             Test.@test !isabstracttype(Solvers.Knitro)
 

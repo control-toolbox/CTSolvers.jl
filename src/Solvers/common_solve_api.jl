@@ -24,7 +24,7 @@ High-level solve: Build NLP model, solve it, and build solution.
 - `problem::Optimization.AbstractOptimizationProblem`: The optimization problem
 - `initial_guess`: Initial guess for the solution
 - `modeler::Modelers.AbstractNLPModeler`: Modeler to build NLP
-- `solver::AbstractOptimizationSolver`: Solver to use
+- `solver::AbstractNLPSolver`: Solver to use
 - `display::Bool`: Whether to show solver output (default: true)
 
 # Returns
@@ -48,7 +48,7 @@ function CommonSolve.solve(
     problem::Optimization.AbstractOptimizationProblem,
     initial_guess,
     modeler::Modelers.AbstractNLPModeler,
-    solver::AbstractOptimizationSolver;
+    solver::AbstractNLPSolver;
     display::Bool=__display(),
 )
     # Build NLP model
@@ -70,7 +70,7 @@ Mid-level solve: Solve NLP problem directly.
 
 # Arguments
 - `nlp::NLPModels.AbstractNLPModel`: The NLP problem to solve
-- `solver::AbstractOptimizationSolver`: Solver to use
+- `solver::AbstractNLPSolver`: Solver to use
 - `display::Bool`: Whether to show solver output (default: true)
 
 # Returns
@@ -87,7 +87,7 @@ stats = solve(nlp, solver, display=false)
 """
 function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel,
-    solver::AbstractOptimizationSolver;
+    solver::AbstractNLPSolver;
     display::Bool=__display(),
 )::SolverCore.AbstractExecutionStats
     return solver(nlp; display=display)
@@ -103,7 +103,7 @@ that may be compatible with the solver's callable interface.
 
 # Arguments
 - `nlp`: Problem to solve (any type compatible with solver)
-- `solver::AbstractOptimizationSolver`: Solver to use
+- `solver::AbstractNLPSolver`: Solver to use
 - `display::Bool`: Whether to show solver output (default: true)
 
 # Returns
@@ -111,7 +111,7 @@ that may be compatible with the solver's callable interface.
 """
 function CommonSolve.solve(
     nlp, 
-    solver::AbstractOptimizationSolver; 
+    solver::AbstractNLPSolver; 
     display::Bool=__display()
 )
     return solver(nlp; display=display)

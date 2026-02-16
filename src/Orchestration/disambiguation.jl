@@ -111,7 +111,7 @@ julia> method = (:collocation, :adnlp, :ipopt)
 julia> families = (
            discretizer = AbstractOptimalControlDiscretizer,
            modeler = AbstractNLPModeler,
-           solver = AbstractOptimizationSolver
+           solver = AbstractNLPSolver
        )
 
 julia> map = build_strategy_to_family_map(method, families, registry)

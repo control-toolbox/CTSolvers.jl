@@ -301,9 +301,9 @@ function test_comprehensive_validation()
         # KNITRO_AVAILABLE && push!(solver_types, Solvers.Knitro)  # Never available - no license
         
         solver_registry = if isempty(solver_types)
-            Strategies.create_registry(Solvers.AbstractOptimizationSolver => ())
+            Strategies.create_registry(Solvers.AbstractNLPSolver => ())
         else
-            Strategies.create_registry(Solvers.AbstractOptimizationSolver => tuple(solver_types...))
+            Strategies.create_registry(Solvers.AbstractNLPSolver => tuple(solver_types...))
         end
         
         # ====================================================================
@@ -403,7 +403,7 @@ function test_comprehensive_validation()
                     # Test all construction methods - redirect stderr to hide warnings
                     redirect_stderr(devnull) do
                         test_strategy_construction(
-                            Solvers.Ipopt, :ipopt, Solvers.AbstractOptimizationSolver,
+                            Solvers.Ipopt, :ipopt, Solvers.AbstractNLPSolver,
                             known_options, unknown_options, solver_registry
                         )
                     end
@@ -439,7 +439,7 @@ function test_comprehensive_validation()
                     
                     redirect_stderr(devnull) do
                         test_strategy_construction(
-                            Solvers.MadNLP, :madnlp, Solvers.AbstractOptimizationSolver,
+                            Solvers.MadNLP, :madnlp, Solvers.AbstractNLPSolver,
                             known_options, unknown_options, solver_registry
                         )
                     end
@@ -473,7 +473,7 @@ function test_comprehensive_validation()
                     
                     redirect_stderr(devnull) do
                         test_strategy_construction(
-                            Solvers.MadNCL, :madncl, Solvers.AbstractOptimizationSolver,
+                            Solvers.MadNCL, :madncl, Solvers.AbstractNLPSolver,
                             known_options, unknown_options, solver_registry
                         )
                     end
@@ -507,7 +507,7 @@ function test_comprehensive_validation()
             #         unknown_options = (knitro_fake=333, custom_knitro="test")
                     
             #         test_strategy_construction(
-            #             Solvers.Knitro, :knitro, Solvers.AbstractOptimizationSolver,
+            #             Solvers.Knitro, :knitro, Solvers.AbstractNLPSolver,
             #             known_options, unknown_options, solver_registry
             #         )
                     

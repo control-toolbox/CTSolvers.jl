@@ -9,7 +9,7 @@ This guide explains how to implement an optimization solver in CTSolvers. Solver
 !!! tip "Prerequisites"
     Read [Architecture](@ref) and [Implementing a Strategy](@ref) first. A solver is a strategy with two additional requirements: a **callable interface** and a **Tag Dispatch** extension.
 
-## The AbstractOptimizationSolver Contract
+## The AbstractNLPSolver Contract
 
 A solver must satisfy **three contracts**:
 
@@ -26,16 +26,16 @@ classDiagram
         options(instance)::StrategyOptions
     }
 
-    class AbstractOptimizationSolver {
+    class AbstractNLPSolver {
         <<abstract>>
         (solver)(nlp; display) → Stats
     }
 
-    AbstractStrategy <|-- AbstractOptimizationSolver
-    AbstractOptimizationSolver <|-- Solvers.Ipopt
-    AbstractOptimizationSolver <|-- Solvers.MadNLP
-    AbstractOptimizationSolver <|-- Solvers.MadNCL
-    AbstractOptimizationSolver <|-- Solvers.Knitro
+    AbstractStrategy <|-- AbstractNLPSolver
+    AbstractNLPSolver <|-- Solvers.Ipopt
+    AbstractNLPSolver <|-- Solvers.MadNLP
+    AbstractNLPSolver <|-- Solvers.MadNCL
+    AbstractNLPSolver <|-- Solvers.Knitro
 ```
 
 The default callable throws `NotImplemented` with guidance.
@@ -67,7 +67,7 @@ struct IpoptTag <: AbstractTag end
 Like any strategy, the solver has a single `options` field:
 
 ```julia
-struct Solvers.Ipopt <: AbstractOptimizationSolver
+struct Solvers.Ipopt <: AbstractNLPSolver
     options::Strategies.StrategyOptions
 end
 ```
@@ -114,7 +114,7 @@ CTSolvers.Solvers.MadNLP()
 ```mermaid
 flowchart LR
     subgraph src["src/Solvers/ipopt_solver.jl"]
-        Type["Solvers.Ipopt <: AbstractOptimizationSolver"]
+        Type["Solvers.Ipopt <: AbstractNLPSolver"]
         Tag["IpoptTag <: AbstractTag"]
         Ctor["Solvers.Ipopt(; kwargs...)\n→ build_ipopt_solver(IpoptTag(); kwargs...)"]
         Stub["build_ipopt_solver(::AbstractTag)\n→ ExtensionError"]
@@ -287,7 +287,7 @@ To add a new solver (e.g., `MySolver` backed by `MyBackend`):
 ### In `src/Solvers/`
 
 1. Define `MyTag <: AbstractTag`
-2. Define `MySolver <: AbstractOptimizationSolver` with `options::StrategyOptions`
+2. Define `MySolver <: AbstractNLPSolver` with `options::StrategyOptions`
 3. Implement `Strategies.id(::Type{<:MySolver}) = :my_solver`
 4. Write constructor: `MySolver(; mode, kwargs...) = build_my_solver(MyTag(); mode, kwargs...)`
 5. Write stub: `build_my_solver(::AbstractTag; kwargs...) = throw(ExtensionError(...))`

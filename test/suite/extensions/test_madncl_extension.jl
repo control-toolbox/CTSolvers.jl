@@ -106,7 +106,7 @@ function test_madncl_extension()
             # Default constructor
             solver = Solvers.MadNCL()
             Test.@test solver isa Solvers.MadNCL
-            Test.@test solver isa Solvers.AbstractOptimizationSolver
+            Test.@test solver isa Solvers.AbstractNLPSolver
             
             # Constructor with options
             solver_custom = Solvers.MadNCL(max_iter=100, tol=1e-6)

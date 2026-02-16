@@ -18,7 +18,7 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 """
 Fake solver that counts calls for testing CommonSolve API.
 """
-struct FakeSolver <: Solvers.AbstractOptimizationSolver
+struct FakeSolver <: Solvers.AbstractNLPSolver
     calls::Base.RefValue{Int}
     display_flag::Base.RefValue{Union{Nothing, Bool}}
 end

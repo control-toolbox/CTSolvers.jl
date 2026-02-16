@@ -72,7 +72,7 @@ julia> method = (:collocation, :adnlp, :ipopt)
 julia> families = (
            discretizer = AbstractOptimalControlDiscretizer,
            modeler = AbstractNLPModeler,
-           solver = AbstractOptimizationSolver
+           solver = AbstractNLPSolver
        )
 
 julia> action_defs = [
