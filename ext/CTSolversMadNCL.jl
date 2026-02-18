@@ -10,6 +10,7 @@ import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Solvers
 import CTSolvers.Strategies
 import CTSolvers.Options
+import CTSolvers.Optimization
 import CTBase.Exceptions
 import MadNCL
 import MadNLP
@@ -382,6 +383,50 @@ function solve_with_madncl(
 )::MadNCL.NCLStats
     solver = MadNCL.NCLSolver(nlp; ncl_options=ncl_options, kwargs...)
     return MadNCL.solve!(solver)
+end
+
+# ============================================================================
+# Solver Information Extraction
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract solver information from MadNCL execution statistics.
+
+This method handles MadNCL-specific behavior:
+- Objective sign depends on whether the problem is a minimization or maximization
+- Status codes are MadNLP-specific (e.g., `:SOLVE_SUCCEEDED`, `:SOLVED_TO_ACCEPTABLE_LEVEL`)
+- Uses the same field mapping as MadNLP since NCLStats has compatible structure
+
+# Arguments
+
+- `nlp_solution::MadNCL.NCLStats`: MadNCL execution statistics
+- `minimize::Bool`: Whether the problem is a minimization problem or not
+
+# Returns
+- `objective`: The objective value (MadNCL returns correct sign, no flip needed)
+- `iterations`: Number of iterations
+- `constraints_violation`: Constraint violation measure
+- `message`: Solver name ("MadNCL")
+- `status`: Solver status as a Symbol
+- `successful`: Whether the solve was successful
+
+# Notes
+Unlike MadNLP, MadNCL correctly handles maximization problems and returns the
+objective with the correct sign. Therefore, we do NOT flip the sign for maximization.
+"""
+function Optimization.extract_solver_infos(
+    nlp_solution::MadNCL.NCLStats,
+    ::Bool,
+)
+    # MadNCL returns the correct objective sign (no bug like MadNLP)
+    objective = nlp_solution.objective
+    iterations = nlp_solution.iter
+    constraints_violation = nlp_solution.primal_feas
+    status = Symbol(nlp_solution.status)
+    successful = (status == :SOLVE_SUCCEEDED) || (status == :SOLVED_TO_ACCEPTABLE_LEVEL)
+    return objective, iterations, constraints_violation, "MadNCL", status, successful
 end
 
 end
