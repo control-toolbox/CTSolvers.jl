@@ -10,6 +10,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.5-beta] - 2026-02-18
+
+### Added
+
+- **Build solution contract tests** — Comprehensive test suite verifying compatibility between solver extensions and CTModels' `build_solution` function
+- **SolverInfos construction verification** — Tests ensuring extracted solver data can construct `SolverInfos` objects correctly
+- **Generic extract_solver_infos tests** — New test file with `MockStats` for testing generic solver interface
+- **Contract safety verification** — Type checking and structure validation for all 6 return values from `extract_solver_infos`
+- **Integration tests** — End-to-end verification of MadNLP, MadNCL, and generic solver extensions
+
+### Changed
+
+- **Test coverage** — Increased from 488 to 548 tests (+60 new tests)
+- **Extension test structure** — Enhanced MadNLP and MadNCL test files with complete contract verification
+- **Testing standards compliance** — All mock structs properly defined at module level
+
+### Fixed
+
+- **Contract compliance** — Verified that `extract_solver_infos` returns correct types expected by `build_solution`:
+  - `objective::Float64`
+  - `iterations::Int`
+  - `constraints_violation::Float64`
+  - `message::String`
+  - `status::Symbol`
+  - `successful::Bool`
+
+---
+
 ## [0.3.3-beta] - 2026-02-16
 
 ### Changed
