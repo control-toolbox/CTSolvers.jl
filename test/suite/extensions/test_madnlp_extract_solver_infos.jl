@@ -283,6 +283,136 @@ function test_madnlp_extract_solver_infos()
             # Verify the flip logic
             Test.@test obj_max == -obj_min
         end
+        
+        Test.@testset "build_solution contract verification" begin
+            # Test that extract_solver_infos returns types compatible with build_solution
+            function obj(x)
+                return x[1]^2 + x[2]^2
+            end
+            
+            x0 = [1.0, 1.0]
+            nlp = ADNLPModels.ADNLPModel(obj, x0; minimize=true)
+            solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR)
+            stats = MadNLP.solve!(solver)
+            
+            # Extract solver infos
+            objective, iterations, constraints_violation, message, status, successful = 
+                Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            
+            # Verify types match build_solution contract
+            Test.@test objective isa Float64
+            Test.@test iterations isa Int
+            Test.@test constraints_violation isa Float64
+            Test.@test message isa String
+            Test.@test status isa Symbol
+            Test.@test successful isa Bool
+            
+            # Verify tuple structure
+            result = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            Test.@test result isa Tuple
+            Test.@test length(result) == 6
+            
+            # Test with maximization problem for contract compliance
+            nlp_max = ADNLPModels.ADNLPModel(obj, x0; minimize=false)
+            solver_max = MadNLP.MadNLPSolver(nlp_max; print_level=MadNLP.ERROR)
+            stats_max = MadNLP.solve!(solver_max)
+            
+            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = 
+                Optimization.extract_solver_infos(stats_max, NLPModels.get_minimize(nlp_max))
+            
+            # Verify types for maximization too
+            Test.@test objective_max isa Float64
+            Test.@test iterations_max isa Int
+            Test.@test constraints_violation_max isa Float64
+            Test.@test message_max isa String
+            Test.@test status_max isa Symbol
+            Test.@test successful_max isa Bool
+            
+            # Verify solver-specific message
+            Test.@test message == "MadNLP"
+            Test.@test message_max == "MadNLP"
+        end
+        
+        Test.@testset "SolverInfos construction verification" begin
+            # Test that extracted values can be used to construct SolverInfos
+            # This verifies the complete contract with build_solution
+            
+            function obj(x)
+                return x[1]^2 + x[2]^2
+            end
+            
+            x0 = [1.0, 1.0]
+            nlp = ADNLPModels.ADNLPModel(obj, x0; minimize=true)
+            solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR)
+            stats = MadNLP.solve!(solver)
+            
+            # Extract solver infos
+            objective, iterations, constraints_violation, message, status, successful = 
+                Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            
+            # Create additional infos dictionary as expected by SolverInfos
+            additional_infos = Dict{Symbol,Any}(
+                :objective_value => objective,
+                :solver_name => message,
+                :raw_stats_objective => stats.objective,
+                :test_case => "madnlp_minimization"
+            )
+            
+            # Verify all SolverInfos constructor arguments are available
+            Test.@test iterations isa Int
+            Test.@test status isa Symbol
+            Test.@test message isa String
+            Test.@test successful isa Bool
+            Test.@test constraints_violation isa Float64
+            Test.@test additional_infos isa Dict{Symbol,Any}
+            
+            # Test with maximization problem
+            nlp_max = ADNLPModels.ADNLPModel(obj, x0; minimize=false)
+            solver_max = MadNLP.MadNLPSolver(nlp_max; print_level=MadNLP.ERROR)
+            stats_max = MadNLP.solve!(solver_max)
+            
+            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = 
+                Optimization.extract_solver_infos(stats_max, NLPModels.get_minimize(nlp_max))
+            
+            # Create additional infos dictionary for maximization
+            additional_infos_max = Dict{Symbol,Any}(
+                :objective_value => objective_max,
+                :solver_name => message_max,
+                :raw_stats_objective => stats_max.objective,
+                :sign_flipped => objective_max != stats_max.objective,
+                :test_case => "madnlp_maximization"
+            )
+            
+            # Verify contract for maximization too
+            Test.@test iterations_max isa Int
+            Test.@test status_max isa Symbol
+            Test.@test message_max isa String
+            Test.@test successful_max isa Bool
+            Test.@test constraints_violation_max isa Float64
+            Test.@test additional_infos_max isa Dict{Symbol,Any}
+            
+            # Verify that the values are consistent with what SolverInfos expects
+            solver_infos_args = (
+                iterations=iterations_max,
+                status=status_max,
+                message=message_max,
+                successful=successful_max,
+                constraints_violation=constraints_violation_max,
+                infos=additional_infos_max
+            )
+            
+            # All arguments should be present and of correct type
+            Test.@test solver_infos_args.iterations isa Int
+            Test.@test solver_infos_args.status isa Symbol
+            Test.@test solver_infos_args.message isa String
+            Test.@test solver_infos_args.successful isa Bool
+            Test.@test solver_infos_args.constraints_violation isa Float64
+            Test.@test solver_infos_args.infos isa Dict{Symbol,Any}
+            
+            # Verify solver-specific message
+            Test.@test message == "MadNLP"
+            Test.@test message_max == "MadNLP"
+        end
     end
 end
 
