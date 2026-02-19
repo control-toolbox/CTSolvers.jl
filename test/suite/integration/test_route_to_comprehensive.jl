@@ -256,7 +256,7 @@ function test_route_to_with_validation(
     method::Tuple,
     families::NamedTuple,
     kwargs::NamedTuple,
-    mode::Symbol;
+    mode::Symbol = :strict;
     expected_success::Bool = true,
     expected_warnings::Int = 0
 )
@@ -264,7 +264,7 @@ function test_route_to_with_validation(
         if expected_success
             # Should succeed (maybe with warnings)
             routed = Orchestration.route_all_options(
-                method, families, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=mode
+                method, families, ACTION_DEFS, kwargs, MOCK_REGISTRY
             )
             
             # Verify structure
@@ -296,7 +296,7 @@ function test_route_to_with_validation(
         else
             # Should fail
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
-                method, families, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=mode
+                method, families, ACTION_DEFS, kwargs, MOCK_REGISTRY
             )
         end
     end
@@ -364,7 +364,7 @@ function test_route_to_comprehensive()
                 
                 # Route options first
                 routed = Orchestration.route_all_options(
-                    MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=:strict
+                    MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY
                 )
                 
                 # Create strategies with routed options for testing
@@ -396,7 +396,7 @@ function test_route_to_comprehensive()
                 )
                 
                 routed = Orchestration.route_all_options(
-                    MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=:strict
+                    MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY
                 )
                 
                 # Build strategies and verify routing
@@ -415,7 +415,7 @@ function test_route_to_comprehensive()
         # ====================================================================
         
         Test.@testset "Validation Mode Tests" begin
-            Test.@testset "Strict Mode - Unknown Options" begin
+            Test.@testset "Unknown Options (Default Behavior)" begin
                 kwargs = (
                     grid_size = 200,
                     backend = Strategies.route_to(adnlp=:default),
@@ -423,25 +423,25 @@ function test_route_to_comprehensive()
                 )
                 
                 test_route_to_with_validation(
-                    MOCK_METHOD, MOCK_FAMILIES, kwargs, :strict; 
+                    MOCK_METHOD, MOCK_FAMILIES, kwargs, 
                     expected_success=false
                 )
             end
-            
-            Test.@testset "Permissive Mode - Unknown Options" begin
+        
+            Test.@testset "Unknown Options with Bypass" begin
                 kwargs = (
                     grid_size = 200,
                     backend = Strategies.route_to(adnlp=:default),
-                    fake_option = Strategies.route_to(ipopt=123)  # Unknown option
+                    fake_option = Strategies.route_to(ipopt=Strategies.bypass(123))  # Unknown option with bypass
                 )
                 
                 redirect_stderr(devnull) do
                     routed = Orchestration.route_all_options(
-                        MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=:permissive
+                        MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY
                     )
                     
                     # Build strategy and verify unknown option is present
-                    solver = create_mock_strategy(RouteIpopt; mode=:permissive, routed.strategies.solver...)
+                    solver = create_mock_strategy(RouteIpopt; routed.strategies.solver...)
                     test_option_routing(solver, :fake_option, 123)
                 end
             end
@@ -461,7 +461,7 @@ function test_route_to_comprehensive()
                 )
                 
                 routed = Orchestration.route_all_options(
-                    MOCK_METHOD_MULTI, MOCK_FAMILIES_MULTI, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=:strict
+                    MOCK_METHOD_MULTI, MOCK_FAMILIES_MULTI, ACTION_DEFS, kwargs, MOCK_REGISTRY
                 )
                 
                 # Build strategies
@@ -512,7 +512,7 @@ function test_route_to_comprehensive()
                 )
                 
                 routed = Orchestration.route_all_options(
-                    MOCK_METHOD, real_families, ACTION_DEFS, kwargs, real_registry; mode=:strict
+                    MOCK_METHOD, real_families, ACTION_DEFS, kwargs, real_registry
                 )
                 
                 # Build real modeler
@@ -548,7 +548,7 @@ function test_route_to_comprehensive()
                     )
                     
                     routed = Orchestration.route_all_options(
-                        MOCK_METHOD, real_families, ACTION_DEFS, kwargs, real_registry; mode=:strict
+                        MOCK_METHOD, real_families, ACTION_DEFS, kwargs, real_registry
                     )
                     
                     # Build real solver
@@ -580,7 +580,7 @@ function test_route_to_comprehensive()
                 )
                 
                 Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
-                    MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=:strict
+                    MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY
                 )
             end
             
@@ -591,7 +591,7 @@ function test_route_to_comprehensive()
                 )
                 
                 Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
-                    MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY; mode=:strict
+                    MOCK_METHOD, MOCK_FAMILIES, ACTION_DEFS, kwargs, MOCK_REGISTRY
                 )
             end
             

@@ -177,7 +177,9 @@ function test_coverage_disambiguation()
         end
 
         Test.@testset "route_all_options - invalid mode" begin
-            Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
+            # mode parameter no longer exists in route_all_options
+            # invalid keyword arguments throw MethodError, not IncorrectArgument
+            Test.@test_throws Exception Orchestration.route_all_options(
                 COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
                 (;),
                 COV_REGISTRY;
@@ -194,23 +196,25 @@ function test_coverage_disambiguation()
             )
         end
 
-        Test.@testset "route_all_options - permissive mode unknown disambiguated" begin
-            result = Test.@test_logs (:warn,) Orchestration.route_all_options(
+        Test.@testset "route_all_options - bypass unknown disambiguated" begin
+            # Use bypass(val) to route unknown options
+            result = Orchestration.route_all_options(
                 COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
-                (; unknown_opt=Strategies.route_to(adnlp=42)),
-                COV_REGISTRY;
-                mode=:permissive
+                (; unknown_opt=Strategies.route_to(adnlp=Strategies.bypass(42))),
+                COV_REGISTRY
             )
 
-            Test.@test result.strategies.modeler.unknown_opt == 42
+            bv = result.strategies.modeler[:unknown_opt]
+            Test.@test bv isa Strategies.BypassValue
+            Test.@test bv.value == 42
         end
 
         Test.@testset "route_all_options - strict mode unknown disambiguated" begin
+            # Without bypass, unknown options always fail
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
                 (; unknown_opt=Strategies.route_to(adnlp=42)),
-                COV_REGISTRY;
-                mode=:strict
+                COV_REGISTRY
             )
         end
 

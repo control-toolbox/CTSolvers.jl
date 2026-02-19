@@ -27,16 +27,13 @@ disambiguation syntax for options that appear in multiple strategies.
 - `registry::Strategies.StrategyRegistry`: Strategy registry
 - `source_mode::Symbol=:description`: Controls error verbosity (`:description`
   for user-facing, `:explicit` for internal)
-- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
-  - `:strict` (default): Rejects unknown options with error
-  - `:permissive`: Accepts unknown disambiguated options with warning
 
 # Returns
 NamedTuple with two fields:
 - `action::NamedTuple`: NamedTuple of action options (with `OptionValue`
   wrappers)
 - `strategies::NamedTuple`: NamedTuple of strategy options per family (raw
-  values)
+  values, may contain [`BypassValue`](@ref) wrappers for bypassed options)
 
 # Disambiguation Syntax
 
@@ -58,6 +55,14 @@ solve(ocp, :collocation, :adnlp, :ipopt;
     backend = route_to(adnlp=:sparse, ipopt=:cpu)
 )
 # Set backend to :sparse for modeler AND :cpu for solver
+```
+
+**Bypass validation** (unknown backend option):
+```julia
+solve(ocp, :collocation, :adnlp, :ipopt;
+    custom_opt = route_to(ipopt=bypass(42))
+)
+# BypassValue(42) is routed to solver and accepted unconditionally
 ```
 
 # Throws
@@ -105,19 +110,7 @@ function route_all_options(
     kwargs::NamedTuple,
     registry::Strategies.StrategyRegistry;
     source_mode::Symbol = :description,
-    mode::Symbol = :strict,
 )
-    # Validate mode parameter
-    if mode ∉ (:strict, :permissive)
-        throw(Exceptions.IncorrectArgument(
-            "Invalid validation mode",
-            got="mode=$mode",
-            expected=":strict or :permissive",
-            suggestion="Use mode=:strict for strict validation (default) or mode=:permissive to accept unknown disambiguated options",
-            context="route_all_options - validating mode parameter"
-        ))
-    end
-    
     # Step 1: Extract action options FIRST
     action_options, remaining_kwargs = Options.extract_options(
         kwargs, action_defs
@@ -146,35 +139,28 @@ function route_all_options(
                 family_name = strategy_to_family[strategy_id]
                 owners = get(option_owners, key, Set{Symbol}())
 
-                # Validate that this family owns this option
-                if family_name in owners
+                # Validate that this family owns this option, or bypass if BypassValue
+                if family_name in owners || value isa Strategies.BypassValue
+                    # Known option → route normally
+                    # BypassValue → route without validation (build_strategy_options handles it)
                     push!(routed[family_name], key => value)
-                elseif isempty(owners) && mode == :permissive
-                    # Permissive mode: accept unknown option with warning
-                    _warn_unknown_option_permissive(
-                        key, strategy_id, family_name
+                elseif isempty(owners)
+                    # Unknown option with explicit target but no bypass → error
+                    _error_unknown_option(
+                        key, method, families, strategy_to_family, registry
                     )
-                    push!(routed[family_name], key => value)
                 else
-                    # Error: trying to route to wrong strategy or unknown in strict mode
-                    if isempty(owners)
-                        # Unknown option in strict mode
-                        _error_unknown_option(
-                            key, method, families, strategy_to_family, registry
-                        )
-                    else
-                        # Invalid routing
-                        valid_strategies = [
-                            id for (id, fam) in strategy_to_family if fam in owners
-                        ]
-                        throw(Exceptions.IncorrectArgument(
-                            "Invalid option routing",
-                            got="option :$key to strategy :$strategy_id",
-                            expected="option to be routed to one of: $valid_strategies",
-                            suggestion="Check option ownership or use correct strategy identifier",
-                            context="route_options - validating strategy-specific option routing"
-                        ))
-                    end
+                    # Option exists but in wrong family
+                    valid_strategies = [
+                        id for (id, fam) in strategy_to_family if fam in owners
+                    ]
+                    throw(Exceptions.IncorrectArgument(
+                        "Invalid option routing",
+                        got="option :$key to strategy :$strategy_id",
+                        expected="option to be routed to one of: $valid_strategies",
+                        suggestion="Check option ownership or use correct strategy identifier",
+                        context="route_options - validating strategy-specific option routing"
+                    ))
                 end
             end
         else
@@ -248,14 +234,27 @@ function _error_unknown_option(
     end
 
     # Suggest closest options across all strategies (using primary names + aliases)
-    suggestion = "Check available options and use a correct option name"
+    suggestion_parts = String[]
+    
+    # First, suggest similar options if any
     all_suggestions = _collect_suggestions_across_strategies(
         key, method, families, registry; max_suggestions=3
     )
     if !isempty(all_suggestions)
-        suggestion = "Did you mean?\n" *
-            join(["  - $(Strategies.format_suggestion(s))" for s in all_suggestions], "\n")
+        push!(suggestion_parts, "Did you mean?\n" *
+            join(["  - $(Strategies.format_suggestion(s))" for s in all_suggestions], "\n"))
     end
+    
+    # Then, suggest bypass if user is confident about the option
+    if !isempty(all_suggestions)
+        push!(suggestion_parts, "\n")
+    end
+    push!(suggestion_parts, "If you're confident this option exists for a specific strategy, " *
+        "use bypass() to skip validation:\n" *
+        "  custom_opt = route_to(<strategy_id>=bypass(<value>))")
+    
+    # Combine all suggestions
+    suggestion = join(suggestion_parts, "")
 
     throw(Exceptions.IncorrectArgument(
         "Unknown option provided",

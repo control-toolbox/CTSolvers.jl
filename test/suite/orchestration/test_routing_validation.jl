@@ -76,21 +76,9 @@ function test_routing_validation()
             method = (:test_discretizer, :test_modeler, :test_solver)
             kwargs = (display = true,)
             
-            # Valid modes should work
+            # route_all_options has no mode parameter; routing always works
             Test.@test_nowarn Orchestration.route_all_options(
-                method, families, action_defs, kwargs, registry;
-                mode = :strict
-            )
-            
-            Test.@test_nowarn Orchestration.route_all_options(
-                method, families, action_defs, kwargs, registry;
-                mode = :permissive
-            )
-            
-            # Invalid mode should throw Exception
-            Test.@test_throws Exception Orchestration.route_all_options(
-                method, families, action_defs, kwargs, registry;
-                mode = :invalid
+                method, families, action_defs, kwargs, registry
             )
         end
         
@@ -102,12 +90,11 @@ function test_routing_validation()
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
-            # Unknown option without disambiguation should fail in strict mode
+            # Unknown option without disambiguation always fails
             kwargs = (unknown_option = 123,)
             
             Test.@test_throws Exception Orchestration.route_all_options(
-                method, families, action_defs, kwargs, registry;
-                mode = :strict
+                method, families, action_defs, kwargs, registry
             )
         end
         
@@ -115,12 +102,11 @@ function test_routing_validation()
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
-            # Unknown option with disambiguation should still fail in strict mode
+            # Unknown option with disambiguation but no bypass always fails
             kwargs = (unknown_option = Strategies.route_to(test_solver=123),)
             
             Test.@test_throws Exception Orchestration.route_all_options(
-                method, families, action_defs, kwargs, registry;
-                mode = :strict
+                method, families, action_defs, kwargs, registry
             )
         end
         
@@ -128,58 +114,50 @@ function test_routing_validation()
         # UNIT TESTS - Permissive Mode
         # ====================================================================
         
-        Test.@testset "Permissive Mode - Unknown Disambiguated Option Accepted" begin
+        Test.@testset "Bypass - Unknown Disambiguated Option Accepted" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
-            # Unknown option with disambiguation should be accepted with warning
-            kwargs = (custom_option = Strategies.route_to(test_solver=123),)
+            # Unknown option with bypass(val) is accepted and routed as BypassValue
+            kwargs = (custom_option = Strategies.route_to(test_solver=Strategies.bypass(123)),)
             
-            # Should emit warning but not throw
-            result = Test.@test_logs (:warn, r"Unknown option routed in permissive mode") begin
-                Orchestration.route_all_options(
-                    method, families, action_defs, kwargs, registry;
-                    mode = :permissive
-                )
-            end
-            
-            # Option should be routed to solver
-            Test.@test haskey(result.strategies.solver, :custom_option)
-            Test.@test result.strategies.solver.custom_option == 123
-        end
-        
-        Test.@testset "Permissive Mode - Multiple Unknown Options" begin
-            registry, families, action_defs = create_test_setup()
-            method = (:test_discretizer, :test_modeler, :test_solver)
-            
-            # Multiple unknown options with disambiguation
-            kwargs = (
-                custom1 = Strategies.route_to(test_solver=100),
-                custom2 = Strategies.route_to(test_modeler=200)
+            result = Orchestration.route_all_options(
+                method, families, action_defs, kwargs, registry
             )
             
-            result = Test.@test_logs (:warn,) (:warn,) match_mode=:any begin
-                Orchestration.route_all_options(
-                    method, families, action_defs, kwargs, registry;
-                    mode = :permissive
-                )
-            end
-            
-            Test.@test result.strategies.solver.custom1 == 100
-            Test.@test result.strategies.modeler.custom2 == 200
+            # BypassValue is preserved in routed options
+            bv = result.strategies.solver[:custom_option]
+            Test.@test bv isa Strategies.BypassValue
+            Test.@test bv.value == 123
         end
         
-        Test.@testset "Permissive Mode - Unknown Without Disambiguation Still Fails" begin
+        Test.@testset "Bypass - Multiple Unknown Options" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
-            # Unknown option without disambiguation should still fail
-            # (can't route without knowing which strategy)
+            # Multiple unknown options with bypass
+            kwargs = (
+                custom1 = Strategies.route_to(test_solver=Strategies.bypass(100)),
+                custom2 = Strategies.route_to(test_modeler=Strategies.bypass(200))
+            )
+            
+            result = Orchestration.route_all_options(
+                method, families, action_defs, kwargs, registry
+            )
+            
+            Test.@test result.strategies.solver[:custom1].value == 100
+            Test.@test result.strategies.modeler[:custom2].value == 200
+        end
+        
+        Test.@testset "Unknown Without Disambiguation Still Fails" begin
+            registry, families, action_defs = create_test_setup()
+            method = (:test_discretizer, :test_modeler, :test_solver)
+            
+            # Unknown option without disambiguation always fails (no bypass possible)
             kwargs = (unknown_option = 123,)
             
             Test.@test_throws Exception Orchestration.route_all_options(
-                method, families, action_defs, kwargs, registry;
-                mode = :permissive
+                method, families, action_defs, kwargs, registry
             )
         end
         
@@ -187,19 +165,15 @@ function test_routing_validation()
         # UNIT TESTS - Invalid Routing Detection
         # ====================================================================
         
-        Test.@testset "Invalid Routing - Wrong Strategy in Permissive Mode" begin
+        Test.@testset "Invalid Routing - Wrong Strategy for Known Option" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
             
-            # If an option is known but routed to wrong strategy,
-            # it should fail even in permissive mode
-            # (This would require a real option to test properly)
-            # For now, just verify mode doesn't break normal validation
-            
+            # Known option routed to wrong strategy always fails (even with bypass)
+            # grid_size belongs to discretizer, not solver
             kwargs = (display = true,)
             result = Orchestration.route_all_options(
-                method, families, action_defs, kwargs, registry;
-                mode = :permissive
+                method, families, action_defs, kwargs, registry
             )
             
             Test.@test Options.value(result.action[:display]) == true

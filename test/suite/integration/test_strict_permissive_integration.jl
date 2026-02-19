@@ -319,21 +319,20 @@ function test_strict_permissive_integration()
                     backend = :dense
                 )
                 
-                # Route options in strict mode
+                # Route options (strict is the only mode now)
                 routed = Orchestration.route_all_options(
                     method,
                     families,
                     action_defs,
                     kwargs,
-                    registry;
-                    mode=:strict
+                    registry
                 )
                 
                 Test.@test haskey(routed.strategies, :solver)
                 Test.@test haskey(routed.strategies, :modeler)
             end
             
-            Test.@testset "Routing with permissive mode" begin
+            Test.@testset "Routing with bypass(val) for unknown options" begin
                 # Create families map (must be NamedTuple, not Dict)
                 families = (
                     solver=AbstractTestSolver,
@@ -342,25 +341,25 @@ function test_strict_permissive_integration()
                 
                 action_defs = Options.OptionDefinition[]
                 
-                # Options with unknown option disambiguated (use strategy IDs, not family names)
+                # Unknown options use bypass(val) to pass through validation
                 kwargs = (
                     max_iter=Strategies.route_to(fake_solver=3000),
-                    custom_solver_option=Strategies.route_to(fake_solver="advanced"),
+                    custom_solver_option=Strategies.route_to(fake_solver=Strategies.bypass("advanced")),
                 )
                 
-                # Route options in permissive mode
-                redirect_stderr(devnull) do
-                    routed = Orchestration.route_all_options(
-                        method,
-                        families,
-                        action_defs,
-                        kwargs,
-                        registry;
-                        mode=:permissive
-                    )
-                    
-                    Test.@test haskey(routed.strategies, :solver)
-                end
+                routed = Orchestration.route_all_options(
+                    method,
+                    families,
+                    action_defs,
+                    kwargs,
+                    registry
+                )
+                
+                Test.@test haskey(routed.strategies, :solver)
+                # BypassValue is preserved in routed options
+                bv = routed.strategies.solver[:custom_solver_option]
+                Test.@test bv isa Strategies.BypassValue
+                Test.@test bv.value == "advanced"
             end
         end
         

@@ -29,6 +29,7 @@ include(joinpath(@__DIR__, "contract", "strategy_options.jl"))
 
 include(joinpath(@__DIR__, "api", "registry.jl"))
 include(joinpath(@__DIR__, "api", "introspection.jl"))
+include(joinpath(@__DIR__, "api", "bypass.jl"))
 include(joinpath(@__DIR__, "api", "builders.jl"))
 include(joinpath(@__DIR__, "api", "configuration.jl"))
 include(joinpath(@__DIR__, "api", "utilities.jl"))
@@ -41,7 +42,7 @@ include(joinpath(@__DIR__, "api", "disambiguation.jl"))
 
 # Core types
 export AbstractStrategy, StrategyRegistry, StrategyMetadata, StrategyOptions, OptionDefinition
-export RoutedOption
+export RoutedOption, BypassValue
 
 # Type-level contract methods
 export id, metadata
@@ -71,5 +72,6 @@ export build_strategy_options, resolve_alias
 
 # Utility functions
 export filter_options, suggest_options, format_suggestion, options_dict, route_to
+export bypass
 
 end # module Strategies

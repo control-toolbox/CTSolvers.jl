@@ -88,11 +88,25 @@ function build_strategy_options(
     meta = metadata(strategy_type)
     defs = collect(values(meta))
     
-    # Use Options.extract_options for validation and extraction
-    # This validates known options (type, custom validators, etc.)
-    extracted, remaining = Options.extract_options((; kwargs...), defs)
+    # Separate BypassValue kwargs from normal kwargs
+    # BypassValue options are accepted unconditionally regardless of mode
+    input_kwargs = (; kwargs...)
+    bypass_pairs = Pair{Symbol, Any}[]
+    normal_pairs = Pair{Symbol, Any}[]
+    for (k, v) in pairs(input_kwargs)
+        if v isa BypassValue
+            push!(bypass_pairs, k => v.value)
+        else
+            push!(normal_pairs, k => v)
+        end
+    end
+    normal_kwargs = NamedTuple(normal_pairs)
     
-    # Handle unknown options based on mode
+    # Use Options.extract_options for validation and extraction of normal options
+    # This validates known options (type, custom validators, etc.)
+    extracted, remaining = Options.extract_options(normal_kwargs, defs)
+    
+    # Handle unknown normal options based on mode
     if !isempty(remaining)
         if mode == :strict
             _error_unknown_options_strict(remaining, strategy_type, meta)
@@ -104,6 +118,11 @@ function build_strategy_options(
                 extracted[key] = Options.OptionValue(value, :user)
             end
         end
+    end
+    
+    # Inject bypassed options unconditionally (no validation, no warning)
+    for (key, value) in bypass_pairs
+        extracted[key] = Options.OptionValue(value, :user)
     end
     
     # Convert Dict to NamedTuple
