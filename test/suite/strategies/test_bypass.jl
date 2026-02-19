@@ -162,6 +162,24 @@ function test_bypass()
             end
         end
 
+        # ====================================================================
+        # UNIT TESTS - Bypass Validation Power
+        # ====================================================================
+
+        Test.@testset "Bypass Validation Power" begin
+            # 1. Bypass type validation for known option
+            # max_iter is Int, we pass String via bypass
+            strat = MockSolver(max_iter=Strategies.bypass("not_an_int"))
+            Test.@test Strategies.option_value(strat, :max_iter) == "not_an_int"
+            Test.@test Strategies.option_source(strat, :max_iter) === :user
+
+            # 2. Overwrite default with different type
+            # tol is Float64 (default 1e-6), we pass Symbol via bypass
+            strat2 = MockSolver(tol=Strategies.bypass(:flexible))
+            Test.@test Strategies.option_value(strat2, :tol) === :flexible
+            Test.@test Strategies.option_source(strat2, :tol) === :user
+        end
+
     end
 end
 

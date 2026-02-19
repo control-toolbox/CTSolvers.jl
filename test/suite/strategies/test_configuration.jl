@@ -116,6 +116,34 @@ function test_configuration()
         end
         
         # ====================================================================
+        # BypassValue in build_strategy_options
+        # ====================================================================
+        
+        Test.@testset "BypassValue in build_strategy_options" begin
+            # Bypass unknown option
+            opts = Strategies.build_strategy_options(
+                TestStrategyA;
+                unknown=Strategies.bypass(42)
+            )
+            Test.@test opts[:unknown] == 42
+            Test.@test Strategies.source(opts, :unknown) == :user
+            
+            # Bypass type validation (max_iter is Int)
+            opts2 = Strategies.build_strategy_options(
+                TestStrategyA;
+                max_iter=Strategies.bypass("not_an_int")
+            )
+            Test.@test opts2[:max_iter] == "not_an_int"
+            
+            # Bypass overwrites default (tolerance is 1e-6)
+            opts3 = Strategies.build_strategy_options(
+                TestStrategyA;
+                tolerance=Strategies.bypass(1e-8)
+            )
+            Test.@test opts3[:tolerance] == 1e-8
+        end
+        
+        # ====================================================================
         # resolve_alias
         # ====================================================================
         
