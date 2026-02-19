@@ -10,6 +10,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.6-beta] - 2026-02-19
+
+### Breaking Changes
+
+- **Removed `mode` parameter** from `Orchestration.route_all_options()` - routing function now focuses solely on routing without validation
+- **Replaced `mode=:permissive`** with explicit `bypass(val)` wrapper for validation bypass
+- **Updated error handling** - invalid mode parameters now throw `MethodError` instead of `IncorrectArgument`
+
+### Added
+
+- **New bypass mechanism** - `Strategies.BypassValue{T}` type and `bypass(val)` function for explicit validation bypass
+- **Enhanced error messages** - Unknown option errors now suggest using `bypass()` for confident users
+- **Simplified architecture** - Clear separation: `route_all_options` routes, `build_strategy_options` validates
+- **Comprehensive test coverage** - 27 new tests in `test_bypass.jl` covering all bypass scenarios
+- **Type safety improvements** - `BypassValue{T}` preserves type information through routing pipeline
+
+### Changed
+
+- **API simplification** - Removed complexity from routing layer, moved validation logic to strategy construction
+- **Error messages** - More helpful suggestions for unknown options with bypass examples
+- **Test updates** - All existing tests adapted to new bypass API, maintaining backward compatibility for `mode=:permissive`
+
+### Migration
+
+**For unknown options:**
+```julia
+# Old
+MySolver(unknown_opt=42; mode=:permissive)
+
+# New
+MySolver(unknown_opt=Strategies.bypass(42))
+```
+
+**For routing unknown options:**
+```julia
+# Old
+kwargs = (opt = Strategies.route_to(strategy=42),)
+routed = Orchestration.route_all_options(...; mode=:permissive)
+
+# New
+kwargs = (opt = Strategies.route_to(strategy=Strategies.bypass(42)),)
+routed = Orchestration.route_all_options(...)
+```
+
+**Remove mode parameter:**
+```julia
+# Old
+routed = Orchestration.route_all_options(
+    method, families, action_defs, kwargs, registry;
+    mode=:strict  # or :permissive
+)
+
+# New
+routed = Orchestration.route_all_options(
+    method, families, action_defs, kwargs, registry
+)
+```
+
+### Benefits
+
+- **Clearer intent** - Explicit `bypass(val)` makes validation bypass obvious
+- **Better separation** - Routing and validation concerns are properly separated
+- **Type preservation** - `BypassValue{T}` maintains type information through the pipeline
+- **Improved UX** - Better error messages guide users to appropriate solutions
+
+---
+
 ## [0.3.5-beta] - 2026-02-18
 
 ### Added

@@ -5,6 +5,132 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.3.6-beta (2026-02-19)
+
+**Breaking change:** The routing and validation system has been refactored to simplify responsibilities and introduce a new bypass mechanism.
+
+### Summary
+
+- `route_all_options()` no longer accepts a `mode` parameter
+- `mode=:permissive` behavior is replaced by explicit `bypass(val)` wrapper
+- New `BypassValue{T}` type and `bypass(val)` function for validation bypass
+- Simplified separation of concerns: routing vs validation
+
+### Breaking Changes
+
+#### 1. Removed `mode` parameter from `route_all_options`
+
+**Before:**
+```julia
+routed = Orchestration.route_all_options(
+    method, families, action_defs, kwargs, registry;
+    mode=:permissive  # or :strict
+)
+```
+
+**After:**
+```julia
+routed = Orchestration.route_all_options(
+    method, families, action_defs, kwargs, registry
+)
+```
+
+#### 2. Replaced `mode=:permissive` with explicit bypass
+
+**Before:**
+```julia
+# Accept unknown options with warning
+strat = MySolver(unknown_opt=42; mode=:permissive)
+```
+
+**After:**
+```julia
+# Explicit bypass for unknown options
+strat = MySolver(unknown_opt=Strategies.bypass(42))
+```
+
+#### 3. Updated `route_to` usage for unknown options
+
+**Before:**
+```julia
+# Would fail even in permissive mode for unknown options
+kwargs = (custom_opt = Strategies.route_to(my_solver=42),)
+```
+
+**After:**
+```julia
+# Explicit bypass for unknown options
+kwargs = (custom_opt = Strategies.route_to(my_solver=Strategies.bypass(42)),)
+```
+
+### Migration Guide
+
+#### Replace `mode=:permissive` usage
+
+**For unknown options:**
+```julia
+# Old
+MySolver(custom_opt=42; mode=:permissive)
+
+# New
+MySolver(custom_opt=Strategies.bypass(42))
+```
+
+**For routing unknown options:**
+```julia
+# Old
+kwargs = (opt = Strategies.route_to(strategy=42),)
+routed = Orchestration.route_all_options(...; mode=:permissive)
+
+# New
+kwargs = (opt = Strategies.route_to(strategy=Strategies.bypass(42)),)
+routed = Orchestration.route_all_options(...)
+```
+
+#### Remove `mode` parameter from `route_all_options`
+
+```julia
+# Old
+routed = Orchestration.route_all_options(
+    method, families, action_defs, kwargs, registry;
+    mode=:strict  # or :permissive
+)
+
+# New (no mode parameter)
+routed = Orchestration.route_all_options(
+    method, families, action_defs, kwargs, registry
+)
+```
+
+#### Update error handling
+
+`mode=:invalid_mode` now throws `MethodError` instead of `IncorrectArgument`:
+
+```julia
+# Old: Would throw IncorrectArgument
+try
+    Orchestration.route_all_options(...; mode=:invalid_mode)
+catch e
+    @test e isa Exceptions.IncorrectArgument
+end
+
+# New: Throws MethodError
+try
+    Orchestration.route_all_options(...; mode=:invalid_mode)
+catch e
+    @test e isa MethodError
+end
+```
+
+### Benefits
+
+- **Clearer API**: Explicit bypass makes intent obvious
+- **Simpler architecture**: `route_all_options` only routes, `build_strategy_options` validates
+- **Better error messages**: Unknown option errors now suggest `bypass()` usage
+- **Type safety**: `BypassValue{T}` preserves type information through routing
+
+---
+
 ## v0.3.3-beta (2026-02-16)
 
 **Breaking change:** The base solver abstract type was renamed from
