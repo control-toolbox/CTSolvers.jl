@@ -10,6 +10,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.7-beta] - 2026-02-20
+
+### Added
+
+- **Action option shadowing detection** - `@info` warning emitted when user-provided action options also exist in strategy families
+- **Fixed `route_to` bypass** - `route_to(strategy=val)` now correctly bypasses action option extraction
+- **Enhanced user guidance** - Warning messages suggest using `route_to` for explicit strategy targeting
+- **Comprehensive test coverage** - 3 new tests in `test_routing.jl` covering shadowing detection and bypass behavior
+
+### Fixed
+
+- **Route extraction bug** - `RoutedOption` values are now excluded from action extraction and re-integrated for strategy routing
+- **Type error in route_to** - Fixed `IncorrectArgument` when using `route_to` with action-shadowed options
+
+### Changed
+
+- **Improved UX** - Users are now informed when action options shadow strategy options with clear suggestions
+- **Better error messages** - Shadowing warnings include affected strategy families and `route_to` usage examples
+
+### Migration
+
+No code changes required - these improvements are **non-breaking** and only add helpful warnings while fixing a bug.
+
+**New behavior examples:**
+```julia
+# Action option that also exists in solver
+solve(ocp; display=false)
+# → Action gets false, solver gets default
+# → @info warning: "Option `display` was intercepted as a global action option..."
+
+# Explicit routing to strategy (now works correctly)
+solve(ocp; display=route_to(solver=false))
+# → Action gets default, solver gets false
+# → No warning (user was explicit)
+```
+
+### Benefits
+
+- **Better developer experience** - Clear warnings prevent silent shadowing surprises
+- **Fixed functionality** - `route_to` now works correctly with action-shadowed options
+- **Explicit intent** - Users can clearly distinguish between action and strategy targeting
+
+---
+
 ## [0.3.6-beta] - 2026-02-19
 
 ### Breaking Changes

@@ -5,6 +5,70 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.3.7-beta (2026-02-20)
+
+**Breaking change:** Action option shadowing detection and `route_to` bypass behavior.
+
+### Summary
+
+- Action options that also exist in strategy families now trigger an `@info` warning
+- `route_to(strategy=val)` correctly bypasses action option extraction
+- Improved user guidance when action options shadow strategy options
+
+### Breaking Changes
+
+#### 1. Action option shadowing detection
+
+**Before:** No warning when action options shadow strategy options.
+
+**After:** An `@info` message is emitted when a user-provided action option also exists in a strategy family.
+
+```julia
+# Now emits: "Option `display` was intercepted as a global action option. 
+# It is also available for the following strategy families: solver. 
+# To pass it specifically to a strategy, use `route_to(display=...)`."
+solve(ocp; display=false)
+```
+
+#### 2. Fixed `route_to` bypass for action options
+
+**Before:** `route_to(strategy=val)` would fail with type error when the option was also defined as an action.
+
+**After:** `route_to` correctly bypasses action extraction and reaches the strategy.
+
+```julia
+# Now works correctly - action gets default, strategy gets false
+solve(ocp; display=route_to(solver=false))
+```
+
+### Migration Guide
+
+#### No code changes required
+
+These changes are **non-breaking** for existing code. They only add helpful warnings and fix a bug that previously prevented `route_to` from working with action-shadowed options.
+
+#### Understanding the new behavior
+
+```julia
+# Action option that also exists in solver
+solve(ocp; display=false)
+# → Action gets false, solver gets default
+# → @info warning emitted about shadowing
+
+# Explicit routing to strategy
+solve(ocp; display=route_to(solver=false))
+# → Action gets default, solver gets false
+# → No warning (user was explicit)
+```
+
+### Benefits
+
+- **Better UX**: Users are warned when action options shadow strategy options
+- **Fixed bug**: `route_to` now works correctly with action-shadowed options
+- **Clear guidance**: Warning messages suggest `route_to` for explicit targeting
+
+---
+
 ## v0.3.6-beta (2026-02-19)
 
 **Breaking change:** The routing and validation system has been refactored to simplify responsibilities and introduce a new bypass mechanism.
