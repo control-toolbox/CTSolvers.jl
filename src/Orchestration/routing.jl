@@ -124,6 +124,16 @@ function route_all_options(
     # Step 3: Build option ownership map
     option_owners = build_option_ownership_map(method, families, registry)
 
+    # Detect action option shadowing (Action masking a Strategy option)
+    for (k, opt_val) in action_options
+        if opt_val.source === :user && haskey(option_owners, k) && !isempty(option_owners[k])
+            owners_str = join(sort(collect(option_owners[k])), ", ")
+            @info "Option `$(k)` was intercepted as a global action option. " *
+                  "It is also available for the following strategy families: $(owners_str). " *
+                  "To pass it specifically to a strategy, use `route_to($(k)=...)`."
+        end
+    end
+
     # Step 4: Route each remaining option
     routed = Dict{Symbol, Vector{Pair{Symbol, Any}}}()
     for family_name in keys(families)

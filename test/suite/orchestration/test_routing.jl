@@ -58,6 +58,12 @@ Strategies.metadata(::Type{RoutingIpopt}) = Strategies.StrategyMetadata(
     )
 )
 
+struct ShadowingSolver <: RoutingTestSolver end
+Strategies.id(::Type{ShadowingSolver}) = :shadow_solver
+Strategies.metadata(::Type{ShadowingSolver}) = Strategies.StrategyMetadata(
+    Options.OptionDefinition(name=:display, type=Bool, default=false, description="Solver display")
+)
+
 const ROUTING_REGISTRY = Strategies.create_registry(
     RoutingTestDiscretizer => (RoutingCollocation,),
     RoutingTestModeler => (RoutingADNLP,),
@@ -94,6 +100,41 @@ const ROUTING_ACTION_DEFS = [
 function test_routing()
     Test.@testset "Orchestration Routing" verbose = VERBOSE showtiming = SHOWTIMING begin
         
+        # ====================================================================
+        # Action Option Shadowing Detection
+        # ====================================================================
+        
+        Test.@testset "Action Option Shadowing Detection" begin
+            # Use the custom registry/families where solver also has :display option
+            
+            shadow_registry = Strategies.create_registry(
+                RoutingTestDiscretizer => (RoutingCollocation,),
+                RoutingTestModeler => (RoutingADNLP,),
+                RoutingTestSolver => (ShadowingSolver,)
+            )
+            shadow_method = (:collocation, :adnlp, :shadow_solver)
+            
+            # 1. When user provides the shadowed option
+            kwargs = (display = false,)
+            
+            # We expect an @info message explaining the shadowing
+            Test.@test_logs (:info, r"Option `display` was intercepted.*available for.*solver") begin
+                routed = Orchestration.route_all_options(
+                    shadow_method, ROUTING_FAMILIES, ROUTING_ACTION_DEFS, kwargs, shadow_registry
+                )
+                Test.@test routed.action.display.value == false
+            end
+            
+            # 2. When option is not provided by user (default is used), NO warning
+            kwargs_empty = NamedTuple()
+            Test.@test_logs begin # expect no logs
+                routed_empty = Orchestration.route_all_options(
+                    shadow_method, ROUTING_FAMILIES, ROUTING_ACTION_DEFS, kwargs_empty, shadow_registry
+                )
+                Test.@test routed_empty.action.display.value == true # default
+            end
+        end
+
         # ====================================================================
         # Auto-routing (unambiguous options)
         # ====================================================================
