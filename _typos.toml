@@ -4,6 +4,8 @@ extend-ignore-re = [
     # Test examples with intentional typos for suggestion testing
     "adnlp_backen",
     "ipopt_backen",
+    # Common variable names in our codebase
+    "strat",
 ]
 
 [files]
