@@ -112,8 +112,19 @@ function route_all_options(
     source_mode::Symbol = :description,
 )
     # Step 1: Extract action options FIRST
-    action_options, remaining_kwargs = Options.extract_options(
-        kwargs, action_defs
+    # We exclude RoutedOptions from action extraction, as they are explicitly meant for strategies
+    action_kwargs = NamedTuple(
+        k => v for (k, v) in pairs(kwargs) if !(v isa Strategies.RoutedOption)
+    )
+
+    action_options, remaining_action_kwargs = Options.extract_options(
+        action_kwargs, action_defs
+    )
+    
+    # Re-integrate RoutedOptions for strategy routing
+    remaining_kwargs = merge(
+        remaining_action_kwargs,
+        NamedTuple(k => v for (k, v) in pairs(kwargs) if v isa Strategies.RoutedOption)
     )
 
     # Step 2: Build strategy-to-family mapping

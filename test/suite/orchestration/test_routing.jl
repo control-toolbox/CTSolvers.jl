@@ -122,17 +122,31 @@ function test_routing()
                 routed = Orchestration.route_all_options(
                     shadow_method, ROUTING_FAMILIES, ROUTING_ACTION_DEFS, kwargs, shadow_registry
                 )
-                Test.@test routed.action.display.value == false
+                Test.@test Options.value(routed.action[:display]) == false
+                Test.@test Options.source(routed.action[:display]) === :user
             end
             
             # 2. When option is not provided by user (default is used), NO warning
             kwargs_empty = NamedTuple()
-            Test.@test_logs begin # expect no logs
-                routed_empty = Orchestration.route_all_options(
-                    shadow_method, ROUTING_FAMILIES, ROUTING_ACTION_DEFS, kwargs_empty, shadow_registry
-                )
-                Test.@test routed_empty.action.display.value == true # default
-            end
+            routed_empty = Orchestration.route_all_options(
+                shadow_method, ROUTING_FAMILIES, ROUTING_ACTION_DEFS, kwargs_empty, shadow_registry
+            )
+            Test.@test Options.value(routed_empty.action[:display]) == true # default
+            Test.@test Options.source(routed_empty.action[:display]) === :default
+            
+            # 3. When user explicitly routes the shadowed option to the strategy via route_to
+            kwargs_routed = (display = Strategies.route_to(shadow_solver=false),)
+            routed_explicit = Orchestration.route_all_options(
+                shadow_method, ROUTING_FAMILIES, ROUTING_ACTION_DEFS, kwargs_routed, shadow_registry
+            )
+            
+            # The action should get the default value (true) since route_to bypasses action extraction
+            Test.@test Options.value(routed_explicit.action[:display]) == true
+            Test.@test Options.source(routed_explicit.action[:display]) === :default
+            
+            # The strategy should get the explicitly routed value (false)
+            Test.@test haskey(routed_explicit.strategies.solver, :display)
+            Test.@test routed_explicit.strategies.solver[:display] == false
         end
 
         # ====================================================================
