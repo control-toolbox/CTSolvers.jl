@@ -12,7 +12,6 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 # Load extensions to trigger dependencies
 import NLPModelsIpopt
 import MadNLP
-import MadNLPMumps
 import MadNCL
 # using NLPModelsKnitro
 

@@ -33,7 +33,6 @@ end
 
 const MADNLP_AVAILABLE = try
     import MadNLP
-    import MadNLPMumps
     true
 catch
     false
@@ -41,7 +40,6 @@ end
 
 const MADNCL_AVAILABLE = try
     import MadNLP
-    import MadNLPMumps
     import MadNCL
     true
 catch

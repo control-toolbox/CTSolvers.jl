@@ -8,7 +8,6 @@ import SolverCore
 import ADNLPModels
 import ExaModels
 import MadNLP
-import MadNLPMumps # must be removed in the future
 
 include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
 import .TestProblems

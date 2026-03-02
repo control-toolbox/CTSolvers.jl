@@ -36,7 +36,6 @@ end
 
 const MADNLP_AVAILABLE = try
     import MadNLP
-    import MadNLPMumps
     # println("✅ MadNLP loaded for real strategy tests")
     true
 catch

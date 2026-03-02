@@ -9,8 +9,8 @@ the `AbstractStrategy` contract and provide a unified callable interface.
 
 # Solver Types
 - `Solvers.Ipopt` - Interior point optimizer (requires NLPModelsIpopt)
-- `Solvers.MadNLP` - Matrix-free augmented Lagrangian (requires MadNLP, MadNLPMumps)
-- `Solvers.MadNCL` - NCL variant of MadNLP (requires MadNCL, MadNLP, MadNLPMumps)
+- `Solvers.MadNLP` - Matrix-free augmented Lagrangian (requires MadNLP)
+- `Solvers.MadNCL` - NCL variant of MadNLP (requires MadNCL, MadNLP)
 - `Solvers.Knitro` - Commercial solver (requires NLPModelsKnitro)
 
 # Architecture

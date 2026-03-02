@@ -5,7 +5,6 @@ import CTSolvers
 import CTSolvers.Optimization
 import MadNCL
 import MadNLP
-import MadNLPMumps
 import NLPModels
 import ADNLPModels
 import SolverCore

@@ -31,14 +31,14 @@ $(TYPEDFIELDS)
 Solver options are defined in the CTSolversMadNCL extension.
 Load the extension to access option definitions and documentation:
 ```julia
-using MadNCL, MadNLP, MadNLPMumps
+using MadNCL, MadNLP
 ```
 
 # Examples
 
 ```julia
 # Load the extension first
-using MadNCL, MadNLP, MadNLPMumps
+using MadNCL, MadNLP
 
 # Create solver with default options
 solver = Solvers.MadNCL()
@@ -54,9 +54,9 @@ stats = solver(nlp, display=true)
 
 # Extension Required
 
-This solver requires the `MadNCL`, `MadNLP` and `MadNLPMumps` packages:
+This solver requires the `MadNCL` and `MadNLP` packages:
 ```julia
-using MadNCL, MadNLP, MadNLPMumps
+using MadNCL, MadNLP
 ```
 
 # Implementation Notes
@@ -104,7 +104,7 @@ Requires the CTSolversMadNCL extension to be loaded.
 
 # Examples
 ```julia
-using MadNCL, MadNLP, MadNLPMumps
+using MadNCL, MadNLP
 
 # Strict mode (default) - rejects unknown options
 solver = Solvers.MadNCL(max_iter=1000, tol=1e-6)
@@ -131,9 +131,9 @@ Real implementation provided by the extension.
 """
 function build_madncl_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
-        :MadNCL, :MadNLP, :MadNLPMumps;
+        :MadNCL, :MadNLP;
         message="to create MadNCL, access options, and solve problems",
         feature="MadNCL functionality",
-        context="Load MadNCL extension first: using MadNCL, MadNLP, MadNLPMumps"
+        context="Load MadNCL extension first: using MadNCL, MadNLP"
     ))
 end

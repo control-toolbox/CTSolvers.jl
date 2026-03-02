@@ -35,7 +35,7 @@ $(TYPEDFIELDS)
   - MadNLP.INFO: Standard informational output
   - MadNLP.WARN: Warning messages only
   - MadNLP.ERROR: Error messages only
-- `linear_solver::Type{<:MadNLP.AbstractLinearSolver}`: Linear solver backend (default: MadNLPMumps.MumpsSolver)
+- `linear_solver::Type{<:MadNLP.AbstractLinearSolver}`: Linear solver backend (default: MadNLP.MumpsSolver)
 
 # Examples
 
@@ -44,7 +44,7 @@ $(TYPEDFIELDS)
 solver = MadNLP()
 
 # Create solver with custom options
-using MadNLP, MadNLPMumps
+using MadNLP
 solver = MadNLP(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
 
 # Solve an NLP problem
@@ -55,9 +55,9 @@ stats = solver(nlp, display=true)
 
 # Extension Required
 
-This solver requires the `MadNLP` and `MadNLPMumps` packages:
+This solver requires the `MadNLP` package:
 ```julia
-using MadNLP, MadNLPMumps
+using MadNLP
 ```
 
 # Implementation Notes
@@ -104,7 +104,7 @@ Requires the CTSolversMadNLP extension to be loaded.
 
 # Examples
 ```julia
-using MadNLP, MadNLPMumps
+using MadNLP
 
 # Strict mode (default) - rejects unknown options
 solver = MadNLP(max_iter=1000, tol=1e-6)
@@ -131,9 +131,9 @@ Real implementation provided by the extension.
 """
 function build_madnlp_solver(::AbstractTag; kwargs...)
     throw(Exceptions.ExtensionError(
-        :MadNLP, :MadNLPMumps;
+        :MadNLP;
         message="to create MadNLP, access options, and solve problems",
         feature="MadNLP functionality",
-        context="Load MadNLP extension first: using MadNLP, MadNLPMumps"
+        context="Load MadNLP extension first: using MadNLP"
     ))
 end

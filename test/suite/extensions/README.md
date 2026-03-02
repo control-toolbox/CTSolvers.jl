@@ -22,13 +22,14 @@ Pkg.add("NLPModelsIpopt")
 ### MadNLP Extension (`test_madnlp_extension.jl`)
 ```julia
 using Pkg
-Pkg.add(["MadNLP", "MadNLPMumps"])
+Pkg.add("MadNLP")
 ```
 
 ### MadNCL Extension (`test_madncl_extension.jl`)
 ```julia
 using Pkg
-Pkg.add(["MadNCL", "MadNLP", "MadNLPMumps"])
+Pkg.add("MadNCL")
+Pkg.add("MadNLP")
 ```
 
 ## Running Extension Tests

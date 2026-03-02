@@ -14,7 +14,6 @@ import NLPModels
 import ADNLPModels
 import MadNCL
 import MadNLP
-import MadNLPMumps
 import MadNLPGPU
 
 include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
@@ -94,7 +93,7 @@ function test_madncl_extension()
             Test.@test Options.default(meta[:max_iter]) isa Integer
             Test.@test Options.default(meta[:tol]) isa Real
             Test.@test Options.default(meta[:print_level]) isa MadNLP.LogLevels
-            Test.@test Options.default(meta[:linear_solver]) == MadNLPMumps.MumpsSolver
+            Test.@test Options.default(meta[:linear_solver]) == MadNLP.MumpsSolver
             Test.@test Options.default(meta[:ncl_options]) isa MadNCL.NCLOptions
         end
         
@@ -374,7 +373,7 @@ function test_madncl_extension()
             BaseType = Float64
             modelers = [Modelers.ADNLP(), Modelers.Exa(; base_type=BaseType)]
             modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
-            linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
+            linear_solvers = [MadNLP.UmfpackSolver, MadNLP.MumpsSolver]
             linear_solver_names = ["Umfpack", "Mumps"]
             
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -422,7 +421,7 @@ function test_madncl_extension()
                 :print_level => MadNLP.ERROR,
                 :ncl_options => MadNCL.NCLOptions{Float64}(; verbose=false)
             )
-            linear_solvers = [MadNLPMumps.MumpsSolver]
+            linear_solvers = [MadNLP.MumpsSolver]
             linear_solver_names = ["Mumps"]
             
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin

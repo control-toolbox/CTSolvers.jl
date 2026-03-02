@@ -14,7 +14,6 @@ import CTSolvers.Optimization
 import CTBase.Exceptions
 import MadNCL
 import MadNLP
-import MadNLPMumps
 import NLPModels
 import SolverCore
 
@@ -76,7 +75,7 @@ function Strategies.metadata(::Type{<:Solvers.MadNCL})
         Strategies.OptionDefinition(;
             name=:linear_solver,
             type=Type{<:MadNLP.AbstractLinearSolver},
-            default=MadNLPMumps.MumpsSolver,
+            default=MadNLP.MumpsSolver,
             description="Linear solver implementation used inside MadNCL"
         ),
         # ---- Termination options ----

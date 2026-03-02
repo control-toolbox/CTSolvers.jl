@@ -13,7 +13,6 @@ import CTSolvers.Strategies
 import CTSolvers.Options
 import CTBase.Exceptions
 import MadNLP
-import MadNLPMumps
 import NLPModels
 import SolverCore
 
@@ -64,8 +63,8 @@ function Strategies.metadata(::Type{<:Solvers.MadNLP})
         Strategies.OptionDefinition(;
             name=:linear_solver,
             type=Type{<:MadNLP.AbstractLinearSolver},
-            default=MadNLPMumps.MumpsSolver,
-            description="Sparse linear solver for the KKT system. Default is MadNLPMumps.MumpsSolver. Other options include MadNLP.UmfpackSolver, MadNLP.LDLSolver, MadNLP.CHOLMODSolver."
+            default=MadNLP.MumpsSolver,
+            description="Sparse linear solver for the KKT system. Default is MadNLP.MumpsSolver. Other options include MadNLP.UmfpackSolver, MadNLP.LDLSolver, MadNLP.CHOLMODSolver."
         ),
         # ---- Termination options ----
         Strategies.OptionDefinition(;
@@ -371,9 +370,9 @@ A 6-element tuple `(objective, iterations, constraints_violation, message, statu
 """
 function Optimization.extract_solver_infos(
     nlp_solution::MadNLP.MadNLPExecutionStats,
-    minimize::Bool,
+    ::Bool,
 )
-    objective = minimize ? nlp_solution.objective : -nlp_solution.objective
+    objective = nlp_solution.objective
     iterations = nlp_solution.iter
     constraints_violation = nlp_solution.primal_feas
     status = Symbol(nlp_solution.status)

@@ -17,7 +17,6 @@ import CTSolvers.Solvers
 try
     import NLPModelsIpopt
     import MadNLP
-    import MadNLPMumps
 catch
     # Extension packages might not be available in standard test environment
 end

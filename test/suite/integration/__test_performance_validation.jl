@@ -19,7 +19,6 @@ using Random
 # Import extensions to trigger solver implementations
 using NLPModelsIpopt
 using MadNLP
-using MadNLPMumps
 using MadNCL
 
 # To trigger Solvers.Ipopt construction

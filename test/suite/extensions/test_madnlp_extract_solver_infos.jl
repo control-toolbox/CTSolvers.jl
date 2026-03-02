@@ -3,7 +3,6 @@ module TestExtMadNLP
 import Test
 import CTSolvers.Optimization
 import MadNLP
-import MadNLPMumps # must be removed in the future
 import NLPModels
 import ADNLPModels
 

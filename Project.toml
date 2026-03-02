@@ -17,15 +17,14 @@ SolverCore = "ff4d7338-4cf1-434d-91df-b86cb86fb843"
 [weakdeps]
 MadNCL = "434a0bcb-5a7c-42b2-a9d3-9e3f760e7af0"
 MadNLP = "2621e9c9-9eb4-46b1-8089-e8c72242dfb6"
-MadNLPMumps = "3b83494e-c0a4-4895-918b-9157a7a085a1"
 NLPModelsIpopt = "f4238b75-b362-5c4c-b852-0801c9a21d71"
 NLPModelsKnitro = "bec4dd0d-7755-52d5-9a02-22f0ffc7efcb"
 
 [extensions]
 CTSolversIpopt = "NLPModelsIpopt"
 CTSolversKnitro = "NLPModelsKnitro"
-CTSolversMadNCL = ["MadNCL", "MadNLP", "MadNLPMumps"]
-CTSolversMadNLP = ["MadNLP", "MadNLPMumps"]
+CTSolversMadNCL = ["MadNCL", "MadNLP"]
+CTSolversMadNLP = ["MadNLP"]
 
 [compat]
 ADNLPModels = "0.8"
@@ -38,10 +37,9 @@ CommonSolve = "0.2"
 DocStringExtensions = "0.9"
 ExaModels = "0.9"
 KernelAbstractions = "0.9"
-MadNCL = "0.1"
-MadNLP = "0.8"
-MadNLPGPU = "0.7"
-MadNLPMumps = "0.5"
+MadNCL = "0.2"
+MadNLP = "0.9"
+MadNLPGPU = "0.8"
 NLPModels = "0.21"
 NLPModelsIpopt = "0.11"
 NLPModelsKnitro = "0.10"
@@ -61,4 +59,4 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "BenchmarkTools", "CUDA", "MadNCL", "MadNLP", "MadNLPGPU", "MadNLPMumps", "NLPModelsIpopt", "OrderedCollections", "Random", "Test"]
+test = ["Aqua", "BenchmarkTools", "CUDA", "MadNCL", "MadNLP", "MadNLPGPU", "NLPModelsIpopt", "OrderedCollections", "Random", "Test"]

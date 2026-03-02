@@ -13,7 +13,6 @@ import CUDA
 import NLPModels
 import ADNLPModels
 import MadNLP
-import MadNLPMumps
 import ExaModels
 import MadNLPGPU
 
@@ -112,7 +111,7 @@ function test_madnlp_extension()
             Test.@test Options.default(meta[:max_iter]) isa Integer
             Test.@test Options.default(meta[:tol]) isa Real
             Test.@test Options.default(meta[:print_level]) isa MadNLP.LogLevels
-            Test.@test Options.default(meta[:linear_solver]) == MadNLPMumps.MumpsSolver
+            Test.@test Options.default(meta[:linear_solver]) == MadNLP.MumpsSolver
 
             # Test termination option defaults - all use NotProvided to let MadNLP use its own defaults
             Test.@test Options.default(meta[:acceptable_iter]) isa Options.NotProvidedType
@@ -210,7 +209,7 @@ function test_madnlp_extension()
                 max_iter=1000,
                 tol=1e-6,
                 print_level=MadNLP.ERROR,
-                linear_solver=MadNLPMumps.MumpsSolver
+                linear_solver=MadNLP.MumpsSolver
             )
             
             stats = solver(nlp; display=false)
@@ -259,8 +258,7 @@ function test_madnlp_extension()
             Test.@test Symbol(stats.status) in (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)
             Test.@test length(stats.solution) == 1
             Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
-            # Note: MadNLP 0.8 inverts the sign for maximization problems
-            Test.@test -stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
+            Test.@test stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
         end
         
         # ====================================================================
@@ -475,7 +473,7 @@ function test_madnlp_extension()
             BaseType = Float32
             modelers = [Modelers.ADNLP(), Modelers.Exa(; base_type=BaseType)]
             modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
-            linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
+            linear_solvers = [MadNLP.UmfpackSolver, MadNLP.MumpsSolver]
             linear_solver_names = ["Umfpack", "Mumps"]
             
             # Rosenbrock: start at the known solution and enforce max_iter=0
@@ -528,7 +526,7 @@ function test_madnlp_extension()
             modelers = [Modelers.ADNLP(), Modelers.Exa(; base_type=BaseType)]
             modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
             madnlp_options = Dict(:max_iter => 1000, :tol => 1e-6, :print_level => MadNLP.ERROR)
-            linear_solvers = [MadNLP.UmfpackSolver, MadNLPMumps.MumpsSolver]
+            linear_solvers = [MadNLP.UmfpackSolver, MadNLP.MumpsSolver]
             linear_solver_names = ["Umfpack", "Mumps"]
             
             Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -569,8 +567,7 @@ function test_madnlp_extension()
                             Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                             Test.@test length(sol.solution) == 1
                             Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
-                            # MadNLP inverts sign for maximization
-                            Test.@test -sol.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
+                            Test.@test sol.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
                         end
                     end
                 end
