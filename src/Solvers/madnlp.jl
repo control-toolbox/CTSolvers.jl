@@ -137,3 +137,21 @@ function build_madnlp_solver(::AbstractTag; kwargs...)
         context="Load MadNLP extension first: using MadNLP"
     ))
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Stub function that throws ExtensionError if CTSolversMadNLP extension is not loaded.
+Real metadata implementation provided by the extension.
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+"""
+function Strategies.metadata(::Type{<:Solvers.MadNLP})
+    throw(Exceptions.ExtensionError(
+        :MadNLP;
+        message="to access MadNLP options metadata",
+        feature="MadNLP metadata",
+        context="Load MadNLP extension first: using MadNLP"
+    ))
+end

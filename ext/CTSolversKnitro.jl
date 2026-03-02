@@ -24,7 +24,7 @@ $(TYPEDSIGNATURES)
 
 Return metadata defining Knitro options and their specifications.
 """
-function Strategies.metadata(::Type{<:Solvers.Knitro})
+function Strategies.metadata(::Type{Solvers.Knitro})
     return Strategies.StrategyMetadata(
         # ====================================================================
         # TERMINATION OPTIONS

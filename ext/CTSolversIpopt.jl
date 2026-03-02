@@ -24,7 +24,7 @@ $(TYPEDSIGNATURES)
 
 Return metadata defining Ipopt options and their specifications.
 """
-function Strategies.metadata(::Type{<:Solvers.Ipopt})
+function Strategies.metadata(::Type{Solvers.Ipopt})
     return Strategies.StrategyMetadata(
         # ====================================================================
         # TERMINATION OPTIONS

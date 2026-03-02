@@ -137,3 +137,21 @@ function build_madncl_solver(::AbstractTag; kwargs...)
         context="Load MadNCL extension first: using MadNCL, MadNLP"
     ))
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Stub function that throws ExtensionError if CTSolversMadNCL extension is not loaded.
+Real metadata implementation provided by the extension.
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+"""
+function Strategies.metadata(::Type{<:Solvers.MadNCL})
+    throw(Exceptions.ExtensionError(
+        :MadNCL, :MadNLP;
+        message="to access MadNCL options metadata",
+        feature="MadNCL metadata",
+        context="Load MadNCL extension first: using MadNCL, MadNLP"
+    ))
+end

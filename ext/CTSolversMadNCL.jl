@@ -37,7 +37,7 @@ $(TYPEDSIGNATURES)
 
 Return metadata defining MadNCL options and their specifications.
 """
-function Strategies.metadata(::Type{<:Solvers.MadNCL})
+function Strategies.metadata(::Type{Solvers.MadNCL})
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:max_iter,

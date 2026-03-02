@@ -25,7 +25,7 @@ $(TYPEDSIGNATURES)
 
 Return metadata defining MadNLP options and their specifications.
 """
-function Strategies.metadata(::Type{<:Solvers.MadNLP})
+function Strategies.metadata(::Type{Solvers.MadNLP})
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:max_iter,

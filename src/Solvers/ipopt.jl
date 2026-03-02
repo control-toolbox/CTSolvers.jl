@@ -136,3 +136,21 @@ function build_ipopt_solver(::AbstractTag; kwargs...)
         context="Load NLPModelsIpopt extension first: using NLPModelsIpopt"
     ))
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Stub function that throws ExtensionError if CTSolversIpopt extension is not loaded.
+Real metadata implementation provided by the extension.
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+"""
+function Strategies.metadata(::Type{<:Solvers.Ipopt})
+    throw(Exceptions.ExtensionError(
+        :NLPModelsIpopt;
+        message="to access Ipopt options metadata",
+        feature="Ipopt metadata",
+        context="Load NLPModelsIpopt extension first: using NLPModelsIpopt"
+    ))
+end

@@ -139,3 +139,21 @@ function build_knitro_solver(::AbstractTag; kwargs...)
         context="Load NLPModelsKnitro extension first: using NLPModelsKnitro"
     ))
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Stub function that throws ExtensionError if CTSolversKnitro extension is not loaded.
+Real metadata implementation provided by the extension.
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+"""
+function Strategies.metadata(::Type{<:Solvers.Knitro})
+    throw(Exceptions.ExtensionError(
+        :NLPModelsKnitro;
+        message="to access Knitro options metadata",
+        feature="Knitro metadata",
+        context="Load NLPModelsKnitro extension first: using NLPModelsKnitro"
+    ))
+end

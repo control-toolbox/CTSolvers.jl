@@ -133,6 +133,85 @@ function test_extension_stubs()
                 Test.@test_throws Exceptions.ExtensionError stub()
             end
         end
+        
+        # ====================================================================
+        # UNIT TESTS - metadata() Stubs
+        # ====================================================================
+        
+        Test.@testset "metadata() stubs" begin
+            Test.@testset "Solvers.Ipopt metadata stub" begin
+                # Test that metadata throws ExtensionError without extension
+                Test.@test_throws Exceptions.ExtensionError CTSolvers.Strategies.metadata(Solvers.Ipopt)
+                
+                # Capture and verify error content
+                err = nothing
+                try
+                    CTSolvers.Strategies.metadata(Solvers.Ipopt)
+                catch e
+                    err = e
+                end
+                
+                Test.@test err isa Exceptions.ExtensionError
+                
+                err_str = string(err)
+                Test.@test occursin("Ipopt", err_str)
+                Test.@test occursin("metadata", err_str)
+                Test.@test occursin("NLPModelsIpopt", err_str)
+            end
+            
+            Test.@testset "Solvers.MadNLP metadata stub" begin
+                Test.@test_throws Exceptions.ExtensionError CTSolvers.Strategies.metadata(Solvers.MadNLP)
+                
+                err = nothing
+                try
+                    CTSolvers.Strategies.metadata(Solvers.MadNLP)
+                catch e
+                    err = e
+                end
+                
+                Test.@test err isa Exceptions.ExtensionError
+                
+                err_str = string(err)
+                Test.@test occursin("MadNLP", err_str)
+                Test.@test occursin("metadata", err_str)
+            end
+            
+            Test.@testset "Solvers.MadNCL metadata stub" begin
+                Test.@test_throws Exceptions.ExtensionError CTSolvers.Strategies.metadata(Solvers.MadNCL)
+                
+                err = nothing
+                try
+                    CTSolvers.Strategies.metadata(Solvers.MadNCL)
+                catch e
+                    err = e
+                end
+                
+                Test.@test err isa Exceptions.ExtensionError
+                
+                err_str = string(err)
+                Test.@test occursin("MadNCL", err_str)
+                Test.@test occursin("metadata", err_str)
+            end
+            
+            # Knitro commented out - no license
+            # Test.@testset "Solvers.Knitro metadata stub" begin
+            #     Test.@test_throws Exceptions.ExtensionError CTSolvers.Strategies.metadata(Solvers.Knitro)
+            # end
+            
+            Test.@testset "All metadata stubs throw ExtensionError" begin
+                # Verify that all metadata stubs throw ExtensionError
+                solver_types = [
+                    Solvers.Ipopt,
+                    Solvers.MadNLP,
+                    Solvers.MadNCL
+                    # Solvers.Knitro  # Commented out - no license
+                ]
+                
+                for solver_type in solver_types
+                    Test.@test_throws Exceptions.ExtensionError CTSolvers.Strategies.metadata(solver_type)
+                end
+            end
+        end
     end
 end
 
