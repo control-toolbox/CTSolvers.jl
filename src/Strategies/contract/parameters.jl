@@ -60,10 +60,90 @@ function id(parameter_type::Type{<:AbstractStrategyParameter})
     ))
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Check whether a type is a strategy parameter type.
+
+This predicate is useful for contract validation and generic code paths that
+need to distinguish parameter types from other types.
+
+# Arguments
+- `T::Type`: Any Julia type
+
+# Returns
+- `Bool`: `true` if `T <: AbstractStrategyParameter`, otherwise `false`
+
+# Example
+```julia-repl
+julia> Strategies.is_parameter_type(Strategies.CPU)
+true
+
+julia> Strategies.is_parameter_type(Int)
+false
+```
+
+See also: [`AbstractStrategyParameter`](@ref), [`validate_parameter_type`](@ref)
+"""
 is_parameter_type(::Type{T}) where {T} = T <: AbstractStrategyParameter
 
+"""
+$(TYPEDSIGNATURES)
+
+Get the identifier of a strategy parameter type.
+
+This is an explicit alias for [`id`](@ref) to make code using parameter IDs
+more self-documenting.
+
+# Arguments
+- `parameter_type::Type{<:AbstractStrategyParameter}`: The parameter type
+
+# Returns
+- `Symbol`: The parameter identifier
+
+# Example
+```julia-repl
+julia> Strategies.parameter_id(Strategies.CPU)
+:cpu
+```
+
+See also: [`id`](@ref), [`AbstractStrategyParameter`](@ref)
+"""
 parameter_id(parameter_type::Type{<:AbstractStrategyParameter}) = id(parameter_type)
 
+"""
+$(TYPEDSIGNATURES)
+
+Validate that a parameter type satisfies the `AbstractStrategyParameter` contract.
+
+This function performs lightweight structural checks:
+- the parameter type must be concrete
+- the parameter type must be a singleton type (no fields)
+- the parameter type must implement [`id`](@ref)
+
+# Arguments
+- `parameter_type::Type{<:AbstractStrategyParameter}`: The parameter type to validate
+
+# Returns
+- `Nothing`: Returns `nothing` if validation succeeds
+
+# Throws
+- `Exceptions.IncorrectArgument`: If the parameter type is not concrete or has fields
+- `Exceptions.NotImplemented`: If the parameter type does not implement `id`
+
+# Example
+```julia
+struct MyParam <: Strategies.AbstractStrategyParameter end
+Strategies.id(::Type{MyParam}) = :my_param
+
+Strategies.validate_parameter_type(MyParam)  # returns nothing
+```
+
+# Notes
+- This function does not validate global ID uniqueness; that is handled by registry construction.
+
+See also: [`id`](@ref), [`parameter_id`](@ref), [`is_parameter_type`](@ref)
+"""
 function validate_parameter_type(parameter_type::Type{<:AbstractStrategyParameter})
     if !isconcretetype(parameter_type)
         throw(Exceptions.IncorrectArgument(
