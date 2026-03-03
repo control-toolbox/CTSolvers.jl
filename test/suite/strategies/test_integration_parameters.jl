@@ -5,6 +5,7 @@ import CTBase.Exceptions
 import CTSolvers.Strategies
 import CTSolvers.Modelers
 import CTSolvers.Solvers
+import CTSolvers.Options
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -25,19 +26,19 @@ Strategies.id(::Type{<:IntegrationStratA}) = :integrationstrata
 Strategies.id(::Type{<:IntegrationStratB}) = :integrationstratb
 
 # Simple metadata
-Strategies.metadata(::Type{T}) where {T<:IntegrationStratA} = Options.StrategyMetadata(
+Strategies.metadata(::Type{T}) where {T<:IntegrationStratA} = Strategies.StrategyMetadata(
     Options.OptionDefinition(name=:opt1, type=Int, default=10)
 )
 
-Strategies.metadata(::Type{T}) where {T<:IntegrationStratB} = Options.StrategyMetadata(
+Strategies.metadata(::Type{T}) where {T<:IntegrationStratB} = Strategies.StrategyMetadata(
     Options.OptionDefinition(name=:opt1, type=Int, default=20),
     Options.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=nothing)
 )
 
 # Parameter-specific metadata
-function Strategies.metadata(::Type{IntegrationStratB{P}}) where {P<:AbstractStrategyParameter}
-    backend_default = P == CPU ? nothing : "cuda_backend"
-    return Options.StrategyMetadata(
+function Strategies.metadata(::Type{IntegrationStratB{P}}) where {P<:Strategies.AbstractStrategyParameter}
+    backend_default = P == Strategies.CPU ? nothing : "cuda_backend"
+    return Strategies.StrategyMetadata(
         Options.OptionDefinition(name=:opt1, type=Int, default=20),
         Options.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=backend_default)
     )
@@ -49,7 +50,7 @@ function IntegrationStratA(; mode=:strict, kwargs...)
     return IntegrationStratA(opts)
 end
 
-function IntegrationStratB{P}(; mode=:strict, kwargs...) where {P<:AbstractStrategyParameter}
+function IntegrationStratB{P}(; mode=:strict, kwargs...) where {P<:Strategies.AbstractStrategyParameter}
     opts = Strategies.build_strategy_options(IntegrationStratB{P}; mode=mode, kwargs...)
     return IntegrationStratB{P}(opts)
 end

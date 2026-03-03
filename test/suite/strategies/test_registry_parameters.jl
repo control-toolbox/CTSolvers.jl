@@ -8,7 +8,7 @@ const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
 # TOP-LEVEL: Define all structs here
-struct FakeFamily <: Strategies.AbstractStrategy end
+abstract type FakeFamily <: Strategies.AbstractStrategy end
 struct FakeStratA <: FakeFamily end
 struct FakeStratB{P<:Strategies.AbstractStrategyParameter} <: FakeFamily end
 

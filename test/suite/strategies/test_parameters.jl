@@ -1,6 +1,7 @@
 module TestParameters
 
 import Test
+import CTBase.Exceptions
 import CTSolvers.Strategies
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
@@ -22,7 +23,7 @@ function test_parameters()
         end
         
         Test.@testset "NotImplemented for parameter without id()" begin
-            Test.@test_throws CTBase.Exceptions.NotImplemented Strategies.id(BadParam)
+            Test.@test_throws Exceptions.NotImplemented Strategies.id(BadParam)
         end
         
         Test.@testset "Singleton types (no state)" begin
