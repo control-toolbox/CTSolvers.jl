@@ -1,18 +1,20 @@
 module TestMadNLPGPULinearSolver
 
-using Test
-using CTSolvers.Strategies
-using CTSolvers.Solvers
-using Main.TestOptions: VERBOSE, SHOWTIMING
+import Test
+import CTSolvers.Strategies
+import CTSolvers.Solvers
+
+const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
 function test_madnlp_gpu_linear_solver()
-    @testset "MadNLP/MadNCL GPU Linear Solver Defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "MadNLP/MadNCL GPU Linear Solver Defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
         # UNIT TESTS - MadNLP CPU defaults
         # ====================================================================
         
-        @testset "MadNLP{CPU} defaults" begin
+        Test.@testset "MadNLP{CPU} defaults" begin
             # Note: We can't instantiate without MadNLP extension loaded
             # But we can test the type exists and parameter extraction works
             @test Solvers.MadNLP{CPU} isa Type{Solvers.MadNLP{CPU}}
@@ -24,7 +26,7 @@ function test_madnlp_gpu_linear_solver()
         # UNIT TESTS - MadNLP GPU type
         # ====================================================================
         
-        @testset "MadNLP{GPU} type" begin
+        Test.@testset "MadNLP{GPU} type" begin
             @test Solvers.MadNLP{GPU} isa Type{Solvers.MadNLP{GPU}}
             @test Strategies.get_parameter_type(Solvers.MadNLP{GPU}) == GPU
             @test Strategies.id(Solvers.MadNLP{GPU}) == :madnlp
@@ -34,7 +36,7 @@ function test_madnlp_gpu_linear_solver()
         # UNIT TESTS - MadNCL CPU defaults
         # ====================================================================
         
-        @testset "MadNCL{CPU} defaults" begin
+        Test.@testset "MadNCL{CPU} defaults" begin
             @test Solvers.MadNCL{CPU} isa Type{Solvers.MadNCL{CPU}}
             @test Strategies.get_parameter_type(Solvers.MadNCL{CPU}) == CPU
             @test Strategies.id(Solvers.MadNCL{CPU}) == :madncl
@@ -44,7 +46,7 @@ function test_madnlp_gpu_linear_solver()
         # UNIT TESTS - MadNCL GPU type
         # ====================================================================
         
-        @testset "MadNCL{GPU} type" begin
+        Test.@testset "MadNCL{GPU} type" begin
             @test Solvers.MadNCL{GPU} isa Type{Solvers.MadNCL{GPU}}
             @test Strategies.get_parameter_type(Solvers.MadNCL{GPU}) == GPU
             @test Strategies.id(Solvers.MadNCL{GPU}) == :madncl
@@ -54,7 +56,7 @@ function test_madnlp_gpu_linear_solver()
         # INTEGRATION TESTS - Registry with parameterized solvers
         # ====================================================================
         
-        @testset "Registry with GPU solvers" begin
+        Test.@testset "Registry with GPU solvers" begin
             r = Strategies.create_registry(
                 CTSolvers.Solvers.AbstractNLPSolver => (
                     (Solvers.MadNLP, [CPU, GPU]),
@@ -78,7 +80,7 @@ function test_madnlp_gpu_linear_solver()
         # INTEGRATION TESTS - Type stability
         # ====================================================================
         
-        @testset "Type stability" begin
+        Test.@testset "Type stability" begin
             # Test that parameter extraction is type stable
             @test_nowarn @inferred Strategies.get_parameter_type(Solvers.MadNLP{CPU})
             @test_nowarn @inferred Strategies.get_parameter_type(Solvers.MadNLP{GPU})

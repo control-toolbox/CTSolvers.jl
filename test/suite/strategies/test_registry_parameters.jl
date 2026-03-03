@@ -1,68 +1,81 @@
 module TestRegistryParameters
 
-using Test
-using CTSolvers.Strategies
-using Main.TestOptions: VERBOSE, SHOWTIMING
+import Test
+import CTBase.Exceptions
+import CTSolvers.Strategies
+
+const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
 # TOP-LEVEL: Define all structs here
-struct FakeFamily <: AbstractStrategy end
+struct FakeFamily <: Strategies.AbstractStrategy end
 struct FakeStratA <: FakeFamily end
-struct FakeStratB{P<:AbstractStrategyParameter} <: FakeFamily end
+struct FakeStratB{P<:Strategies.AbstractStrategyParameter} <: FakeFamily end
 
 # Implement contracts
 Strategies.id(::Type{<:FakeStratA}) = :fakestrata
 Strategies.id(::Type{<:FakeStratB}) = :fakestratb
 
 # Fake parameter for testing
-struct FakeParam <: AbstractStrategyParameter end
+struct FakeParam <: Strategies.AbstractStrategyParameter end
 Strategies.id(::Type{FakeParam}) = :fakeparam
 
+# Additional test structs (must be at top level)
+struct FakeStratWithIdCpu <: FakeFamily end
+Strategies.id(::Type{<:FakeStratWithIdCpu}) = :cpu
+
+struct FakeParam2 <: Strategies.AbstractStrategyParameter end
+Strategies.id(::Type{FakeParam2}) = :fakeparam
+
+struct FakeStratC <: FakeFamily end
+Strategies.id(::Type{<:FakeStratC}) = :fakestrata  # Same as FakeStratA
+
 function test_registry_parameters()
-    @testset "Registry with Parameters" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Registry with Parameters" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
         # UNIT TESTS - create_registry with parameterized strategies
         # ====================================================================
         
-        @testset "create_registry parameterized" begin
+        Test.@testset "create_registry parameterized" begin
             r = Strategies.create_registry(
-                FakeFamily => (FakeStratA, (FakeStratB, [CPU, GPU]))
+                FakeFamily => (FakeStratA, (FakeStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
             # Check that the registry contains the correct types
             types = r.families[FakeFamily]
             @test FakeStratA in types
-            @test FakeStratB{CPU} in types
-            @test FakeStratB{GPU} in types
+            @test FakeStratB{Strategies.CPU} in types
+            @test FakeStratB{Strategies.GPU} in types
             @test length(types) == 3
         end
         
-        @testset "create_registry with multiple parameterized strategies" begin
+        Test.@testset "create_registry with multiple parameterized strategies" begin
             r = Strategies.create_registry(
-                FakeFamily => ((FakeStratA, [CPU]), (FakeStratB, [CPU, GPU]))
+                FakeFamily => ((FakeStratA, [Strategies.CPU]), (FakeStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
             types = r.families[FakeFamily]
-            @test FakeStratA{CPU} in types
-            @test FakeStratB{CPU} in types
-            @test FakeStratB{GPU} in types
+            @test FakeStratA{Strategies.CPU} in types
+            @test FakeStratB{Strategies.CPU} in types
+            @test FakeStratB{Strategies.GPU} in types
             @test length(types) == 3
         end
         
-        @testset "create_registry validation - invalid strategy type" begin
-            @test_throws CTBase.Exceptions.IncorrectArgument Strategies.create_registry(
-                FakeFamily => ((String, [CPU]),)  # String is not a strategy
+        Test.@testset "create_registry validation - invalid strategy type" begin
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.create_registry(
+                FakeFamily => ((String, [Strategies.CPU]),)  # String is not a strategy
             )
         end
         
-        @testset "create_registry validation - invalid parameter type" begin
-            @test_throws CTBase.Exceptions.IncorrectArgument Strategies.create_registry(
+        Test.@testset "create_registry validation - invalid parameter type" begin
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.create_registry(
                 FakeFamily => ((FakeStratB, [String]),)  # String is not a parameter
             )
         end
         
-        @testset "create_registry validation - invalid parameter format" begin
-            @test_throws CTBase.Exceptions.IncorrectArgument Strategies.create_registry(
+        Test.@testset "create_registry validation - invalid parameter format" begin
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.create_registry(
                 FakeFamily => ((FakeStratB, "not a tuple"),)  # Not a tuple/vector
             )
         end
@@ -71,32 +84,23 @@ function test_registry_parameters()
         # UNIT TESTS - Global ID uniqueness
         # ====================================================================
         
-        @testset "Global ID uniqueness - strategy vs parameter" begin
+        Test.@testset "Global ID uniqueness - strategy vs parameter" begin
             # :cpu cannot be both a strategy ID and a parameter ID
-            struct FakeStratWithIdCpu <: FakeFamily end
-            Strategies.id(::Type{<:FakeStratWithIdCpu}) = :cpu
-            
-            @test_throws CTBase.Exceptions.IncorrectArgument Strategies.create_registry(
-                FakeFamily => (FakeStratWithIdCpu, (FakeStratB, [CPU]))
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.create_registry(
+                FakeFamily => (FakeStratWithIdCpu, (FakeStratB, [Strategies.CPU]))
             )
         end
         
-        @testset "Global ID uniqueness - parameter vs parameter" begin
+        Test.@testset "Global ID uniqueness - parameter vs parameter" begin
             # :fakeparam cannot be used by two different parameter types
-            struct FakeParam2 <: AbstractStrategyParameter end
-            Strategies.id(::Type{FakeParam2}) = :fakeparam
-            
-            @test_throws CTBase.Exceptions.IncorrectArgument Strategies.create_registry(
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.create_registry(
                 FakeFamily => ((FakeStratB, [FakeParam, FakeParam2]),)
             )
         end
         
-        @testset "Global ID uniqueness - strategy vs strategy" begin
+        Test.@testset "Global ID uniqueness - strategy vs strategy" begin
             # Same ID for two different strategies should fail
-            struct FakeStratC <: FakeFamily end
-            Strategies.id(::Type{<:FakeStratC}) = :fakestrata  # Same as FakeStratA
-            
-            @test_throws CTBase.Exceptions.IncorrectArgument Strategies.create_registry(
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.create_registry(
                 FakeFamily => (FakeStratA, FakeStratC)
             )
         end
@@ -105,9 +109,9 @@ function test_registry_parameters()
         # UNIT TESTS - strategy_ids deduplication
         # ====================================================================
         
-        @testset "strategy_ids deduplication" begin
+        Test.@testset "strategy_ids deduplication" begin
             r = Strategies.create_registry(
-                FakeFamily => (FakeStratA, (FakeStratB, [CPU, GPU]))
+                FakeFamily => (FakeStratA, (FakeStratB, [Strategies.CPU, Strategies.GPU]))
             )
             ids = Strategies.strategy_ids(FakeFamily, r)
             @test length(ids) == length(unique(ids))  # No duplicates
@@ -116,9 +120,9 @@ function test_registry_parameters()
             @test length(ids) == 2  # Only 2 unique IDs despite 3 types
         end
         
-        @testset "strategy_ids with only parameterized strategies" begin
+        Test.@testset "strategy_ids with only parameterized strategies" begin
             r = Strategies.create_registry(
-                FakeFamily => ((FakeStratA, [CPU, GPU]), (FakeStratB, [CPU]))
+                FakeFamily => ((FakeStratA, [Strategies.CPU, Strategies.GPU]), (FakeStratB, [Strategies.CPU]))
             )
             ids = Strategies.strategy_ids(FakeFamily, r)
             @test length(ids) == 2  # :fakestrata, :fakestratb
@@ -128,14 +132,14 @@ function test_registry_parameters()
         # UNIT TESTS - get_parameter_type
         # ====================================================================
         
-        @testset "get_parameter_type" begin
-            @test Strategies.get_parameter_type(FakeStratB{CPU}) == CPU
-            @test Strategies.get_parameter_type(FakeStratB{GPU}) == GPU
+        Test.@testset "get_parameter_type" begin
+            @test Strategies.get_parameter_type(FakeStratB{Strategies.CPU}) == Strategies.CPU
+            @test Strategies.get_parameter_type(FakeStratB{Strategies.GPU}) == Strategies.GPU
             @test Strategies.get_parameter_type(FakeStratA) === nothing
         end
         
-        @testset "get_parameter_type type stability" begin
-            @test_nowarn @inferred Strategies.get_parameter_type(FakeStratB{CPU})
+        Test.@testset "get_parameter_type type stability" begin
+            @test_nowarn @inferred Strategies.get_parameter_type(FakeStratB{Strategies.CPU})
             @test_nowarn @inferred Strategies.get_parameter_type(FakeStratA)
         end
         
@@ -143,44 +147,44 @@ function test_registry_parameters()
         # UNIT TESTS - type_from_id with parameter
         # ====================================================================
         
-        @testset "type_from_id with parameter" begin
+        Test.@testset "type_from_id with parameter" begin
             r = Strategies.create_registry(
-                FakeFamily => ((FakeStratB, [CPU, GPU]),)
+                FakeFamily => ((FakeStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             
-            T_cpu = Strategies.type_from_id(:fakestratb, FakeFamily, r; parameter=CPU)
-            T_gpu = Strategies.type_from_id(:fakestratb, FakeFamily, r; parameter=GPU)
+            T_cpu = Strategies.type_from_id(:fakestratb, FakeFamily, r; parameter=Strategies.CPU)
+            T_gpu = Strategies.type_from_id(:fakestratb, FakeFamily, r; parameter=Strategies.GPU)
             
-            @test T_cpu == FakeStratB{CPU}
-            @test T_gpu == FakeStratB{GPU}
+            @test T_cpu == FakeStratB{Strategies.CPU}
+            @test T_gpu == FakeStratB{Strategies.GPU}
         end
         
-        @testset "type_from_id without parameter" begin
+        Test.@testset "type_from_id without parameter" begin
             r = Strategies.create_registry(
-                FakeFamily => ((FakeStratB, [CPU, GPU]),)
+                FakeFamily => ((FakeStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             
             # Should return the first match (implementation-dependent but should work)
             T = Strategies.type_from_id(:fakestratb, FakeFamily, r)
-            @test T in (FakeStratB{CPU}, FakeStratB{GPU})
+            @test T in (FakeStratB{Strategies.CPU}, FakeStratB{Strategies.GPU})
         end
         
-        @testset "type_from_id parameter not found" begin
+        Test.@testset "type_from_id parameter not found" begin
             r = Strategies.create_registry(
-                FakeFamily => ((FakeStratB, [CPU]),)  # Only CPU
+                FakeFamily => ((FakeStratB, [Strategies.CPU]),)  # Only CPU
             )
             
-            @test_throws CTBase.Exceptions.IncorrectArgument Strategies.type_from_id(
-                :fakestratb, FakeFamily, r; parameter=GPU
+            @test_throws Exceptions.IncorrectArgument Strategies.type_from_id(
+                :fakestratb, FakeFamily, r; parameter=Strategies.GPU
             )
         end
         
-        @testset "type_from_id strategy not found" begin
+        Test.@testset "type_from_id strategy not found" begin
             r = Strategies.create_registry(
                 FakeFamily => (FakeStratA,)
             )
             
-            @test_throws CTBase.Exceptions.IncorrectArgument Strategies.type_from_id(
+            @test_throws Exceptions.IncorrectArgument Strategies.type_from_id(
                 :nonexistent, FakeFamily, r
             )
         end
@@ -189,9 +193,9 @@ function test_registry_parameters()
         # INTEGRATION TESTS
         # ====================================================================
         
-        @testset "Registry display with parameterized strategies" begin
+        Test.@testset "Registry display with parameterized strategies" begin
             r = Strategies.create_registry(
-                FakeFamily => (FakeStratA, (FakeStratB, [CPU, GPU]))
+                FakeFamily => (FakeStratA, (FakeStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
             # Test that display works without errors

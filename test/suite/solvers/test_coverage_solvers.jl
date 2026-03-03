@@ -2,7 +2,6 @@ module TestCoverageSolvers
 
 import Test
 import CTBase.Exceptions
-import CTSolvers
 import CTSolvers.Solvers
 import CTSolvers.Strategies
 import CTSolvers.Options
@@ -63,7 +62,7 @@ function test_coverage_solvers()
             # Tag type
             Test.@test Solvers.KnitroTag <: Solvers.AbstractTag
             Test.@test !isabstracttype(Solvers.KnitroTag)
-            Test.@test_nowarn Solvers.KnitroTag()
+            # Tags are now used as types, not instances
 
             # Struct fields
             Test.@test :options in fieldnames(Solvers.Knitro)
@@ -73,12 +72,12 @@ function test_coverage_solvers()
             Test.@test_throws Exceptions.ExtensionError Solvers.Knitro()
 
             # build_knitro_solver stub throws ExtensionError
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_knitro_solver(Solvers.KnitroTag())
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_knitro_solver(Solvers.KnitroTag)
 
             # Verify error message content
             err = nothing
             try
-                Solvers.build_knitro_solver(Solvers.KnitroTag())
+                Solvers.build_knitro_solver(Solvers.KnitroTag)
             catch e
                 err = e
             end
@@ -96,7 +95,7 @@ function test_coverage_solvers()
             # Without NLPModelsIpopt loaded, constructor should throw
             # (NLPModelsIpopt IS loaded in test env, so this tests the stub path)
             # We test the stub directly with a non-IpoptTag
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(Solvers.KnitroTag())
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(Solvers.KnitroTag)
         end
 
         # ====================================================================
@@ -104,7 +103,7 @@ function test_coverage_solvers()
         # ====================================================================
 
         Test.@testset "Solvers.MadNLP - stub with wrong tag" begin
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(Solvers.KnitroTag())
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(Solvers.KnitroTag, Strategies.CPU)
         end
 
         # ====================================================================
@@ -112,7 +111,7 @@ function test_coverage_solvers()
         # ====================================================================
 
         Test.@testset "Solvers.MadNCL - stub with wrong tag" begin
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(Solvers.KnitroTag())
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(Solvers.KnitroTag, Strategies.CPU)
         end
 
         # ====================================================================

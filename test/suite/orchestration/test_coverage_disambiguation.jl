@@ -2,7 +2,6 @@ module TestCoverageDisambiguation
 
 import Test
 import CTBase.Exceptions
-import CTSolvers
 import CTSolvers.Orchestration
 import CTSolvers.Strategies
 import CTSolvers.Options

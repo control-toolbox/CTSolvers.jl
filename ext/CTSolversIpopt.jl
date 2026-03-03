@@ -465,7 +465,7 @@ julia> solver = build_ipopt_solver(IpoptTag; max_iter=1000, custom_option=123; m
 Ipopt(...)  # with warning about custom_option
 ```
 """
-function Solvers.build_ipopt_solver(::Solvers.IpoptTag; mode::Symbol=:strict, kwargs...)
+function Solvers.build_ipopt_solver(::Type{Solvers.IpoptTag}; mode::Symbol=:strict, kwargs...)
     opts = Strategies.build_strategy_options(Solvers.Ipopt; mode=mode, kwargs...)
     return Solvers.Ipopt(opts)
 end

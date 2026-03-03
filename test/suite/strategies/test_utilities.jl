@@ -1,9 +1,9 @@
 module TestStrategiesUtilities
 
 import Test
-import CTSolvers
 import CTSolvers.Strategies
-import CTSolvers.Options: OptionDefinition
+import CTSolvers.Options
+
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 

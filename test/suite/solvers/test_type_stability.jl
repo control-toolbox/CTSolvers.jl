@@ -1,7 +1,6 @@
 module TestTypeStability
 
 import Test
-import CTSolvers
 import CTSolvers.Solvers
 import CTSolvers.Strategies
 import CTSolvers.Options

@@ -2,8 +2,8 @@ module TestExtensionStubs
 
 import Test
 import CTBase.Exceptions
-import CTSolvers
 import CTSolvers.Solvers
+import CTSolvers.Strategies
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -29,12 +29,12 @@ function test_extension_stubs()
         
         Test.@testset "Solvers.Ipopt stub" begin
             # Test that build_ipopt_solver throws ExtensionError with IpoptTag
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(DummyTag())
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(DummyTag)
             
             # Capture the error and verify its content
             err = nothing
             try
-                Solvers.build_ipopt_solver(DummyTag())
+                Solvers.build_ipopt_solver(DummyTag)
             catch e
                 err = e
             end
@@ -76,11 +76,11 @@ function test_extension_stubs()
         # ====================================================================
         
         Test.@testset "Solvers.MadNLP stub" begin
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(DummyTag())
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(DummyTag, Strategies.CPU)
             
             err = nothing
             try
-                Solvers.build_madnlp_solver(DummyTag())
+                Solvers.build_madnlp_solver(DummyTag, Strategies.CPU)
             catch e
                 err = e
             end
@@ -98,11 +98,11 @@ function test_extension_stubs()
         # ====================================================================
         
         Test.@testset "Solvers.MadNCL stub" begin
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(DummyTag())
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(DummyTag, Strategies.CPU)
             
             err = nothing
             try
-                Solvers.build_madncl_solver(DummyTag())
+                Solvers.build_madncl_solver(DummyTag, Strategies.CPU)
             catch e
                 err = e
             end
@@ -122,11 +122,11 @@ function test_extension_stubs()
         Test.@testset "All stubs throw ExtensionError" begin
             # Verify that all build_*_solver stubs throw ExtensionError
             stubs = [
-                () -> Solvers.build_ipopt_solver(DummyTag()),
+                () -> Solvers.build_ipopt_solver(DummyTag),
                 # Commented out - no Knitro license available
                 # () -> Solvers.build_knitro_solver(DummyTag()),
-                () -> Solvers.build_madnlp_solver(DummyTag()),
-                () -> Solvers.build_madncl_solver(DummyTag())
+                () -> Solvers.build_madnlp_solver(DummyTag, Strategies.CPU),
+                () -> Solvers.build_madncl_solver(DummyTag, Strategies.CPU)
             ]
             
             for stub in stubs

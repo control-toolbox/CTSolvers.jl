@@ -98,6 +98,13 @@ Return the unique identifier for Solvers.MadNCL.
 """
 Strategies.id(::Type{<:Solvers.MadNCL}) = :madncl
 
+"""
+Default parameter type for MadNCL when not explicitly specified.
+
+Returns `CPU` as the default execution parameter.
+"""
+_default_parameter(::Type{<:Solvers.MadNCL}) = CPU
+
 # ============================================================================
 # Constructor with Tag Dispatch
 # ============================================================================
@@ -133,7 +140,7 @@ solver = Solvers.MadNCL(max_iter=1000, custom_option=123; mode=:permissive)
 - `Strategies.Exceptions.ExtensionError`: If the MadNCL extension is not loaded
 """
 function Solvers.MadNCL(; mode::Symbol=:strict, kwargs...)
-    return build_madncl_solver(MadNCLTag(), CPU(); mode=mode, kwargs...)
+    return build_madncl_solver(MadNCLTag, _default_parameter(Solvers.MadNCL); mode=mode, kwargs...)
 end
 
 """
@@ -171,7 +178,7 @@ solver = Solvers.MadNCL{GPU}(max_iter=1000, custom_option=123; mode=:permissive)
 - `Strategies.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
 """
 function Solvers.MadNCL{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
-    return build_madncl_solver(MadNCLTag(), P(); mode=mode, kwargs...)
+    return build_madncl_solver(MadNCLTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -183,7 +190,7 @@ Real implementation provided by the extension.
 # Throws
 - `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
-function build_madncl_solver(::AbstractTag, parameter::AbstractStrategyParameter; kwargs...)
+function build_madncl_solver(::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...)
     throw(Exceptions.ExtensionError(
         :MadNCL, :MadNLP;
         message="to create MadNCL, access options, and solve problems",
@@ -198,14 +205,36 @@ $(TYPEDSIGNATURES)
 Stub function that throws ExtensionError if CTSolversMadNCL extension is not loaded.
 Real metadata implementation provided by the extension.
 
+This stub is for parameterized types `MadNCL{P}` where `P <: AbstractStrategyParameter`.
+
 # Throws
 - `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
-function Strategies.metadata(::Type{<:Solvers.MadNCL})
+function Strategies.metadata(::Type{<:Solvers.MadNCL{P}}) where {P<:AbstractStrategyParameter}
     throw(Exceptions.ExtensionError(
         :MadNCL, :MadNLP;
-        message="to access MadNCL options metadata",
+        message="to access MadNCL{$P} options metadata",
         feature="MadNCL metadata",
         context="Load MadNCL extension first: using MadNCL, MadNLP"
     ))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Fallback for non-parameterized `MadNCL` type that delegates to `MadNCL{CPU}`.
+
+This provides backward compatibility and a sensible default when the parameter
+is not specified. The call will delegate to `metadata(MadNCL{CPU})`, which will
+either use the extension implementation (if loaded) or throw an ExtensionError
+(if not loaded).
+
+# Returns
+- `StrategyMetadata`: Metadata for `MadNCL{CPU}` (if extension loaded)
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: If extension not loaded (via delegation)
+"""
+function Strategies.metadata(::Type{Solvers.MadNCL})
+    return Strategies.metadata(Solvers.MadNCL{_default_parameter(Solvers.MadNCL)})
 end

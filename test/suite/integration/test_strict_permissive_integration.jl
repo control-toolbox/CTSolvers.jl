@@ -8,7 +8,6 @@ to ensure the system works correctly end-to-end.
 module TestStrictPermissiveIntegration
 
 import Test
-import CTSolvers
 import CTSolvers.Strategies
 import CTSolvers.Options
 import CTSolvers.Orchestration

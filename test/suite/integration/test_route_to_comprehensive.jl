@@ -17,7 +17,6 @@ module TestRouteToComprehensive
 
 import Test
 import CTBase.Exceptions
-import CTSolvers
 import CTSolvers.Strategies
 import CTSolvers.Orchestration
 import CTSolvers.Options

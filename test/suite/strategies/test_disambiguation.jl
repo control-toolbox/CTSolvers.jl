@@ -7,7 +7,6 @@ for creating disambiguated option values with strategy routing.
 module TestDisambiguation
 
 import Test
-import CTSolvers
 import CTSolvers.Strategies
 
 # Test options for verbose output

@@ -368,17 +368,17 @@ MadNCL{GPU}(...)  # with CUDSSSolver as default
 ```
 """
 function Solvers.build_madncl_solver(
-    ::Solvers.MadNCLTag, 
-    parameter::AbstractStrategyParameter; 
-    mode::Symbol=:strict, 
+    ::Type{Solvers.MadNCLTag},
+    parameter::Type{<:AbstractStrategyParameter};
+    mode::Symbol=:strict,
     kwargs...
 )
     opts = Strategies.build_strategy_options(
-        Solvers.MadNCL{typeof(parameter)}; 
-        mode=mode, 
+        Solvers.MadNCL{parameter};
+        mode=mode,
         kwargs...
     )
-    return Solvers.MadNCL{typeof(parameter)}(opts)
+    return Solvers.MadNCL{parameter}(opts)
 end
 
 # ============================================================================

@@ -86,7 +86,7 @@ function test_exa_modeler()
         modeler = Modelers.Exa()
         Test.@test modeler isa Modelers.AbstractNLPModeler
         Test.@test modeler isa Strategies.AbstractStrategy
-        Test.@test typeof(modeler) == Modelers.Exa
+        Test.@test modeler isa Modelers.Exa
         
         # Test constructor with options
         modeler_opts = Modelers.Exa(backend=nothing)
@@ -95,11 +95,11 @@ function test_exa_modeler()
         
         # Test type parameter (removed - Modelers.Exa is no longer parameterized)
         modeler_f32 = Modelers.Exa(base_type=Float32)
-        Test.@test typeof(modeler_f32) == Modelers.Exa
+        Test.@test modeler_f32 isa Modelers.Exa
         
         # Test base_type option handling
         modeler_type = Modelers.Exa(base_type=Float32)
-        Test.@test typeof(modeler_type) == Modelers.Exa
+        Test.@test modeler_type isa Modelers.Exa
         Test.@test Strategies.options(modeler_type)[:base_type] == Float32
         
         # Test base_type is stored in options (not filtered anymore)

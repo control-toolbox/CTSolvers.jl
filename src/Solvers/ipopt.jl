@@ -116,7 +116,7 @@ solver = Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
 - `Strategies.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
 """
 function Solvers.Ipopt(; mode::Symbol=:strict, kwargs...)
-    return build_ipopt_solver(IpoptTag(); mode=mode, kwargs...)
+    return build_ipopt_solver(IpoptTag; mode=mode, kwargs...)
 end
 
 """
@@ -128,7 +128,7 @@ Real implementation provided by the extension.
 # Throws
 - `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
-function build_ipopt_solver(::AbstractTag; kwargs...)
+function build_ipopt_solver(::Type{<:AbstractTag}; kwargs...)
     throw(Exceptions.ExtensionError(
         :NLPModelsIpopt;
         message="to create Ipopt, access options, and solve problems",

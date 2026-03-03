@@ -7,7 +7,6 @@ ensuring unknown options are handled correctly in both strict and permissive mod
 module TestRoutingValidation
 
 import Test
-import CTSolvers
 import CTSolvers.Strategies
 import CTSolvers.Orchestration
 import CTSolvers.Options

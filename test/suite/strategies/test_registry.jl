@@ -2,7 +2,6 @@ module TestStrategiesRegistry
 
 import Test
 import CTBase.Exceptions
-import CTSolvers
 import CTSolvers.Strategies
 import CTSolvers.Options
 

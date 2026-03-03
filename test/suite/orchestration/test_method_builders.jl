@@ -4,7 +4,7 @@ import Test
 import CTSolvers.Orchestration
 import CTSolvers.Strategies
 import CTSolvers.Options
-import CTBase
+
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 

@@ -119,7 +119,7 @@ solver = Knitro(maxit=1000, custom_option=123; mode=:permissive)
 - `Strategies.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
 """
 function Solvers.Knitro(; mode::Symbol=:strict, kwargs...)
-    return build_knitro_solver(KnitroTag(); mode=mode, kwargs...)
+    return build_knitro_solver(KnitroTag; mode=mode, kwargs...)
 end
 
 """
@@ -131,7 +131,7 @@ Real implementation provided by the extension.
 # Throws
 - `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
-function build_knitro_solver(::AbstractTag; kwargs...)
+function build_knitro_solver(::Type{<:AbstractTag}; kwargs...)
     throw(Exceptions.ExtensionError(
         :NLPModelsKnitro;
         message="to create Knitro, access options, and solve problems",

@@ -102,6 +102,13 @@ Return the unique identifier for MadNLP.
 """
 Strategies.id(::Type{<:Solvers.MadNLP}) = :madnlp
 
+"""
+Default parameter type for MadNLP when not explicitly specified.
+
+Returns `CPU` as the default execution parameter.
+"""
+_default_parameter(::Type{<:Solvers.MadNLP}) = CPU
+
 # ============================================================================
 # Constructor with Tag Dispatch
 # ============================================================================
@@ -137,7 +144,7 @@ solver = MadNLP(max_iter=1000, custom_option=123; mode=:permissive)
 - `Strategies.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
 """
 function Solvers.MadNLP(; mode::Symbol=:strict, kwargs...)
-    return build_madnlp_solver(MadNLPTag(), CPU(); mode=mode, kwargs...)
+    return build_madnlp_solver(MadNLPTag, _default_parameter(Solvers.MadNLP); mode=mode, kwargs...)
 end
 
 """
@@ -175,7 +182,7 @@ solver = MadNLP{GPU}(max_iter=1000, custom_option=123; mode=:permissive)
 - `Strategies.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
 """
 function Solvers.MadNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
-    return build_madnlp_solver(MadNLPTag(), P(); mode=mode, kwargs...)
+    return build_madnlp_solver(MadNLPTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -187,7 +194,7 @@ Real implementation provided by the extension.
 # Throws
 - `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
-function build_madnlp_solver(::AbstractTag, parameter::AbstractStrategyParameter; kwargs...)
+function build_madnlp_solver(::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...)
     throw(Exceptions.ExtensionError(
         :MadNLP;
         message="to create MadNLP, access options, and solve problems",
@@ -202,14 +209,36 @@ $(TYPEDSIGNATURES)
 Stub function that throws ExtensionError if CTSolversMadNLP extension is not loaded.
 Real metadata implementation provided by the extension.
 
+This stub is for parameterized types `MadNLP{P}` where `P <: AbstractStrategyParameter`.
+
 # Throws
 - `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
 """
-function Strategies.metadata(::Type{<:Solvers.MadNLP})
+function Strategies.metadata(::Type{<:Solvers.MadNLP{P}}) where {P<:AbstractStrategyParameter}
     throw(Exceptions.ExtensionError(
         :MadNLP;
-        message="to access MadNLP options metadata",
+        message="to access MadNLP{$P} options metadata",
         feature="MadNLP metadata",
         context="Load MadNLP extension first: using MadNLP"
     ))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Fallback for non-parameterized `MadNLP` type that delegates to `MadNLP{CPU}`.
+
+This provides backward compatibility and a sensible default when the parameter
+is not specified. The call will delegate to `metadata(MadNLP{CPU})`, which will
+either use the extension implementation (if loaded) or throw an ExtensionError
+(if not loaded).
+
+# Returns
+- `StrategyMetadata`: Metadata for `MadNLP{CPU}` (if extension loaded)
+
+# Throws
+- `Strategies.Exceptions.ExtensionError`: If extension not loaded (via delegation)
+"""
+function Strategies.metadata(::Type{Solvers.MadNLP})
+    return Strategies.metadata(Solvers.MadNLP{_default_parameter(Solvers.MadNLP)})
 end

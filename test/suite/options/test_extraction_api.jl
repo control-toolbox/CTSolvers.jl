@@ -1,8 +1,7 @@
 module TestOptionsExtractionAPI
 
 import Test
-import CTBase
-import CTSolvers
+import CTBase.Exceptions
 import CTSolvers.Options
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -125,7 +124,7 @@ function test_extraction_api()
             )
             kwargs = (grid_size="200",)  # String instead of Int
 
-            Test.@test_throws CTBase.Exceptions.IncorrectArgument Options.extract_option(kwargs, def)
+            Test.@test_throws Exceptions.IncorrectArgument Options.extract_option(kwargs, def)
         end
 
         Test.@testset "extract_options - Vector version" begin

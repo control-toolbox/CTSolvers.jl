@@ -251,22 +251,50 @@ nothing
 function extract_parameter_from_method(
     method::Tuple{Vararg{Symbol}},
     registry::StrategyRegistry
-)::Union{Type{<:AbstractStrategyParameter}, Nothing}
-    # Collect all parameter IDs from the registry
-    param_map = Dict{Symbol, Type{<:AbstractStrategyParameter}}()
+)
+    # First symbol is the strategy ID
+    if length(method) < 1
+        return nothing
+    end
     
+    strategy_id = method[1]
+    
+    # Find the strategy type in the registry
+    strategy_type = nothing
     for strategies in values(registry.families)
         for T in strategies
-            param_type = get_parameter_type(T)
-            if param_type !== nothing
-                param_id = id(param_type)
-                param_map[param_id] = param_type
+            if id(T) === strategy_id
+                strategy_type = T
+                break
+            end
+        end
+        if strategy_type !== nothing
+            break
+        end
+    end
+    
+    # If strategy not found or not parameterized, return nothing
+    if strategy_type === nothing || get_parameter_type(strategy_type) === nothing
+        return nothing
+    end
+    
+    # Strategy is parameterized - collect available parameters for this strategy
+    param_map = Dict{Symbol, Type{<:AbstractStrategyParameter}}()
+    for strategies in values(registry.families)
+        for T in strategies
+            if id(T) === strategy_id
+                param_type = get_parameter_type(T)
+                if param_type !== nothing
+                    param_id = id(param_type)
+                    param_map[param_id] = param_type
+                end
             end
         end
     end
     
-    # Search for parameter ID in method
-    for s in method
+    # Search for parameter ID in method (skip first symbol which is strategy ID)
+    for i in 2:length(method)
+        s = method[i]
         if haskey(param_map, s)
             return param_map[s]
         end

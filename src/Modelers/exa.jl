@@ -208,8 +208,15 @@ end
 # Strategy identification
 Strategies.id(::Type{<:Modelers.Exa}) = :exa
 
+"""
+Default parameter type for Exa when not explicitly specified.
+
+Returns `CPU` as the default execution parameter.
+"""
+_default_parameter(::Type{<:Modelers.Exa}) = CPU
+
 # Strategy metadata with option definitions (parameterized)
-function Strategies.metadata(::Type{Modelers.Exa{P}}) where {P<:AbstractStrategyParameter}
+function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:AbstractStrategyParameter}
     return Strategies.StrategyMetadata(
         # === Existing Options (enhanced) ===
         Strategies.OptionDefinition(;
@@ -227,6 +234,21 @@ function Strategies.metadata(::Type{Modelers.Exa{P}}) where {P<:AbstractStrategy
             aliases=(:exa_backend,)
         )
     )
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Fallback for non-parameterized `Exa` type that delegates to `Exa{CPU}`.
+
+This provides backward compatibility and a sensible default when the parameter
+is not specified. The call will delegate to `metadata(Exa{CPU})`.
+
+# Returns
+- `StrategyMetadata`: Metadata for `Exa{CPU}`
+"""
+function Strategies.metadata(::Type{Modelers.Exa})
+    return Strategies.metadata(Modelers.Exa{_default_parameter(Modelers.Exa)})
 end
 
 # Simple constructor
@@ -277,7 +299,7 @@ function Modelers.Exa(; mode::Symbol=:strict, kwargs...)
     opts = Strategies.build_strategy_options(
         Modelers.Exa{CPU}; mode=mode, kwargs...
     )
-    return Modelers.Exa{CPU}(opts)
+    return Modelers.Exa{_default_parameter(Modelers.Exa)}(opts)
 end
 
 # Parameterized constructor

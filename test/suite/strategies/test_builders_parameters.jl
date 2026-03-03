@@ -1,17 +1,20 @@
 module TestBuildersParameters
 
-using Test
-using CTSolvers.Strategies
-using Main.TestOptions: VERBOSE, SHOWTIMING
+import Test
+import CTSolvers.Strategies
+import CTBase.Exceptions
+
+const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
 # TOP-LEVEL: Define all structs here
-abstract type TestFamily <: AbstractStrategy end
+abstract type TestFamily <: Strategies.AbstractStrategy end
 
 struct TestStratA <: TestFamily 
     options::Strategies.StrategyOptions
 end
 
-struct TestStratB{P<:AbstractStrategyParameter} <: TestFamily 
+struct TestStratB{P<:Strategies.AbstractStrategyParameter} <: TestFamily 
     options::Strategies.StrategyOptions
 end
 
@@ -20,29 +23,29 @@ Strategies.id(::Type{<:TestStratA}) = :teststrata
 Strategies.id(::Type{<:TestStratB}) = :teststratb
 
 # Simple metadata for testing
-Strategies.metadata(::Type{T}) where {T<:TestStratA} = CTSolvers.Options.StrategyMetadata(
-    CTSolvers.Options.OptionDefinition(name=:opt1, type=Int, default=10)
+Strategies.metadata(::Type{T}) where {T<:TestStratA} = Strategies.StrategyMetadata(
+    Strategies.OptionDefinition(name=:opt1, type=Int, default=10, description="Test option 1")
 )
 
-Strategies.metadata(::Type{T}) where {T<:TestStratB} = CTSolvers.Options.StrategyMetadata(
-    CTSolvers.Options.OptionDefinition(name=:opt1, type=Int, default=20),
-    CTSolvers.Options.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=nothing)
+Strategies.metadata(::Type{T}) where {T<:TestStratB} = Strategies.StrategyMetadata(
+    Strategies.OptionDefinition(name=:opt1, type=Int, default=20, description="Test option 1"),
+    Strategies.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=nothing, description="Test backend")
 )
 
 # Helper metadata for parameter-specific defaults
-function __teststratb_backend(::Type{CPU})
+function __teststratb_backend(::Type{Strategies.CPU})
     return nothing
 end
 
-function __teststratb_backend(::Type{GPU})
+function __teststratb_backend(::Type{Strategies.GPU})
     return "cuda_backend"
 end
 
 # Parameter-specific metadata
-function Strategies.metadata(::Type{TestStratB{P}}) where {P<:AbstractStrategyParameter}
-    return CTSolvers.Options.StrategyMetadata(
-        CTSolvers.Options.OptionDefinition(name=:opt1, type=Int, default=20),
-        CTSolvers.Options.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=__teststratb_backend(P))
+function Strategies.metadata(::Type{TestStratB{P}}) where {P<:Strategies.AbstractStrategyParameter}
+    return Strategies.StrategyMetadata(
+        Strategies.OptionDefinition(name=:opt1, type=Int, default=20, description="Test option 1"),
+        Strategies.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=__teststratb_backend(P), description="Test backend")
     )
 end
 
@@ -52,30 +55,30 @@ function TestStratA(; mode::Symbol=:strict, kwargs...)
     return TestStratA(opts)
 end
 
-function TestStratB{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
+function TestStratB{P}(; mode::Symbol=:strict, kwargs...) where {P<:Strategies.AbstractStrategyParameter}
     opts = Strategies.build_strategy_options(TestStratB{P}; mode=mode, kwargs...)
     return TestStratB{P}(opts)
 end
 
 function test_builders_parameters()
-    @testset "Builders with Parameters" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Builders with Parameters" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
         # UNIT TESTS - extract_parameter_from_method
         # ====================================================================
         
-        @testset "extract_parameter_from_method" begin
+        Test.@testset "extract_parameter_from_method" begin
             r = Strategies.create_registry(
-                TestFamily => (TestStratA, (TestStratB, [CPU, GPU]))
+                TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
-            @test Strategies.extract_parameter_from_method((:teststratb, :cpu), r) == CPU
-            @test Strategies.extract_parameter_from_method((:teststratb, :gpu), r) == GPU
+            @test Strategies.extract_parameter_from_method((:teststratb, :cpu), r) == Strategies.CPU
+            @test Strategies.extract_parameter_from_method((:teststratb, :gpu), r) == Strategies.GPU
             @test Strategies.extract_parameter_from_method((:teststratb,), r) === nothing
             @test Strategies.extract_parameter_from_method((:teststrata, :cpu), r) === nothing  # :teststrata not parameterized
         end
         
-        @testset "extract_parameter_from_method no parameters in registry" begin
+        Test.@testset "extract_parameter_from_method no parameters in registry" begin
             r = Strategies.create_registry(
                 TestFamily => (TestStratA,)  # No parameterized strategies
             )
@@ -88,34 +91,34 @@ function test_builders_parameters()
         # UNIT TESTS - build_strategy_from_method with parameter
         # ====================================================================
         
-        @testset "build_strategy_from_method parameterized" begin
+        Test.@testset "build_strategy_from_method parameterized" begin
             r = Strategies.create_registry(
-                TestFamily => (TestStratA, (TestStratB, [CPU, GPU]))
+                TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
             s_cpu = Strategies.build_strategy_from_method((:teststratb, :cpu), TestFamily, r)
             s_gpu = Strategies.build_strategy_from_method((:teststratb, :gpu), TestFamily, r)
             
-            @test s_cpu isa TestStratB{CPU}
-            @test s_gpu isa TestStratB{GPU}
+            @test s_cpu isa TestStratB{Strategies.CPU}
+            @test s_gpu isa TestStratB{Strategies.GPU}
         end
         
-        @testset "build_strategy_from_method non-parameterized" begin
+        Test.@testset "build_strategy_from_method non-parameterized" begin
             r = Strategies.create_registry(
-                TestFamily => (TestStratA, (TestStratB, [CPU, GPU]))
+                TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
             s = Strategies.build_strategy_from_method((:teststrata,), TestFamily, r)
-            @test s isa TestStratA
+            Test.@test s isa TestStratA
         end
         
-        @testset "build_strategy_from_method with options" begin
+        Test.@testset "build_strategy_from_method with options" begin
             r = Strategies.create_registry(
-                TestFamily => (TestStratA, (TestStratB, [CPU, GPU]))
+                TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
             s = Strategies.build_strategy_from_method((:teststratb, :cpu), TestFamily, r; opt1=100)
-            @test s isa TestStratB{CPU}
+            @test s isa TestStratB{Strategies.CPU}
             @test Strategies.option_value(s, :opt1) == 100
         end
         
@@ -123,35 +126,35 @@ function test_builders_parameters()
         # UNIT TESTS - build_strategy with parameter
         # ====================================================================
         
-        @testset "build_strategy parameterized" begin
+        Test.@testset "build_strategy parameterized" begin
             r = Strategies.create_registry(
-                TestFamily => ((TestStratB, [CPU, GPU]),)
+                TestFamily => ((TestStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             
-            s_cpu = Strategies.build_strategy(:teststratb, CPU, TestFamily, r)
-            s_gpu = Strategies.build_strategy(:teststratb, GPU, TestFamily, r)
+            s_cpu = Strategies.build_strategy(:teststratb, Strategies.CPU, TestFamily, r)
+            s_gpu = Strategies.build_strategy(:teststratb, Strategies.GPU, TestFamily, r)
             
-            @test s_cpu isa TestStratB{CPU}
-            @test s_gpu isa TestStratB{GPU}
+            @test s_cpu isa TestStratB{Strategies.CPU}
+            @test s_gpu isa TestStratB{Strategies.GPU}
         end
         
-        @testset "build_strategy parameterized with options" begin
+        Test.@testset "build_strategy parameterized with options" begin
             r = Strategies.create_registry(
-                TestFamily => ((TestStratB, [CPU, GPU]),)
+                TestFamily => ((TestStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             
-            s = Strategies.build_strategy(:teststratb, GPU, TestFamily, r; opt1=50)
-            @test s isa TestStratB{GPU}
+            s = Strategies.build_strategy(:teststratb, Strategies.GPU, TestFamily, r; opt1=50)
+            @test s isa TestStratB{Strategies.GPU}
             @test Strategies.option_value(s, :opt1) == 50
         end
         
-        @testset "build_strategy unsupported parameter error" begin
+        Test.@testset "build_strategy unsupported parameter error" begin
             r = Strategies.create_registry(
-                TestFamily => ((TestStratB, [CPU]),)  # Only CPU
+                TestFamily => ((TestStratB, [Strategies.CPU]),)  # Only CPU
             )
             
-            @test_throws CTBase.Exceptions.IncorrectArgument Strategies.build_strategy(
-                :teststratb, GPU, TestFamily, r
+            @test_throws Exceptions.IncorrectArgument Strategies.build_strategy(
+                :teststratb, Strategies.GPU, TestFamily, r
             )
         end
         
@@ -159,9 +162,9 @@ function test_builders_parameters()
         # UNIT TESTS - option_names_from_method with parameter
         # ====================================================================
         
-        @testset "option_names_from_method parameterized" begin
+        Test.@testset "option_names_from_method parameterized" begin
             r = Strategies.create_registry(
-                TestFamily => (TestStratA, (TestStratB, [CPU, GPU]))
+                TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
             names_cpu = Strategies.option_names_from_method((:teststratb, :cpu), TestFamily, r)
@@ -173,9 +176,9 @@ function test_builders_parameters()
             @test :backend in names_gpu
         end
         
-        @testset "option_names_from_method non-parameterized" begin
+        Test.@testset "option_names_from_method non-parameterized" begin
             r = Strategies.create_registry(
-                TestFamily => (TestStratA, (TestStratB, [CPU, GPU]))
+                TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
             names = Strategies.option_names_from_method((:teststrata,), TestFamily, r)
@@ -186,9 +189,9 @@ function test_builders_parameters()
         # INTEGRATION TESTS
         # ====================================================================
         
-        @testset "Parameter-specific default options" begin
+        Test.@testset "Parameter-specific default options" begin
             r = Strategies.create_registry(
-                TestFamily => ((TestStratB, [CPU, GPU]),)
+                TestFamily => ((TestStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             
             s_cpu = Strategies.build_strategy_from_method((:teststratb, :cpu), TestFamily, r)
@@ -199,14 +202,21 @@ function test_builders_parameters()
             @test Strategies.option_value(s_gpu, :backend) == "cuda_backend"
         end
         
-        @testset "Type stability" begin
+        Test.@testset "Correctness verification" begin
             r = Strategies.create_registry(
-                TestFamily => ((TestStratB, [CPU, GPU]),)
+                TestFamily => ((TestStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             
-            @test_nowarn @inferred Strategies.extract_parameter_from_method((:teststratb, :cpu), r)
-            @test_nowarn @inferred Strategies.build_strategy_from_method((:teststratb, :cpu), TestFamily, r)
-            @test_nowarn @inferred Strategies.build_strategy(:teststratb, CPU, TestFamily, r)
+            # Verify extract_parameter_from_method returns correct types
+            result = Strategies.extract_parameter_from_method((:teststratb, :cpu), r)
+            @test result === Strategies.CPU
+            
+            # Verify builder functions return correct types
+            s1 = Strategies.build_strategy_from_method((:teststratb, :cpu), TestFamily, r)
+            @test s1 isa TestStratB{Strategies.CPU}
+            
+            s2 = Strategies.build_strategy(:teststratb, Strategies.CPU, TestFamily, r)
+            @test s2 isa TestStratB{Strategies.CPU}
         end
     end
 end

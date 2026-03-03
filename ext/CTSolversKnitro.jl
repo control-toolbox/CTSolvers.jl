@@ -194,7 +194,7 @@ julia> solver = build_knitro_solver(KnitroTag; max_iter=1000, custom_option=123;
 Knitro(...)  # with warning about custom_option
 ```
 """
-function Solvers.build_knitro_solver(::Solvers.KnitroTag; mode::Symbol=:strict, kwargs...)
+function Solvers.build_knitro_solver(::Type{Solvers.KnitroTag}; mode::Symbol=:strict, kwargs...)
     opts = Strategies.build_strategy_options(Solvers.Knitro; mode=mode, kwargs...)
     return Solvers.Knitro(opts)
 end

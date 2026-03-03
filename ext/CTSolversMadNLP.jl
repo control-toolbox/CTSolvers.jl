@@ -343,17 +343,17 @@ MadNLP{GPU}(...)  # with CUDSSSolver as default
 ```
 """
 function Solvers.build_madnlp_solver(
-    ::Solvers.MadNLPTag, 
-    parameter::AbstractStrategyParameter; 
-    mode::Symbol=:strict, 
+    ::Type{Solvers.MadNLPTag},
+    parameter::Type{<:AbstractStrategyParameter};
+    mode::Symbol=:strict,
     kwargs...
 )
     opts = Strategies.build_strategy_options(
-        Solvers.MadNLP{typeof(parameter)}; 
-        mode=mode, 
+        Solvers.MadNLP{parameter};
+        mode=mode,
         kwargs...
     )
-    return Solvers.MadNLP{typeof(parameter)}(opts)
+    return Solvers.MadNLP{parameter}(opts)
 end
 
 # ============================================================================

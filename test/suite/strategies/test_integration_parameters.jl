@@ -1,19 +1,22 @@
 module TestIntegrationParameters
 
-using Test
-using CTSolvers.Strategies
-using CTSolvers.Modelers
-using CTSolvers.Solvers
-using Main.TestOptions: VERBOSE, SHOWTIMING
+import Test
+import CTBase.Exceptions
+import CTSolvers.Strategies
+import CTSolvers.Modelers
+import CTSolvers.Solvers
+
+const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
 # TOP-LEVEL: Define all structs here
-abstract type IntegrationFamily <: AbstractStrategy end
+abstract type IntegrationFamily <: Strategies.AbstractStrategy end
 
 struct IntegrationStratA <: IntegrationFamily 
     options::Strategies.StrategyOptions
 end
 
-struct IntegrationStratB{P<:AbstractStrategyParameter} <: IntegrationFamily 
+struct IntegrationStratB{P<:Strategies.AbstractStrategyParameter} <: IntegrationFamily 
     options::Strategies.StrategyOptions
 end
 
@@ -22,21 +25,21 @@ Strategies.id(::Type{<:IntegrationStratA}) = :integrationstrata
 Strategies.id(::Type{<:IntegrationStratB}) = :integrationstratb
 
 # Simple metadata
-Strategies.metadata(::Type{T}) where {T<:IntegrationStratA} = CTSolvers.Options.StrategyMetadata(
-    CTSolvers.Options.OptionDefinition(name=:opt1, type=Int, default=10)
+Strategies.metadata(::Type{T}) where {T<:IntegrationStratA} = Options.StrategyMetadata(
+    Options.OptionDefinition(name=:opt1, type=Int, default=10)
 )
 
-Strategies.metadata(::Type{T}) where {T<:IntegrationStratB} = CTSolvers.Options.StrategyMetadata(
-    CTSolvers.Options.OptionDefinition(name=:opt1, type=Int, default=20),
-    CTSolvers.Options.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=nothing)
+Strategies.metadata(::Type{T}) where {T<:IntegrationStratB} = Options.StrategyMetadata(
+    Options.OptionDefinition(name=:opt1, type=Int, default=20),
+    Options.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=nothing)
 )
 
 # Parameter-specific metadata
 function Strategies.metadata(::Type{IntegrationStratB{P}}) where {P<:AbstractStrategyParameter}
     backend_default = P == CPU ? nothing : "cuda_backend"
-    return CTSolvers.Options.StrategyMetadata(
-        CTSolvers.Options.OptionDefinition(name=:opt1, type=Int, default=20),
-        CTSolvers.Options.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=backend_default)
+    return Options.StrategyMetadata(
+        Options.OptionDefinition(name=:opt1, type=Int, default=20),
+        Options.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=backend_default)
     )
 end
 
@@ -52,13 +55,13 @@ function IntegrationStratB{P}(; mode=:strict, kwargs...) where {P<:AbstractStrat
 end
 
 function test_integration_parameters()
-    @testset "Integration Tests - Parameterized Strategies" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Integration Tests - Parameterized Strategies" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
         # INTEGRATION TESTS - Complete workflow
         # ====================================================================
         
-        @testset "Complete parameterized workflow" begin
+        Test.@testset "Complete parameterized workflow" begin
             # Create registry with mixed strategies
             r = Strategies.create_registry(
                 IntegrationFamily => (
@@ -101,7 +104,7 @@ function test_integration_parameters()
         # INTEGRATION TESTS - Parameter-specific defaults
         # ====================================================================
         
-        @testset "Parameter-specific default options" begin
+        Test.@testset "Parameter-specific default options" begin
             r = Strategies.create_registry(
                 IntegrationFamily => ((IntegrationStratB, [CPU, GPU]),)
             )
@@ -122,21 +125,21 @@ function test_integration_parameters()
         # INTEGRATION TESTS - Registry with real strategies
         # ====================================================================
         
-        @testset "Registry with real strategies" begin
+        Test.@testset "Registry with real strategies" begin
             # Test that we can create a registry with real parameterized strategies
             r = Strategies.create_registry(
-                CTSolvers.Modelers.AbstractNLPModeler => (
+                Modelers.AbstractNLPModeler => (
                     (Modelers.Exa, [CPU, GPU]),
                 ),
-                CTSolvers.Solvers.AbstractNLPSolver => (
+                Solvers.AbstractNLPSolver => (
                     (Solvers.MadNLP, [CPU, GPU]),
                     (Solvers.MadNCL, [CPU, GPU]),
                 )
             )
             
             # Test that all strategies are registered
-            modeler_ids = Strategies.strategy_ids(CTSolvers.Modelers.AbstractNLPModeler, r)
-            solver_ids = Strategies.strategy_ids(CTSolvers.Solvers.AbstractNLPSolver, r)
+            modeler_ids = Strategies.strategy_ids(Modelers.AbstractNLPModeler, r)
+            solver_ids = Strategies.strategy_ids(Solvers.AbstractNLPSolver, r)
             
             @test :exa in modeler_ids
             @test :madnlp in solver_ids
@@ -152,22 +155,22 @@ function test_integration_parameters()
         # INTEGRATION TESTS - Error handling
         # ====================================================================
         
-        @testset "Error handling integration" begin
+        Test.@testset "Error handling integration" begin
             r = Strategies.create_registry(
                 IntegrationFamily => ((IntegrationStratB, [CPU]),)  # Only CPU
             )
             
             # Test that requesting unsupported parameter fails
-            @test_throws CTSolvers.CTBase.Exceptions.IncorrectArgument Strategies.build_strategy(
+            @test_throws Exceptions.IncorrectArgument Strategies.build_strategy(
                 :integrationstratb, GPU, IntegrationFamily, r
             )
             
-            @test_throws CTSolvers.CTBase.Exceptions.IncorrectArgument Strategies.build_strategy_from_method(
+            @test_throws Exceptions.IncorrectArgument Strategies.build_strategy_from_method(
                 (:integrationstratb, :gpu), IntegrationFamily, r
             )
             
             # Test that unknown strategy ID fails
-            @test_throws CTSolvers.CTBase.Exceptions.IncorrectArgument Strategies.build_strategy(
+            @test_throws Exceptions.IncorrectArgument Strategies.build_strategy(
                 :nonexistent, CPU, IntegrationFamily, r
             )
         end
@@ -176,7 +179,7 @@ function test_integration_parameters()
         # INTEGRATION TESTS - Performance
         # ====================================================================
         
-        @testset "Performance and type stability" begin
+        Test.@testset "Performance and type stability" begin
             r = Strategies.create_registry(
                 IntegrationFamily => ((IntegrationStratB, [CPU, GPU]),)
             )

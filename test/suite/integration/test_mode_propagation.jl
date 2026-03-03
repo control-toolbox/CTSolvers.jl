@@ -9,7 +9,6 @@ end-to-end.
 module TestModePropagation
 
 import Test
-import CTSolvers
 import CTSolvers.Strategies
 import CTSolvers.Options
 import CTSolvers.Orchestration

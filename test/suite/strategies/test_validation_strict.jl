@@ -7,7 +7,6 @@ ensuring unknown options are rejected with helpful error messages.
 module TestValidationStrict
 
 import Test
-import CTSolvers
 import CTSolvers.Strategies
 import CTSolvers.Solvers
 import CTSolvers.Options

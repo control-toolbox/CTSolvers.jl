@@ -203,14 +203,14 @@ function create_registry(pairs::Pair...)
                     push!(strategies, strategy_type{param_type})
                 end
             else
-                # Non-parameterized strategy: Type
+                # Non-parameterized strategy: Type (can be UnionAll for parameterized types with default)
                 strategy_type = item
                 
-                if !(strategy_type isa DataType && strategy_type <: AbstractStrategy)
+                if !(strategy_type isa UnionAll || (strategy_type isa DataType && strategy_type <: AbstractStrategy))
                     throw(Exceptions.IncorrectArgument(
                         "Invalid strategy type",
                         got="strategy_type=$strategy_type of type $(typeof(strategy_type))",
-                        expected="DataType subtype of AbstractStrategy",
+                        expected="UnionAll or DataType subtype of AbstractStrategy",
                         suggestion="Use a valid AbstractStrategy subtype",
                         context="create_registry - validating strategy type"
                     ))

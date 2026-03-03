@@ -2,7 +2,6 @@ module TestSolverTypes
 
 import Test
 import CTBase.Exceptions
-import CTSolvers
 import CTSolvers.Solvers
 import CTSolvers.Strategies
 
@@ -97,12 +96,8 @@ function test_solver_types()
             Test.@test !isabstracttype(Solvers.MadNLPTag)
             Test.@test !isabstracttype(Solvers.MadNCLTag)
             
-            # Test that tag types can be instantiated
-            Test.@test_nowarn Solvers.IpoptTag()
-            # Commented out - no Knitro license available
-            # Test.@test_nowarn Solvers.KnitroTag()
-            Test.@test_nowarn Solvers.MadNLPTag()
-            Test.@test_nowarn Solvers.MadNCLTag()
+            # Tags are now used as types, not instances
+            # No instantiation needed
         end
         
         # ====================================================================

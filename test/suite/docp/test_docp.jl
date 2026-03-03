@@ -3,7 +3,6 @@ module TestDOCP
 import Test
 import CTModels
 import CTSolvers.DOCP
-import CTBase
 import NLPModels
 import SolverCore
 import ADNLPModels
