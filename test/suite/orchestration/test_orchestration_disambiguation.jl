@@ -71,6 +71,7 @@ const TEST_FAMILIES = (
 
 function test_orchestration_disambiguation()
     Test.@testset "Orchestration Disambiguation" verbose = VERBOSE showtiming = SHOWTIMING begin
+        resolved = Orchestration.resolve_method(TEST_METHOD, TEST_FAMILIES, TEST_REGISTRY)
         
         # ====================================================================
         # extract_strategy_ids - Unit Tests
@@ -78,12 +79,12 @@ function test_orchestration_disambiguation()
         
         Test.@testset "extract_strategy_ids" begin
             # No disambiguation - plain value
-            Test.@test Orchestration.extract_strategy_ids(:sparse, TEST_METHOD) === nothing
-            Test.@test Orchestration.extract_strategy_ids(100, TEST_METHOD) === nothing
-            Test.@test Orchestration.extract_strategy_ids("string", TEST_METHOD) === nothing
+            Test.@test Orchestration.extract_strategy_ids(:sparse, resolved) === nothing
+            Test.@test Orchestration.extract_strategy_ids(100, resolved) === nothing
+            Test.@test Orchestration.extract_strategy_ids("string", resolved) === nothing
             
             # Single strategy disambiguation
-            result = Orchestration.extract_strategy_ids(Strategies.route_to(adnlp=:sparse), TEST_METHOD)
+            result = Orchestration.extract_strategy_ids(Strategies.route_to(adnlp=:sparse), resolved)
             Test.@test result isa Vector{Tuple{Any,Symbol}}
             Test.@test length(result) == 1
             Test.@test result[1] == (:sparse, :adnlp)
@@ -91,7 +92,7 @@ function test_orchestration_disambiguation()
             # Multi-strategy disambiguation
             result = Orchestration.extract_strategy_ids(
                 Strategies.route_to(adnlp=:sparse, ipopt=:cpu),
-                TEST_METHOD
+                resolved
             )
             Test.@test result isa Vector{Tuple{Any,Symbol}}
             Test.@test length(result) == 2
@@ -101,31 +102,31 @@ function test_orchestration_disambiguation()
             # Invalid strategy ID in single disambiguation
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.extract_strategy_ids(
                 Strategies.route_to(unknown=:sparse),
-                TEST_METHOD
+                resolved
             )
             
             # Invalid strategy ID in multi disambiguation
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.extract_strategy_ids(
                 Strategies.route_to(adnlp=:sparse, unknown=:cpu),
-                TEST_METHOD
+                resolved
             )
             
             # Non-disambiguated values should return nothing
             result = Orchestration.extract_strategy_ids(
                 :plain_value,
-                TEST_METHOD
+                resolved
             )
             Test.@test result === nothing
             
             # Another non-disambiguated case
             result2 = Orchestration.extract_strategy_ids(
                 100,
-                TEST_METHOD
+                resolved
             )
             Test.@test result2 === nothing
             
             # Empty tuple
-            Test.@test Orchestration.extract_strategy_ids((), TEST_METHOD) === nothing
+            Test.@test Orchestration.extract_strategy_ids((), resolved) === nothing
         end
         
         # ====================================================================
@@ -134,7 +135,7 @@ function test_orchestration_disambiguation()
         
         Test.@testset "build_strategy_to_family_map" begin
             map = Orchestration.build_strategy_to_family_map(
-                TEST_METHOD, TEST_FAMILIES, TEST_REGISTRY
+                resolved, TEST_FAMILIES, TEST_REGISTRY
             )
             
             Test.@test map isa Dict{Symbol,Symbol}
@@ -150,7 +151,7 @@ function test_orchestration_disambiguation()
         
         Test.@testset "build_option_ownership_map" begin
             map = Orchestration.build_option_ownership_map(
-                TEST_METHOD, TEST_FAMILIES, TEST_REGISTRY
+                resolved, TEST_FAMILIES, TEST_REGISTRY
             )
             
             Test.@test map isa Dict{Symbol,Set{Symbol}}
@@ -202,14 +203,14 @@ function test_orchestration_disambiguation()
         Test.@testset "Integration: Disambiguation workflow" begin
             # Build both maps
             strategy_map = Orchestration.build_strategy_to_family_map(
-                TEST_METHOD, TEST_FAMILIES, TEST_REGISTRY
+                resolved, TEST_FAMILIES, TEST_REGISTRY
             )
             option_map = Orchestration.build_option_ownership_map(
-                TEST_METHOD, TEST_FAMILIES, TEST_REGISTRY
+                resolved, TEST_FAMILIES, TEST_REGISTRY
             )
             
             # Simulate disambiguation detection
-            disamb = Orchestration.extract_strategy_ids(Strategies.route_to(adnlp=:sparse), TEST_METHOD)
+            disamb = Orchestration.extract_strategy_ids(Strategies.route_to(adnlp=:sparse), resolved)
             Test.@test disamb !== nothing
             Test.@test length(disamb) == 1
             

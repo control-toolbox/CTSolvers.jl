@@ -99,6 +99,7 @@ const ROUTING_ACTION_DEFS = [
 
 function test_routing()
     Test.@testset "Orchestration Routing" verbose = VERBOSE showtiming = SHOWTIMING begin
+        resolved = Orchestration.resolve_method(ROUTING_METHOD, ROUTING_FAMILIES, ROUTING_REGISTRY)
         
         # ====================================================================
         # Action Option Shadowing Detection
@@ -347,7 +348,7 @@ function test_routing()
         
         Test.@testset "Ownership map includes aliases" begin
             map = Orchestration.build_option_ownership_map(
-                ROUTING_METHOD, ROUTING_FAMILIES, ROUTING_REGISTRY
+                resolved, ROUTING_FAMILIES, ROUTING_REGISTRY
             )
             
             # Primary names
