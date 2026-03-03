@@ -6,6 +6,41 @@
 # Strategy ID Extraction
 # ----------------------------------------------------------------------------
 
+struct ResolvedMethod{T<:Tuple, I<:NamedTuple}
+    tokens::T
+    ids_by_family::I
+    strategy_to_family::Dict{Symbol, Symbol}
+    strategy_ids::Tuple{Vararg{Symbol}}
+    parameter::Union{Nothing, Type{<:Strategies.AbstractStrategyParameter}}
+end
+
+function resolve_method(
+    method::Tuple{Vararg{Symbol}},
+    families::NamedTuple,
+    registry::Strategies.StrategyRegistry
+)::ResolvedMethod
+    ids_by_family = NamedTuple{keys(families)}(
+        Tuple(
+            Strategies.extract_id_from_method(method, family_type, registry)
+            for (family_name, family_type) in pairs(families)
+        )
+    )
+
+    strategy_to_family = Dict{Symbol, Symbol}(
+        getfield(ids_by_family, family_name) => family_name
+        for family_name in keys(ids_by_family)
+    )
+
+    strategy_ids = Tuple(
+        getfield(ids_by_family, family_name)
+        for family_name in keys(ids_by_family)
+    )
+
+    parameter = Strategies.extract_global_parameter_from_method(method, registry)
+
+    return ResolvedMethod(method, ids_by_family, strategy_to_family, strategy_ids, parameter)
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -82,6 +117,31 @@ function extract_strategy_ids(
     return nothing
 end
 
+function extract_strategy_ids(
+    raw,
+    resolved::ResolvedMethod
+)::Union{Nothing, Vector{Tuple{Any, Symbol}}}
+    if raw isa Strategies.RoutedOption
+        results = Tuple{Any, Symbol}[]
+        for (strategy_id, value) in pairs(raw)
+            if strategy_id in resolved.strategy_ids
+                push!(results, (value, strategy_id))
+            else
+                throw(Exceptions.IncorrectArgument(
+                    "Strategy ID not found in method tuple",
+                    got="strategy ID :$strategy_id",
+                    expected="one of available strategy IDs: $(resolved.tokens)",
+                    suggestion="Use a valid strategy ID from your method tuple",
+                    context="extract_strategy_ids - validating RoutedOption strategy ID"
+                ))
+            end
+        end
+        return results
+    end
+
+    return nothing
+end
+
 # ----------------------------------------------------------------------------
 # Strategy-to-Family Mapping
 # ----------------------------------------------------------------------------
@@ -137,6 +197,14 @@ function build_strategy_to_family_map(
     end
     
     return strategy_to_family
+end
+
+function build_strategy_to_family_map(
+    resolved::ResolvedMethod,
+    families::NamedTuple,
+    registry::Strategies.StrategyRegistry
+)::Dict{Symbol, Symbol}
+    return copy(resolved.strategy_to_family)
 end
 
 # ----------------------------------------------------------------------------
@@ -211,6 +279,36 @@ function build_option_ownership_map(
     return option_owners
 end
 
+function build_option_ownership_map(
+    resolved::ResolvedMethod,
+    families::NamedTuple,
+    registry::Strategies.StrategyRegistry
+)::Dict{Symbol, Set{Symbol}}
+    option_owners = Dict{Symbol, Set{Symbol}}()
+
+    for (family_name, family_type) in pairs(families)
+        id = getfield(resolved.ids_by_family, family_name)
+        strategy_type = Strategies.type_from_id(id, family_type, registry)
+        meta = Strategies.metadata(strategy_type)
+
+        for (primary_name, def) in pairs(meta)
+            if !haskey(option_owners, primary_name)
+                option_owners[primary_name] = Set{Symbol}()
+            end
+            push!(option_owners[primary_name], family_name)
+
+            for alias in def.aliases
+                if !haskey(option_owners, alias)
+                    option_owners[alias] = Set{Symbol}()
+                end
+                push!(option_owners[alias], family_name)
+            end
+        end
+    end
+
+    return option_owners
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -239,5 +337,28 @@ function build_alias_to_primary_map(
         end
     end
     
+    return alias_map
+end
+
+
+function build_alias_to_primary_map(
+    resolved::ResolvedMethod,
+    families::NamedTuple,
+    registry::Strategies.StrategyRegistry
+)::Dict{Symbol, Symbol}
+    alias_map = Dict{Symbol, Symbol}()
+
+    for (family_name, family_type) in pairs(families)
+        id = getfield(resolved.ids_by_family, family_name)
+        strategy_type = Strategies.type_from_id(id, family_type, registry)
+        meta = Strategies.metadata(strategy_type)
+
+        for (primary_name, def) in pairs(meta)
+            for alias in def.aliases
+                alias_map[alias] = primary_name
+            end
+        end
+    end
+
     return alias_map
 end

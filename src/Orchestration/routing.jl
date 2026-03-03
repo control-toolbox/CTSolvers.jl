@@ -111,6 +111,8 @@ function route_all_options(
     registry::Strategies.StrategyRegistry;
     source_mode::Symbol = :description,
 )
+    resolved = resolve_method(method, families, registry)
+
     # Step 1: Extract action options FIRST
     # We exclude RoutedOptions from action extraction, as they are explicitly meant for strategies
     action_kwargs = NamedTuple(
@@ -129,11 +131,11 @@ function route_all_options(
 
     # Step 2: Build strategy-to-family mapping
     strategy_to_family = build_strategy_to_family_map(
-        method, families, registry
+        resolved, families, registry
     )
 
     # Step 3: Build option ownership map
-    option_owners = build_option_ownership_map(method, families, registry)
+    option_owners = build_option_ownership_map(resolved, families, registry)
 
     # Detect action option shadowing (Action masking a Strategy option)
     for (k, opt_val) in action_options
@@ -152,7 +154,7 @@ function route_all_options(
     end
     for (key, raw_val) in pairs(remaining_kwargs)
         # Try to extract disambiguation
-        disambiguations = extract_strategy_ids(raw_val, method)
+        disambiguations = extract_strategy_ids(raw_val, resolved)
 
         if disambiguations !== nothing
             # Explicitly disambiguated (single or multiple strategies)
@@ -168,7 +170,7 @@ function route_all_options(
                 elseif isempty(owners)
                     # Unknown option with explicit target but no bypass → error
                     _error_unknown_option(
-                        key, method, families, strategy_to_family, registry
+                        key, resolved, families, strategy_to_family, registry
                     )
                 else
                     # Option exists but in wrong family
@@ -192,7 +194,7 @@ function route_all_options(
             if isempty(owners)
                 # Unknown option - provide helpful error
                 _error_unknown_option(
-                    key, method, families, strategy_to_family, registry
+                    key, resolved, families, strategy_to_family, registry
                 )
             elseif length(owners) == 1
                 # Unambiguous - auto-route
@@ -202,7 +204,7 @@ function route_all_options(
                 # Ambiguous - need disambiguation
                 _error_ambiguous_option(
                     key, value, owners, strategy_to_family, source_mode,
-                    method, families, registry
+                    resolved, families, registry
                 )
             end
         end
@@ -232,7 +234,7 @@ Lists all available options for the active strategies to help the user.
 """
 function _error_unknown_option(
     key::Symbol,
-    method::Tuple,
+    resolved::ResolvedMethod,
     families::NamedTuple,
     strategy_to_family::Dict{Symbol, Symbol},
     registry::Strategies.StrategyRegistry
@@ -240,14 +242,14 @@ function _error_unknown_option(
     # Build helpful error message showing all available options
     all_options = Dict{Symbol, Vector{Symbol}}()
     for (family_name, family_type) in pairs(families)
-        id = Strategies.extract_id_from_method(method, family_type, registry)
+        id = getfield(resolved.ids_by_family, family_name)
         option_names = Strategies.option_names_from_method(
-            method, family_type, registry
+            resolved.tokens, family_type, registry
         )
         all_options[id] = collect(option_names)
     end
 
-    msg = "Option :$key doesn't belong to any strategy in method $method.\n\n" *
+    msg = "Option :$key doesn't belong to any strategy in method $(resolved.tokens).\n\n" *
           "Available options:\n"
     for (id, option_names) in all_options
         family = strategy_to_family[id]
@@ -259,7 +261,7 @@ function _error_unknown_option(
     
     # First, suggest similar options if any
     all_suggestions = _collect_suggestions_across_strategies(
-        key, method, families, registry; max_suggestions=3
+        key, resolved, families, registry; max_suggestions=3
     )
     if !isempty(all_suggestions)
         push!(suggestion_parts, "Did you mean?\n" *
@@ -279,7 +281,7 @@ function _error_unknown_option(
 
     throw(Exceptions.IncorrectArgument(
         "Unknown option provided",
-        got="option :$key in method $method",
+        got="option :$key in method $(resolved.tokens)",
         expected="valid option name for one of the strategies",
         suggestion=suggestion,
         context="route_options - unknown option validation"
@@ -294,7 +296,7 @@ Returns the top `max_suggestions` results sorted by minimum Levenshtein distance
 """
 function _collect_suggestions_across_strategies(
     key::Symbol,
-    method::Tuple,
+    resolved::ResolvedMethod,
     families::NamedTuple,
     registry::Strategies.StrategyRegistry;
     max_suggestions::Int=3
@@ -302,7 +304,7 @@ function _collect_suggestions_across_strategies(
     # Collect suggestions from all strategies, keeping best distance per primary name
     best = Dict{Symbol, @NamedTuple{primary::Symbol, aliases::Tuple{Vararg{Symbol}}, distance::Int}}()
     for (family_name, family_type) in pairs(families)
-        id = Strategies.extract_id_from_method(method, family_type, registry)
+        id = getfield(resolved.ids_by_family, family_name)
         strategy_type = Strategies.type_from_id(id, family_type, registry)
         suggestions = Strategies.suggest_options(key, strategy_type; max_suggestions=typemax(Int))
         for s in suggestions
@@ -330,7 +332,7 @@ function _error_ambiguous_option(
     owners::Set{Symbol},
     strategy_to_family::Dict{Symbol, Symbol},
     source_mode::Symbol,
-    method::Tuple{Vararg{Symbol}},
+    resolved::ResolvedMethod,
     families::NamedTuple,
     registry::Strategies.StrategyRegistry
 )
@@ -344,7 +346,7 @@ function _error_ambiguous_option(
     for (family_name, family_type) in pairs(families)
         if family_name in owners
             try
-                sid = Strategies.extract_id_from_method(method, family_type, registry)
+                sid = getfield(resolved.ids_by_family, family_name)
                 strategy_type = Strategies.type_from_id(sid, family_type, registry)
                 meta = Strategies.metadata(strategy_type)
                 if haskey(meta, key)
