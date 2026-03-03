@@ -81,9 +81,8 @@ function test_backward_compatibility()
                 TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
-            # Test that build_strategy_from_method without parameter defaults to CPU
-            s = Strategies.build_strategy_from_method((:teststratb,), TestFamily, r)
-            Test.@test s isa TestStratB{Strategies.CPU}
+            # Parameterized strategies now require explicit parameter in method (no implicit defaults)
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.build_strategy_from_method((:teststratb,), TestFamily, r)
         end
         
         # ====================================================================

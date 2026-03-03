@@ -252,15 +252,22 @@ function extract_parameter_from_method(
     method::Tuple{Vararg{Symbol}},
     registry::StrategyRegistry
 )
+    return _extract_parameter_from_method_union(method, registry)
+end
+
+function _extract_parameter_from_method_union(
+    method::Tuple{Vararg{Symbol}},
+    registry::StrategyRegistry
+)
     # First symbol is the strategy ID
     if length(method) < 1
         return nothing
     end
     
-    strategy_id = method[1]
+    strategy_id::Symbol = method[1]
     
     # Find the strategy type in the registry
-    strategy_type = nothing
+    strategy_type::Union{Type, Nothing} = nothing
     for strategies in values(registry.families)
         for T in strategies
             if id(T) === strategy_id
@@ -278,29 +285,31 @@ function extract_parameter_from_method(
         return nothing
     end
     
-    # Strategy is parameterized - collect available parameters for this strategy
-    param_map = Dict{Symbol, Type{<:AbstractStrategyParameter}}()
-    for strategies in values(registry.families)
-        for T in strategies
-            if id(T) === strategy_id
-                param_type = get_parameter_type(T)
-                if param_type !== nothing
-                    param_id = id(param_type)
-                    param_map[param_id] = param_type
+    # Strategy is parameterized. No implicit defaults: a parameter symbol must be present.
+    # Search for parameter ID in method (skip first symbol which is strategy ID)
+    for i in 2:length(method)
+        s::Symbol = method[i]
+        # Find a registered strategy variant matching this parameter ID
+        for strategies in values(registry.families)
+            for T in strategies
+                if id(T) === strategy_id
+                    param_type::Union{Type{<:AbstractStrategyParameter}, Nothing} = get_parameter_type(T)
+                    if param_type !== nothing && id(param_type) === s
+                        return param_type::Type{<:AbstractStrategyParameter}
+                    end
                 end
             end
         end
     end
     
-    # Search for parameter ID in method (skip first symbol which is strategy ID)
-    for i in 2:length(method)
-        s = method[i]
-        if haskey(param_map, s)
-            return param_map[s]
-        end
-    end
-    
-    return nothing  # No parameter found
+    # No parameter found: this is an error for parameterized strategies
+    throw(Exceptions.IncorrectArgument(
+        "Missing or unsupported parameter in method",
+        got="method $method",
+        expected="a supported parameter ID for strategy :$strategy_id (e.g., :cpu, :gpu)",
+        suggestion="Add the parameter ID to your method tuple, e.g., (:$strategy_id, :cpu)",
+        context="extract_parameter_from_method - parameter required for parameterized strategy"
+    ))
 end
 
 """

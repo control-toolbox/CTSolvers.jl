@@ -97,6 +97,10 @@ function create_registry(pairs::Pair...)
     # Parameter IDs can be reused across different strategies (same CPU parameter for Exa, MadNLP, etc.)
     all_strategy_ids = Set{Symbol}()
     
+    # IMPORTANT: Parameter IDs must be globally unique across parameter types
+    # (and must not conflict with strategy IDs).
+    parameter_id_to_type = Dict{Symbol, DataType}()
+    
     # Validate that all pairs have the correct structure
     for pair in pairs
         family, strategies = pair
@@ -197,6 +201,22 @@ function create_registry(pairs::Pair...)
                             suggestion="Choose different parameter IDs or strategy IDs",
                             context="create_registry - validating parameter/strategy ID conflicts"
                         ))
+                    end
+                    
+                    # Check GLOBAL uniqueness of parameter IDs across parameter types
+                    if haskey(parameter_id_to_type, param_id)
+                        existing = parameter_id_to_type[param_id]
+                        if existing != param_type
+                            throw(Exceptions.IncorrectArgument(
+                                "Duplicate parameter ID detected",
+                                got="parameter ID :$param_id used by both $existing and $param_type",
+                                expected="unique IDs across all parameter types",
+                                suggestion="Ensure each parameter type has a unique id()",
+                                context="create_registry - validating global parameter ID uniqueness"
+                            ))
+                        end
+                    else
+                        parameter_id_to_type[param_id] = param_type
                     end
                     
                     # Create parameterized strategy type

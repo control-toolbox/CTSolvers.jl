@@ -74,7 +74,7 @@ function test_builders_parameters()
             
             Test.@test Strategies.extract_parameter_from_method((:teststratb, :cpu), r) == Strategies.CPU
             Test.@test Strategies.extract_parameter_from_method((:teststratb, :gpu), r) == Strategies.GPU
-            Test.@test Strategies.extract_parameter_from_method((:teststratb,), r) === nothing
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:teststratb,), r)
             Test.@test Strategies.extract_parameter_from_method((:teststrata, :cpu), r) === nothing  # :teststrata not parameterized
         end
         
