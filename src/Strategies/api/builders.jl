@@ -240,12 +240,13 @@ GPU
 
 julia> method = (:collocation, :exa, :madnlp)  # No parameter
 julia> extract_parameter_from_method(method, registry)
-nothing
+ERROR: Missing or unsupported parameter in method
 ```
 
 # Notes
 - This function is based on the registry - no hardcoded parameter IDs
-- Returns `nothing` if no parameter is found (constructors handle defaults)
+- Returns `nothing` only when the selected strategy is not parameterized
+- For parameterized strategies, the method tuple must contain a supported parameter ID (no implicit defaults)
 - Parameter IDs must be globally unique from strategy IDs
 """
 function extract_parameter_from_method(
