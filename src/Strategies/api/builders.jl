@@ -22,7 +22,7 @@ This function creates a concrete strategy instance by:
 - Concrete strategy instance of the appropriate type
 
 # Throws
-- `KeyError`: If the ID is not found in the registry for the given family
+- `Exceptions.IncorrectArgument`: If the strategy ID is not found in the registry for the given family
 
 # Example
 ```julia-repl
@@ -68,7 +68,7 @@ This function identifies which ID corresponds to the requested family.
 - `Symbol`: The ID corresponding to the requested family
 
 # Throws
-- `ErrorException`: If no ID or multiple IDs are found for the family
+- `Exceptions.IncorrectArgument`: If no ID or multiple IDs are found for the family
 
 # Example
 ```julia-repl
@@ -89,17 +89,21 @@ function extract_id_from_method(
     registry::StrategyRegistry
 )
     allowed = strategy_ids(family, registry)
-    hits = Symbol[]
-    
+    found::Union{Nothing, Symbol} = nothing
+    n_hits::Int = 0
+
     for s in method
         if s in allowed
-            push!(hits, s)
+            n_hits += 1
+            if found === nothing
+                found = s
+            end
         end
     end
-    
-    if length(hits) == 1
-        return hits[1]
-    elseif isempty(hits)
+
+    if n_hits == 1
+        return (found::Symbol)
+    elseif n_hits == 0
         throw(Exceptions.IncorrectArgument(
             "No strategy ID found for family in method",
             got="family $family in method $method",
@@ -110,7 +114,7 @@ function extract_id_from_method(
     else
         throw(Exceptions.IncorrectArgument(
             "Multiple strategy IDs found for family in method",
-            got="family $family appears $length(hits) times in method $method",
+            got="family $family appears $n_hits times in method $method",
             expected="exactly one ID per family in method tuple",
             suggestion="Remove duplicate family IDs from method tuple, keep only one",
             context="extract_id_from_method - validating unique family IDs"
@@ -337,11 +341,12 @@ function extract_global_parameter_from_method(
                     ))
                 end
                 if !(param in available)
+                    available_ids = Tuple(id(p) for p in available)
                     throw(Exceptions.IncorrectArgument(
                         "Unsupported parameter in method",
                         got="strategy :$s_id with parameter $(id(param)) in method $method",
-                        expected="one of: $available",
-                        suggestion="Choose a supported parameter for the selected strategy or update the registry",
+                        expected="strategy :$s_id with one of: $available_ids",
+                        suggestion="Use one of: $available_ids",
                         context="extract_global_parameter_from_method - validating parameter support"
                     ))
                 end

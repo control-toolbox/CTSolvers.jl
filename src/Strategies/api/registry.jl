@@ -360,8 +360,8 @@ julia> id(T)
 ```
 
 # Throws
-- `ErrorException`: If the family is not found in the registry
-- `ErrorException`: If the ID is not found within the family (includes suggestions)
+- `Exceptions.IncorrectArgument`: If the family is not found in the registry
+- `Exceptions.IncorrectArgument`: If the ID is not found within the family (includes suggestions)
 
 See also: [`strategy_ids`](@ref), [`build_strategy`](@ref)
 """
