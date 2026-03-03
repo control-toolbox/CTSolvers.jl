@@ -52,11 +52,11 @@ function test_registry_parameters()
         
         Test.@testset "create_registry with multiple parameterized strategies" begin
             r = Strategies.create_registry(
-                FakeFamily => ((FakeStratA, [Strategies.CPU]), (FakeStratB, [Strategies.CPU, Strategies.GPU]))
+                FakeFamily => (FakeStratA, (FakeStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
             types = r.families[FakeFamily]
-            Test.@test FakeStratA{Strategies.CPU} in types
+            Test.@test FakeStratA in types
             Test.@test FakeStratB{Strategies.CPU} in types
             Test.@test FakeStratB{Strategies.GPU} in types
             Test.@test length(types) == 3
@@ -122,10 +122,11 @@ function test_registry_parameters()
         
         Test.@testset "strategy_ids with only parameterized strategies" begin
             r = Strategies.create_registry(
-                FakeFamily => ((FakeStratA, [Strategies.CPU, Strategies.GPU]), (FakeStratB, [Strategies.CPU]))
+                FakeFamily => ((FakeStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             ids = Strategies.strategy_ids(FakeFamily, r)
-            Test.@test length(ids) == 2  # :fakestrata, :fakestratb
+            Test.@test length(ids) == 1  # :fakestratb
+            Test.@test :fakestratb in ids
         end
         
         # ====================================================================

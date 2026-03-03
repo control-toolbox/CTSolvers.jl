@@ -58,14 +58,14 @@ function test_madnlp_gpu_linear_solver()
         
         Test.@testset "Registry with Strategies.GPU solvers" begin
             r = Strategies.create_registry(
-                CTSolvers.Solvers.AbstractNLPSolver => (
+                Solvers.AbstractNLPSolver => (
                     (Solvers.MadNLP, [Strategies.CPU, Strategies.GPU]),
                     (Solvers.MadNCL, [Strategies.CPU, Strategies.GPU])
                 )
             )
             
             # Test that all strategies are registered
-            solver_ids = Strategies.strategy_ids(CTSolvers.Solvers.AbstractNLPSolver, r)
+            solver_ids = Strategies.strategy_ids(Solvers.AbstractNLPSolver, r)
             Test.@test :madnlp in solver_ids
             Test.@test :madncl in solver_ids
             
