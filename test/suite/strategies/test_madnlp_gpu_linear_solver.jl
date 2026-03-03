@@ -8,59 +8,59 @@ const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
 function test_madnlp_gpu_linear_solver()
-    Test.@testset "MadNLP/MadNCL GPU Linear Solver Defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "MadNLP/MadNCL Strategies.GPU Linear Solver Defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
-        # UNIT TESTS - MadNLP CPU defaults
+        # UNIT TESTS - MadNLP Strategies.CPU defaults
         # ====================================================================
         
-        Test.@testset "MadNLP{CPU} defaults" begin
+        Test.@testset "MadNLP{Strategies.CPU} defaults" begin
             # Note: We can't instantiate without MadNLP extension loaded
             # But we can test the type exists and parameter extraction works
-            Test.@test Solvers.MadNLP{CPU} isa Type{Solvers.MadNLP{CPU}}
-            Test.@test Strategies.get_parameter_type(Solvers.MadNLP{CPU}) == CPU
-            Test.@test Strategies.id(Solvers.MadNLP{CPU}) == :madnlp
+            Test.@test Solvers.MadNLP{Strategies.CPU} isa Type{Solvers.MadNLP{Strategies.CPU}}
+            Test.@test Strategies.get_parameter_type(Solvers.MadNLP{Strategies.CPU}) == Strategies.CPU
+            Test.@test Strategies.id(Solvers.MadNLP{Strategies.CPU}) == :madnlp
         end
         
         # ====================================================================
-        # UNIT TESTS - MadNLP GPU type
+        # UNIT TESTS - MadNLP Strategies.GPU type
         # ====================================================================
         
-        Test.@testset "MadNLP{GPU} type" begin
-            Test.@test Solvers.MadNLP{GPU} isa Type{Solvers.MadNLP{GPU}}
-            Test.@test Strategies.get_parameter_type(Solvers.MadNLP{GPU}) == GPU
-            Test.@test Strategies.id(Solvers.MadNLP{GPU}) == :madnlp
+        Test.@testset "MadNLP{Strategies.GPU} type" begin
+            Test.@test Solvers.MadNLP{Strategies.GPU} isa Type{Solvers.MadNLP{Strategies.GPU}}
+            Test.@test Strategies.get_parameter_type(Solvers.MadNLP{Strategies.GPU}) == Strategies.GPU
+            Test.@test Strategies.id(Solvers.MadNLP{Strategies.GPU}) == :madnlp
         end
         
         # ====================================================================
-        # UNIT TESTS - MadNCL CPU defaults
+        # UNIT TESTS - MadNCL Strategies.CPU defaults
         # ====================================================================
         
-        Test.@testset "MadNCL{CPU} defaults" begin
-            Test.@test Solvers.MadNCL{CPU} isa Type{Solvers.MadNCL{CPU}}
-            Test.@test Strategies.get_parameter_type(Solvers.MadNCL{CPU}) == CPU
-            Test.@test Strategies.id(Solvers.MadNCL{CPU}) == :madncl
+        Test.@testset "MadNCL{Strategies.CPU} defaults" begin
+            Test.@test Solvers.MadNCL{Strategies.CPU} isa Type{Solvers.MadNCL{Strategies.CPU}}
+            Test.@test Strategies.get_parameter_type(Solvers.MadNCL{Strategies.CPU}) == Strategies.CPU
+            Test.@test Strategies.id(Solvers.MadNCL{Strategies.CPU}) == :madncl
         end
         
         # ====================================================================
-        # UNIT TESTS - MadNCL GPU type
+        # UNIT TESTS - MadNCL Strategies.GPU type
         # ====================================================================
         
-        Test.@testset "MadNCL{GPU} type" begin
-            Test.@test Solvers.MadNCL{GPU} isa Type{Solvers.MadNCL{GPU}}
-            Test.@test Strategies.get_parameter_type(Solvers.MadNCL{GPU}) == GPU
-            Test.@test Strategies.id(Solvers.MadNCL{GPU}) == :madncl
+        Test.@testset "MadNCL{Strategies.GPU} type" begin
+            Test.@test Solvers.MadNCL{Strategies.GPU} isa Type{Solvers.MadNCL{Strategies.GPU}}
+            Test.@test Strategies.get_parameter_type(Solvers.MadNCL{Strategies.GPU}) == Strategies.GPU
+            Test.@test Strategies.id(Solvers.MadNCL{Strategies.GPU}) == :madncl
         end
         
         # ====================================================================
         # INTEGRATION TESTS - Registry with parameterized solvers
         # ====================================================================
         
-        Test.@testset "Registry with GPU solvers" begin
+        Test.@testset "Registry with Strategies.GPU solvers" begin
             r = Strategies.create_registry(
                 CTSolvers.Solvers.AbstractNLPSolver => (
-                    (Solvers.MadNLP, [CPU, GPU]),
-                    (Solvers.MadNCL, [CPU, GPU])
+                    (Solvers.MadNLP, [Strategies.CPU, Strategies.GPU]),
+                    (Solvers.MadNCL, [Strategies.CPU, Strategies.GPU])
                 )
             )
             
@@ -70,10 +70,10 @@ function test_madnlp_gpu_linear_solver()
             Test.@test :madncl in solver_ids
             
             # Test parameter extraction
-            Test.@test Strategies.extract_parameter_from_method((:madnlp, :cpu), r) == CPU
-            Test.@test Strategies.extract_parameter_from_method((:madnlp, :gpu), r) == GPU
-            Test.@test Strategies.extract_parameter_from_method((:madncl, :cpu), r) == CPU
-            Test.@test Strategies.extract_parameter_from_method((:madncl, :gpu), r) == GPU
+            Test.@test Strategies.extract_parameter_from_method((:madnlp, :cpu), r) == Strategies.CPU
+            Test.@test Strategies.extract_parameter_from_method((:madnlp, :gpu), r) == Strategies.GPU
+            Test.@test Strategies.extract_parameter_from_method((:madncl, :cpu), r) == Strategies.CPU
+            Test.@test Strategies.extract_parameter_from_method((:madncl, :gpu), r) == Strategies.GPU
         end
         
         # ====================================================================
@@ -82,10 +82,10 @@ function test_madnlp_gpu_linear_solver()
         
         Test.@testset "Type stability" begin
             # Test that parameter extraction is type stable
-            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{CPU})
-            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{GPU})
-            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNCL{CPU})
-            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNCL{GPU})
+            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.CPU})
+            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.GPU})
+            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNCL{Strategies.CPU})
+            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNCL{Strategies.GPU})
         end
         
         # ====================================================================
@@ -93,18 +93,18 @@ function test_madnlp_gpu_linear_solver()
         # ====================================================================
         
         # We cannot test the actual linear_solver defaults without loading
-        # the MadNLP and MadNLPGPU extensions. These tests would need to be
+        # the MadNLP and MadNLPStrategies.GPU extensions. These tests would need to be
         # in a separate test file that conditionally runs when extensions
         # are loaded.
         #
         # Expected behavior (to be tested when extensions are loaded):
-        # - MadNLP{CPU}() should have linear_solver = MadNLP.MumpsSolver
-        # - MadNLP{GPU}() should have linear_solver = MadNLPGPU.CUDSSSolver
-        # - MadNCL{CPU}() should have linear_solver = MadNLP.MumpsSolver
-        # - MadNCL{GPU}() should have linear_solver = MadNLPGPU.CUDSSSolver
+        # - MadNLP{Strategies.CPU}() should have linear_solver = MadNLP.MumpsSolver
+        # - MadNLP{Strategies.GPU}() should have linear_solver = MadNLPStrategies.GPU.CUDSSSolver
+        # - MadNCL{Strategies.CPU}() should have linear_solver = MadNLP.MumpsSolver
+        # - MadNCL{Strategies.GPU}() should have linear_solver = MadNLPStrategies.GPU.CUDSSSolver
         #
-        # - MadNLP{GPU}() without MadNLPGPU loaded should throw ExtensionError
-        # - MadNCL{GPU}() without MadNLPGPU loaded should throw ExtensionError
+        # - MadNLP{Strategies.GPU}() without MadNLPStrategies.GPU loaded should throw ExtensionError
+        # - MadNCL{Strategies.GPU}() without MadNLPStrategies.GPU loaded should throw ExtensionError
     end
 end
 

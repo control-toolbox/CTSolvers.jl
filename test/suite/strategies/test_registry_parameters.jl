@@ -44,10 +44,10 @@ function test_registry_parameters()
             
             # Check that the registry contains the correct types
             types = r.families[FakeFamily]
-            @test FakeStratA in types
-            @test FakeStratB{Strategies.CPU} in types
-            @test FakeStratB{Strategies.GPU} in types
-            @test length(types) == 3
+            Test.@test FakeStratA in types
+            Test.@test FakeStratB{Strategies.CPU} in types
+            Test.@test FakeStratB{Strategies.GPU} in types
+            Test.@test length(types) == 3
         end
         
         Test.@testset "create_registry with multiple parameterized strategies" begin
@@ -56,10 +56,10 @@ function test_registry_parameters()
             )
             
             types = r.families[FakeFamily]
-            @test FakeStratA{Strategies.CPU} in types
-            @test FakeStratB{Strategies.CPU} in types
-            @test FakeStratB{Strategies.GPU} in types
-            @test length(types) == 3
+            Test.@test FakeStratA{Strategies.CPU} in types
+            Test.@test FakeStratB{Strategies.CPU} in types
+            Test.@test FakeStratB{Strategies.GPU} in types
+            Test.@test length(types) == 3
         end
         
         Test.@testset "create_registry validation - invalid strategy type" begin
@@ -114,10 +114,10 @@ function test_registry_parameters()
                 FakeFamily => (FakeStratA, (FakeStratB, [Strategies.CPU, Strategies.GPU]))
             )
             ids = Strategies.strategy_ids(FakeFamily, r)
-            @test length(ids) == length(unique(ids))  # No duplicates
-            @test :fakestrata in ids
-            @test :fakestratb in ids
-            @test length(ids) == 2  # Only 2 unique IDs despite 3 types
+            Test.@test length(ids) == length(unique(ids))  # No duplicates
+            Test.@test :fakestrata in ids
+            Test.@test :fakestratb in ids
+            Test.@test length(ids) == 2  # Only 2 unique IDs despite 3 types
         end
         
         Test.@testset "strategy_ids with only parameterized strategies" begin
@@ -125,7 +125,7 @@ function test_registry_parameters()
                 FakeFamily => ((FakeStratA, [Strategies.CPU, Strategies.GPU]), (FakeStratB, [Strategies.CPU]))
             )
             ids = Strategies.strategy_ids(FakeFamily, r)
-            @test length(ids) == 2  # :fakestrata, :fakestratb
+            Test.@test length(ids) == 2  # :fakestrata, :fakestratb
         end
         
         # ====================================================================
@@ -133,14 +133,14 @@ function test_registry_parameters()
         # ====================================================================
         
         Test.@testset "get_parameter_type" begin
-            @test Strategies.get_parameter_type(FakeStratB{Strategies.CPU}) == Strategies.CPU
-            @test Strategies.get_parameter_type(FakeStratB{Strategies.GPU}) == Strategies.GPU
-            @test Strategies.get_parameter_type(FakeStratA) === nothing
+            Test.@test Strategies.get_parameter_type(FakeStratB{Strategies.CPU}) == Strategies.CPU
+            Test.@test Strategies.get_parameter_type(FakeStratB{Strategies.GPU}) == Strategies.GPU
+            Test.@test Strategies.get_parameter_type(FakeStratA) === nothing
         end
         
         Test.@testset "get_parameter_type type stability" begin
-            @test_nowarn @inferred Strategies.get_parameter_type(FakeStratB{Strategies.CPU})
-            @test_nowarn @inferred Strategies.get_parameter_type(FakeStratA)
+            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(FakeStratB{Strategies.CPU})
+            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(FakeStratA)
         end
         
         # ====================================================================
@@ -155,8 +155,8 @@ function test_registry_parameters()
             T_cpu = Strategies.type_from_id(:fakestratb, FakeFamily, r; parameter=Strategies.CPU)
             T_gpu = Strategies.type_from_id(:fakestratb, FakeFamily, r; parameter=Strategies.GPU)
             
-            @test T_cpu == FakeStratB{Strategies.CPU}
-            @test T_gpu == FakeStratB{Strategies.GPU}
+            Test.@test T_cpu == FakeStratB{Strategies.CPU}
+            Test.@test T_gpu == FakeStratB{Strategies.GPU}
         end
         
         Test.@testset "type_from_id without parameter" begin
@@ -166,7 +166,7 @@ function test_registry_parameters()
             
             # Should return the first match (implementation-dependent but should work)
             T = Strategies.type_from_id(:fakestratb, FakeFamily, r)
-            @test T in (FakeStratB{Strategies.CPU}, FakeStratB{Strategies.GPU})
+            Test.@test T in (FakeStratB{Strategies.CPU}, FakeStratB{Strategies.GPU})
         end
         
         Test.@testset "type_from_id parameter not found" begin
@@ -174,7 +174,7 @@ function test_registry_parameters()
                 FakeFamily => ((FakeStratB, [Strategies.CPU]),)  # Only CPU
             )
             
-            @test_throws Exceptions.IncorrectArgument Strategies.type_from_id(
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.type_from_id(
                 :fakestratb, FakeFamily, r; parameter=Strategies.GPU
             )
         end
@@ -184,7 +184,7 @@ function test_registry_parameters()
                 FakeFamily => (FakeStratA,)
             )
             
-            @test_throws Exceptions.IncorrectArgument Strategies.type_from_id(
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.type_from_id(
                 :nonexistent, FakeFamily, r
             )
         end
@@ -202,12 +202,12 @@ function test_registry_parameters()
             io = IOBuffer()
             show(io, r)
             output = String(take!(io))
-            @test occursin("StrategyRegistry", output)
+            Test.@test occursin("StrategyRegistry", output)
             
             io = IOBuffer()
             show(io, MIME"text/plain"(), r)
             output = String(take!(io))
-            @test occursin("FakeFamily", output)
+            Test.@test occursin("FakeFamily", output)
         end
     end
 end

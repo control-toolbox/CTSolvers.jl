@@ -52,10 +52,11 @@ julia> id(GPU)
 ```
 """
 function id(parameter_type::Type{<:AbstractStrategyParameter})
-    throw(CTBase.Exceptions.NotImplemented(
+    throw(Exceptions.NotImplemented(
         "id() must be implemented for parameter type",
-        type_info=string(parameter_type),
-        suggestion="Define id(::Type{$(parameter_type)}) = :your_id"
+        required_method="id(::Type{$(parameter_type)})",
+        suggestion="Define id(::Type{$(parameter_type)}) = :your_id",
+        context="AbstractStrategyParameter contract"
     ))
 end
 

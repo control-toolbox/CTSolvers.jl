@@ -27,20 +27,45 @@ Strategies.id(::Type{<:IntegrationStratB}) = :integrationstratb
 
 # Simple metadata
 Strategies.metadata(::Type{T}) where {T<:IntegrationStratA} = Strategies.StrategyMetadata(
-    Options.OptionDefinition(name=:opt1, type=Int, default=10)
+    Options.OptionDefinition(
+        name = :opt1,
+        type = Int,
+        default = 10,
+        description = "Option 1"
+    )
 )
 
 Strategies.metadata(::Type{T}) where {T<:IntegrationStratB} = Strategies.StrategyMetadata(
-    Options.OptionDefinition(name=:opt1, type=Int, default=20),
-    Options.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=nothing)
+    Options.OptionDefinition(
+        name = :opt1,
+        type = Int,
+        default = 20,
+        description = "Option 1"
+    ),
+    Options.OptionDefinition(
+        name = :backend,
+        type = Union{Nothing, String},
+        default = nothing,
+        description = "Backend type"
+    )
 )
 
 # Parameter-specific metadata
 function Strategies.metadata(::Type{IntegrationStratB{P}}) where {P<:Strategies.AbstractStrategyParameter}
     backend_default = P == Strategies.CPU ? nothing : "cuda_backend"
     return Strategies.StrategyMetadata(
-        Options.OptionDefinition(name=:opt1, type=Int, default=20),
-        Options.OptionDefinition(name=:backend, type=Union{Nothing, String}, default=backend_default)
+        Options.OptionDefinition(
+            name = :opt1,
+            type = Int,
+            default = 20,
+            description = "Option 1"
+        ),
+        Options.OptionDefinition(
+            name = :backend,
+            type = Union{Nothing, String},
+            default = backend_default,
+            description = "Backend type"
+        )
     )
 end
 
@@ -67,38 +92,38 @@ function test_integration_parameters()
             r = Strategies.create_registry(
                 IntegrationFamily => (
                     IntegrationStratA, 
-                    (IntegrationStratB, [CPU, GPU])
+                    (IntegrationStratB, [Strategies.CPU, Strategies.GPU])
                 )
             )
             
             # Test strategy IDs deduplication
             ids = Strategies.strategy_ids(IntegrationFamily, r)
-            @test length(ids) == 2  # :integrationstrata, :integrationstratb
-            @test :integrationstrata in ids
-            @test :integrationstratb in ids
+            Test.@test length(ids) == 2  # :integrationstrata, :integrationstratb
+            Test.@test :integrationstrata in ids
+            Test.@test :integrationstratb in ids
             
             # Test parameter extraction from method
-            @test Strategies.extract_parameter_from_method((:integrationstratb, :cpu), r) == CPU
-            @test Strategies.extract_parameter_from_method((:integrationstratb, :gpu), r) == GPU
-            @test Strategies.extract_parameter_from_method((:integrationstratb,), r) === nothing
+            Test.@test Strategies.extract_parameter_from_method((:integrationstratb, :cpu), r) == Strategies.CPU
+            Test.@test Strategies.extract_parameter_from_method((:integrationstratb, :gpu), r) == Strategies.GPU
+            Test.@test Strategies.extract_parameter_from_method((:integrationstratb,), r) === nothing
             
             # Test building strategies from method
             s_cpu = Strategies.build_strategy_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
             s_gpu = Strategies.build_strategy_from_method((:integrationstratb, :gpu), IntegrationFamily, r)
             s_default = Strategies.build_strategy_from_method((:integrationstratb,), IntegrationFamily, r)
             
-            @test s_cpu isa IntegrationStratB{CPU}
-            @test s_gpu isa IntegrationStratB{GPU}
-            @test s_default isa IntegrationStratB{CPU}  # Default to CPU
+            Test.@test s_cpu isa IntegrationStratB{Strategies.CPU}
+            Test.@test s_gpu isa IntegrationStratB{Strategies.GPU}
+            Test.@test s_default isa IntegrationStratB{Strategies.CPU}  # Default to Strategies.CPU
             
             # Test option names from method
             names_cpu = Strategies.option_names_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
             names_gpu = Strategies.option_names_from_method((:integrationstratb, :gpu), IntegrationFamily, r)
             
-            @test :opt1 in names_cpu
-            @test :backend in names_cpu
-            @test :opt1 in names_gpu
-            @test :backend in names_gpu
+            Test.@test :opt1 in names_cpu
+            Test.@test :backend in names_cpu
+            Test.@test :opt1 in names_gpu
+            Test.@test :backend in names_gpu
         end
         
         # ====================================================================
@@ -107,19 +132,19 @@ function test_integration_parameters()
         
         Test.@testset "Parameter-specific default options" begin
             r = Strategies.create_registry(
-                IntegrationFamily => ((IntegrationStratB, [CPU, GPU]),)
+                IntegrationFamily => ((IntegrationStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             
             s_cpu = Strategies.build_strategy_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
             s_gpu = Strategies.build_strategy_from_method((:integrationstratb, :gpu), IntegrationFamily, r)
             
             # Check that defaults are different based on parameter
-            @test Strategies.option_value(s_cpu, :backend) === nothing
-            @test Strategies.option_value(s_gpu, :backend) == "cuda_backend"
+            Test.@test Strategies.option_value(s_cpu, :backend) === nothing
+            Test.@test Strategies.option_value(s_gpu, :backend) == "cuda_backend"
             
             # Check that common options are the same
-            @test Strategies.option_value(s_cpu, :opt1) == 20
-            @test Strategies.option_value(s_gpu, :opt1) == 20
+            Test.@test Strategies.option_value(s_cpu, :opt1) == 20
+            Test.@test Strategies.option_value(s_gpu, :opt1) == 20
         end
         
         # ====================================================================
@@ -130,11 +155,11 @@ function test_integration_parameters()
             # Test that we can create a registry with real parameterized strategies
             r = Strategies.create_registry(
                 Modelers.AbstractNLPModeler => (
-                    (Modelers.Exa, [CPU, GPU]),
+                    (Modelers.Exa, [Strategies.CPU, Strategies.GPU]),
                 ),
                 Solvers.AbstractNLPSolver => (
-                    (Solvers.MadNLP, [CPU, GPU]),
-                    (Solvers.MadNCL, [CPU, GPU]),
+                    (Solvers.MadNLP, [Strategies.CPU, Strategies.GPU]),
+                    (Solvers.MadNCL, [Strategies.CPU, Strategies.GPU]),
                 )
             )
             
@@ -142,14 +167,14 @@ function test_integration_parameters()
             modeler_ids = Strategies.strategy_ids(Modelers.AbstractNLPModeler, r)
             solver_ids = Strategies.strategy_ids(Solvers.AbstractNLPSolver, r)
             
-            @test :exa in modeler_ids
-            @test :madnlp in solver_ids
-            @test :madncl in solver_ids
+            Test.@test :exa in modeler_ids
+            Test.@test :madnlp in solver_ids
+            Test.@test :madncl in solver_ids
             
             # Test parameter extraction
-            @test Strategies.extract_parameter_from_method((:exa, :gpu), r) == GPU
-            @test Strategies.extract_parameter_from_method((:madnlp, :cpu), r) == CPU
-            @test Strategies.extract_parameter_from_method((:madncl, :gpu), r) == GPU
+            Test.@test Strategies.extract_parameter_from_method((:exa, :gpu), r) == Strategies.GPU
+            Test.@test Strategies.extract_parameter_from_method((:madnlp, :cpu), r) == Strategies.CPU
+            Test.@test Strategies.extract_parameter_from_method((:madncl, :gpu), r) == Strategies.GPU
         end
         
         # ====================================================================
@@ -158,21 +183,21 @@ function test_integration_parameters()
         
         Test.@testset "Error handling integration" begin
             r = Strategies.create_registry(
-                IntegrationFamily => ((IntegrationStratB, [CPU]),)  # Only CPU
+                IntegrationFamily => ((IntegrationStratB, [Strategies.CPU]),)  # Only Strategies.CPU
             )
             
             # Test that requesting unsupported parameter fails
-            @test_throws Exceptions.IncorrectArgument Strategies.build_strategy(
-                :integrationstratb, GPU, IntegrationFamily, r
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.build_strategy(
+                :integrationstratb, Strategies.GPU, IntegrationFamily, r
             )
             
-            @test_throws Exceptions.IncorrectArgument Strategies.build_strategy_from_method(
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.build_strategy_from_method(
                 (:integrationstratb, :gpu), IntegrationFamily, r
             )
             
             # Test that unknown strategy ID fails
-            @test_throws Exceptions.IncorrectArgument Strategies.build_strategy(
-                :nonexistent, CPU, IntegrationFamily, r
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.build_strategy(
+                :nonexistent, Strategies.CPU, IntegrationFamily, r
             )
         end
         
@@ -182,20 +207,20 @@ function test_integration_parameters()
         
         Test.@testset "Performance and type stability" begin
             r = Strategies.create_registry(
-                IntegrationFamily => ((IntegrationStratB, [CPU, GPU]),)
+                IntegrationFamily => ((IntegrationStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             
             # Test type stability of key functions
-            @test_nowarn @inferred Strategies.extract_parameter_from_method((:integrationstratb, :cpu), r)
-            @test_nowarn @inferred Strategies.build_strategy_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
-            @test_nowarn @inferred Strategies.option_names_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
+            Test.@test_nowarn Test.@inferred Strategies.extract_parameter_from_method((:integrationstratb, :cpu), r)
+            Test.@test_nowarn Test.@inferred Strategies.build_strategy_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
+            Test.@test_nowarn Test.@inferred Strategies.option_names_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
             
             # Test allocation-free operations where possible
             allocs = @allocated Strategies.extract_parameter_from_method((:integrationstratb, :cpu), r)
-            @test allocs == 0  # Should be allocation-free
+            Test.@test allocs == 0  # Should be allocation-free
             
             allocs = @allocated Strategies.strategy_ids(IntegrationFamily, r)
-            @test allocs < 100  # Small allocation for tuple creation
+            Test.@test allocs < 100  # Small allocation for tuple creation
         end
     end
 end
