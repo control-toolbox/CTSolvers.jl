@@ -60,6 +60,33 @@ function id(parameter_type::Type{<:AbstractStrategyParameter})
     ))
 end
 
+is_parameter_type(::Type{T}) where {T} = T <: AbstractStrategyParameter
+
+parameter_id(parameter_type::Type{<:AbstractStrategyParameter}) = id(parameter_type)
+
+function validate_parameter_type(parameter_type::Type{<:AbstractStrategyParameter})
+    if !isconcretetype(parameter_type)
+        throw(Exceptions.IncorrectArgument(
+            "Invalid parameter type",
+            got="parameter_type=$parameter_type",
+            expected="a concrete DataType subtype of AbstractStrategyParameter",
+            suggestion="Define a concrete struct subtype, e.g. struct MyParam <: AbstractStrategyParameter end",
+            context="validate_parameter_type - contract validation"
+        ))
+    end
+    if fieldcount(parameter_type) != 0
+        throw(Exceptions.IncorrectArgument(
+            "Invalid parameter type",
+            got="parameter_type=$parameter_type with $(fieldcount(parameter_type)) fields",
+            expected="a singleton parameter type with no fields",
+            suggestion="Remove fields from the parameter type; use type dispatch only",
+            context="validate_parameter_type - singleton type requirement"
+        ))
+    end
+    _ = id(parameter_type)
+    return nothing
+end
+
 # ============================================================================
 
 """
