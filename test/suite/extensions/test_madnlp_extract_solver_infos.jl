@@ -65,7 +65,7 @@ function test_madnlp_extract_solver_infos()
             
             # Extract solver infos using CTSolvers extension
             objective, iterations, constraints_violation, message, status, successful = 
-                Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                Optimization.extract_solver_infos(stats)
             
             # Verify results
             Test.@test objective ≈ 0.0 atol=1e-6  # Optimal objective
@@ -272,11 +272,11 @@ function test_madnlp_extract_solver_infos()
             original_objective = stats_min.objective
             
             # Test case 1: minimization (should not flip)
-            obj_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min, true)
+            obj_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min)
             Test.@test obj_min ≈ original_objective atol=1e-10
             
             # Test case 2: maximization (should flip)
-            obj_max, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min, false)
+            obj_max, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min)
             Test.@test obj_max ≈ -original_objective atol=1e-10
             
             # Verify the flip logic
