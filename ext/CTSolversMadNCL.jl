@@ -17,6 +17,9 @@ import MadNLP
 import NLPModels
 import SolverCore
 
+# Import parameter types
+using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter
+
 # ============================================================================
 # Helper Functions
 # ============================================================================
@@ -28,6 +31,40 @@ Extract the base floating-point type from NCLOptions type parameter.
 """
 base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseType
 
+"""
+$(TYPEDSIGNATURES)
+
+Return the default linear solver for CPU execution.
+
+Returns `MadNLP.MumpsSolver` which is the standard CPU linear solver.
+"""
+function __madncl_default_linear_solver(::Type{CPU})
+    return MadNLP.MumpsSolver
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the default linear solver for GPU execution.
+
+Returns `MadNLPGPU.CUDSSSolver` if MadNLPGPU is loaded, otherwise throws an error.
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: If MadNLPGPU is not loaded
+"""
+function __madncl_default_linear_solver(::Type{GPU})
+    if !isdefined(Main, :MadNLPGPU)
+        throw(Exceptions.ExtensionError(
+            :MadNLPGPU;
+            message="to use GPU linear solver with MadNCL",
+            feature="GPU computation with MadNCL",
+            context="Load MadNLPGPU extension first: using MadNLPGPU",
+            suggestion="Install and load MadNLPGPU.jl before using GPU parameter"
+        ))
+    end
+    return Main.MadNLPGPU.CUDSSSolver
+end
+
 # ============================================================================
 # Metadata Definition
 # ============================================================================
@@ -36,8 +73,12 @@ base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseT
 $(TYPEDSIGNATURES)
 
 Return metadata defining MadNCL options and their specifications.
+
+The metadata is parameterized by the execution backend (CPU or GPU).
+For GPU execution, the default linear solver is automatically set to
+`MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`.
 """
-function Strategies.metadata(::Type{Solvers.MadNCL})
+function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrategyParameter}
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:max_iter,
@@ -75,8 +116,8 @@ function Strategies.metadata(::Type{Solvers.MadNCL})
         Strategies.OptionDefinition(;
             name=:linear_solver,
             type=Type{<:MadNLP.AbstractLinearSolver},
-            default=MadNLP.MumpsSolver,
-            description="Linear solver implementation used inside MadNCL"
+            default=__madncl_default_linear_solver(P),
+            description="Linear solver implementation used inside MadNCL. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU."
         ),
         # ---- Termination options ----
         Strategies.OptionDefinition(;
@@ -308,6 +349,8 @@ $(TYPEDSIGNATURES)
 Build a MadNCL with validated options.
 
 # Arguments
+- `tag::Solvers.MadNCLTag`: Tag for dispatch
+- `parameter::AbstractStrategyParameter`: Execution parameter (CPU or GPU)
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
@@ -315,18 +358,27 @@ Build a MadNCL with validated options.
 
 # Examples
 ```julia-repl
-# Strict mode (default) - rejects unknown options
-julia> solver = build_madncl_solver(MadNCLTag; max_iter=1000)
-MadNCL(...)
+# CPU solver (default)
+julia> solver = build_madncl_solver(MadNCLTag(), CPU(); max_iter=1000)
+MadNCL{CPU}(...)
 
-# Permissive mode - accepts unknown options with warning
-julia> solver = build_madncl_solver(MadNCLTag; max_iter=1000, custom_option=123; mode=:permissive)
-MadNCL(...)  # with warning about custom_option
+# GPU solver (requires MadNLPGPU)
+julia> solver = build_madncl_solver(MadNCLTag(), GPU(); max_iter=1000)
+MadNCL{GPU}(...)  # with CUDSSSolver as default
 ```
 """
-function Solvers.build_madncl_solver(::Solvers.MadNCLTag; mode::Symbol=:strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.MadNCL; mode=mode, kwargs...)
-    return Solvers.MadNCL(opts)
+function Solvers.build_madncl_solver(
+    ::Solvers.MadNCLTag, 
+    parameter::AbstractStrategyParameter; 
+    mode::Symbol=:strict, 
+    kwargs...
+)
+    opts = Strategies.build_strategy_options(
+        Solvers.MadNCL{typeof(parameter)}; 
+        mode=mode, 
+        kwargs...
+    )
+    return Solvers.MadNCL{typeof(parameter)}(opts)
 end
 
 # ============================================================================

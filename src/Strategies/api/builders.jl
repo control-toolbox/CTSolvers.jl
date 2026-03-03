@@ -148,8 +148,9 @@ function option_names_from_method(
     family::Type{<:AbstractStrategy},
     registry::StrategyRegistry
 )
-    id = extract_id_from_method(method, family, registry)
-    strategy_type = type_from_id(id, family, registry)
+    s_id = extract_id_from_method(method, family, registry)
+    param = extract_parameter_from_method(method, registry)
+    strategy_type = type_from_id(s_id, family, registry; parameter=param)
     return option_names(strategy_type)
 end
 
@@ -203,6 +204,120 @@ function build_strategy_from_method(
     mode::Symbol = :strict,
     kwargs...
 )
-    id = extract_id_from_method(method, family, registry)
-    return build_strategy(id, family, registry; mode=mode, kwargs...)
+    s_id = extract_id_from_method(method, family, registry)
+    param = extract_parameter_from_method(method, registry)
+    
+    if param === nothing
+        # Non-parameterized strategy
+        return build_strategy(s_id, family, registry; mode=mode, kwargs...)
+    else
+        # Parameterized strategy
+        return build_strategy(s_id, param, family, registry; mode=mode, kwargs...)
+    end
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract the parameter type from a method tuple.
+
+Searches the method tuple for parameter IDs (like `:cpu`, `:gpu`) and returns
+the corresponding parameter type if found. This enables routing of parameterized
+strategies from symbolic method descriptions.
+
+# Arguments
+- `method::Tuple{Vararg{Symbol}}`: Tuple of strategy and parameter symbols
+- `registry::StrategyRegistry`: Registry containing strategy-parameter mappings
+
+# Returns
+- `Union{Type{<:AbstractStrategyParameter}, Nothing}`: Parameter type or `nothing` if no parameter found
+
+# Example
+```julia-repl
+julia> method = (:collocation, :exa, :madnlp, :gpu)
+julia> extract_parameter_from_method(method, registry)
+GPU
+
+julia> method = (:collocation, :exa, :madnlp)  # No parameter
+julia> extract_parameter_from_method(method, registry)
+nothing
+```
+
+# Notes
+- This function is based on the registry - no hardcoded parameter IDs
+- Returns `nothing` if no parameter is found (constructors handle defaults)
+- Parameter IDs must be globally unique from strategy IDs
+"""
+function extract_parameter_from_method(
+    method::Tuple{Vararg{Symbol}},
+    registry::StrategyRegistry
+)::Union{Type{<:AbstractStrategyParameter}, Nothing}
+    # Collect all parameter IDs from the registry
+    param_map = Dict{Symbol, Type{<:AbstractStrategyParameter}}()
+    
+    for strategies in values(registry.families)
+        for T in strategies
+            param_type = get_parameter_type(T)
+            if param_type !== nothing
+                param_id = id(param_type)
+                param_map[param_id] = param_type
+            end
+        end
+    end
+    
+    # Search for parameter ID in method
+    for s in method
+        if haskey(param_map, s)
+            return param_map[s]
+        end
+    end
+    
+    return nothing  # No parameter found
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Build a parameterized strategy instance from ID, parameter, and options.
+
+This function creates a concrete parameterized strategy instance by:
+1. Looking up the parameterized strategy type from its ID and parameter
+2. Constructing the instance with the provided options
+
+# Arguments
+- `id::Symbol`: Strategy identifier (e.g., `:madnlp`)
+- `parameter::Type{<:AbstractStrategyParameter}`: Parameter type (e.g., `GPU`)
+- `family::Type{<:AbstractStrategy}`: Abstract family type to search within
+- `registry::StrategyRegistry`: Registry containing strategy mappings
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+- `kwargs...`: Options to pass to the strategy constructor
+
+# Returns
+- Concrete parameterized strategy instance (e.g., `MadNLP{GPU}`)
+
+# Throws
+- `CTBase.Exceptions.IncorrectArgument`: If the strategy-parameter combination is not found
+
+# Example
+```julia-repl
+julia> registry = create_registry(
+           AbstractNLPSolver => ((MadNLP, [CPU, GPU]),)
+       )
+
+julia> solver = build_strategy(:madnlp, GPU, AbstractNLPSolver, registry; max_iter=1000)
+MadNLP{GPU}(options=StrategyOptions{...})
+```
+
+See also: [`build_strategy`](@ref), [`extract_parameter_from_method`](@ref)
+"""
+function build_strategy(
+    id::Symbol,
+    parameter::Type{<:AbstractStrategyParameter},
+    family::Type{<:AbstractStrategy},
+    registry::StrategyRegistry;
+    mode::Symbol = :strict,
+    kwargs...
+)
+    T = type_from_id(id, family, registry; parameter=parameter)
+    return T(; mode=mode, kwargs...)
 end

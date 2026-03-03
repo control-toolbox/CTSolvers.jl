@@ -93,6 +93,10 @@ See also: [`StrategyRegistry`](@ref), [`strategy_ids`](@ref), [`type_from_id`](@
 function create_registry(pairs::Pair...)
     families = Dict{Type{<:AbstractStrategy}, Vector{Type}}()
     
+    # IMPORTANT: Collect all strategy IDs for GLOBAL uniqueness validation
+    # Parameter IDs can be reused across different strategies (same CPU parameter for Exa, MadNLP, etc.)
+    all_strategy_ids = Set{Symbol}()
+    
     # Validate that all pairs have the correct structure
     for pair in pairs
         family, strategies = pair
@@ -109,14 +113,14 @@ function create_registry(pairs::Pair...)
             throw(Exceptions.IncorrectArgument(
                 "Invalid strategies format",
                 got="strategies of type $(typeof(strategies))",
-                expected="Tuple of strategy types",
-                suggestion="Provide strategies as a tuple, e.g., (Strategy1, Strategy2)",
+                expected="Tuple of strategy types or (Type, [Param1, Param2, ...]) tuples",
+                suggestion="Provide strategies as a tuple, e.g., (Strategy1, Strategy2) or (Strategy, [Param1, Param2])",
                 context="StrategyRegistry constructor - validating strategies format"
             ))
         end
     end
     
-    for (family, strategies) in pairs
+    for (family, strategy_list) in pairs
         # Check for duplicate family
         if haskey(families, family)
             throw(Exceptions.IncorrectArgument(
@@ -128,17 +132,104 @@ function create_registry(pairs::Pair...)
             ))
         end
         
-        # Validate uniqueness of IDs within this family
-        ids = [id(T) for T in strategies]
-        if length(ids) != length(unique(ids))
-            duplicates = [i for i in ids if count(==(i), ids) > 1]
-            throw(Exceptions.IncorrectArgument(
-                "Duplicate strategy IDs detected",
-                got="duplicate IDs: $(unique(duplicates)) in family $family",
-                expected="unique strategy identifiers within each family",
-                suggestion="Ensure each strategy has a unique id() return value within the family",
-                context="StrategyRegistry constructor - validating ID uniqueness"
-            ))
+        strategies = Type[]
+        
+        for item in strategy_list
+            if item isa Tuple
+                # Parameterized strategy: (Type, [Param1, Param2, ...])
+                strategy_type, param_types = item
+                
+                # Validate strategy type (can be DataType or UnionAll for parameterized types)
+                if !(strategy_type isa UnionAll || (strategy_type isa DataType && strategy_type <: AbstractStrategy))
+                    throw(Exceptions.IncorrectArgument(
+                        "Invalid strategy type in parameterized tuple",
+                        got="strategy_type=$strategy_type of type $(typeof(strategy_type))",
+                        expected="UnionAll or DataType subtype of AbstractStrategy",
+                        suggestion="Use a valid AbstractStrategy subtype, e.g., (MyStrategy, [CPU, GPU])",
+                        context="create_registry - validating parameterized strategy type"
+                    ))
+                end
+                
+                # Validate parameter types
+                if !(param_types isa Tuple || param_types isa Vector)
+                    throw(Exceptions.IncorrectArgument(
+                        "Invalid parameter types in parameterized tuple",
+                        got="param_types=$param_types of type $(typeof(param_types))",
+                        expected="Tuple or Vector of parameter types",
+                        suggestion="Use (MyStrategy, [CPU, GPU]) or (MyStrategy, (CPU, GPU))",
+                        context="create_registry - validating parameter types"
+                    ))
+                end
+                
+                # Check GLOBAL uniqueness of strategy ID
+                strategy_id = id(strategy_type)
+                if strategy_id in all_strategy_ids
+                    throw(Exceptions.IncorrectArgument(
+                        "Duplicate ID detected",
+                        got="ID :$strategy_id used multiple times",
+                        expected="unique IDs across all strategies and parameters",
+                        suggestion="Ensure each strategy and parameter has a unique id()",
+                        context="create_registry - validating global ID uniqueness"
+                    ))
+                end
+                push!(all_strategy_ids, strategy_id)
+                
+                # Check parameter types and create parameterized types
+                # Parameters can be reused across different strategies (same CPU for Exa, MadNLP, etc.)
+                for param_type in param_types
+                    if !(param_type isa DataType && param_type <: AbstractStrategyParameter)
+                        throw(Exceptions.IncorrectArgument(
+                            "Invalid parameter type",
+                            got="parameter_type=$param_type of type $(typeof(param_type))",
+                            expected="DataType subtype of AbstractStrategyParameter",
+                            suggestion="Use valid parameter types like CPU, GPU",
+                            context="create_registry - validating parameter type"
+                        ))
+                    end
+                    
+                    # Check that parameter ID doesn't conflict with strategy IDs
+                    param_id = id(param_type)
+                    if param_id in all_strategy_ids
+                        throw(Exceptions.IncorrectArgument(
+                            "Parameter ID conflicts with strategy ID",
+                            got="parameter ID :$param_id conflicts with strategy ID",
+                            expected="parameter IDs different from all strategy IDs",
+                            suggestion="Choose different parameter IDs or strategy IDs",
+                            context="create_registry - validating parameter/strategy ID conflicts"
+                        ))
+                    end
+                    
+                    # Create parameterized strategy type
+                    push!(strategies, strategy_type{param_type})
+                end
+            else
+                # Non-parameterized strategy: Type
+                strategy_type = item
+                
+                if !(strategy_type isa DataType && strategy_type <: AbstractStrategy)
+                    throw(Exceptions.IncorrectArgument(
+                        "Invalid strategy type",
+                        got="strategy_type=$strategy_type of type $(typeof(strategy_type))",
+                        expected="DataType subtype of AbstractStrategy",
+                        suggestion="Use a valid AbstractStrategy subtype",
+                        context="create_registry - validating strategy type"
+                    ))
+                end
+                
+                # Check GLOBAL uniqueness of strategy ID
+                strategy_id = id(strategy_type)
+                if strategy_id in all_strategy_ids
+                    throw(Exceptions.IncorrectArgument(
+                        "Duplicate ID detected",
+                        got="ID :$strategy_id used multiple times",
+                        expected="unique IDs across all strategies and parameters",
+                        suggestion="Ensure each strategy and parameter has a unique id()",
+                        context="create_registry - validating global ID uniqueness"
+                    ))
+                end
+                push!(all_strategy_ids, strategy_id)
+                push!(strategies, strategy_type)
+            end
         end
         
         # Validate all strategies are subtypes of family
@@ -154,7 +245,7 @@ function create_registry(pairs::Pair...)
             end
         end
         
-        families[family] = collect(strategies)
+        families[family] = strategies
     end
     
     return StrategyRegistry(families)
@@ -206,7 +297,18 @@ function strategy_ids(family::Type{<:AbstractStrategy}, registry::StrategyRegist
         ))
     end
     strategies = registry.families[family]
-    return Tuple(id(T) for T in strategies)
+    
+    # Deduplicate IDs (important for parameterized strategies)
+    seen = Set{Symbol}()
+    ids = Symbol[]
+    for T in strategies
+        s_id = id(T)
+        if s_id ∉ seen
+            push!(seen, s_id)
+            push!(ids, s_id)
+        end
+    end
+    return Tuple(ids)
 end
 
 """
@@ -246,7 +348,8 @@ See also: [`strategy_ids`](@ref), [`build_strategy`](@ref)
 function type_from_id(
     strategy_id::Symbol,
     family::Type{<:AbstractStrategy},
-    registry::StrategyRegistry
+    registry::StrategyRegistry;
+    parameter::Union{Type{<:AbstractStrategyParameter}, Nothing} = nothing
 )
     if !haskey(registry.families, family)
         available_families = collect(keys(registry.families))
@@ -261,19 +364,46 @@ function type_from_id(
     
     for T in registry.families[family]
         if id(T) === strategy_id
-            return T
+            if parameter === nothing || get_parameter_type(T) == parameter
+                return T
+            end
         end
     end
     
     # Not found - provide helpful error with available options
     available = strategy_ids(family, registry)
-    throw(Exceptions.IncorrectArgument(
-        "Unknown strategy ID",
-        got=":$strategy_id for family $family",
-        expected="one of available IDs: $available",
-        suggestion="Check available strategy IDs or register the missing strategy",
-        context="type_from_id - looking up strategy ID in family"
-    ))
+    if parameter !== nothing
+        # More specific error for parameterized search
+        param_strategies = [T for T in registry.families[family] 
+                           if id(T) === strategy_id]
+        if isempty(param_strategies)
+            throw(Exceptions.IncorrectArgument(
+                "Unknown strategy ID",
+                got=":$strategy_id for family $family",
+                expected="one of available IDs: $available",
+                suggestion="Check available strategy IDs or register the missing strategy",
+                context="type_from_id - looking up strategy ID in family"
+            ))
+        else
+            available_params = [get_parameter_type(T) for T in param_strategies 
+                               if get_parameter_type(T) !== nothing]
+            throw(Exceptions.IncorrectArgument(
+                "Strategy not found with specified parameter",
+                got="strategy :$strategy_id with parameter $parameter",
+                expected="strategy :$strategy_id with one of: $available_params",
+                suggestion="Check available parameters in the registry or use a non-parameterized version",
+                context="type_from_id - looking up parameterized strategy"
+            ))
+        end
+    else
+        throw(Exceptions.IncorrectArgument(
+            "Unknown strategy ID",
+            got=":$strategy_id for family $family",
+            expected="one of available IDs: $available",
+            suggestion="Check available strategy IDs or register the missing strategy",
+            context="type_from_id - looking up strategy ID in family"
+        ))
+    end
 end
 
 # Display
@@ -293,4 +423,46 @@ function Base.show(io::IO, ::MIME"text/plain", registry::StrategyRegistry)
         ids = [id(T) for T in strategies]
         println(io, prefix, family, " => ", Tuple(ids))
     end
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract the parameter type from a parameterized strategy type.
+
+For parameterized strategies like `MadNLP{CPU}`, this returns the parameter type `CPU`.
+For non-parameterized strategies, this returns `nothing`.
+
+# Arguments
+- `strategy_type::Type{<:AbstractStrategy}`: The strategy type to extract parameter from
+
+# Returns
+- `Union{Type{<:AbstractStrategyParameter}, Nothing}`: Parameter type or `nothing` if non-parameterized
+
+# Examples
+```julia-repl
+julia> get_parameter_type(MadNLP{CPU})
+CPU
+
+julia> get_parameter_type(MadNLP{GPU})
+GPU
+
+julia> get_parameter_type(Ipopt)
+nothing
+```
+"""
+function get_parameter_type(strategy_type::Type)
+    # For parameterized strategies like MadNLP{CPU}, extract the parameter type
+    # Check if this type has parameters by examining its type parameters
+    try
+        # Try to get the first type parameter
+        param_type = strategy_type.parameters[1]
+        if param_type <: AbstractStrategyParameter
+            return param_type
+        end
+    catch e
+        # No parameters or error accessing parameters
+    end
+    
+    return nothing
 end

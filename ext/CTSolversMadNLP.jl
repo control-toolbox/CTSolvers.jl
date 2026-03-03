@@ -16,6 +16,47 @@ import MadNLP
 import NLPModels
 import SolverCore
 
+# Import parameter types
+using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter
+
+# ============================================================================
+# Helper Functions
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the default linear solver for CPU execution.
+
+Returns `MadNLP.MumpsSolver` which is the standard CPU linear solver.
+"""
+function __madnlp_default_linear_solver(::Type{CPU})
+    return MadNLP.MumpsSolver
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the default linear solver for GPU execution.
+
+Returns `MadNLPGPU.CUDSSSolver` if MadNLPGPU is loaded, otherwise throws an error.
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: If MadNLPGPU is not loaded
+"""
+function __madnlp_default_linear_solver(::Type{GPU})
+    if !isdefined(Main, :MadNLPGPU)
+        throw(Exceptions.ExtensionError(
+            :MadNLPGPU;
+            message="to use GPU linear solver with MadNLP",
+            feature="GPU computation with MadNLP",
+            context="Load MadNLPGPU extension first: using MadNLPGPU",
+            suggestion="Install and load MadNLPGPU.jl before using GPU parameter"
+        ))
+    end
+    return Main.MadNLPGPU.CUDSSSolver
+end
+
 # ============================================================================
 # Metadata Definition
 # ============================================================================
@@ -24,8 +65,12 @@ import SolverCore
 $(TYPEDSIGNATURES)
 
 Return metadata defining MadNLP options and their specifications.
+
+The metadata is parameterized by the execution backend (CPU or GPU).
+For GPU execution, the default linear solver is automatically set to
+`MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`.
 """
-function Strategies.metadata(::Type{Solvers.MadNLP})
+function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrategyParameter}
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:max_iter,
@@ -63,8 +108,8 @@ function Strategies.metadata(::Type{Solvers.MadNLP})
         Strategies.OptionDefinition(;
             name=:linear_solver,
             type=Type{<:MadNLP.AbstractLinearSolver},
-            default=MadNLP.MumpsSolver,
-            description="Sparse linear solver for the KKT system. Default is MadNLP.MumpsSolver. Other options include MadNLP.UmfpackSolver, MadNLP.LDLSolver, MadNLP.CHOLMODSolver."
+            default=__madnlp_default_linear_solver(P),
+            description="Sparse linear solver for the KKT system. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU. Other options include MadNLP.UmfpackSolver, MadNLP.LDLSolver, MadNLP.CHOLMODSolver."
         ),
         # ---- Termination options ----
         Strategies.OptionDefinition(;
@@ -279,6 +324,8 @@ $(TYPEDSIGNATURES)
 Build a MadNLP with validated options.
 
 # Arguments
+- `tag::Solvers.MadNLPTag`: Tag for dispatch
+- `parameter::AbstractStrategyParameter`: Execution parameter (CPU or GPU)
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
@@ -286,18 +333,27 @@ Build a MadNLP with validated options.
 
 # Examples
 ```julia-repl
-# Strict mode (default) - rejects unknown options
-julia> solver = build_madnlp_solver(MadNLPTag; max_iter=1000)
-MadNLP(...)
+# CPU solver (default)
+julia> solver = build_madnlp_solver(MadNLPTag(), CPU(); max_iter=1000)
+MadNLP{CPU}(...)
 
-# Permissive mode - accepts unknown options with warning
-julia> solver = build_madnlp_solver(MadNLPTag; max_iter=1000, custom_option=123; mode=:permissive)
-MadNLP(...)  # with warning about custom_option
+# GPU solver (requires MadNLPGPU)
+julia> solver = build_madnlp_solver(MadNLPTag(), GPU(); max_iter=1000)
+MadNLP{GPU}(...)  # with CUDSSSolver as default
 ```
 """
-function Solvers.build_madnlp_solver(::Solvers.MadNLPTag; mode::Symbol=:strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.MadNLP; mode=mode, kwargs...)
-    return Solvers.MadNLP(opts)
+function Solvers.build_madnlp_solver(
+    ::Solvers.MadNLPTag, 
+    parameter::AbstractStrategyParameter; 
+    mode::Symbol=:strict, 
+    kwargs...
+)
+    opts = Strategies.build_strategy_options(
+        Solvers.MadNLP{typeof(parameter)}; 
+        mode=mode, 
+        kwargs...
+    )
+    return Solvers.MadNLP{typeof(parameter)}(opts)
 end
 
 # ============================================================================
