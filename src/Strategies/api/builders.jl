@@ -149,8 +149,13 @@ function option_names_from_method(
     registry::StrategyRegistry
 )
     s_id = extract_id_from_method(method, family, registry)
-    param = extract_parameter_from_method(method, registry)
-    strategy_type = type_from_id(s_id, family, registry; parameter=param)
+    param = extract_global_parameter_from_method(method, registry)
+    available_params = _available_parameters_for_strategy_id(s_id, family, registry)
+    strategy_type = if isempty(available_params)
+        type_from_id(s_id, family, registry)
+    else
+        type_from_id(s_id, family, registry; parameter=param)
+    end
     return option_names(strategy_type)
 end
 
@@ -205,15 +210,12 @@ function build_strategy_from_method(
     kwargs...
 )
     s_id = extract_id_from_method(method, family, registry)
-    param = extract_parameter_from_method(method, registry)
-    
-    if param === nothing
-        # Non-parameterized strategy
+    available_params = _available_parameters_for_strategy_id(s_id, family, registry)
+    if isempty(available_params)
         return build_strategy(s_id, family, registry; mode=mode, kwargs...)
-    else
-        # Parameterized strategy
-        return build_strategy(s_id, param, family, registry; mode=mode, kwargs...)
     end
+    param = extract_global_parameter_from_method(method, registry)
+    return build_strategy(s_id, param, family, registry; mode=mode, kwargs...)
 end
 
 """
@@ -253,64 +255,111 @@ function extract_parameter_from_method(
     method::Tuple{Vararg{Symbol}},
     registry::StrategyRegistry
 )
-    return _extract_parameter_from_method_union(method, registry)
+    return extract_global_parameter_from_method(method, registry)
 end
 
-function _extract_parameter_from_method_union(
+function _parameter_id_map(registry::StrategyRegistry)
+    pairs = Pair{Symbol, Type{<:AbstractStrategyParameter}}[
+        id(CPU) => CPU,
+        id(GPU) => GPU,
+    ]
+    for strategies in values(registry.families)
+        for T in strategies
+            P = get_parameter_type(T)
+            if P !== nothing
+                push!(pairs, id(P) => (P::Type{<:AbstractStrategyParameter}))
+            end
+        end
+    end
+    return Dict(pairs)
+end
+
+function _strategy_id_set(registry::StrategyRegistry)
+    ids = Set{Symbol}()
+    for strategies in values(registry.families)
+        for T in strategies
+            push!(ids, id(T))
+        end
+    end
+    return ids
+end
+
+function _available_parameters_for_strategy_id(
+    strategy_id::Symbol,
+    family::Type{<:AbstractStrategy},
+    registry::StrategyRegistry
+)
+    params = Type{<:AbstractStrategyParameter}[]
+    for T in registry.families[family]
+        if id(T) === strategy_id
+            P = get_parameter_type(T)
+            if P !== nothing
+                push!(params, P::Type{<:AbstractStrategyParameter})
+            end
+        end
+    end
+    return params
+end
+
+function extract_global_parameter_from_method(
     method::Tuple{Vararg{Symbol}},
     registry::StrategyRegistry
 )
-    # First symbol is the strategy ID
-    if length(method) < 1
-        return nothing
+    param_map = _parameter_id_map(registry)
+    param_tokens = Symbol[s for s in method if haskey(param_map, s)]
+    if length(param_tokens) > 1
+        throw(Exceptions.IncorrectArgument(
+            "Multiple parameters found in method",
+            got="method $method",
+            expected="at most one global parameter token",
+            suggestion="Remove extra parameter tokens; keep a single one like :cpu or :gpu",
+            context="extract_global_parameter_from_method - validating unique global parameter"
+        ))
     end
-    
-    strategy_id::Symbol = method[1]
-    
-    # Find the strategy type in the registry
-    strategy_type::Union{Type, Nothing} = nothing
-    for strategies in values(registry.families)
-        for T in strategies
-            if id(T) === strategy_id
-                strategy_type = T
-                break
-            end
-        end
-        if strategy_type !== nothing
-            break
-        end
-    end
-    
-    # If strategy not found or not parameterized, return nothing
-    if strategy_type === nothing || get_parameter_type(strategy_type) === nothing
-        return nothing
-    end
-    
-    # Strategy is parameterized. No implicit defaults: a parameter symbol must be present.
-    # Search for parameter ID in method (skip first symbol which is strategy ID)
-    for i in 2:length(method)
-        s::Symbol = method[i]
-        # Find a registered strategy variant matching this parameter ID
-        for strategies in values(registry.families)
-            for T in strategies
-                if id(T) === strategy_id
-                    param_type::Union{Type{<:AbstractStrategyParameter}, Nothing} = get_parameter_type(T)
-                    if param_type !== nothing && id(param_type) === s
-                        return param_type::Type{<:AbstractStrategyParameter}
-                    end
+    param = isempty(param_tokens) ? nothing : param_map[param_tokens[1]]
+
+    strategy_ids = _strategy_id_set(registry)
+    selected_strategy_ids = Symbol[s for s in method if s in strategy_ids]
+
+    any_parameterized = false
+    for (family, _) in registry.families
+        for s_id in selected_strategy_ids
+            available = _available_parameters_for_strategy_id(s_id, family, registry)
+            if !isempty(available)
+                any_parameterized = true
+                if param === nothing
+                    throw(Exceptions.IncorrectArgument(
+                        "Missing parameter in method",
+                        got="method $method",
+                        expected="a global parameter token for parameterized strategies",
+                        suggestion="Add :cpu or :gpu to your method tuple",
+                        context="extract_global_parameter_from_method - parameter required"
+                    ))
+                end
+                if !(param in available)
+                    throw(Exceptions.IncorrectArgument(
+                        "Unsupported parameter in method",
+                        got="strategy :$s_id with parameter $(id(param)) in method $method",
+                        expected="one of: $available",
+                        suggestion="Choose a supported parameter for the selected strategy or update the registry",
+                        context="extract_global_parameter_from_method - validating parameter support"
+                    ))
                 end
             end
         end
     end
-    
-    # No parameter found: this is an error for parameterized strategies
-    throw(Exceptions.IncorrectArgument(
-        "Missing or unsupported parameter in method",
-        got="method $method",
-        expected="a supported parameter ID for strategy :$strategy_id (e.g., :cpu, :gpu)",
-        suggestion="Add the parameter ID to your method tuple, e.g., (:$strategy_id, :cpu)",
-        context="extract_parameter_from_method - parameter required for parameterized strategy"
-    ))
+
+    if param !== nothing && !any_parameterized
+        throw(Exceptions.IncorrectArgument(
+            "Useless parameter in method",
+            got="method $method with parameter $(id(param))",
+            expected="parameter token to be accepted by at least one selected strategy",
+            suggestion="Remove the parameter token or select a strategy that accepts it",
+            context="extract_global_parameter_from_method - unused parameter"
+        ))
+    end
+
+    return param
 end
 
 """

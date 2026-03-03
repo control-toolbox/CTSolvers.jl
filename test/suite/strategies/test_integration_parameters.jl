@@ -106,6 +106,9 @@ function test_integration_parameters()
             Test.@test Strategies.extract_parameter_from_method((:integrationstratb, :cpu), r) == Strategies.CPU
             Test.@test Strategies.extract_parameter_from_method((:integrationstratb, :gpu), r) == Strategies.GPU
             Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:integrationstratb,), r)
+            Test.@test Strategies.extract_parameter_from_method((:cpu, :integrationstrata, :integrationstratb), r) == Strategies.CPU
+            Test.@test Strategies.extract_parameter_from_method((:integrationstratb, :cpu, :integrationstrata), r) == Strategies.CPU
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:integrationstrata, :cpu), r)
             
             # Test building strategies from method
             s_cpu = Strategies.build_strategy_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
@@ -172,10 +175,23 @@ function test_integration_parameters()
             Test.@test :madnlp in solver_ids
             Test.@test :madncl in solver_ids
             
-            # Test parameter extraction
-            Test.@test Strategies.extract_parameter_from_method((:exa, :gpu), r) == Strategies.GPU
-            Test.@test Strategies.extract_parameter_from_method((:madnlp, :cpu), r) == Strategies.CPU
-            Test.@test Strategies.extract_parameter_from_method((:madncl, :gpu), r) == Strategies.GPU
+            # Test global parameter extraction on a complete method tuple
+            # Use :cpu here to avoid any dependency on functional CUDA for constructing instances.
+            method_cpu = (:exa, :madnlp, :collocation, :cpu)
+            Test.@test Strategies.extract_parameter_from_method(method_cpu, r) == Strategies.CPU
+
+            # Both Exa and MadNLP accept CPU in this registry, so the resolved types must be parameterized.
+            # We intentionally avoid constructing instances here because constructors may rely on optional
+            # external extensions being loaded.
+            m_type = Strategies.type_from_id(:exa, Modelers.AbstractNLPModeler, r; parameter=Strategies.CPU)
+            s_type = Strategies.type_from_id(:madnlp, Solvers.AbstractNLPSolver, r; parameter=Strategies.CPU)
+            Test.@test m_type === Modelers.Exa{Strategies.CPU}
+            Test.@test s_type === Solvers.MadNLP{Strategies.CPU}
+            Test.@test Strategies.get_parameter_type(m_type) === Strategies.CPU
+            Test.@test Strategies.get_parameter_type(s_type) === Strategies.CPU
+
+            # If a parameter token is present but unused (no selected strategy accepts it), it's an error
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:collocation, :cpu), r)
         end
         
         # ====================================================================
@@ -218,7 +234,7 @@ function test_integration_parameters()
             
             # Test allocation-free operations where possible
             allocs = @allocated Strategies.extract_parameter_from_method((:integrationstratb, :cpu), r)
-            Test.@test allocs < 2000  # bounded allocations (registry is Dict-based)
+            Test.@test allocs < 3000  # bounded allocations (registry is Dict-based)
             
             allocs = @allocated Strategies.strategy_ids(IntegrationFamily, r)
             Test.@test allocs < 1000  # Small allocation for tuple creation

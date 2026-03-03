@@ -75,7 +75,10 @@ function test_builders_parameters()
             Test.@test Strategies.extract_parameter_from_method((:teststratb, :cpu), r) == Strategies.CPU
             Test.@test Strategies.extract_parameter_from_method((:teststratb, :gpu), r) == Strategies.GPU
             Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:teststratb,), r)
-            Test.@test Strategies.extract_parameter_from_method((:teststrata, :cpu), r) === nothing  # :teststrata not parameterized
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:teststrata, :cpu), r)
+
+            Test.@test Strategies.extract_parameter_from_method((:teststratb, :cpu, :teststrata), r) == Strategies.CPU
+            Test.@test Strategies.extract_parameter_from_method((:cpu, :teststrata, :teststratb), r) == Strategies.CPU
         end
         
         Test.@testset "extract_parameter_from_method no parameters in registry" begin
@@ -83,8 +86,8 @@ function test_builders_parameters()
                 TestFamily => (TestStratA,)  # No parameterized strategies
             )
             
-            Test.@test Strategies.extract_parameter_from_method((:teststrata, :cpu), r) === nothing
-            Test.@test Strategies.extract_parameter_from_method((:teststrata, :gpu), r) === nothing
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:teststrata, :cpu), r)
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:teststrata, :gpu), r)
         end
         
         # ====================================================================
