@@ -10,7 +10,6 @@ metadata for optimal control solutions.
 # Arguments
 
 - `nlp_solution::SolverCore.AbstractExecutionStats`: A solver execution statistics object.
-- `minimize::Bool`: Whether the problem is a minimization problem or not.
 
 # Returns
 
@@ -34,7 +33,6 @@ julia> obj, iter, viol, msg, stat, success = extract_solver_infos(nlp_solution, 
 """
 function extract_solver_infos(
     nlp_solution::SolverCore.AbstractExecutionStats,
-    ::Bool, # whether the problem is a minimization problem or not
 )
     objective = nlp_solution.objective
     iterations = nlp_solution.iter

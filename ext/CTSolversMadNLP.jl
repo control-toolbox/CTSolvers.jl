@@ -356,7 +356,6 @@ This method handles MadNLP-specific behavior:
 # Arguments
 
 - `nlp_solution::MadNLP.MadNLPExecutionStats`: MadNLP execution statistics
-- `minimize::Bool`: Whether the problem is a minimization problem or not
 
 # Returns
 
@@ -370,7 +369,6 @@ A 6-element tuple `(objective, iterations, constraints_violation, message, statu
 """
 function Optimization.extract_solver_infos(
     nlp_solution::MadNLP.MadNLPExecutionStats,
-    ::Bool,
 )
     objective = nlp_solution.objective
     iterations = nlp_solution.iter

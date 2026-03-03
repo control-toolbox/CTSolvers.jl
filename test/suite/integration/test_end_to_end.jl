@@ -72,7 +72,7 @@ function test_end_to_end()
                 result = MadNLP.solve!(solver)
                 
                 # Step 10: Extract solver info
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(result, NLPModels.get_minimize(nlp))
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(result)
                 
                 Test.@test obj isa Float64
                 Test.@test iter isa Int

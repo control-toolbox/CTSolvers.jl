@@ -205,36 +205,32 @@ function test_error_cases()
         Test.@testset "Solver Info Edge Cases" begin
             Test.@testset "Zero iterations" begin
                 stats = EdgeCaseStats(0.0, 0, 0.0, :first_order)
-                nlp = ADNLPModels.ADNLPModel(x -> x[1]^2, [1.0])
                 
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
                 Test.@test iter == 0
                 Test.@test success == true
             end
             
             Test.@testset "Very large objective" begin
                 stats = EdgeCaseStats(1e100, 10, 1e-6, :first_order)
-                nlp = ADNLPModels.ADNLPModel(x -> x[1]^2, [1.0])
                 
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
                 Test.@test obj ≈ 1e100
                 Test.@test success == true
             end
             
             Test.@testset "Very small constraint violation" begin
                 stats = EdgeCaseStats(1.0, 10, 1e-15, :first_order)
-                nlp = ADNLPModels.ADNLPModel(x -> x[1]^2, [1.0])
                 
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
                 Test.@test viol ≈ 1e-15
                 Test.@test success == true
             end
             
             Test.@testset "Unknown status" begin
                 stats = EdgeCaseStats(1.0, 10, 1e-6, :unknown_status)
-                nlp = ADNLPModels.ADNLPModel(x -> x[1]^2, [1.0])
                 
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
                 Test.@test status == :unknown_status
                 Test.@test success == false  # Not :first_order or :acceptable
             end

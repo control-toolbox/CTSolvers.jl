@@ -330,9 +330,8 @@ function test_optimization()
         Test.@testset "Solver Info Extraction" begin
             Test.@testset "extract_solver_infos - first_order status" begin
                 stats = MockExecutionStats(1.23, 15, 1.0e-6, :first_order)
-                nlp = ADNLPModels.ADNLPModel(x -> x[1]^2, [1.0])
                 
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
                 
                 Test.@test obj ≈ 1.23
                 Test.@test iter == 15
@@ -344,9 +343,8 @@ function test_optimization()
             
             Test.@testset "extract_solver_infos - acceptable status" begin
                 stats = MockExecutionStats(2.34, 20, 1.0e-5, :acceptable)
-                nlp = ADNLPModels.ADNLPModel(x -> x[1]^2, [1.0])
                 
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
                 
                 Test.@test obj ≈ 2.34
                 Test.@test iter == 20
@@ -358,9 +356,8 @@ function test_optimization()
             
             Test.@testset "extract_solver_infos - failure status" begin
                 stats = MockExecutionStats(3.45, 5, 1.0e-3, :max_iter)
-                nlp = ADNLPModels.ADNLPModel(x -> x[1]^2, [1.0])
                 
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
                 
                 Test.@test obj ≈ 3.45
                 Test.@test iter == 5
@@ -409,7 +406,7 @@ function test_optimization()
                 Test.@test sol.status == :first_order
                 
                 # Extract solver info
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
                 Test.@test obj ≈ 5.0
                 Test.@test success == true
             end

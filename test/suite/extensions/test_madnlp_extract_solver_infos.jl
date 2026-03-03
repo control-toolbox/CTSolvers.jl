@@ -91,7 +91,7 @@ function test_madnlp_extract_solver_infos()
             stats_min = MadNLP.solve!(solver_min)
             
             # Extract solver infos
-            objective_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min, NLPModels.get_minimize(nlp_min))
+            objective_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min)
             
             # For minimization, objective should equal stats.objective
             Test.@test objective_min ≈ stats_min.objective atol=1e-10
@@ -126,7 +126,7 @@ function test_madnlp_extract_solver_infos()
             nlp_min = ADNLPModels.ADNLPModel(obj, x0; minimize=true)
             solver_min = MadNLP.MadNLPSolver(nlp_min; print_level=MadNLP.ERROR)
             stats_min = MadNLP.solve!(solver_min)
-            obj_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min, NLPModels.get_minimize(nlp_min))
+            obj_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min)
             
             # For minimization, extracted objective should equal raw stats objective
             Test.@test obj_min ≈ stats_min.objective atol=1e-10
@@ -147,7 +147,7 @@ function test_madnlp_extract_solver_infos()
             solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR)
             stats = MadNLP.solve!(solver)
             
-            _, _, _, _, status, _ = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            _, _, _, _, status, _ = Optimization.extract_solver_infos(stats)
             
             # Status should be a Symbol
             Test.@test status isa Symbol
@@ -167,7 +167,7 @@ function test_madnlp_extract_solver_infos()
             solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR, max_iter=100)
             stats = MadNLP.solve!(solver)
             
-            _, _, _, _, status, successful = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            _, _, _, _, status, successful = Optimization.extract_solver_infos(stats)
             
             # For a simple problem, should succeed
             Test.@test successful == true
@@ -192,7 +192,7 @@ function test_madnlp_extract_solver_infos()
             solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR)
             stats = MadNLP.solve!(solver)
             
-            result = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            result = Optimization.extract_solver_infos(stats)
             
             # Should return a 6-tuple
             Test.@test result isa Tuple
@@ -226,7 +226,7 @@ function test_madnlp_extract_solver_infos()
             stats_max = MadNLP.solve!(solver_max)
             
             # Extract solver infos
-            objective_extracted, _, _, _, _, _ = Optimization.extract_solver_infos(stats_max, NLPModels.get_minimize(nlp_max))
+            objective_extracted, _, _, _, _, _ = Optimization.extract_solver_infos(stats_max)
             
             # The extracted objective should be the true maximization objective (≈ 1.0)
             Test.@test objective_extracted ≈ 1.0 atol=1e-6
@@ -296,7 +296,7 @@ function test_madnlp_extract_solver_infos()
             
             # Extract solver infos
             objective, iterations, constraints_violation, message, status, successful = 
-                Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                Optimization.extract_solver_infos(stats)
             
             # Verify types match build_solution contract
             Test.@test objective isa Float64
@@ -307,7 +307,7 @@ function test_madnlp_extract_solver_infos()
             Test.@test successful isa Bool
             
             # Verify tuple structure
-            result = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            result = Optimization.extract_solver_infos(stats)
             Test.@test result isa Tuple
             Test.@test length(result) == 6
             
@@ -317,7 +317,7 @@ function test_madnlp_extract_solver_infos()
             stats_max = MadNLP.solve!(solver_max)
             
             objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = 
-                Optimization.extract_solver_infos(stats_max, NLPModels.get_minimize(nlp_max))
+                Optimization.extract_solver_infos(stats_max)
             
             # Verify types for maximization too
             Test.@test objective_max isa Float64
@@ -347,7 +347,7 @@ function test_madnlp_extract_solver_infos()
             
             # Extract solver infos
             objective, iterations, constraints_violation, message, status, successful = 
-                Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                Optimization.extract_solver_infos(stats)
             
             # Create additional infos dictionary as expected by SolverInfos
             additional_infos = Dict{Symbol,Any}(
@@ -371,7 +371,7 @@ function test_madnlp_extract_solver_infos()
             stats_max = MadNLP.solve!(solver_max)
             
             objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = 
-                Optimization.extract_solver_infos(stats_max, NLPModels.get_minimize(nlp_max))
+                Optimization.extract_solver_infos(stats_max)
             
             # Create additional infos dictionary for maximization
             additional_infos_max = Dict{Symbol,Any}(

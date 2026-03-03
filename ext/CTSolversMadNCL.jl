@@ -401,7 +401,6 @@ This method handles MadNCL-specific behavior:
 # Arguments
 
 - `nlp_solution::MadNCL.NCLStats`: MadNCL execution statistics
-- `minimize::Bool`: Whether the problem is a minimization problem or not
 
 # Returns
 - `objective`: The objective value (MadNCL returns correct sign, no flip needed)
@@ -417,7 +416,6 @@ objective with the correct sign. Therefore, we do NOT flip the sign for maximiza
 """
 function Optimization.extract_solver_infos(
     nlp_solution::MadNCL.NCLStats,
-    ::Bool,
 )
     # MadNCL returns the correct objective sign (no bug like MadNLP)
     objective = nlp_solution.objective

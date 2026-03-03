@@ -47,7 +47,7 @@ function test_madncl_extract_solver_infos()
             
             # Extract solver infos using CTSolvers extension
             objective, iterations, constraints_violation, message, status, successful = 
-                Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                Optimization.extract_solver_infos(stats)
             
             # Verify results
             Test.@test objective ≈ 0.0 atol=1e-4  # Optimal objective for Rosenbrock
@@ -81,7 +81,7 @@ function test_madncl_extract_solver_infos()
             stats = MadNCL.solve!(solver)
             
             # Extract solver infos
-            objective_extracted, _, _, _, _, _ = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            objective_extracted, _, _, _, _, _ = Optimization.extract_solver_infos(stats)
             
             # The extracted objective should be the true maximization objective (≈ 1.0)
             expected_objective = TestProblems.max1minusx2_objective(max_prob.sol)
@@ -130,12 +130,12 @@ function test_madncl_extract_solver_infos()
             original_objective = stats.objective
             
             # Test case 1: minimization (should not flip)
-            obj_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats, true)
+            obj_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats)
             Test.@test obj_min ≈ original_objective atol=1e-10
             
             # Test case 2: maximization (MadNCL returns correct sign, so we should NOT flip)
             # This is different from MadNLP!
-            obj_max, _, _, _, _, _ = Optimization.extract_solver_infos(stats, false)
+            obj_max, _, _, _, _, _ = Optimization.extract_solver_infos(stats)
             Test.@test obj_max ≈ original_objective atol=1e-10  # Same value, no flip
             
             # Verify: for MadNCL, both should be equal (no flip)
@@ -157,7 +157,7 @@ function test_madncl_extract_solver_infos()
             
             # Extract solver infos
             objective, iterations, constraints_violation, message, status, successful = 
-                Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                Optimization.extract_solver_infos(stats)
             
             # Verify types match build_solution contract
             Test.@test objective isa Float64
@@ -168,7 +168,7 @@ function test_madncl_extract_solver_infos()
             Test.@test successful isa Bool
             
             # Verify tuple structure
-            result = Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+            result = Optimization.extract_solver_infos(stats)
             Test.@test result isa Tuple
             Test.@test length(result) == 6
             
@@ -185,7 +185,7 @@ function test_madncl_extract_solver_infos()
             stats_max = MadNCL.solve!(solver_max)
             
             objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = 
-                Optimization.extract_solver_infos(stats_max, NLPModels.get_minimize(nlp_max))
+                Optimization.extract_solver_infos(stats_max)
             
             # Verify types for maximization too
             Test.@test objective_max isa Float64
@@ -218,7 +218,7 @@ function test_madncl_extract_solver_infos()
             
             # Extract solver infos
             objective, iterations, constraints_violation, message, status, successful = 
-                Optimization.extract_solver_infos(stats, NLPModels.get_minimize(nlp))
+                Optimization.extract_solver_infos(stats)
             
             # Create additional infos dictionary as expected by SolverInfos
             additional_infos = Dict{Symbol,Any}(
@@ -250,7 +250,7 @@ function test_madncl_extract_solver_infos()
             stats_max = MadNCL.solve!(solver_max)
             
             objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = 
-                Optimization.extract_solver_infos(stats_max, NLPModels.get_minimize(nlp_max))
+                Optimization.extract_solver_infos(stats_max)
             
             # Create additional infos dictionary for maximization
             additional_infos_max = Dict{Symbol,Any}(
