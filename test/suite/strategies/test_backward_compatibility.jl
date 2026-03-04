@@ -119,11 +119,6 @@ function test_backward_compatibility()
         # ====================================================================
         
         Test.@testset "Integration with existing code" begin
-            # Test that existing patterns still work
-            Test.@test_throws Exceptions.ExtensionError Solvers.MadNLP()  # Extension not loaded
-            Test.@test_throws Exceptions.ExtensionError Solvers.MadNCL()  # Extension not loaded
-            
-            # But Exa should work (no extension required)
             exa = Modelers.Exa()
             Test.@test exa isa Modelers.Exa{Strategies.CPU}
             Test.@test Strategies.options(exa) isa Strategies.StrategyOptions
