@@ -66,8 +66,7 @@ function __get_cuda_backend()
             :CUDA;
             message="to use GPU backend with Exa modeler",
             feature="GPU computation with ExaModels",
-            context="Load CUDA extension first: using CUDA",
-            suggestion="Install and load CUDA.jl before using GPU parameter"
+            context="Load CUDA extension first: using CUDA"
         ))
     end
     if !Main.CUDA.functional()
