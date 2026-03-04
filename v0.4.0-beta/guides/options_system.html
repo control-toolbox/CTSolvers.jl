@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Options System · CTSolvers.jl</title><meta name="title" content="Options System · CTSolvers.jl"/><meta property="og:title" content="Options System · CTSolvers.jl"/><meta property="twitter:title" content="Options System · CTSolvers.jl"/><meta name="description" content="Documentation for CTSolvers.jl."/><meta property="og:description" content="Documentation for CTSolvers.jl."/><meta property="twitter:description" content="Documentation for CTSolvers.jl."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="https://control-toolbox.org/assets/css/documentation.css" rel="stylesheet" type="text/css"/><script src="https://control-toolbox.org/assets/js/documentation.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../index.html">CTSolvers.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../index.html">Introduction</a></li><li><a class="tocitem" href="../architecture.html">Architecture</a></li><li><span class="tocitem">Developer Guides</span><ul><li class="is-active"><a class="tocitem" href="options_system.html">Options System</a><ul class="internal"><li><a class="tocitem" href="#Overview"><span>Overview</span></a></li><li><a class="tocitem" href="#OptionDefinition"><span>OptionDefinition</span></a></li><li><a class="tocitem" href="#NotProvided"><span>NotProvided</span></a></li><li><a class="tocitem" href="#OptionValue-and-Provenance"><span>OptionValue and Provenance</span></a></li><li><a class="tocitem" href="#Accessing-Option-Properties-(Getters)"><span>Accessing Option Properties (Getters)</span></a></li><li><a class="tocitem" href="#StrategyMetadata-Overview-(Strategies)"><span>StrategyMetadata Overview (Strategies)</span></a></li><li><a class="tocitem" href="#StrategyOptions"><span>StrategyOptions</span></a></li><li><a class="tocitem" href="#Validation-Modes"><span>Validation Modes</span></a></li><li><a class="tocitem" href="#Extraction-Functions"><span>Extraction Functions</span></a></li><li><a class="tocitem" href="#Data-Flow-Summary"><span>Data Flow Summary</span></a></li></ul></li><li><a class="tocitem" href="implementing_a_strategy.html">Implementing a Strategy</a></li><li><a class="tocitem" href="strategy_parameters.html">Strategy Parameters</a></li><li><a class="tocitem" href="implementing_a_solver.html">Implementing a Solver</a></li><li><a class="tocitem" href="implementing_a_modeler.html">Implementing a Modeler</a></li><li><a class="tocitem" href="implementing_an_optimization_problem.html">Implementing an Optimization Problem</a></li><li><a class="tocitem" href="orchestration_and_routing.html">Orchestration &amp; Routing</a></li><li><a class="tocitem" href="error_messages.html">Error Messages Reference</a></li></ul></li><li><span class="tocitem">API Reference</span><ul><li><input class="collapse-toggle" id="menuitem-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-1"><span class="docs-label">DOCP</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../api/docp_public.html">Public</a></li><li><a class="tocitem" href="../api/docp_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-2"><span class="docs-label">Modelers</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../api/modelers_public.html">Public</a></li><li><a class="tocitem" href="../api/modelers_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3" type="checkbox"/><label class="tocitem" for="menuitem-4-3"><span class="docs-label">Optimization</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../api/optimization_public.html">Public</a></li><li><a class="tocitem" href="../api/optimization_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-4" type="checkbox"/><label class="tocitem" for="menuitem-4-4"><span class="docs-label">Options</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../api/options_public.html">Public</a></li><li><a class="tocitem" href="../api/options_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-5" type="checkbox"/><label class="tocitem" for="menuitem-4-5"><span class="docs-label">Orchestration</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../api/orchestration_public.html">Public</a></li><li><a class="tocitem" href="../api/orchestration_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-6" type="checkbox"/><label class="tocitem" for="menuitem-4-6"><span class="docs-label">Solvers</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../api/solvers_public.html">Public</a></li><li><a class="tocitem" href="../api/solvers_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-7" type="checkbox"/><label class="tocitem" for="menuitem-4-7"><span class="docs-label">Strategies (Contract)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../api/strategies_contract_public.html">Public</a></li><li><a class="tocitem" href="../api/strategies_contract_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-8" type="checkbox"/><label class="tocitem" for="menuitem-4-8"><span class="docs-label">Strategies (API)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../api/strategies_api_public.html">Public</a></li><li><a class="tocitem" href="../api/strategies_api_private.html">Private</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Developer Guides</a></li><li class="is-active"><a href="options_system.html">Options System</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="options_system.html">Options System</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/control-toolbox/CTSolvers.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Options-System"><a class="docs-heading-anchor" href="#Options-System">Options System</a><a id="Options-System-1"></a><a class="docs-heading-anchor-permalink" href="#Options-System" title="Permalink"></a></h1><p>This guide explains the Options module — the foundational layer for defining, validating, extracting, and tracking configuration values throughout CTSolvers. The Options module is generic and has no dependencies on other CTSolvers modules.</p><pre><code class="language-julia hljs">using CTSolvers
+using CTBase: CTBase
+const Exceptions = CTBase.Exceptions</code></pre><h2 id="Overview"><a class="docs-heading-anchor" href="#Overview">Overview</a><a id="Overview-1"></a><a class="docs-heading-anchor-permalink" href="#Overview" title="Permalink"></a></h2><p>The options system has four core types and a set of extraction functions:</p><div class="mermaid">flowchart LR
+    OD[&quot;OptionDefinition\n(schema)&quot;] --&gt; SM[&quot;StrategyMetadata\n(collection of defs)&quot;]
+    SM --&gt; BSO[&quot;build_strategy_options\n(validate + merge)&quot;]
+    BSO --&gt; SO[&quot;StrategyOptions\n(validated values)&quot;]
+    OD --&gt; EO[&quot;extract_option\n(single extraction)&quot;]
+    EO --&gt; OV[&quot;OptionValue\n(value + provenance)&quot;]</div><h2 id="OptionDefinition"><a class="docs-heading-anchor" href="#OptionDefinition">OptionDefinition</a><a id="OptionDefinition-1"></a><a class="docs-heading-anchor-permalink" href="#OptionDefinition" title="Permalink"></a></h2><p>An <code>OptionDefinition</code> is the schema for a single option. It specifies the name, type, default, description, aliases, and an optional validator.</p><pre><code class="language-julia hljs">def = OptionDefinition(
+    name        = :max_iter,
+    type        = Integer,
+    default     = 1000,
+    description = &quot;Maximum number of iterations&quot;,
+    aliases     = (:maxiter,),
+    validator   = x -&gt; x &gt;= 0 || throw(Exceptions.IncorrectArgument(
+        &quot;Invalid max_iter&quot;, got = &quot;$x&quot;, expected = &quot;&gt;= 0&quot;,
+    )),
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">max_iter (maxiter) :: Integer (default: 1000)</code></pre><h3 id="Fields"><a class="docs-heading-anchor" href="#Fields">Fields</a><a id="Fields-1"></a><a class="docs-heading-anchor-permalink" href="#Fields" title="Permalink"></a></h3><table><tr><th style="text-align: right">Field</th><th style="text-align: right">Type</th><th style="text-align: right">Description</th></tr><tr><td style="text-align: right"><code>name</code></td><td style="text-align: right"><code>Symbol</code></td><td style="text-align: right">Primary option name</td></tr><tr><td style="text-align: right"><code>type</code></td><td style="text-align: right"><code>Type</code></td><td style="text-align: right">Expected Julia type</td></tr><tr><td style="text-align: right"><code>default</code></td><td style="text-align: right"><code>Any</code></td><td style="text-align: right">Default value (or <code>NotProvided</code>)</td></tr><tr><td style="text-align: right"><code>description</code></td><td style="text-align: right"><code>String</code></td><td style="text-align: right">Human-readable description</td></tr><tr><td style="text-align: right"><code>aliases</code></td><td style="text-align: right"><code>Tuple{Vararg{Symbol}}</code></td><td style="text-align: right">Alternative names</td></tr><tr><td style="text-align: right"><code>validator</code></td><td style="text-align: right"><code>Function</code> or <code>nothing</code></td><td style="text-align: right">Validation function</td></tr></table><h3 id="Constructor-validation"><a class="docs-heading-anchor" href="#Constructor-validation">Constructor validation</a><a id="Constructor-validation-1"></a><a class="docs-heading-anchor-permalink" href="#Constructor-validation" title="Permalink"></a></h3><p>The constructor automatically:</p><ol><li>Checks that <code>default</code> matches the declared <code>type</code></li><li>Runs the <code>validator</code> on the <code>default</code> value (if both are provided)</li><li>Skips validation when <code>default</code> is <code>NotProvided</code></li></ol><p>Type mismatch in the constructor:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; OptionDefinition(name = :count, type = Integer, default = &quot;hello&quot;, description = &quot;A count&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">Control Toolbox Error</span></span>
+
+❌ Error: <span class="sgr31"><span class="sgr1">CTBase.Exceptions.IncorrectArgument</span></span>, Type mismatch in option definition
+🔍 Got: default value hello of type String, Expected: value of type Integer
+📂 Context: OptionDefinition constructor - validating type compatibility
+💡 Suggestion: Ensure the default value matches the declared type, or adjust the type parameter</code></pre><h3 id="Aliases"><a class="docs-heading-anchor" href="#Aliases">Aliases</a><a id="Aliases-1"></a><a class="docs-heading-anchor-permalink" href="#Aliases" title="Permalink"></a></h3><p>Aliases allow users to use alternative names for the same option:</p><pre><code class="language-julia hljs">def_alias = OptionDefinition(
+    name = :max_iter, type = Int, default = 100,
+    description = &quot;Max iterations&quot;, aliases = (:maxiter, :max),
+)
+all_names(def_alias)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(:max_iter, :maxiter, :max)</code></pre><p>The extraction system searches all names when looking for a match in kwargs.</p><h3 id="Validators"><a class="docs-heading-anchor" href="#Validators">Validators</a><a id="Validators-1"></a><a class="docs-heading-anchor-permalink" href="#Validators" title="Permalink"></a></h3><p>Validators follow the pattern <code>x -&gt; condition || throw(...)</code>. They should return a truthy value on success or throw on failure:</p><pre><code class="language-julia hljs">validated_def = OptionDefinition(
+    name = :tol, type = Real, default = 1e-8,
+    description = &quot;Tolerance&quot;,
+    validator = x -&gt; x &gt; 0 || throw(Exceptions.IncorrectArgument(
+        &quot;Invalid tolerance&quot;,
+        got = &quot;tol=$x&quot;, expected = &quot;positive real number (&gt; 0)&quot;,
+        suggestion = &quot;Use 1e-6 or 1e-8&quot;,
+    )),
+)</code></pre><p>Validator failure:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; extract_option((tol = -1.0,), validated_def)</code><code class="nohighlight hljs ansi" style="display:block;">┌ Error: Validation failed for option tol with value -1.0
+│   exception =
+│    Control Toolbox Error
+│    
+│    ❌ Error: CTBase.Exceptions.IncorrectArgument, Invalid tolerance
+│    🔍 Got: tol=-1.0, Expected: positive real number (&gt; 0)
+│    💡 Suggestion: Use 1e-6 or 1e-8
+│    📍 In your code:
+│         #5 at options_system.md:95
+│         └── extract_option at extraction.jl:57
+│             └── top-level scope at REPL[1]:1
+│    
+│    Stacktrace:
+│      [1] (::Main.var&quot;#5#6&quot;)(x::Float64)
+│        @ Main ./options_system.md:95
+│      [2] extract_option(kwargs::@NamedTuple{tol::Float64}, def::CTSolvers.Options.OptionDefinition{Float64})
+│        @ CTSolvers.Options ~/work/CTSolvers.jl/CTSolvers.jl/src/Options/extraction.jl:57
+│      [3] top-level scope
+│        @ REPL[1]:1
+│      [4] eval(m::Module, e::Any)
+│        @ Core ./boot.jl:489
+│      [5] #67
+│        @ ~/.julia/packages/Documenter/AXNMp/src/expander_pipeline.jl:978 [inlined]
+│      [6] cd(f::Documenter.var&quot;#67#68&quot;{Module}, dir::String)
+│        @ Base.Filesystem ./file.jl:112
+│      [7] (::Documenter.var&quot;#65#66&quot;{Documenter.Page, Module})()
+│        @ Documenter ~/.julia/packages/Documenter/AXNMp/src/expander_pipeline.jl:977
+│      [8] (::IOCapture.var&quot;#12#13&quot;{Type{InterruptException}, Documenter.var&quot;#65#66&quot;{Documenter.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, Base.PipeEndpoint, Base.PipeEndpoint})()
+│        @ IOCapture ~/.julia/packages/IOCapture/MR051/src/IOCapture.jl:170
+│      [9] with_logstate(f::IOCapture.var&quot;#12#13&quot;{Type{InterruptException}, Documenter.var&quot;#65#66&quot;{Documenter.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, Base.PipeEndpoint, Base.PipeEndpoint}, logstate::Base.CoreLogging.LogState)
+│        @ Base.CoreLogging ./logging/logging.jl:542
+│     [10] with_logger(f::Function, logger::Base.CoreLogging.ConsoleLogger)
+│        @ Base.CoreLogging ./logging/logging.jl:653
+│     [11] capture(f::Documenter.var&quot;#65#66&quot;{Documenter.Page, Module}; rethrow::Type, color::Bool, passthrough::Bool, capture_buffer::IOBuffer, io_context::Vector{Any})
+│        @ IOCapture ~/.julia/packages/IOCapture/MR051/src/IOCapture.jl:167
+│     [12] runner(::Type{Documenter.Expanders.REPLBlocks}, node::MarkdownAST.Node{Nothing}, page::Documenter.Page, doc::Documenter.Document)
+│        @ Documenter ~/.julia/packages/Documenter/AXNMp/src/expander_pipeline.jl:976
+│     [13] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::MarkdownAST.Node{Nothing}, ::Vararg{Any})
+│        @ Documenter.Selectors ~/.julia/packages/Documenter/AXNMp/src/utilities/Selectors.jl:170
+│     [14] expand(doc::Documenter.Document)
+│        @ Documenter ~/.julia/packages/Documenter/AXNMp/src/expander_pipeline.jl:60
+│     [15] runner(::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Document)
+│        @ Documenter ~/.julia/packages/Documenter/AXNMp/src/builder_pipeline.jl:224
+│     [16] dispatch(::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Document)
+│        @ Documenter.Selectors ~/.julia/packages/Documenter/AXNMp/src/utilities/Selectors.jl:170
+│     [17] #95
+│        @ ~/.julia/packages/Documenter/AXNMp/src/makedocs.jl:283 [inlined]
+│     [18] withenv(::Documenter.var&quot;#95#96&quot;{Documenter.Document}, ::Pair{String, Nothing}, ::Vararg{Pair{String, Nothing}})
+│        @ Base ./env.jl:265
+│     [19] #93
+│        @ ~/.julia/packages/Documenter/AXNMp/src/makedocs.jl:282 [inlined]
+│     [20] cd(f::Documenter.var&quot;#93#94&quot;{Documenter.Document}, dir::String)
+│        @ Base.Filesystem ./file.jl:112
+│     [21] makedocs(; debug::Bool, format::Documenter.HTMLWriter.HTML, kwargs::@Kwargs{draft::Bool, remotes::Nothing, warnonly::Bool, sitename::String, pages::Vector{Pair{String, Any}}})
+│        @ Documenter ~/.julia/packages/Documenter/AXNMp/src/makedocs.jl:281
+│     [22] (::var&quot;#4#5&quot;)(api_pages::Vector{Pair{String, Vector{Pair{String, String}}}})
+│        @ Main ~/work/CTSolvers.jl/CTSolvers.jl/docs/make.jl:36
+│     [23] with_api_reference(f::var&quot;#4#5&quot;, src_dir::String, ext_dir::String)
+│        @ Main ~/work/CTSolvers.jl/CTSolvers.jl/docs/api_reference.jl:316
+│     [24] top-level scope
+│        @ ~/work/CTSolvers.jl/CTSolvers.jl/docs/make.jl:35
+│     [25] include(mapexpr::Function, mod::Module, _path::String)
+│        @ Base ./Base.jl:307
+│     [26] top-level scope
+│        @ none:1
+│     [27] eval(m::Module, e::Any)
+│        @ Core ./boot.jl:489
+│     [28] exec_options(opts::Base.JLOptions)
+│        @ Base ./client.jl:283
+│     [29] _start()
+│        @ Base ./client.jl:550
+└ @ CTSolvers.Options ~/work/CTSolvers.jl/CTSolvers.jl/src/Options/extraction.jl:59
+ERROR: <span class="sgr31"><span class="sgr1">Control Toolbox Error</span></span>
+
+❌ Error: <span class="sgr31"><span class="sgr1">CTBase.Exceptions.IncorrectArgument</span></span>, Invalid tolerance
+🔍 Got: tol=-1.0, Expected: positive real number (&gt; 0)
+💡 Suggestion: Use 1e-6 or 1e-8</code></pre><h2 id="NotProvided"><a class="docs-heading-anchor" href="#NotProvided">NotProvided</a><a id="NotProvided-1"></a><a class="docs-heading-anchor-permalink" href="#NotProvided" title="Permalink"></a></h2><p><code>NotProvided</code> is a sentinel value that distinguishes &quot;no default&quot; from &quot;default is <code>nothing</code>&quot;:</p><pre><code class="language-julia hljs">NotProvided</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NotProvided</code></pre><pre><code class="language-julia hljs"># Option with NotProvided default — omitted if user doesn&#39;t provide it
+opt_np = OptionDefinition(
+    name = :mu_init, type = Real, default = NotProvided,
+    description = &quot;Initial barrier parameter&quot;,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">mu_init :: Real (default: NotProvided)</code></pre><p>When <code>extract_option</code> encounters a <code>NotProvided</code> default and the user hasn&#39;t provided the option, the option is excluded from the result:</p><pre><code class="language-julia hljs">result, remaining = extract_option((other = 42,), opt_np)
+println(&quot;Result: &quot;, result)
+println(&quot;Remaining: &quot;, remaining)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Result: NotStored
+Remaining: (other = 42,)</code></pre><h2 id="OptionValue-and-Provenance"><a class="docs-heading-anchor" href="#OptionValue-and-Provenance">OptionValue and Provenance</a><a id="OptionValue-and-Provenance-1"></a><a class="docs-heading-anchor-permalink" href="#OptionValue-and-Provenance" title="Permalink"></a></h2><p><code>OptionValue</code> wraps a value with its <strong>provenance</strong> — where it came from:</p><pre><code class="language-julia hljs">OptionValue(1000, :user)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1000 (user)</code></pre><pre><code class="language-julia hljs">OptionValue(1e-8, :default)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1.0e-8 (default)</code></pre><pre><code class="language-julia hljs">OptionValue(42, :computed)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">42 (computed)</code></pre><h3 id="Three-sources"><a class="docs-heading-anchor" href="#Three-sources">Three sources</a><a id="Three-sources-1"></a><a class="docs-heading-anchor-permalink" href="#Three-sources" title="Permalink"></a></h3><table><tr><th style="text-align: right">Source</th><th style="text-align: right">Meaning</th></tr><tr><td style="text-align: right"><code>:user</code></td><td style="text-align: right">Explicitly provided by the user</td></tr><tr><td style="text-align: right"><code>:default</code></td><td style="text-align: right">Came from the <code>OptionDefinition</code> default</td></tr><tr><td style="text-align: right"><code>:computed</code></td><td style="text-align: right">Derived or computed from other options</td></tr></table><p>Invalid source:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; OptionValue(42, :invalid_source)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">Control Toolbox Error</span></span>
+
+❌ Error: <span class="sgr31"><span class="sgr1">CTBase.Exceptions.IncorrectArgument</span></span>, Invalid option source
+🔍 Got: source=invalid_source, Expected: :default, :user, or :computed
+📂 Context: OptionValue constructor - validating source provenance
+💡 Suggestion: Use one of the valid source symbols: :default (tool default), :user (user-provided), or :computed (derived)</code></pre><p>Provenance tracking enables introspection — you can tell whether a value was explicitly chosen or inherited from defaults:</p><pre><code class="language-julia hljs">opt = OptionValue(1000, :user)
+println(&quot;Value: &quot;, opt.value)
+println(&quot;Source: &quot;, opt.source)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Value: 1000
+Source: user</code></pre><h2 id="Accessing-Option-Properties-(Getters)"><a class="docs-heading-anchor" href="#Accessing-Option-Properties-(Getters)">Accessing Option Properties (Getters)</a><a id="Accessing-Option-Properties-(Getters)-1"></a><a class="docs-heading-anchor-permalink" href="#Accessing-Option-Properties-(Getters)" title="Permalink"></a></h2><p>Use the getters in <code>Options</code> to access <code>OptionDefinition</code> and <code>OptionValue</code> fields instead of reading struct fields directly. This keeps encapsulation intact and aligns with Strategies overrides.</p><pre><code class="language-julia hljs">using CTSolvers.Options
+
+def = OptionDefinition(
+    name = :max_iter,
+    type = Int,
+    default = 100,
+    description = &quot;Maximum iterations&quot;,
+    aliases = (:maxiter,),
+)
+
+@show Options.name(def)
+@show Options.type(def)
+@show Options.default(def)
+@show Options.description(def)
+@show Options.aliases(def)
+@show Options.is_required(def)
+
+opt = OptionValue(200, :user)
+@show Options.value(opt)
+@show Options.source(opt)
+@show Options.is_user(opt)
+@show Options.is_default(opt)
+@show Options.is_computed(opt)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">false</code></pre><h3 id="Encapsulation-Best-Practices-(Strategies)"><a class="docs-heading-anchor" href="#Encapsulation-Best-Practices-(Strategies)">Encapsulation Best Practices (Strategies)</a><a id="Encapsulation-Best-Practices-(Strategies)-1"></a><a class="docs-heading-anchor-permalink" href="#Encapsulation-Best-Practices-(Strategies)" title="Permalink"></a></h3><ul><li>To retrieve an <code>OptionValue</code> from a strategy: <code>opt = Strategies.option(opts, :max_iter)</code></li><li>To read value/provenance: <code>Options.value(opt)</code>, <code>Options.source(opt)</code> or directly <code>Options.value(opts, :max_iter)</code></li><li>For predicates on a strategy: <code>Strategies.option_is_user(strategy, key)</code> (or <code>Options.is_user(options(strategy), key)</code>).</li><li>Avoid direct field access (<code>.value</code>, <code>.source</code>, <code>.options</code>), which is reserved for the owning module.</li></ul><p><strong>Example usage</strong> (using <code>DemoStrategy</code> defined below):</p><pre><code class="language-julia hljs">using CTSolvers.Strategies
+
+# Build strategy options with user-provided values
+opts = Strategies.build_strategy_options(DemoStrategy; max_iter=250, tol=1e-7)
+
+# Encapsulated access to option values
+opt = Strategies.option(opts, :max_iter)
+Options.value(opt)    # Returns: 250
+Options.source(opt)   # Returns: :user
+
+# Check provenance
+Options.is_user(opts, :max_iter)    # Returns: true
+Options.is_default(opts, :tol)      # Returns: false (user provided)</code></pre><h2 id="StrategyMetadata-Overview-(Strategies)"><a class="docs-heading-anchor" href="#StrategyMetadata-Overview-(Strategies)">StrategyMetadata Overview (Strategies)</a><a id="StrategyMetadata-Overview-(Strategies)-1"></a><a class="docs-heading-anchor-permalink" href="#StrategyMetadata-Overview-(Strategies)" title="Permalink"></a></h2><p><code>StrategyMetadata</code> is a collection of <code>OptionDefinition</code> objects that describes all configurable options for a strategy. It is returned by <code>Strategies.metadata(::Type)</code>.</p><pre><code class="language-julia hljs">meta = CTSolvers.Strategies.StrategyMetadata(
+    OptionDefinition(name = :tol, type = Real, default = 1e-8, description = &quot;Tolerance&quot;),
+    OptionDefinition(name = :max_iter, type = Integer, default = 1000, description = &quot;Max iterations&quot;),
+    OptionDefinition(name = :verbose, type = Bool, default = false, description = &quot;Verbose output&quot;),
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">StrategyMetadata with 3 options:
+├─ tol :: Real (default: 1.0e-8)
+│  description: Tolerance
+├─ max_iter :: Integer (default: 1000)
+│  description: Max iterations
+└─ verbose :: Bool (default: false)
+   description: Verbose output
+</code></pre><h3 id="Collection-interface"><a class="docs-heading-anchor" href="#Collection-interface">Collection interface</a><a id="Collection-interface-1"></a><a class="docs-heading-anchor-permalink" href="#Collection-interface" title="Permalink"></a></h3><p><code>StrategyMetadata</code> implements the standard Julia collection interface:</p><pre><code class="language-julia hljs">println(&quot;keys:   &quot;, keys(meta))
+println(&quot;length: &quot;, length(meta))
+println(&quot;haskey: &quot;, haskey(meta, :tol))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">keys:   (:tol, :max_iter, :verbose)
+length: 3
+haskey: true</code></pre><pre><code class="language-julia hljs">meta[:tol]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">tol :: Real (default: 1.0e-8)</code></pre><h3 id="Uniqueness"><a class="docs-heading-anchor" href="#Uniqueness">Uniqueness</a><a id="Uniqueness-1"></a><a class="docs-heading-anchor-permalink" href="#Uniqueness" title="Permalink"></a></h3><p>The constructor validates that all option names (including aliases) are unique across the entire metadata collection.</p><h2 id="StrategyOptions"><a class="docs-heading-anchor" href="#StrategyOptions">StrategyOptions</a><a id="StrategyOptions-1"></a><a class="docs-heading-anchor-permalink" href="#StrategyOptions" title="Permalink"></a></h2><p><code>StrategyOptions</code> stores the <strong>validated option values</strong> for a strategy instance. It is created by <code>build_strategy_options</code>.</p><pre><code class="language-julia hljs">abstract type DemoStrategy &lt;: CTSolvers.Strategies.AbstractStrategy end
+CTSolvers.Strategies.id(::Type{DemoStrategy}) = :demo
+CTSolvers.Strategies.metadata(::Type{DemoStrategy}) = meta</code></pre><pre><code class="language-julia hljs">opts = CTSolvers.Strategies.build_strategy_options(DemoStrategy;
+    max_iter = 500, tol = 1e-6,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">StrategyOptions with 3 options:
+├─ max_iter = 500  [user]
+├─ tol = 1.0e-6  [user]
+└─ verbose = false  [default]
+</code></pre><h3 id="Access-patterns"><a class="docs-heading-anchor" href="#Access-patterns">Access patterns</a><a id="Access-patterns-1"></a><a class="docs-heading-anchor-permalink" href="#Access-patterns" title="Permalink"></a></h3><pre><code class="language-julia hljs">println(&quot;opts[:max_iter] = &quot;, opts[:max_iter])
+println(&quot;opts[:tol]      = &quot;, opts[:tol])
+println(&quot;opts[:verbose]  = &quot;, opts[:verbose])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">opts[:max_iter] = 500
+opts[:tol]      = 1.0e-6
+opts[:verbose]  = false</code></pre><h3 id="Collection-interface-2"><a class="docs-heading-anchor" href="#Collection-interface-2">Collection interface</a><a class="docs-heading-anchor-permalink" href="#Collection-interface-2" title="Permalink"></a></h3><pre><code class="language-julia hljs">println(&quot;keys:   &quot;, keys(opts))
+println(&quot;length: &quot;, length(opts))
+println(&quot;haskey: &quot;, haskey(opts, :tol))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">keys:   (:max_iter, :tol, :verbose)
+length: 3
+haskey: true</code></pre><pre><code class="language-julia hljs">for (k, v) in pairs(opts)
+    println(&quot;  &quot;, k, &quot; =&gt; &quot;, v)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">  max_iter =&gt; 500
+  tol =&gt; 1.0e-6
+  verbose =&gt; false</code></pre><h2 id="Validation-Modes"><a class="docs-heading-anchor" href="#Validation-Modes">Validation Modes</a><a id="Validation-Modes-1"></a><a class="docs-heading-anchor-permalink" href="#Validation-Modes" title="Permalink"></a></h2><p><code>build_strategy_options</code> supports two validation modes.</p><h3 id="Strict-mode-(default)"><a class="docs-heading-anchor" href="#Strict-mode-(default)">Strict mode (default)</a><a id="Strict-mode-(default)-1"></a><a class="docs-heading-anchor-permalink" href="#Strict-mode-(default)" title="Permalink"></a></h3><p>Rejects unknown options with a helpful error message:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; CTSolvers.Strategies.build_strategy_options(DemoStrategy; max_itr = 500)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">Control Toolbox Error</span></span>
+
+❌ Error: <span class="sgr31"><span class="sgr1">CTBase.Exceptions.IncorrectArgument</span></span>, Unknown options provided for DemoStrategy
+
+Unrecognized options: [:max_itr]
+
+These options are not defined in the metadata of DemoStrategy.
+
+Available options:
+  :max_iter,   :tol,   :verbose
+
+Suggestions for :max_itr:
+  - :max_iter [distance: 1]
+  - :tol [distance: 7]
+  - :verbose [distance: 7]
+
+If you are certain these options exist for the backend,
+use permissive mode:
+  DemoStrategy(...; mode=:permissive)
+
+📂 Context: build_strategy_options - strict validation</code></pre><h3 id="Permissive-mode"><a class="docs-heading-anchor" href="#Permissive-mode">Permissive mode</a><a id="Permissive-mode-1"></a><a class="docs-heading-anchor-permalink" href="#Permissive-mode" title="Permalink"></a></h3><p>Accepts unknown options with a warning and stores them with <code>:user</code> source:</p><pre><code class="language-julia hljs">opts_perm = CTSolvers.Strategies.build_strategy_options(DemoStrategy;
+    mode = :permissive, max_iter = 500, custom_flag = true,
+)
+println(&quot;keys: &quot;, keys(opts_perm))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">┌ Warning: Unrecognized options passed to backend
+│
+│ Unvalidated options: [:custom_flag]
+│
+│ These options will be passed directly to the DemoStrategy backend
+│ without validation by CTSolvers. Ensure they are correct.
+└ @ CTSolvers.Strategies ~/work/CTSolvers.jl/CTSolvers.jl/src/Strategies/api/validation_helpers.jl:107
+keys: (:max_iter, :tol, :verbose, :custom_flag)</code></pre><h2 id="Extraction-Functions"><a class="docs-heading-anchor" href="#Extraction-Functions">Extraction Functions</a><a id="Extraction-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Extraction-Functions" title="Permalink"></a></h2><h3 id="extract_option"><a class="docs-heading-anchor" href="#extract_option"><code>extract_option</code></a><a id="extract_option-1"></a><a class="docs-heading-anchor-permalink" href="#extract_option" title="Permalink"></a></h3><p>Extracts a single option from a <code>NamedTuple</code>:</p><pre><code class="language-julia hljs">def_grid = OptionDefinition(
+    name = :grid_size, type = Int, default = 100,
+    description = &quot;Grid size&quot;, aliases = (:n,),
+)
+opt_value, remaining = extract_option((n = 200, tol = 1e-6), def_grid)
+println(&quot;Extracted: &quot;, opt_value)
+println(&quot;Remaining: &quot;, remaining)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Extracted: 200 (user)
+Remaining: (tol = 1.0e-6,)</code></pre><p>The function:</p><ol><li>Searches all names (primary + aliases)</li><li>Validates the type</li><li>Runs the validator</li><li>Returns <code>OptionValue</code> with <code>:user</code> source</li><li>Removes the matched key from remaining kwargs</li></ol><p>Type mismatch in extraction:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; extract_option((grid_size = &quot;hello&quot;,), def_grid)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">Control Toolbox Error</span></span>
+
+❌ Error: <span class="sgr31"><span class="sgr1">CTBase.Exceptions.IncorrectArgument</span></span>, Invalid option type
+🔍 Got: value hello of type String, Expected: Int64
+📂 Context: Option extraction for grid_size
+💡 Suggestion: Ensure the option value matches the expected type</code></pre><h3 id="extract_options"><a class="docs-heading-anchor" href="#extract_options"><code>extract_options</code></a><a id="extract_options-1"></a><a class="docs-heading-anchor-permalink" href="#extract_options" title="Permalink"></a></h3><p>Extracts multiple options at once:</p><pre><code class="language-julia hljs">defs = [
+    OptionDefinition(name = :grid_size, type = Int, default = 100, description = &quot;Grid&quot;),
+    OptionDefinition(name = :tol, type = Float64, default = 1e-6, description = &quot;Tol&quot;),
+]
+extracted, remaining = extract_options((grid_size = 200, max_iter = 1000), defs)
+println(&quot;Extracted: &quot;, extracted)
+println(&quot;Remaining: &quot;, remaining)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Extracted: Dict{Symbol, CTSolvers.Options.OptionValue}(:grid_size =&gt; 200 (user), :tol =&gt; 1.0e-6 (default))
+Remaining: (max_iter = 1000,)</code></pre><h3 id="extract_raw_options"><a class="docs-heading-anchor" href="#extract_raw_options"><code>extract_raw_options</code></a><a id="extract_raw_options-1"></a><a class="docs-heading-anchor-permalink" href="#extract_raw_options" title="Permalink"></a></h3><p>Unwraps <code>OptionValue</code> wrappers and filters out <code>NotProvided</code> values:</p><pre><code class="language-julia hljs">raw_input = (
+    backend   = OptionValue(:optimized, :user),
+    show_time = OptionValue(false, :default),
+    optional  = OptionValue(NotProvided, :default),
+)
+extract_raw_options(raw_input)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(show_time = false, backend = :optimized)</code></pre><h2 id="Data-Flow-Summary"><a class="docs-heading-anchor" href="#Data-Flow-Summary">Data Flow Summary</a><a id="Data-Flow-Summary-1"></a><a class="docs-heading-anchor-permalink" href="#Data-Flow-Summary" title="Permalink"></a></h2><div class="mermaid">flowchart TD
+    User[&quot;User kwargs\n(max_iter=500, tol=1e-6)&quot;]
+    Meta[&quot;StrategyMetadata\n(OptionDefinition collection)&quot;]
+    BSO[&quot;build_strategy_options\n(validate, merge, track provenance)&quot;]
+    SO[&quot;StrategyOptions\n(max_iter=500 :user, tol=1e-6 :user,\nprint_level=5 :default)&quot;]
+    Dict[&quot;options_dict\n(Dict for backend)&quot;]
+
+    User --&gt; BSO
+    Meta --&gt; BSO
+    BSO --&gt; SO
+    SO --&gt; Dict</div><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../architecture.html">« Architecture</a><a class="docs-footer-nextpage" href="implementing_a_strategy.html">Implementing a Strategy »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 4 March 2026 22:22">Wednesday 4 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
