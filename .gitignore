@@ -35,4 +35,4 @@ tmp/
 .windsurf/
 .vscode/
 .extras/
-coverage/
+.coverage/

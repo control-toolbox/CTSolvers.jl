@@ -39,7 +39,7 @@ id(MyStrategy)  # ERROR: UndefVarError
 
 ### Strategy Branch
 
-All configurable components (modelers, solvers, discretizers) are **strategies**. They share a common contract defined by `AbstractStrategy`.
+All configurable components (modelers, solvers) in CTSolvers are **strategies**. They share a common contract defined by `AbstractStrategy`.
 
 ```mermaid
 classDiagram
@@ -53,7 +53,6 @@ classDiagram
 
     AbstractStrategy <|-- AbstractNLPModeler
     AbstractStrategy <|-- AbstractNLPSolver
-    AbstractStrategy <|-- AbstractOptimalControlDiscretizer
 
     class AbstractNLPModeler {
         <<abstract>>
@@ -71,18 +70,16 @@ classDiagram
     AbstractNLPSolver <|-- Solvers.MadNLP
     AbstractNLPSolver <|-- Solvers.MadNCL
     AbstractNLPSolver <|-- Solvers.Knitro
-
-    class AbstractOptimalControlDiscretizer {
-        <<abstract>>
-        Defined in CTDirect
-    }
-    AbstractOptimalControlDiscretizer <|-- Collocation
-    AbstractOptimalControlDiscretizer <|-- DirectShooting
 ```
 
 - **`AbstractNLPModeler`** (in `Modelers`): converts problems into NLP models and back into solutions.
 - **`AbstractNLPSolver`** (in `Solvers`): solves NLP models via backend libraries.
-- **`AbstractOptimalControlDiscretizer`** (in CTDirect, external): discretizes continuous-time OCP into finite-dimensional problems. See [Implementing a Strategy](@ref) for a complete tutorial.
+
+!!! note "External Strategy Families"
+    Other packages in the control-toolbox ecosystem define additional strategy families:
+    - **`AbstractDiscretizer`** (in [CTDirect.jl](https://github.com/control-toolbox/CTDirect.jl)): discretizes continuous-time OCP into finite-dimensional problems (e.g., `Collocation`, `DirectShooting`).
+
+    These external strategies follow the same `AbstractStrategy` contract. See [Implementing a Strategy](@ref) for a complete tutorial.
 
 ### Optimization / Builder Branch
 
@@ -222,6 +219,36 @@ flowchart TB
 - **Instance-level methods** (`options`) are called on **instances** — they provide the actual configuration with provenance tracking.
 
 See [Implementing a Strategy](@ref) for a step-by-step tutorial.
+
+### Strategy Parameters
+
+Strategies can be **parameterized** to specialize behavior based on execution context (e.g., CPU vs GPU):
+
+```mermaid
+flowchart TB
+    subgraph Parameters["Strategy Parameters"]
+        CPU["CPU <: AbstractStrategyParameter"]
+        GPU["GPU <: AbstractStrategyParameter"]
+    end
+    
+    subgraph Metadata["Parameterized Metadata"]
+        MetaCPU["metadata(Solvers.MadNLP, CPU) → CPU defaults"]
+        MetaGPU["metadata(Solvers.MadNLP, GPU) → GPU defaults"]
+    end
+    
+    CPU --> MetaCPU
+    GPU --> MetaGPU
+    MetaCPU --> InstanceCPU["MadNLP(CPU; max_iter=1000)"]
+    MetaGPU --> InstanceGPU["MadNLP(GPU; max_iter=1000)"]
+```
+
+**Key features:**
+
+- **Singleton types** for compile-time dispatch
+- **Specialized defaults** per parameter (e.g., different linear solvers for CPU/GPU)
+- **Type-based metadata** via `metadata(::Type{<:Strategy}, ::Type{<:Parameter})`
+
+See [Strategy Parameters](@ref) for a complete guide.
 
 ### NotImplemented Pattern
 
