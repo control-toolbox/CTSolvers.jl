@@ -109,7 +109,7 @@ using NLPModelsKnitro
 
 See also: [`CPU`](@ref), [`AbstractNLPSolver`](@ref), [`Ipopt`](@ref), [`MadNLP`](@ref)
 """
-struct Knitro{P<:AbstractStrategyParameter} <: AbstractNLPSolver
+struct Knitro{P<:CPU} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -137,26 +137,9 @@ Returns `CPU` as the default execution parameter.
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: [`Knitro`](@ref), [`CPU`](@ref), [`_supported_parameters`](@ref)
+See also: [`Knitro`](@ref), [`CPU`](@ref)
 """
 Strategies._default_parameter(::Type{<:Solvers.Knitro}) = CPU
-
-"""
-$(TYPEDSIGNATURES)
-
-Supported parameter types for Knitro.
-
-Returns a tuple of parameter types that this strategy accepts. Knitro
-only supports CPU execution.
-
-# Implementation Notes
-
-This method is part of the `AbstractStrategy` parameter contract and must be
-implemented by all parameterized strategies.
-
-See also: [`Knitro`](@ref), [`CPU`](@ref), [`GPU`](@ref), [`_default_parameter`](@ref)
-"""
-Strategies._supported_parameters(::Type{<:Solvers.Knitro}) = (CPU,)
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -220,9 +203,7 @@ solver_cpu = Solvers.Knitro{CPU}(maxit=1000, outlev=2)
 
 See also: [`Knitro`](@ref), [`CPU`](@ref)
 """
-function Solvers.Knitro{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
-    # Validate parameter support
-    validate_supported_parameter(Solvers.Knitro, P)
+function Solvers.Knitro{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
     return build_knitro_solver(KnitroTag, P; mode=mode, kwargs...)
 end
 
@@ -259,11 +240,8 @@ This stub is for parameterized types `Knitro{P}` where `P <: AbstractStrategyPar
 
 See also: [`Knitro`](@ref), [`Strategies.StrategyMetadata`](@ref)
 """
-function Strategies.metadata(::Type{<:Solvers.Knitro{P}}) where {P<:AbstractStrategyParameter}
-    # Validate parameter BEFORE checking extension
-    Strategies.validate_supported_parameter(Solvers.Knitro, P)
-    
-    # If validation passes, extension is missing
+function Strategies.metadata(::Type{<:Solvers.Knitro{P}}) where {P<:CPU}
+    # Extension is missing
     throw(Exceptions.ExtensionError(
         :NLPModelsKnitro;
         message="to access Knitro{$P} options metadata",

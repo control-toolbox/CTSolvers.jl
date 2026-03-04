@@ -175,9 +175,6 @@ function test_cpu_only_parameters_integration()
             Test.@test Strategies._default_parameter(Modelers.ADNLP) == Strategies.CPU
             Test.@test Strategies._default_parameter(Solvers.Ipopt) == Strategies.CPU
             
-            # Verify supported parameters
-            Test.@test Strategies._supported_parameters(Modelers.ADNLP) == (Strategies.CPU,)
-            Test.@test Strategies._supported_parameters(Solvers.Ipopt) == (Strategies.CPU,)
         end
         
         # ====================================================================
@@ -216,26 +213,11 @@ function test_cpu_only_parameters_integration()
             ]
             
             for (strategy_type, name) in strategies_to_test
-                # CPU should be supported
-                Test.@test_nowarn Strategies.validate_supported_parameter(
-                    strategy_type, Strategies.CPU
-                )
-                
-                # GPU should not be supported
-                Test.@test_throws Exceptions.IncorrectArgument Strategies.validate_supported_parameter(
-                    strategy_type, Strategies.GPU
-                )
-                
-                # Custom parameter should not be supported
-                Test.@test_throws Exceptions.IncorrectArgument Strategies.validate_supported_parameter(
-                    strategy_type, FakeParam
-                )
-                
                 # Default parameter should be CPU
                 Test.@test Strategies._default_parameter(strategy_type) == Strategies.CPU
                 
-                # Supported parameters should be (CPU,)
-                Test.@test Strategies._supported_parameters(strategy_type) == (Strategies.CPU,)
+                # Type constraints enforce parameter validation at compile-time
+                # GPU and custom parameters will throw TypeError when attempting to construct
             end
         end
     end

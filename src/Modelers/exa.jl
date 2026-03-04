@@ -197,7 +197,7 @@ modeler = Modelers.Exa{GPU}(
 - ExaModels.jl: [https://github.com/JuliaSmoothOptimizers/ExaModels.jl](https://github.com/JuliaSmoothOptimizers/ExaModels.jl)
 - KernelAbstractions.jl: [https://github.com/JuliaGPU/KernelAbstractions.jl](https://github.com/JuliaGPU/KernelAbstractions.jl)
 """
-struct Exa{P<:AbstractStrategyParameter} <: AbstractNLPModeler
+struct Exa{P<:Union{CPU, GPU}} <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 
@@ -216,29 +216,12 @@ Returns `CPU` as the default execution parameter.
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: [`Exa`](@ref), [`CPU`](@ref), [`_supported_parameters`](@ref)
+See also: [`Exa`](@ref), [`CPU`](@ref)
 """
 Strategies._default_parameter(::Type{<:Modelers.Exa}) = CPU
 
-"""
-$(TYPEDSIGNATURES)
-
-Supported parameter types for Exa.
-
-Returns a tuple of parameter types that this strategy accepts. Exa
-supports both CPU and GPU execution.
-
-# Implementation Notes
-
-This method is part of the `AbstractStrategy` parameter contract and must be
-implemented by all parameterized strategies.
-
-See also: [`Exa`](@ref), [`CPU`](@ref), [`GPU`](@ref), [`_default_parameter`](@ref)
-"""
-Strategies._supported_parameters(::Type{<:Modelers.Exa}) = (CPU, GPU)
-
 # Strategy metadata with option definitions (parameterized)
-function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:AbstractStrategyParameter}
+function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU, GPU}}
     return Strategies.StrategyMetadata(
         # === Existing Options (enhanced) ===
         Strategies.OptionDefinition(;

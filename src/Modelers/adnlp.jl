@@ -159,7 +159,7 @@ modeler = Modelers.ADNLP(
 - ADNLPModels.jl: [https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl)
 - Automatic Differentiation in Julia: [https://github.com/JuliaDiff/](https://github.com/JuliaDiff/)
 """
-struct ADNLP{P<:AbstractStrategyParameter} <: AbstractNLPModeler
+struct ADNLP{P<:CPU} <: AbstractNLPModeler
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -179,31 +179,12 @@ Returns `CPU` as the default execution parameter.
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: [`ADNLP`](@ref), [`CPU`](@ref), [`_supported_parameters`](@ref)
+See also: [`ADNLP`](@ref), [`CPU`](@ref)
 """
 Strategies._default_parameter(::Type{<:Modelers.ADNLP}) = CPU
 
-"""
-$(TYPEDSIGNATURES)
-
-Supported parameter types for ADNLP.
-
-Returns a tuple of parameter types that this strategy accepts. ADNLP
-only supports CPU execution.
-
-# Implementation Notes
-
-This method is part of the `AbstractStrategy` parameter contract and must be
-implemented by all parameterized strategies.
-
-See also: [`ADNLP`](@ref), [`CPU`](@ref), [`GPU`](@ref), [`_default_parameter`](@ref)
-"""
-Strategies._supported_parameters(::Type{<:Modelers.ADNLP}) = (CPU,)
-
 # Strategy metadata with option definitions (parameterized)
-function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:AbstractStrategyParameter}
-    # Validate parameter support
-    validate_supported_parameter(Modelers.ADNLP, P)
+function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
     return Strategies.StrategyMetadata(
         # === Existing Options (unchanged) ===
         Strategies.OptionDefinition(;
@@ -391,10 +372,7 @@ function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
 end
 
 # Parameterized constructor
-function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
-    # Validate parameter support
-    validate_supported_parameter(Modelers.ADNLP, P)
-    
+function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
     # Check for deprecated aliases
     if haskey(kwargs, :adnlp_backend)
         @warn "adnlp_backend is deprecated, use backend instead" maxlog=1

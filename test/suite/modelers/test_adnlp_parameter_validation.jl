@@ -61,13 +61,13 @@ function test_adnlp_parameter_validation()
         # ====================================================================
         
         Test.@testset "Invalid GPU parameter" begin
-            # GPU parameter should throw IncorrectArgument
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP{Strategies.GPU}()
+            # GPU parameter should throw TypeError (compile-time validation)
+            Test.@test_throws TypeError Modelers.ADNLP{Strategies.GPU}()
         end
         
         Test.@testset "Invalid custom parameter" begin
-            # Custom parameter should throw IncorrectArgument
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP{FakeParam}()
+            # Custom parameter should throw TypeError (compile-time validation)
+            Test.@test_throws TypeError Modelers.ADNLP{FakeParam}()
         end
         
         # ====================================================================
@@ -87,8 +87,8 @@ function test_adnlp_parameter_validation()
         end
         
         Test.@testset "metadata() with invalid parameters" begin
-            # GPU parameter should throw IncorrectArgument
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.metadata(Modelers.ADNLP{Strategies.GPU})
+            # GPU parameter should throw TypeError (compile-time validation)
+            Test.@test_throws TypeError Strategies.metadata(Modelers.ADNLP{Strategies.GPU})
         end
         
         # ====================================================================
@@ -101,29 +101,6 @@ function test_adnlp_parameter_validation()
             Test.@test Strategies.id(Modelers.ADNLP{Strategies.CPU}) == :adnlp
             
             # Note: id() doesn't validate parameters, only metadata() and constructors do
-        end
-        
-        # ====================================================================
-        # UNIT TESTS - Supported Parameters
-        # ====================================================================
-        
-        Test.@testset "_supported_parameters" begin
-            supported = Strategies._supported_parameters(Modelers.ADNLP)
-            Test.@test supported == (Strategies.CPU,)
-            Test.@test Strategies.CPU in supported
-            Test.@test Strategies.GPU ∉ supported
-        end
-        
-        Test.@testset "validate_supported_parameter" begin
-            # CPU should be valid
-            Test.@test_nowarn Strategies.validate_supported_parameter(
-                Modelers.ADNLP, Strategies.CPU
-            )
-            
-            # GPU should be invalid
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.validate_supported_parameter(
-                Modelers.ADNLP, Strategies.GPU
-            )
         end
         
         # ====================================================================
