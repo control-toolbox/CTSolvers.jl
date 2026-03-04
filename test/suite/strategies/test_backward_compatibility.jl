@@ -72,17 +72,17 @@ function test_backward_compatibility()
         end
         
         # ====================================================================
-        # UNIT TESTS - build_strategy_from_method defaults to CPU
+        # UNIT TESTS - Parameter tokens must be explicit
         # ====================================================================
         
-        Test.@testset "build_strategy_from_method defaults to CPU" begin
+        Test.@testset "Parameterized strategies require explicit parameter token" begin
             # Test registry
             r = Strategies.create_registry(
                 TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
             # Parameterized strategies now require explicit parameter in method (no implicit defaults)
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.build_strategy_from_method((:teststratb,), TestFamily, r)
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_global_parameter_from_method((:teststratb,), r)
         end
         
         # ====================================================================

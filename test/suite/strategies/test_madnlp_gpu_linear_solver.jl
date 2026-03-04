@@ -70,10 +70,10 @@ function test_madnlp_gpu_linear_solver()
             Test.@test :madncl in solver_ids
             
             # Test parameter extraction
-            Test.@test Strategies.extract_parameter_from_method((:madnlp, :cpu), r) == Strategies.CPU
-            Test.@test Strategies.extract_parameter_from_method((:madnlp, :gpu), r) == Strategies.GPU
-            Test.@test Strategies.extract_parameter_from_method((:madncl, :cpu), r) == Strategies.CPU
-            Test.@test Strategies.extract_parameter_from_method((:madncl, :gpu), r) == Strategies.GPU
+            Test.@test Strategies.extract_global_parameter_from_method((:madnlp, :cpu), r) == Strategies.CPU
+            Test.@test Strategies.extract_global_parameter_from_method((:madnlp, :gpu), r) == Strategies.GPU
+            Test.@test Strategies.extract_global_parameter_from_method((:madncl, :cpu), r) == Strategies.CPU
+            Test.@test Strategies.extract_global_parameter_from_method((:madncl, :gpu), r) == Strategies.GPU
         end
         
         # ====================================================================

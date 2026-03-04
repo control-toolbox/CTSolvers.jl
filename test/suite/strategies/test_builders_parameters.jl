@@ -64,63 +64,85 @@ function test_builders_parameters()
     Test.@testset "Builders with Parameters" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
-        # UNIT TESTS - extract_parameter_from_method
+        # UNIT TESTS - extract_global_parameter_from_method
         # ====================================================================
         
-        Test.@testset "extract_parameter_from_method" begin
+        Test.@testset "extract_global_parameter_from_method" begin
             r = Strategies.create_registry(
                 TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
-            Test.@test Strategies.extract_parameter_from_method((:teststratb, :cpu), r) == Strategies.CPU
-            Test.@test Strategies.extract_parameter_from_method((:teststratb, :gpu), r) == Strategies.GPU
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:teststratb,), r)
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:teststrata, :cpu), r)
+            Test.@test Strategies.extract_global_parameter_from_method((:teststratb, :cpu), r) == Strategies.CPU
+            Test.@test Strategies.extract_global_parameter_from_method((:teststratb, :gpu), r) == Strategies.GPU
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_global_parameter_from_method((:teststratb,), r)
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_global_parameter_from_method((:teststrata, :cpu), r)
 
-            Test.@test Strategies.extract_parameter_from_method((:teststratb, :cpu, :teststrata), r) == Strategies.CPU
-            Test.@test Strategies.extract_parameter_from_method((:cpu, :teststrata, :teststratb), r) == Strategies.CPU
+            Test.@test Strategies.extract_global_parameter_from_method((:teststratb, :cpu, :teststrata), r) == Strategies.CPU
+            Test.@test Strategies.extract_global_parameter_from_method((:cpu, :teststrata, :teststratb), r) == Strategies.CPU
         end
         
-        Test.@testset "extract_parameter_from_method no parameters in registry" begin
+        Test.@testset "registry.parameters empty when no parameterized strategies" begin
             r = Strategies.create_registry(
                 TestFamily => (TestStratA,)  # No parameterized strategies
             )
             
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:teststrata, :cpu), r)
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:teststrata, :gpu), r)
+            # Registry parameters should be empty (no parameterized strategies registered)
+            Test.@test isempty(r.parameters)
+            
+            # :cpu/:gpu are not recognized as parameter tokens (registry.parameters is empty)
+            # So they are treated as unknown tokens and extract returns nothing
+            Test.@test Strategies.extract_global_parameter_from_method((:teststrata, :cpu), r) === nothing
+            Test.@test Strategies.extract_global_parameter_from_method((:teststrata, :gpu), r) === nothing
         end
         
-        # ====================================================================
-        # UNIT TESTS - build_strategy_from_method with parameter
-        # ====================================================================
-        
-        Test.@testset "build_strategy_from_method parameterized" begin
+        Test.@testset "registry.parameters contains discovered parameters" begin
             r = Strategies.create_registry(
                 TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
-            s_cpu = Strategies.build_strategy_from_method((:teststratb, :cpu), TestFamily, r)
-            s_gpu = Strategies.build_strategy_from_method((:teststratb, :gpu), TestFamily, r)
+            # Registry parameters should contain CPU and GPU (discovered from TestStratB)
+            Test.@test !isempty(r.parameters)
+            Test.@test haskey(r.parameters, :cpu)
+            Test.@test haskey(r.parameters, :gpu)
+            Test.@test r.parameters[:cpu] === Strategies.CPU
+            Test.@test r.parameters[:gpu] === Strategies.GPU
+            Test.@test length(r.parameters) == 2
+        end
+        
+        # ====================================================================
+        # UNIT TESTS - build_strategy with parameter (id-direct)
+        # ====================================================================
+        
+        Test.@testset "build_strategy parameterized (id-direct)" begin
+            r = Strategies.create_registry(
+                TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
+            )
+            
+            p_cpu = Strategies.extract_global_parameter_from_method((:teststratb, :cpu), r)
+            p_gpu = Strategies.extract_global_parameter_from_method((:teststratb, :gpu), r)
+            s_cpu = Strategies.build_strategy(:teststratb, p_cpu, TestFamily, r)
+            s_gpu = Strategies.build_strategy(:teststratb, p_gpu, TestFamily, r)
             
             Test.@test s_cpu isa TestStratB{Strategies.CPU}
             Test.@test s_gpu isa TestStratB{Strategies.GPU}
         end
         
-        Test.@testset "build_strategy_from_method non-parameterized" begin
+        Test.@testset "build_strategy non-parameterized (id-direct)" begin
             r = Strategies.create_registry(
                 TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
-            s = Strategies.build_strategy_from_method((:teststrata,), TestFamily, r)
+            s = Strategies.build_strategy(:teststrata, TestFamily, r)
             Test.@test s isa TestStratA
         end
         
-        Test.@testset "build_strategy_from_method with options" begin
+        Test.@testset "build_strategy parameterized with options (id-direct)" begin
             r = Strategies.create_registry(
                 TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
-            s = Strategies.build_strategy_from_method((:teststratb, :cpu), TestFamily, r; opt1=100)
+            p = Strategies.extract_global_parameter_from_method((:teststratb, :cpu), r)
+            s = Strategies.build_strategy(:teststratb, p, TestFamily, r; opt1=100)
             Test.@test s isa TestStratB{Strategies.CPU}
             Test.@test Strategies.option_value(s, :opt1) == 100
         end
@@ -162,16 +184,20 @@ function test_builders_parameters()
         end
         
         # ====================================================================
-        # UNIT TESTS - option_names_from_method with parameter
+        # UNIT TESTS - option_names with parameter (id-direct)
         # ====================================================================
         
-        Test.@testset "option_names_from_method parameterized" begin
+        Test.@testset "option_names parameterized (id-direct)" begin
             r = Strategies.create_registry(
                 TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
-            names_cpu = Strategies.option_names_from_method((:teststratb, :cpu), TestFamily, r)
-            names_gpu = Strategies.option_names_from_method((:teststratb, :gpu), TestFamily, r)
+            p_cpu = Strategies.extract_global_parameter_from_method((:teststratb, :cpu), r)
+            p_gpu = Strategies.extract_global_parameter_from_method((:teststratb, :gpu), r)
+            Tcpu = Strategies.type_from_id(:teststratb, TestFamily, r; parameter=p_cpu)
+            Tgpu = Strategies.type_from_id(:teststratb, TestFamily, r; parameter=p_gpu)
+            names_cpu = Strategies.option_names(Tcpu)
+            names_gpu = Strategies.option_names(Tgpu)
             
             Test.@test :opt1 in names_cpu
             Test.@test :backend in names_cpu
@@ -179,12 +205,13 @@ function test_builders_parameters()
             Test.@test :backend in names_gpu
         end
         
-        Test.@testset "option_names_from_method non-parameterized" begin
+        Test.@testset "option_names non-parameterized (id-direct)" begin
             r = Strategies.create_registry(
                 TestFamily => (TestStratA, (TestStratB, [Strategies.CPU, Strategies.GPU]))
             )
             
-            names = Strategies.option_names_from_method((:teststrata,), TestFamily, r)
+            T = Strategies.type_from_id(:teststrata, TestFamily, r)
+            names = Strategies.option_names(T)
             Test.@test names == (:opt1,)
         end
         
@@ -197,8 +224,10 @@ function test_builders_parameters()
                 TestFamily => ((TestStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             
-            s_cpu = Strategies.build_strategy_from_method((:teststratb, :cpu), TestFamily, r)
-            s_gpu = Strategies.build_strategy_from_method((:teststratb, :gpu), TestFamily, r)
+            p_cpu = Strategies.extract_global_parameter_from_method((:teststratb, :cpu), r)
+            p_gpu = Strategies.extract_global_parameter_from_method((:teststratb, :gpu), r)
+            s_cpu = Strategies.build_strategy(:teststratb, p_cpu, TestFamily, r)
+            s_gpu = Strategies.build_strategy(:teststratb, p_gpu, TestFamily, r)
             
             # Check that defaults are different based on parameter
             Test.@test Strategies.option_value(s_cpu, :backend) === nothing
@@ -210,12 +239,12 @@ function test_builders_parameters()
                 TestFamily => ((TestStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             
-            # Verify extract_parameter_from_method returns correct types
-            result = Strategies.extract_parameter_from_method((:teststratb, :cpu), r)
+            # Verify extract_global_parameter_from_method returns correct types
+            result = Strategies.extract_global_parameter_from_method((:teststratb, :cpu), r)
             Test.@test result === Strategies.CPU
             
             # Verify builder functions return correct types
-            s1 = Strategies.build_strategy_from_method((:teststratb, :cpu), TestFamily, r)
+            s1 = Strategies.build_strategy(:teststratb, result, TestFamily, r)
             Test.@test s1 isa TestStratB{Strategies.CPU}
             
             s2 = Strategies.build_strategy(:teststratb, Strategies.CPU, TestFamily, r)

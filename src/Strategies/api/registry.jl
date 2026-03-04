@@ -45,6 +45,7 @@ See also: [`create_registry`](@ref), [`strategy_ids`](@ref), [`type_from_id`](@r
 """
 struct StrategyRegistry
     families::Dict{Type{<:AbstractStrategy}, Vector{Type}}
+    parameters::Dict{Symbol, Type{<:AbstractStrategyParameter}}
 end
 
 """
@@ -99,7 +100,7 @@ function create_registry(pairs::Pair...)
     
     # IMPORTANT: Parameter IDs must be globally unique across parameter types
     # (and must not conflict with strategy IDs).
-    parameter_id_to_type = Dict{Symbol, DataType}()
+    parameter_id_to_type = Dict{Symbol, Type{<:AbstractStrategyParameter}}()
     
     # Validate that all pairs have the correct structure
     for pair in pairs
@@ -216,7 +217,7 @@ function create_registry(pairs::Pair...)
                             ))
                         end
                     else
-                        parameter_id_to_type[param_id] = param_type
+                        parameter_id_to_type[param_id] = (param_type::Type{<:AbstractStrategyParameter})
                     end
                     
                     # Create parameterized strategy type
@@ -268,7 +269,7 @@ function create_registry(pairs::Pair...)
         families[family] = strategies
     end
     
-    return StrategyRegistry(families)
+    return StrategyRegistry(families, parameter_id_to_type)
 end
 
 """
@@ -442,6 +443,13 @@ function Base.show(io::IO, ::MIME"text/plain", registry::StrategyRegistry)
         prefix = is_last ? "└─ " : "├─ "
         ids = [id(T) for T in strategies]
         println(io, prefix, family, " => ", Tuple(ids))
+    end
+
+    if !isempty(registry.parameters)
+        println(io, "\nParameters:")
+        for (p_id, p_type) in registry.parameters
+            println(io, "  :", p_id, " => ", p_type)
+        end
     end
 end
 

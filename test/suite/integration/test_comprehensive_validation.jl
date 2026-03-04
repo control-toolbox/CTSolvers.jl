@@ -3,7 +3,7 @@ Comprehensive tests for strict/permissive validation across all strategies.
 
 This test suite validates that the mode parameter works correctly for:
 - All strategy types (modelers and solvers)
-- All construction methods (direct, build_strategy, build_strategy_from_method, orchestration wrapper)
+- All construction methods (direct, build_strategy, resolve_method + build_strategy_from_resolved)
 - All validation modes (strict, permissive)
 - All option types (known, unknown, defaults)
 
@@ -153,64 +153,66 @@ function test_strategy_construction(
         end
         
         # ====================================================================
-        # 3. build_strategy_from_method() Tests
+        # 3. resolve_method + build_strategy_from_resolved() Tests
         # ====================================================================
-        
-        Test.@testset "build_strategy_from_method()" begin
-            # Create method tuple with strategy ID
+
+        Test.@testset "build_strategy_from_resolved()" begin
             method = if family == Modelers.AbstractNLPModeler
                 (:collocation, strategy_id, :ipopt)
             else
                 (:collocation, :adnlp, strategy_id)
             end
-            
+
+            families = (strategy = family,)
+            resolved = Orchestration.resolve_method(method, families, registry)
+
             Test.@testset "Strict Mode" begin
-                # Known options only - should work
-                Test.@test_nowarn Strategies.build_strategy_from_method(method, family, registry; known_options...)
-                strategy = Strategies.build_strategy_from_method(method, family, registry; known_options...)
+                Test.@test_nowarn Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :strategy,
+                    families,
+                    registry;
+                    known_options...
+                )
+                strategy = Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :strategy,
+                    families,
+                    registry;
+                    known_options...
+                )
                 Test.@test strategy isa strategy_type
-                
-                # Unknown option - should throw
-                Test.@test_throws Exceptions.IncorrectArgument Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options...)
+
+                Test.@test_throws Exceptions.IncorrectArgument Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :strategy,
+                    families,
+                    registry;
+                    known_options...,
+                    unknown_options...
+                )
             end
-            
+
             Test.@testset "Permissive Mode" begin
-                # Known + unknown options - should work
-                Test.@test_warn "Unrecognized options" Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
-                strategy = Strategies.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
+                Test.@test_warn "Unrecognized options" Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :strategy,
+                    families,
+                    registry;
+                    known_options...,
+                    unknown_options...,
+                    mode=:permissive
+                )
+                strategy = Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :strategy,
+                    families,
+                    registry;
+                    known_options...,
+                    unknown_options...,
+                    mode=:permissive
+                )
                 Test.@test strategy isa strategy_type
-                                # Verify mode is NOT stored in options (correct behavior)
-                Test.@test_throws Exception strategy.options.mode
-            end
-        end
-        
-        # ====================================================================
-        # 4. Orchestration Wrapper Tests
-        # ====================================================================
-        
-        Test.@testset "Orchestration Wrapper" begin
-            method = if family == Modelers.AbstractNLPModeler
-                (:collocation, strategy_id, :ipopt)
-            else
-                (:collocation, :adnlp, strategy_id)
-            end
-            
-            Test.@testset "Strict Mode" begin
-                # Known options only - should work
-                Test.@test_nowarn Orchestration.build_strategy_from_method(method, family, registry; known_options...)
-                strategy = Orchestration.build_strategy_from_method(method, family, registry; known_options...)
-                Test.@test strategy isa strategy_type
-                
-                # Unknown option - should throw
-                Test.@test_throws Exceptions.IncorrectArgument Orchestration.build_strategy_from_method(method, family, registry; known_options..., unknown_options...)
-            end
-            
-            Test.@testset "Permissive Mode" begin
-                # Known + unknown options - should work
-                Test.@test_warn "Unrecognized options" Orchestration.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
-                strategy = Orchestration.build_strategy_from_method(method, family, registry; known_options..., unknown_options..., mode=:permissive)
-                Test.@test strategy isa strategy_type
-                                # Verify mode is NOT stored in options (correct behavior)
                 Test.@test_throws Exception strategy.options.mode
             end
         end
@@ -541,21 +543,23 @@ function test_comprehensive_validation()
                 # build_strategy - mode should NOT be stored in options  
                 modeler2 = Strategies.build_strategy(:adnlp, Modelers.AbstractNLPModeler, registry; backend=:default, mode=:permissive)
                 # Test.@test modeler2.options.mode == :permissive  # WRONG - mode should NOT be stored
-                
-                # build_strategy_from_method - mode should NOT be stored in options
+
                 method = (:collocation, :adnlp, :ipopt)
-                modeler3 = Strategies.build_strategy_from_method(method, Modelers.AbstractNLPModeler, registry; backend=:default, mode=:permissive)
-                # Test.@test modeler3.options.mode == :permissive  # WRONG - mode should NOT be stored
-                
-                # Orchestration wrapper - mode should NOT be stored in options
-                modeler4 = Orchestration.build_strategy_from_method(method, Modelers.AbstractNLPModeler, registry; backend=:default, mode=:permissive)
-                # Test.@test modeler4.options.mode == :permissive  # WRONG - mode should NOT be stored
+                families = (modeler = Modelers.AbstractNLPModeler,)
+                resolved = Orchestration.resolve_method(method, families, registry)
+                modeler3 = Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :modeler,
+                    families,
+                    registry;
+                    backend=:default,
+                    mode=:permissive
+                )
                 
                 # CORRECT: Verify mode is NOT stored in options
                 Test.@test_throws Exception modeler1.options.mode
                 Test.@test_throws Exception modeler2.options.mode
                 Test.@test_throws Exception modeler3.options.mode
-                Test.@test_throws Exception modeler4.options.mode
             end
             
             Test.@testset "Error Quality" begin
@@ -595,11 +599,21 @@ function test_comprehensive_validation()
                     modeler2 = Strategies.build_strategy(:adnlp, Modelers.AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
                     
                     method = (:collocation, :adnlp, :ipopt)
-                    modeler3 = Strategies.build_strategy_from_method(method, Modelers.AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
-                    modeler4 = Orchestration.build_strategy_from_method(method, Modelers.AbstractNLPModeler, registry; backend=:default, show_time=false, test_consistency=42, mode=:permissive)
+                    families = (modeler = Modelers.AbstractNLPModeler,)
+                    resolved = Orchestration.resolve_method(method, families, registry)
+                    modeler3 = Orchestration.build_strategy_from_resolved(
+                        resolved,
+                        :modeler,
+                        families,
+                        registry;
+                        backend=:default,
+                        show_time=false,
+                        test_consistency=42,
+                        mode=:permissive
+                    )
                     
                     # Test that all have the same options
-                    strategies = [modeler1, modeler2, modeler3, modeler4]
+                    strategies = [modeler1, modeler2, modeler3]
                     
                     for strategy in strategies
                         Test.@test Strategies.option_value(strategy, :backend) == :default

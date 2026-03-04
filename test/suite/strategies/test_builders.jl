@@ -197,64 +197,59 @@ function test_builders()
         end
         
         # ====================================================================
-        # option_names_from_method
+        # option_names
         # ====================================================================
         
-        Test.@testset "option_names_from_method" begin
-            method = (:modeler_a, :solver_x)
-            
+        Test.@testset "option_names" begin
             # Get option names for modeler
-            names = Strategies.option_names_from_method(method, AbstractTestModeler, registry)
+            modeler_type = Strategies.type_from_id(:modeler_a, AbstractTestModeler, registry)
+            names = Strategies.option_names(modeler_type)
             Test.@test names isa Tuple
             Test.@test :backend in names
             Test.@test :verbose in names
             Test.@test length(names) == 2
             
             # Get option names for solver
-            names2 = Strategies.option_names_from_method(method, AbstractTestSolver, registry)
+            solver_type = Strategies.type_from_id(:solver_x, AbstractTestSolver, registry)
+            names2 = Strategies.option_names(solver_type)
             Test.@test names2 isa Tuple
             Test.@test :max_iter in names2
             Test.@test length(names2) == 1
             
-            # Different method
-            method2 = (:modeler_b, :solver_y)
-            names3 = Strategies.option_names_from_method(method2, AbstractTestModeler, registry)
+            # Different strategy
+            modeler_b_type = Strategies.type_from_id(:modeler_b, AbstractTestModeler, registry)
+            names3 = Strategies.option_names(modeler_b_type)
             Test.@test :precision in names3
             Test.@test length(names3) == 1
         end
         
         # ====================================================================
-        # build_strategy_from_method
+        # build_strategy (id-direct)
         # ====================================================================
         
-        Test.@testset "build_strategy_from_method" begin
-            method = (:modeler_a, :solver_x)
-            
-            # Build modeler from method
-            modeler = Strategies.build_strategy_from_method(
-                method, AbstractTestModeler, registry; backend=:sparse
+        Test.@testset "build_strategy (id-direct)" begin
+            # Build modeler
+            modeler = Strategies.build_strategy(
+                :modeler_a, AbstractTestModeler, registry; backend=:sparse
             )
             Test.@test modeler isa TestModelerA
             Test.@test Strategies.option_value(modeler, :backend) == :sparse
             
-            # Build solver from same method
-            solver = Strategies.build_strategy_from_method(
-                method, AbstractTestSolver, registry; max_iter=500
+            # Build solver
+            solver = Strategies.build_strategy(
+                :solver_x, AbstractTestSolver, registry; max_iter=500
             )
             Test.@test solver isa TestSolverX
             Test.@test Strategies.option_value(solver, :max_iter) == 500
             
             # Build with default options
-            modeler2 = Strategies.build_strategy_from_method(
-                method, AbstractTestModeler, registry
-            )
+            modeler2 = Strategies.build_strategy(:modeler_a, AbstractTestModeler, registry)
             Test.@test modeler2 isa TestModelerA
             Test.@test Strategies.option_value(modeler2, :backend) == :dense
             
-            # Different method
-            method2 = (:modeler_b, :solver_y)
-            modeler_b = Strategies.build_strategy_from_method(
-                method2, AbstractTestModeler, registry; precision=128
+            # Different strategy
+            modeler_b = Strategies.build_strategy(
+                :modeler_b, AbstractTestModeler, registry; precision=128
             )
             Test.@test modeler_b isa TestModelerB
             Test.@test Strategies.option_value(modeler_b, :precision) == 128
@@ -275,17 +270,19 @@ function test_builders()
             Test.@test solver_id == :solver_x
             
             # 2. Get option names
-            modeler_opts = Strategies.option_names_from_method(method, AbstractTestModeler, registry)
-            solver_opts = Strategies.option_names_from_method(method, AbstractTestSolver, registry)
+            modeler_type = Strategies.type_from_id(modeler_id, AbstractTestModeler, registry)
+            solver_type = Strategies.type_from_id(solver_id, AbstractTestSolver, registry)
+            modeler_opts = Strategies.option_names(modeler_type)
+            solver_opts = Strategies.option_names(solver_type)
             Test.@test :backend in modeler_opts
             Test.@test :max_iter in solver_opts
             
             # 3. Build strategies
-            modeler = Strategies.build_strategy_from_method(
-                method, AbstractTestModeler, registry; backend=:sparse, verbose=true
+            modeler = Strategies.build_strategy(
+                modeler_id, AbstractTestModeler, registry; backend=:sparse, verbose=true
             )
-            solver = Strategies.build_strategy_from_method(
-                method, AbstractTestSolver, registry; max_iter=1000
+            solver = Strategies.build_strategy(
+                solver_id, AbstractTestSolver, registry; max_iter=1000
             )
             
             Test.@test modeler isa TestModelerA

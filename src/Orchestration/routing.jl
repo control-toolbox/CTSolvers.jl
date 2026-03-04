@@ -243,8 +243,8 @@ function _error_unknown_option(
     all_options = Dict{Symbol, Vector{Symbol}}()
     for (family_name, family_type) in pairs(families)
         id = getfield(resolved.ids_by_family, family_name)
-        option_names = Strategies.option_names_from_method(
-            resolved.tokens, family_type, registry
+        option_names = option_names_from_resolved(
+            resolved, family_name, families, registry
         )
         all_options[id] = collect(option_names)
     end

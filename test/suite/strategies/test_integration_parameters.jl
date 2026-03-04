@@ -103,26 +103,27 @@ function test_integration_parameters()
             Test.@test :integrationstratb in ids
             
             # Test parameter extraction from method
-            Test.@test Strategies.extract_parameter_from_method((:integrationstratb, :cpu), r) == Strategies.CPU
-            Test.@test Strategies.extract_parameter_from_method((:integrationstratb, :gpu), r) == Strategies.GPU
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:integrationstratb,), r)
-            Test.@test Strategies.extract_parameter_from_method((:cpu, :integrationstrata, :integrationstratb), r) == Strategies.CPU
-            Test.@test Strategies.extract_parameter_from_method((:integrationstratb, :cpu, :integrationstrata), r) == Strategies.CPU
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:integrationstrata, :cpu), r)
+            Test.@test Strategies.extract_global_parameter_from_method((:integrationstratb, :cpu), r) == Strategies.CPU
+            Test.@test Strategies.extract_global_parameter_from_method((:integrationstratb, :gpu), r) == Strategies.GPU
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_global_parameter_from_method((:integrationstratb,), r)
+            Test.@test Strategies.extract_global_parameter_from_method((:cpu, :integrationstrata, :integrationstratb), r) == Strategies.CPU
+            Test.@test Strategies.extract_global_parameter_from_method((:integrationstratb, :cpu, :integrationstrata), r) == Strategies.CPU
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_global_parameter_from_method((:integrationstrata, :cpu), r)
             
-            # Test building strategies from method
-            s_cpu = Strategies.build_strategy_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
-            s_gpu = Strategies.build_strategy_from_method((:integrationstratb, :gpu), IntegrationFamily, r)
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.build_strategy_from_method(
-                (:integrationstratb,), IntegrationFamily, r
-            )
+            # Test building strategies
+            p_cpu = Strategies.extract_global_parameter_from_method((:integrationstratb, :cpu), r)
+            p_gpu = Strategies.extract_global_parameter_from_method((:integrationstratb, :gpu), r)
+            s_cpu = Strategies.build_strategy(:integrationstratb, p_cpu, IntegrationFamily, r)
+            s_gpu = Strategies.build_strategy(:integrationstratb, p_gpu, IntegrationFamily, r)
             
             Test.@test s_cpu isa IntegrationStratB{Strategies.CPU}
             Test.@test s_gpu isa IntegrationStratB{Strategies.GPU}
             
-            # Test option names from method
-            names_cpu = Strategies.option_names_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
-            names_gpu = Strategies.option_names_from_method((:integrationstratb, :gpu), IntegrationFamily, r)
+            # Test option names
+            Tcpu = Strategies.type_from_id(:integrationstratb, IntegrationFamily, r; parameter=p_cpu)
+            Tgpu = Strategies.type_from_id(:integrationstratb, IntegrationFamily, r; parameter=p_gpu)
+            names_cpu = Strategies.option_names(Tcpu)
+            names_gpu = Strategies.option_names(Tgpu)
             
             Test.@test :opt1 in names_cpu
             Test.@test :backend in names_cpu
@@ -139,8 +140,10 @@ function test_integration_parameters()
                 IntegrationFamily => ((IntegrationStratB, [Strategies.CPU, Strategies.GPU]),)
             )
             
-            s_cpu = Strategies.build_strategy_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
-            s_gpu = Strategies.build_strategy_from_method((:integrationstratb, :gpu), IntegrationFamily, r)
+            p_cpu = Strategies.extract_global_parameter_from_method((:integrationstratb, :cpu), r)
+            p_gpu = Strategies.extract_global_parameter_from_method((:integrationstratb, :gpu), r)
+            s_cpu = Strategies.build_strategy(:integrationstratb, p_cpu, IntegrationFamily, r)
+            s_gpu = Strategies.build_strategy(:integrationstratb, p_gpu, IntegrationFamily, r)
             
             # Check that defaults are different based on parameter
             Test.@test Strategies.option_value(s_cpu, :backend) === nothing
@@ -178,7 +181,7 @@ function test_integration_parameters()
             # Test global parameter extraction on a complete method tuple
             # Use :cpu here to avoid any dependency on functional CUDA for constructing instances.
             method_cpu = (:exa, :madnlp, :collocation, :cpu)
-            Test.@test Strategies.extract_parameter_from_method(method_cpu, r) == Strategies.CPU
+            Test.@test Strategies.extract_global_parameter_from_method(method_cpu, r) == Strategies.CPU
 
             # Both Exa and MadNLP accept CPU in this registry, so the resolved types must be parameterized.
             # We intentionally avoid constructing instances here because constructors may rely on optional
@@ -191,7 +194,7 @@ function test_integration_parameters()
             Test.@test Strategies.get_parameter_type(s_type) === Strategies.CPU
 
             # If a parameter token is present but unused (no selected strategy accepts it), it's an error
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_parameter_from_method((:collocation, :cpu), r)
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_global_parameter_from_method((:collocation, :cpu), r)
         end
         
         # ====================================================================
@@ -208,8 +211,8 @@ function test_integration_parameters()
                 :integrationstratb, Strategies.GPU, IntegrationFamily, r
             )
             
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.build_strategy_from_method(
-                (:integrationstratb, :gpu), IntegrationFamily, r
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_global_parameter_from_method(
+                (:integrationstratb, :gpu), r
             )
             
             # Test that unknown strategy ID fails
@@ -228,12 +231,14 @@ function test_integration_parameters()
             )
             
             # Test type stability of key functions
-            Test.@test Strategies.extract_parameter_from_method((:integrationstratb, :cpu), r) == Strategies.CPU
-            Test.@test_nowarn Strategies.build_strategy_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
-            Test.@test_nowarn Strategies.option_names_from_method((:integrationstratb, :cpu), IntegrationFamily, r)
+            Test.@test Strategies.extract_global_parameter_from_method((:integrationstratb, :cpu), r) == Strategies.CPU
+            p = Strategies.extract_global_parameter_from_method((:integrationstratb, :cpu), r)
+            Test.@test_nowarn Strategies.build_strategy(:integrationstratb, p, IntegrationFamily, r)
+            T = Strategies.type_from_id(:integrationstratb, IntegrationFamily, r; parameter=p)
+            Test.@test_nowarn Strategies.option_names(T)
             
             # Test allocation-free operations where possible
-            allocs = @allocated Strategies.extract_parameter_from_method((:integrationstratb, :cpu), r)
+            allocs = @allocated Strategies.extract_global_parameter_from_method((:integrationstratb, :cpu), r)
             Test.@test allocs < 3000  # bounded allocations (registry is Dict-based)
             
             allocs = @allocated Strategies.strategy_ids(IntegrationFamily, r)

@@ -277,11 +277,18 @@ function test_strict_permissive_integration()
             
             Test.@testset "Build from method tuple" begin
                 method = (:fake_solver, :fake_modeler, :fake_discretizer)
-                
-                # Build solver from method (first family in tuple)
-                solver = Strategies.build_strategy_from_method(
-                    method,
-                    AbstractTestSolver,
+
+                families = (
+                    solver = AbstractTestSolver,
+                    modeler = AbstractTestModeler,
+                    discretizer = AbstractTestDiscretizer,
+                )
+                resolved = Orchestration.resolve_method(method, families, registry)
+
+                solver = Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :solver,
+                    families,
                     registry;
                     max_iter=2000
                 )

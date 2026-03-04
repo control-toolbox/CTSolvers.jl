@@ -157,84 +157,34 @@ function test_mode_propagation()
         end
         
         # ====================================================================
-        # INTEGRATION TESTS - build_strategy_from_method()
+        # INTEGRATION TESTS - ResolvedMethod builders (Orchestration)
         # ====================================================================
-        
-        Test.@testset "build_strategy_from_method() Propagation" begin
-            # Create a fake registry
+
+        Test.@testset "build_strategy_from_resolved() Propagation" begin
             registry = Strategies.create_registry(
                 Strategies.AbstractStrategy => (FakeStrategy,)
             )
-            
+
             method = (:fake,)
-            
-            Test.@testset "Strict mode via build_strategy_from_method()" begin
-                # Should throw for unknown option
-                Test.@test_throws Exception Strategies.build_strategy_from_method(
-                    method,
-                    Strategies.AbstractStrategy, 
-                    registry; 
+            families = (strategy = Strategies.AbstractStrategy,)
+            resolved = Orchestration.resolve_method(method, families, registry)
+
+            Test.@testset "Strict mode via build_strategy_from_resolved()" begin
+                Test.@test_throws Exception Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :strategy,
+                    families,
+                    registry;
                     unknown_option=123
                 )
             end
-            
-            Test.@testset "Permissive mode via build_strategy_from_method()" begin
-                # Should work with warning
-                strategy = Strategies.build_strategy_from_method(
-                    method,
-                    Strategies.AbstractStrategy, 
-                    registry; 
-                    unknown_option=123,
-                    mode=:permissive
-                )
-                Test.@test strategy isa FakeStrategy
-                Test.@test Strategies.has_option(strategy, :unknown_option)
-            end
-            
-            Test.@testset "Mode propagates through method extraction" begin
-                # Test that mode is preserved when extracting ID from method
-                strategy = Strategies.build_strategy_from_method(
-                    method,
-                    Strategies.AbstractStrategy, 
-                    registry; 
-                    known_option=400,
-                    unknown_option=456,
-                    mode=:permissive
-                )
-                Test.@test strategy isa FakeStrategy
-                Test.@test Strategies.option_value(strategy, :known_option) == 400
-                Test.@test Strategies.option_value(strategy, :unknown_option) == 456
-            end
-        end
-        
-        # ====================================================================
-        # INTEGRATION TESTS - Orchestration Wrapper
-        # ====================================================================
-        
-        Test.@testset "Orchestration Wrapper Propagation" begin
-            # Create a fake registry
-            registry = Strategies.create_registry(
-                Strategies.AbstractStrategy => (FakeStrategy,)
-            )
-            
-            method = (:fake,)
-            
-            Test.@testset "Strict mode via Orchestration wrapper" begin
-                # Should throw for unknown option
-                Test.@test_throws Exception Orchestration.build_strategy_from_method(
-                    method,
-                    Strategies.AbstractStrategy, 
-                    registry; 
-                    unknown_option=123
-                )
-            end
-            
-            Test.@testset "Permissive mode via Orchestration wrapper" begin
-                # Should work with warning
-                strategy = Orchestration.build_strategy_from_method(
-                    method,
-                    Strategies.AbstractStrategy, 
-                    registry; 
+
+            Test.@testset "Permissive mode via build_strategy_from_resolved()" begin
+                strategy = Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :strategy,
+                    families,
+                    registry;
                     unknown_option=123,
                     mode=:permissive
                 )
@@ -242,6 +192,8 @@ function test_mode_propagation()
                 Test.@test Strategies.has_option(strategy, :unknown_option)
             end
         end
+        
+        # (Removed) Orchestration build_strategy_from_method wrapper tests
         
         # ====================================================================
         # INTEGRATION TESTS - Mixed Options
@@ -399,10 +351,13 @@ function test_mode_propagation()
             
             Test.@testset "Full chain: Orchestration → Strategies → Options" begin
                 # Test complete propagation chain with known options first
-                strategy = Orchestration.build_strategy_from_method(
-                    method,
-                    Strategies.AbstractStrategy, 
-                    registry; 
+                families = (strategy = Strategies.AbstractStrategy,)
+                resolved = Orchestration.resolve_method(method, families, registry)
+                strategy = Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :strategy,
+                    families,
+                    registry;
                     known_option=500,
                     mode=:permissive
                 )
@@ -411,9 +366,10 @@ function test_mode_propagation()
                 Test.@test strategy isa FakeStrategy
 
                 # Test with unknown options in permissive mode
-                strategy2 = Orchestration.build_strategy_from_method(
-                    method,
-                    Strategies.AbstractStrategy,
+                strategy2 = Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :strategy,
+                    families,
                     registry;
                     known_option=500,
                     custom_backend_option="advanced",
