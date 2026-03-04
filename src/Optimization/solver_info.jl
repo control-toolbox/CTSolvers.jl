@@ -1,5 +1,9 @@
-"""
-$(TYPEDSIGNATURES)
+ # Solver information extraction
+ #
+ # Utilities for extracting standardized convergence information from solver stats.
+
+ """
+ $(TYPEDSIGNATURES)
 
 Retrieve convergence information from an NLP solution.
 
@@ -22,13 +26,8 @@ A 6-element tuple `(objective, iterations, constraints_violation, message, statu
 - `successful::Bool`: Whether the solver converged successfully
 
 # Example
-
-```julia-repl
-julia> using CTSolvers, SolverCore
-
-julia> # After solving an NLP problem with a solver
-julia> obj, iter, viol, msg, stat, success = extract_solver_infos(nlp_solution, minimize)
-(1.23, 15, 1.0e-6, "Ipopt/generic", :first_order, true)
+```julia
+obj, iter, viol, msg, stat, success = extract_solver_infos(nlp_solution)
 ```
 """
 function extract_solver_infos(

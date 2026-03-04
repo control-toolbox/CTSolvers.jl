@@ -1,20 +1,17 @@
-# Optimization Module
+# Optimization
 #
-# This module provides general optimization problem types, builder interfaces,
-# and the contract that optimization problems must implement.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-26
+# General optimization problem types, builders, and the
+# `AbstractOptimizationProblem` contract.
 
 module Optimization
 
-# Importing to avoid namespace pollution
+# Imports
 import CTBase.Exceptions
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 import NLPModels
 import SolverCore
 
-# Include submodules
+# Submodules
 include(joinpath(@__DIR__, "abstract_types.jl"))
 include(joinpath(@__DIR__, "builders.jl"))
 include(joinpath(@__DIR__, "contract.jl"))
