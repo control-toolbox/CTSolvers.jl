@@ -1,6 +1,4 @@
-# ============================================================================
 # Option extraction and alias management
-# ============================================================================
 
 """
 $(TYPEDSIGNATURES)
@@ -27,33 +25,24 @@ returns the default value with `:default` source.
 - The function removes the found option from the returned kwargs.
 
 # Throws
-- `Exceptions.IncorrectArgument`: If type mismatch between value and definition
+- `CTBase.Exceptions.IncorrectArgument`: If type mismatch between value and definition
 - `Exception`: If validator function fails
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
+```julia
+def = OptionDefinition(
+    name = :grid_size,
+    type = Int,
+    default = 100,
+    description = "Grid size",
+    aliases = (:n, :size)
+)
 
-julia> def = OptionDefinition(
-           name = :grid_size,
-           type = Int,
-           default = 100,
-           description = "Grid size",
-           aliases = (:n, :size)
-       )
-OptionDefinition(...)
-
-julia> kwargs = (n=200, tol=1e-6, max_iter=1000)
-(n = 200, tol = 1.0e-6, max_iter = 1000)
-
-julia> opt_value, remaining = extract_option(kwargs, def)
-(200 (user), (tol = 1.0e-6, max_iter = 1000))
-
-julia> opt_value.value
-200
-
-julia> opt_value.source
-:user
+kwargs = (n=200, tol=1e-6, max_iter=1000)
+opt, remaining = extract_option(kwargs, def)
+opt.value      # 200
+opt.source     # :user
+remaining.tol  # 1e-6
 ```
 """
 function extract_option(kwargs::NamedTuple, def::OptionDefinition)
@@ -128,26 +117,17 @@ options from the kwargs.
 See also: [`extract_option`](@ref), [`OptionDefinition`](@ref), [`OptionValue`](@ref)
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
+```julia
+defs = [
+    OptionDefinition(name = :grid_size, type = Int, default = 100, description = "Grid size"),
+    OptionDefinition(name = :tol, type = Float64, default = 1e-6, description = "Tolerance")
+]
 
-julia> defs = [
-           OptionDefinition(name = :grid_size, type = Int, default = 100, description = "Grid size"),
-           OptionDefinition(name = :tol, type = Float64, default = 1e-6, description = "Tolerance")
-       ]
-2-element Vector{OptionDefinition}:
-
-julia> kwargs = (grid_size=200, max_iter=1000)
-(grid_size = 200, max_iter = 1000)
-
-julia> extracted, remaining = extract_options(kwargs, defs)
-(Dict(:grid_size => 200 (user), :tol => 1.0e-6 (default)), (max_iter = 1000,))
-
-julia> extracted[:grid_size]
-200 (user)
-
-julia> extracted[:tol]
-1.0e-6 (default)
+kwargs = (grid_size=200, max_iter=1000)
+options, remaining = extract_options(kwargs, defs)
+options[:grid_size].value  # 200
+options[:tol].value        # 1e-6
+remaining.max_iter         # 1000
 ```
 """
 function extract_options(kwargs::NamedTuple, defs::Vector{<:OptionDefinition})
@@ -192,25 +172,17 @@ of a Dict for convenience when the definition structure is known at compile time
 See also: [`extract_option`](@ref), [`OptionDefinition`](@ref), [`OptionValue`](@ref)
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
+```julia
+defs = (
+    grid_size = OptionDefinition(name = :grid_size, type = Int, default = 100, description = "Grid size"),
+    tol = OptionDefinition(name = :tol, type = Float64, default = 1e-6, description = "Tolerance")
+)
 
-julia> defs = (
-           grid_size = OptionDefinition(name = :grid_size, type = Int, default = 100, description = "Grid size"),
-           tol = OptionDefinition(name = :tol, type = Float64, default = 1e-6, description = "Tolerance")
-       )
-
-julia> kwargs = (grid_size=200, max_iter=1000)
-(grid_size = 200, max_iter = 1000)
-
-julia> extracted, remaining = extract_options(kwargs, defs)
-((grid_size = 200 (user), tol = 1.0e-6 (default)), (max_iter = 1000,))
-
-julia> extracted.grid_size
-200 (user)
-
-julia> extracted.tol
-1.0e-6 (default)
+kwargs = (grid_size=200, max_iter=1000)
+options, remaining = extract_options(kwargs, defs)
+options.grid_size.value  # 200
+options.tol.value        # 1e-6
+remaining.max_iter       # 1000
 ```
 """
 function extract_options(kwargs::NamedTuple, defs::NamedTuple)
@@ -248,16 +220,14 @@ builders to use their own defaults. Options with explicit `nothing` values are i
 - `NamedTuple`: NamedTuple with unwrapped values, excluding any `NotProvided` values
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
+```julia
+opts = (backend = OptionValue(:optimized, :user), 
+        show_time = OptionValue(false, :default),
+        minimize = OptionValue(nothing, :default),
+        optional = OptionValue(NotProvided, :default))
 
-julia> opts = (backend = OptionValue(:optimized, :user), 
-               show_time = OptionValue(false, :default),
-               minimize = OptionValue(nothing, :default),
-               optional = OptionValue(NotProvided, :default))
-
-julia> extract_raw_options(opts)
-(backend = :optimized, show_time = false, minimize = nothing)
+extract_raw_options(opts)
+# (backend = :optimized, show_time = false, minimize = nothing)
 ```
 
 See also: [`OptionValue`](@ref), [`extract_options`](@ref), [`NotProvided`](@ref)

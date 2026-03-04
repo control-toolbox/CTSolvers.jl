@@ -8,10 +8,28 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 
 function test_option_definition()
     Test.@testset "OptionDefinition" verbose=VERBOSE showtiming=SHOWTIMING begin
-        
-        # ========================================================================
-        # Basic construction
-        # ========================================================================
+
+        # ====================================================================
+        # META TESTS - Exports / Public API surface
+        # ====================================================================
+
+        Test.@testset "Exports verification" begin
+            Test.@test isdefined(Options, :OptionDefinition)
+            Test.@test isdefined(Options, :name)
+            Test.@test isdefined(Options, :type)
+            Test.@test isdefined(Options, :default)
+            Test.@test isdefined(Options, :description)
+            Test.@test isdefined(Options, :aliases)
+            Test.@test isdefined(Options, :validator)
+            Test.@test isdefined(Options, :is_required)
+            Test.@test isdefined(Options, :has_default)
+            Test.@test isdefined(Options, :has_validator)
+            Test.@test isdefined(Options, :all_names)
+        end
+
+        # ====================================================================
+        # BASIC CONSTRUCTION
+        # ====================================================================
         
         Test.@testset "Basic construction" begin
             # Minimal constructor
@@ -22,10 +40,18 @@ function test_option_definition()
                 description = "Test option"
             )
             Test.@test Options.name(def) == :test_option
+            Test.@test_nowarn Test.@inferred Options.name(def)
+            
             Test.@test Options.type(def) == Int
+            
             Test.@test Options.default(def) == 42
+            Test.@test_nowarn Test.@inferred Options.default(def)
+            
             Test.@test Options.description(def) == "Test option"
+            Test.@test_nowarn Test.@inferred Options.description(def)
+            
             Test.@test Options.aliases(def) == ()
+            
             Test.@test Options.validator(def) === nothing
         end
         
@@ -126,6 +152,51 @@ function test_option_definition()
             )
             names = Options.all_names(def)
             Test.@test names == (:max_iter, :max, :maxiter)
+            Test.@test_nowarn Options.all_names(def)
+        end
+        
+        # ====================================================================
+        # HELPER FUNCTIONS
+        # ====================================================================
+        
+        Test.@testset "Helper functions" begin
+            def_required = Options.OptionDefinition(
+                name = :input,
+                type = String,
+                default = Options.NotProvided,
+                description = "Input file"
+            )
+            def_optional = Options.OptionDefinition(
+                name = :max_iter,
+                type = Int,
+                default = 100,
+                description = "Max iterations"
+            )
+            def_with_validator = Options.OptionDefinition(
+                name = :tol,
+                type = Float64,
+                default = 1e-6,
+                description = "Tolerance",
+                validator = x -> x > 0
+            )
+
+            Test.@test Options.is_required(def_required) == true
+            Test.@test_nowarn Test.@inferred Options.is_required(def_required)
+            
+            Test.@test Options.is_required(def_optional) == false
+            Test.@test_nowarn Test.@inferred Options.is_required(def_optional)
+            
+            Test.@test Options.has_default(def_required) == false
+            Test.@test_nowarn Test.@inferred Options.has_default(def_required)
+            
+            Test.@test Options.has_default(def_optional) == true
+            Test.@test_nowarn Test.@inferred Options.has_default(def_optional)
+            
+            Test.@test Options.has_validator(def_with_validator) == true
+            Test.@test_nowarn Test.@inferred Options.has_validator(def_with_validator)
+            
+            Test.@test Options.has_validator(def_optional) == false
+            Test.@test_nowarn Test.@inferred Options.has_validator(def_optional)
         end
         
         # ========================================================================

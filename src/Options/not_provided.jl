@@ -1,6 +1,6 @@
-# ============================================================================
-# NotProvided Type - Sentinel for "no default value"
-# ============================================================================
+# NotProvided sentinel type
+#
+# Singleton type representing the absence of a default value for an option.
 
 """
 $(TYPEDEF)
@@ -12,24 +12,22 @@ This type is used to distinguish between:
 - `default = nothing`: The default value is explicitly `nothing`
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
+```julia
+# Option with no default - won't be stored if not provided
+opt1 = OptionDefinition(
+    name = :minimize,
+    type = Union{Bool, Nothing},
+    default = NotProvided,
+    description = "Whether to minimize"
+)
 
-julia> # Option with no default - won't be stored if not provided
-julia> opt1 = OptionDefinition(
-           name = :minimize,
-           type = Union{Bool, Nothing},
-           default = NotProvided,
-           description = "Whether to minimize"
-       )
-
-julia> # Option with explicit nothing default - will be stored as nothing
-julia> opt2 = OptionDefinition(
-           name = :backend,
-           type = Union{Nothing, KernelAbstractions.Backend},
-           default = nothing,
-           description = "Execution backend"
-       )
+# Option with explicit nothing default - will be stored as nothing
+opt2 = OptionDefinition(
+    name = :backend,
+    type = Union{Nothing, KernelAbstractions.Backend},
+    default = nothing,
+    description = "Execution backend"
+)
 ```
 
 See also: [`OptionDefinition`](@ref), [`extract_options`](@ref)

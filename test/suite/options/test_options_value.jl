@@ -2,13 +2,32 @@ module TestOptionsValue
 
 import Test
 import CTBase.Exceptions
+import CTSolvers
 import CTSolvers.Options
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
 function test_options_value()
     Test.@testset "Options module" verbose=VERBOSE showtiming=SHOWTIMING begin
-        # Test OptionValue construction and basic properties
+
+        # ====================================================================
+        # META TESTS - Exports / Public API surface
+        # ====================================================================
+
+        Test.@testset "Exports verification" begin
+            Test.@test isdefined(CTSolvers, :Options)
+            Test.@test isdefined(Options, :OptionValue)
+            Test.@test isdefined(Options, :NotProvided)
+            Test.@test isdefined(Options, :value)
+            Test.@test isdefined(Options, :source)
+            Test.@test isdefined(Options, :is_user)
+            Test.@test isdefined(Options, :is_default)
+            Test.@test isdefined(Options, :is_computed)
+        end
+
+        # ====================================================================
+        # UNIT TESTS - OptionValue construction and helpers
+        # ====================================================================
         Test.@testset "OptionValue construction" begin
             # Test with explicit source
             opt_user = Options.OptionValue(42, :user)
@@ -78,7 +97,16 @@ function test_options_value()
 
             Test.@test Options.value(opt_user) === 42
             Test.@test Options.source(opt_user) === :user
+            Test.@test_nowarn Test.@inferred Options.source(opt_user)
+            
             Test.@test Options.is_user(opt_user) === true
+            Test.@test_nowarn Test.@inferred Options.is_user(opt_user)
+            
+            Test.@test Options.is_default(opt_default) === true
+            Test.@test_nowarn Test.@inferred Options.is_default(opt_default)
+            
+            Test.@test Options.is_computed(opt_computed) === true
+            Test.@test_nowarn Test.@inferred Options.is_computed(opt_computed)
             Test.@test Options.is_default(opt_user) === false
             Test.@test Options.is_computed(opt_user) === false
 
