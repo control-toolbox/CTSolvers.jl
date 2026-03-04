@@ -47,7 +47,7 @@ Solves the given NLP problem and returns execution statistics.
 - `SolverCore.AbstractExecutionStats`: Solver execution statistics
 
 # Throws
-- `Strategies.Exceptions.NotImplemented`: If not implemented by concrete type
+- `CTBase.Exceptions.NotImplemented`: If not implemented by a concrete solver type
 
 # Implementation
 Concrete solver types must implement this method. The default implementation
@@ -59,6 +59,8 @@ solver = Solvers.Ipopt(max_iter=100)
 nlp = ADNLPModel(x -> sum(x.^2), zeros(5))
 stats = solver(nlp, display=false)
 ```
+
+See also: [`AbstractNLPSolver`](@ref), [`CommonSolve.solve`](@ref)
 """
 function (solver::AbstractNLPSolver)(nlp; display::Bool=true)
     throw(Exceptions.NotImplemented(

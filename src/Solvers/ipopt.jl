@@ -1,5 +1,5 @@
 # ============================================================================
-# Tag Dispatch Infrastructure
+# Tag dispatch infrastructure
 # ============================================================================
 
 """
@@ -10,7 +10,7 @@ Tag type for Ipopt-specific implementation dispatch.
 struct IpoptTag <: AbstractTag end
 
 # ============================================================================
-# Solver Type Definition
+# Solver type definition
 # ============================================================================
 
 """
@@ -34,20 +34,12 @@ Load the extension to access option definitions and documentation:
 using NLPModelsIpopt
 ```
 
-# Examples
+# Example
 
 ```julia
-# Load the extension first
+# Conceptual usage pattern (requires NLPModelsIpopt extension)
 using NLPModelsIpopt
-
-# Create solver with default options
-solver = Ipopt()
-
-# Create solver with custom options
 solver = Ipopt(max_iter=1000, tol=1e-6, print_level=3)
-
-# Solve an NLP problem
-using ADNLPModels
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
 stats = solver(nlp, display=true)
 ```
@@ -101,19 +93,19 @@ Requires the CTSolversIpopt extension to be loaded.
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Solver options (see extension documentation for available options)
 
-# Examples
+# Example
+
 ```julia
+# Conceptual usage (requires NLPModelsIpopt extension)
 using NLPModelsIpopt
-
-# Strict mode (default) - rejects unknown options
 solver = Ipopt(max_iter=1000, tol=1e-6)
-
-# Permissive mode - accepts unknown options with warning
-solver = Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
+solver_permissive = Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
+- `CTBase.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
+
+See also: [`Ipopt`](@ref), [`build_ipopt_solver`](@ref)
 """
 function Solvers.Ipopt(; mode::Symbol=:strict, kwargs...)
     return build_ipopt_solver(IpoptTag; mode=mode, kwargs...)
@@ -126,7 +118,9 @@ Stub function that throws ExtensionError if CTSolversIpopt extension is not load
 Real implementation provided by the extension.
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+- `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
+
+See also: [`Ipopt`](@ref), [`Strategies.metadata`](@ref)
 """
 function build_ipopt_solver(::Type{<:AbstractTag}; kwargs...)
     throw(Exceptions.ExtensionError(
@@ -144,7 +138,9 @@ Stub function that throws ExtensionError if CTSolversIpopt extension is not load
 Real metadata implementation provided by the extension.
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+- `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
+
+See also: [`Ipopt`](@ref), [`Strategies.StrategyMetadata`](@ref)
 """
 function Strategies.metadata(::Type{<:Solvers.Ipopt})
     throw(Exceptions.ExtensionError(

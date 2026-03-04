@@ -340,7 +340,7 @@ Available fields:
 end
 
 # ============================================================================
-# Constructor Implementation
+# Constructor implementation
 # ============================================================================
 
 """
@@ -356,15 +356,12 @@ Build a MadNCL with validated options.
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Options to pass to the MadNCL constructor
 
-# Examples
-```julia-repl
-# CPU solver (default)
-julia> solver = build_madncl_solver(MadNCLTag(), CPU(); max_iter=1000)
-MadNCL{CPU}(...)
+# Example
 
-# GPU solver (requires MadNLPGPU)
-julia> solver = build_madncl_solver(MadNCLTag(), GPU(); max_iter=1000)
-MadNCL{GPU}(...)  # with CUDSSSolver as default
+```julia
+# Conceptual usage
+solver_cpu = build_madncl_solver(MadNCLTag(), CPU(); max_iter=1000)
+solver_gpu = build_madncl_solver(MadNCLTag(), GPU(); max_iter=1000)  # requires MadNLPGPU
 ```
 """
 function Solvers.build_madncl_solver(
@@ -382,7 +379,7 @@ function Solvers.build_madncl_solver(
 end
 
 # ============================================================================
-# Callable Interface with Display Handling
+# Callable interface with display handling
 # ============================================================================
 
 """
@@ -417,7 +414,7 @@ function (solver::Solvers.MadNCL)(
 end
 
 # ============================================================================
-# Backend Solver Interface
+# Backend solver interface
 # ============================================================================
 
 """
@@ -437,7 +434,7 @@ function solve_with_madncl(
 end
 
 # ============================================================================
-# Solver Information Extraction
+# Solver information extraction
 # ============================================================================
 
 """
@@ -445,31 +442,24 @@ $(TYPEDSIGNATURES)
 
 Extract solver information from MadNCL execution statistics.
 
-This method handles MadNCL-specific behavior:
-- Objective sign depends on whether the problem is a minimization or maximization
-- Status codes are MadNLP-specific (e.g., `:SOLVE_SUCCEEDED`, `:SOLVED_TO_ACCEPTABLE_LEVEL`)
-- Uses the same field mapping as MadNLP since NCLStats has compatible structure
+Uses the same field mapping as MadNLP since NCLStats has compatible structure.
 
 # Arguments
 
 - `nlp_solution::MadNCL.NCLStats`: MadNCL execution statistics
 
 # Returns
-- `objective`: The objective value (MadNCL returns correct sign, no flip needed)
-- `iterations`: Number of iterations
-- `constraints_violation`: Constraint violation measure
-- `message`: Solver name ("MadNCL")
-- `status`: Solver status as a Symbol
-- `successful`: Whether the solve was successful
-
-# Notes
-Unlike MadNLP, MadNCL correctly handles maximization problems and returns the
-objective with the correct sign. Therefore, we do NOT flip the sign for maximization.
+A 6-element tuple `(objective, iterations, constraints_violation, message, status, successful)`:
+- `objective::Float64`: The final objective value
+- `iterations::Int`: Number of iterations performed
+- `constraints_violation::Float64`: Maximum constraint violation (primal feasibility)
+- `message::String`: Solver identifier string ("MadNCL")
+- `status::Symbol`: Termination status from SolverCore
+- `successful::Bool`: Whether the solver converged successfully
 """
 function Optimization.extract_solver_infos(
     nlp_solution::MadNCL.NCLStats,
 )
-    # MadNCL returns the correct objective sign (no bug like MadNLP)
     objective = nlp_solution.objective
     iterations = nlp_solution.iter
     constraints_violation = nlp_solution.primal_feas

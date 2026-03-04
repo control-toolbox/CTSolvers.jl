@@ -1,5 +1,5 @@
 # ============================================================================
-# Tag Dispatch Infrastructure
+# Tag dispatch infrastructure
 # ============================================================================
 
 """
@@ -10,7 +10,7 @@ Tag type for MadNLP-specific implementation dispatch.
 struct MadNLPTag <: AbstractTag end
 
 # ============================================================================
-# Solver Type Definition
+# Solver type definition
 # ============================================================================
 
 """
@@ -46,24 +46,12 @@ $(TYPEDFIELDS)
   - Default for GPU: `MadNLPGPU.CUDSSSolver` (requires MadNLPGPU.jl)
 - `backend`: Execution backend (default depends on parameter: CPU backend for CPU, CUDA backend for GPU)
 
-# Examples
+# Example
 
 ```julia
-# Create solver with default options (CPU)
-solver = MadNLP()
-
-# Explicit CPU solver
-solver = MadNLP{CPU}()
-
-# GPU solver (requires CUDA.jl)
-solver = MadNLP{GPU}()
-
-# Create solver with custom options
+# Conceptual usage pattern (requires MadNLP extension)
 using MadNLP
 solver = MadNLP(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
-
-# Solve an NLP problem
-using ADNLPModels
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
 stats = solver(nlp, display=true)
 ```
@@ -103,14 +91,18 @@ Return the unique identifier for MadNLP.
 Strategies.id(::Type{<:Solvers.MadNLP}) = :madnlp
 
 """
+$(TYPEDSIGNATURES)
+
 Default parameter type for MadNLP when not explicitly specified.
 
 Returns `CPU` as the default execution parameter.
+
+See also: [`MadNLP`](@ref), [`CPU`](@ref)
 """
 _default_parameter(::Type{<:Solvers.MadNLP}) = CPU
 
 # ============================================================================
-# Constructor with Tag Dispatch
+# Constructor with tag dispatch
 # ============================================================================
 
 """
@@ -126,22 +118,19 @@ Requires the CTSolversMadNLP extension to be loaded.
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Solver options (see extension documentation for available options)
 
-# Examples
+# Example
+
 ```julia
+# Conceptual usage (requires MadNLP extension)
 using MadNLP
-
-# Default solver (CPU)
-solver = MadNLP()
-
-# Strict mode (default) - rejects unknown options
 solver = MadNLP(max_iter=1000, tol=1e-6)
-
-# Permissive mode - accepts unknown options with warning
-solver = MadNLP(max_iter=1000, custom_option=123; mode=:permissive)
+solver_permissive = MadNLP(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
+- `CTBase.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
+
+See also: [`MadNLP`](@ref), [`build_madnlp_solver`](@ref)
 """
 function Solvers.MadNLP(; mode::Symbol=:strict, kwargs...)
     return build_madnlp_solver(MadNLPTag, _default_parameter(Solvers.MadNLP); mode=mode, kwargs...)
@@ -160,26 +149,20 @@ Requires the CTSolversMadNLP extension to be loaded.
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Solver options (see extension documentation for available options)
 
-# Examples
+# Example
+
 ```julia
+# Conceptual usage (requires MadNLP extension)
 using MadNLP
-
-# Explicit CPU solver
-solver = MadNLP{CPU}()
-
-# GPU solver (requires CUDA.jl)
-solver = MadNLP{GPU}()
-
-# With custom options
-solver = MadNLP{GPU}(max_iter=1000, tol=1e-6)
-
-# Permissive mode
-solver = MadNLP{GPU}(max_iter=1000, custom_option=123; mode=:permissive)
+solver_cpu = MadNLP{CPU}(max_iter=1000, tol=1e-6)
+solver_gpu = MadNLP{GPU}(max_iter=1000, tol=1e-6)  # requires CUDA.jl
 ```
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
-- `Strategies.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
+- `CTBase.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
+- `CTBase.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
+
+See also: [`MadNLP`](@ref), [`CPU`](@ref), [`GPU`](@ref)
 """
 function Solvers.MadNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
     return build_madnlp_solver(MadNLPTag, P; mode=mode, kwargs...)
@@ -192,7 +175,9 @@ Stub function that throws ExtensionError if CTSolversMadNLP extension is not loa
 Real implementation provided by the extension.
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+- `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
+
+See also: [`MadNLP`](@ref), [`Strategies.metadata`](@ref)
 """
 function build_madnlp_solver(::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...)
     throw(Exceptions.ExtensionError(
@@ -212,7 +197,9 @@ Real metadata implementation provided by the extension.
 This stub is for parameterized types `MadNLP{P}` where `P <: AbstractStrategyParameter`.
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+- `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
+
+See also: [`MadNLP`](@ref), [`Strategies.StrategyMetadata`](@ref)
 """
 function Strategies.metadata(::Type{<:Solvers.MadNLP{P}}) where {P<:AbstractStrategyParameter}
     throw(Exceptions.ExtensionError(
@@ -237,7 +224,9 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 - `StrategyMetadata`: Metadata for `MadNLP{CPU}` (if extension loaded)
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: If extension not loaded (via delegation)
+- `CTBase.Exceptions.ExtensionError`: If extension not loaded (via delegation)
+
+See also: [`MadNLP`](@ref), [`Strategies.metadata`](@ref)
 """
 function Strategies.metadata(::Type{Solvers.MadNLP})
     return Strategies.metadata(Solvers.MadNLP{_default_parameter(Solvers.MadNLP)})

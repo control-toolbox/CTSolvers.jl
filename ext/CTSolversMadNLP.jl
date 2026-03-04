@@ -315,7 +315,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
 end
 
 # ============================================================================
-# Constructor Implementation
+# Constructor implementation
 # ============================================================================
 
 """
@@ -331,15 +331,12 @@ Build a MadNLP with validated options.
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Options to pass to the MadNLP constructor
 
-# Examples
-```julia-repl
-# CPU solver (default)
-julia> solver = build_madnlp_solver(MadNLPTag(), CPU(); max_iter=1000)
-MadNLP{CPU}(...)
+# Example
 
-# GPU solver (requires MadNLPGPU)
-julia> solver = build_madnlp_solver(MadNLPTag(), GPU(); max_iter=1000)
-MadNLP{GPU}(...)  # with CUDSSSolver as default
+```julia
+# Conceptual usage
+solver_cpu = build_madnlp_solver(MadNLPTag(), CPU(); max_iter=1000)
+solver_gpu = build_madnlp_solver(MadNLPTag(), GPU(); max_iter=1000)  # requires MadNLPGPU
 ```
 """
 function Solvers.build_madnlp_solver(
@@ -357,7 +354,7 @@ function Solvers.build_madnlp_solver(
 end
 
 # ============================================================================
-# Callable Interface with Display Handling
+# Callable interface with display handling
 # ============================================================================
 
 """
@@ -382,7 +379,7 @@ function (solver::Solvers.MadNLP)(
 end
 
 # ============================================================================
-# Backend Solver Interface
+# Backend solver interface
 # ============================================================================
 
 """
@@ -405,22 +402,16 @@ $(TYPEDSIGNATURES)
 
 Extract solver information from MadNLP execution statistics.
 
-This method handles MadNLP-specific behavior:
-- Objective sign depends on whether the problem is a minimization or maximization
-- Status codes are MadNLP-specific (e.g., `:SOLVE_SUCCEEDED`, `:SOLVED_TO_ACCEPTABLE_LEVEL`)
-
 # Arguments
-
 - `nlp_solution::MadNLP.MadNLPExecutionStats`: MadNLP execution statistics
 
 # Returns
-
 A 6-element tuple `(objective, iterations, constraints_violation, message, status, successful)`:
-- `objective::Float64`: The final objective value (sign corrected for minimization)
+- `objective::Float64`: The final objective value
 - `iterations::Int`: Number of iterations performed
 - `constraints_violation::Float64`: Maximum constraint violation (primal feasibility)
 - `message::String`: Solver identifier string ("MadNLP")
-- `status::Symbol`: MadNLP termination status
+- `status::Symbol`: Termination status from SolverCore
 - `successful::Bool`: Whether the solver converged successfully
 """
 function Optimization.extract_solver_infos(

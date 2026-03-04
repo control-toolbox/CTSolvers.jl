@@ -1,5 +1,5 @@
 # ============================================================================
-# Tag Dispatch Infrastructure
+# Tag dispatch infrastructure
 # ============================================================================
 
 """
@@ -10,7 +10,7 @@ Tag type for Knitro-specific implementation dispatch.
 struct KnitroTag <: AbstractTag end
 
 # ============================================================================
-# Solver Type Definition
+# Solver type definition
 # ============================================================================
 
 """
@@ -34,20 +34,12 @@ Load the extension to access option definitions and documentation:
 using NLPModelsKnitro
 ```
 
-# Examples
+# Example
 
 ```julia
-# Load the extension first
+# Conceptual usage pattern (requires NLPModelsKnitro extension)
 using NLPModelsKnitro
-
-# Create solver with default options
-solver = Knitro()
-
-# Create solver with custom options
 solver = Knitro(maxit=1000, maxtime=3600, ftol=1e-10, outlev=2)
-
-# Solve an NLP problem
-using ADNLPModels
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
 stats = solver(nlp, display=true)
 ```
@@ -104,19 +96,19 @@ Requires the CTSolversKnitro extension to be loaded.
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Solver options (see extension documentation for available options)
 
-# Examples
+# Example
+
 ```julia
+# Conceptual usage (requires NLPModelsKnitro extension)
 using NLPModelsKnitro
-
-# Strict mode (default) - rejects unknown options
 solver = Knitro(maxit=1000, outlev=2)
-
-# Permissive mode - accepts unknown options with warning
-solver = Knitro(maxit=1000, custom_option=123; mode=:permissive)
+solver_permissive = Knitro(maxit=1000, custom_option=123; mode=:permissive)
 ```
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
+- `CTBase.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
+
+See also: [`Knitro`](@ref), [`build_knitro_solver`](@ref)
 """
 function Solvers.Knitro(; mode::Symbol=:strict, kwargs...)
     return build_knitro_solver(KnitroTag; mode=mode, kwargs...)
@@ -129,7 +121,9 @@ Stub function that throws ExtensionError if CTSolversKnitro extension is not loa
 Real implementation provided by the extension.
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+- `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
+
+See also: [`Knitro`](@ref), [`Strategies.metadata`](@ref)
 """
 function build_knitro_solver(::Type{<:AbstractTag}; kwargs...)
     throw(Exceptions.ExtensionError(
@@ -147,7 +141,9 @@ Stub function that throws ExtensionError if CTSolversKnitro extension is not loa
 Real metadata implementation provided by the extension.
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+- `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
+
+See also: [`Knitro`](@ref), [`Strategies.StrategyMetadata`](@ref)
 """
 function Strategies.metadata(::Type{<:Solvers.Knitro})
     throw(Exceptions.ExtensionError(

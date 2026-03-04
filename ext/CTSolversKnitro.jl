@@ -169,7 +169,7 @@ function Strategies.metadata(::Type{Solvers.Knitro})
 end
 
 # ============================================================================
-# Constructor Implementation
+# Constructor implementation
 # ============================================================================
 
 """
@@ -183,15 +183,12 @@ Build a Knitro with validated options.
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Options to pass to the Knitro constructor
 
-# Examples
-```julia-repl
-# Strict mode (default) - rejects unknown options
-julia> solver = build_knitro_solver(KnitroTag; max_iter=1000)
-Knitro(...)
+# Example
 
-# Permissive mode - accepts unknown options with warning
-julia> solver = build_knitro_solver(KnitroTag; max_iter=1000, custom_option=123; mode=:permissive)
-Knitro(...)  # with warning about custom_option
+```julia
+# Conceptual usage
+solver = build_knitro_solver(KnitroTag; max_iter=1000)
+solver_permissive = build_knitro_solver(KnitroTag; max_iter=1000, custom_option=123; mode=:permissive)
 ```
 """
 function Solvers.build_knitro_solver(::Type{Solvers.KnitroTag}; mode::Symbol=:strict, kwargs...)
@@ -200,7 +197,7 @@ function Solvers.build_knitro_solver(::Type{Solvers.KnitroTag}; mode::Symbol=:st
 end
 
 # ============================================================================
-# Callable Interface with Display Handling
+# Callable interface with display handling
 # ============================================================================
 
 """
@@ -225,7 +222,7 @@ function (solver::Solvers.Knitro)(
 end
 
 # ============================================================================
-# Backend Solver Interface
+# Backend solver interface
 # ============================================================================
 
 """
