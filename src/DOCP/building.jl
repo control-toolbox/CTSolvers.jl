@@ -1,10 +1,7 @@
-# DOCP Model API
+# DOCP building API
 #
-# Specific API for building NLP models and solutions from DiscretizedModel.
-# These functions provide convenient wrappers for DOCP-specific operations.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-26
+# Convenience wrappers for building NLP models and OCP solutions from a
+# `DiscretizedModel`.
 
 """
 $(TYPEDSIGNATURES)
@@ -23,10 +20,11 @@ typing for `DiscretizedModel`.
 - `NLPModels.AbstractNLPModel`: The NLP model
 
 # Example
-```julia-repl
-julia> nlp = nlp_model(docp, initial_guess, modeler)
-ADNLPModel(...)
+```julia
+nlp = nlp_model(docp, initial_guess, modeler)
 ```
+
+See also: [`ocp_solution`](@ref), [`Optimization.build_model`](@ref)
 """
 function nlp_model(
     prob::DiscretizedModel,
@@ -54,10 +52,11 @@ is an optimal control solution.
 - `AbstractSolution`: The OCP solution
 
 # Example
-```julia-repl
-julia> solution = ocp_solution(docp, nlp_stats, modeler)
-OptimalControlSolution(...)
+```julia
+sol = ocp_solution(docp, nlp_stats, modeler)
 ```
+
+See also: [`nlp_model`](@ref), [`Optimization.build_solution`](@ref)
 """
 function ocp_solution(
     docp::DiscretizedModel,

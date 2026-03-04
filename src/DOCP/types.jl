@@ -1,18 +1,15 @@
-# DOCP Types
+# DOCP types
 #
-# This module defines the DiscretizedModel type.
-# All builder types are now in the Optimization module.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-26
+# Defines the `DiscretizedModel` type. Builder types live in the
+# `CTSolvers.Optimization` module.
 
 """
 $(TYPEDEF)
 
 Discretized optimal control problem ready for NLP solving.
 
-Wraps an optimal control problem together with builders for ADNLPModels and ExaModels backends.
-This type implements the `AbstractOptimizationProblem` contract.
+Wraps an optimal control problem together with builders for the supported NLP backends.
+This type implements the `Optimization.AbstractOptimizationProblem` contract.
 
 # Fields
 - `optimal_control_problem::TO`: The original optimal control problem
@@ -22,16 +19,18 @@ This type implements the `AbstractOptimizationProblem` contract.
 - `exa_solution_builder::TESB`: Builder for ExaModel solutions
 
 # Example
-```julia-repl
-julia> docp = DiscretizedModel(
-           ocp,
-           ADNLPModelBuilder(build_adnlp_model),
-           ExaModelBuilder(build_exa_model),
-           ADNLPSolutionBuilder(build_adnlp_solution),
-           ExaSolutionBuilder(build_exa_solution)
-       )
-DiscretizedModel{...}(...)
+```julia
+# Conceptual usage pattern
+docp = DiscretizedModel(
+    ocp,
+    adnlp_model_builder,
+    exa_model_builder,
+    adnlp_solution_builder,
+    exa_solution_builder,
+)
 ```
+
+See also: [`ocp_model`](@ref), [`nlp_model`](@ref), [`ocp_solution`](@ref)
 """
 struct DiscretizedModel{
     TO<:CTModels.AbstractModel,

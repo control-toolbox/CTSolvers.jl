@@ -1,9 +1,6 @@
-# DOCP Constructors
+# DOCP accessors
 #
-# This module provides essential accessor functions for DiscretizedModel.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-26
+# Accessor functions for `DiscretizedModel`.
 
 """
 $(TYPEDSIGNATURES)
@@ -17,9 +14,10 @@ Extract the original optimal control problem from a discretized problem.
 - The original optimal control problem
 
 # Example
-```julia-repl
-julia> ocp = ocp_model(docp)
-OptimalControlProblem(...)
+```julia
+ocp = ocp_model(docp)
 ```
+
+See also: [`DiscretizedModel`](@ref)
 """
 ocp_model(docp::DiscretizedModel) = docp.optimal_control_problem
