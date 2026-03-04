@@ -50,8 +50,7 @@ function __madnlp_default_linear_solver(::Type{GPU})
             :MadNLPGPU;
             message="to use GPU linear solver with MadNLP",
             feature="GPU computation with MadNLP",
-            context="Load MadNLPGPU extension first: using MadNLPGPU",
-            suggestion="Install and load MadNLPGPU.jl before using GPU parameter"
+            context="Load MadNLPGPU extension first: using MadNLPGPU"
         ))
     end
     return Main.MadNLPGPU.CUDSSSolver
