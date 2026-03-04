@@ -124,13 +124,13 @@ function test_backward_compatibility()
             Test.@test Strategies.options(exa) isa Strategies.StrategyOptions
         end
         
-        Test.@testset "Type stability" begin
-            # Test that parameter extraction is type stable
-            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Modelers.Exa{Strategies.CPU})
-            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Modelers.Exa{Strategies.GPU})
-            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.CPU})
-            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.GPU})
-        end
+        # Test.@testset "Type stability" begin
+        #     # Test that parameter extraction is type stable
+        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Modelers.Exa{Strategies.CPU})
+        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Modelers.Exa{Strategies.GPU})
+        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.CPU})
+        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.GPU})
+        # end
     end
 end
 

@@ -99,7 +99,24 @@ Returns `CPU` as the default execution parameter.
 
 See also: [`MadNLP`](@ref), [`CPU`](@ref)
 """
-_default_parameter(::Type{<:Solvers.MadNLP}) = CPU
+Strategies._default_parameter(::Type{<:Solvers.MadNLP}) = CPU
+
+"""
+$(TYPEDSIGNATURES)
+
+Supported parameter types for MadNLP.
+
+Returns a tuple of parameter types that this strategy accepts. MadNLP
+supports both CPU and GPU execution.
+
+# Implementation Notes
+
+This method is part of the `AbstractStrategy` parameter contract and must be
+implemented by all parameterized strategies.
+
+See also: [`MadNLP`](@ref), [`CPU`](@ref), [`GPU`](@ref), [`_default_parameter`](@ref)
+"""
+Strategies._supported_parameters(::Type{<:Solvers.MadNLP}) = (CPU, GPU)
 
 # ============================================================================
 # Constructor with tag dispatch
@@ -133,7 +150,7 @@ solver_permissive = MadNLP(max_iter=1000, custom_option=123; mode=:permissive)
 See also: [`MadNLP`](@ref), [`build_madnlp_solver`](@ref)
 """
 function Solvers.MadNLP(; mode::Symbol=:strict, kwargs...)
-    return build_madnlp_solver(MadNLPTag, _default_parameter(Solvers.MadNLP); mode=mode, kwargs...)
+    return build_madnlp_solver(MadNLPTag, Strategies._default_parameter(Solvers.MadNLP); mode=mode, kwargs...)
 end
 
 """
@@ -229,5 +246,5 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 See also: [`MadNLP`](@ref), [`Strategies.metadata`](@ref)
 """
 function Strategies.metadata(::Type{Solvers.MadNLP})
-    return Strategies.metadata(Solvers.MadNLP{_default_parameter(Solvers.MadNLP)})
+    return Strategies.metadata(Solvers.MadNLP{Strategies._default_parameter(Solvers.MadNLP)})
 end

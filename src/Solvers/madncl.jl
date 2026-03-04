@@ -93,7 +93,24 @@ Returns `CPU` as the default execution parameter.
 
 See also: [`MadNCL`](@ref), [`CPU`](@ref)
 """
-_default_parameter(::Type{<:Solvers.MadNCL}) = CPU
+Strategies._default_parameter(::Type{<:Solvers.MadNCL}) = CPU
+
+"""
+$(TYPEDSIGNATURES)
+
+Supported parameter types for MadNCL.
+
+Returns a tuple of parameter types that this strategy accepts. MadNCL
+supports both CPU and GPU execution.
+
+# Implementation Notes
+
+This method is part of the `AbstractStrategy` parameter contract and must be
+implemented by all parameterized strategies.
+
+See also: [`MadNCL`](@ref), [`CPU`](@ref), [`GPU`](@ref), [`_default_parameter`](@ref)
+"""
+Strategies._supported_parameters(::Type{<:Solvers.MadNCL}) = (CPU, GPU)
 
 # ============================================================================
 # Constructor with tag dispatch
@@ -127,7 +144,7 @@ solver_permissive = Solvers.MadNCL(max_iter=1000, custom_option=123; mode=:permi
 See also: [`MadNCL`](@ref), [`build_madncl_solver`](@ref)
 """
 function Solvers.MadNCL(; mode::Symbol=:strict, kwargs...)
-    return build_madncl_solver(MadNCLTag, _default_parameter(Solvers.MadNCL); mode=mode, kwargs...)
+    return build_madncl_solver(MadNCLTag, Strategies._default_parameter(Solvers.MadNCL); mode=mode, kwargs...)
 end
 
 """
@@ -223,5 +240,5 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 See also: [`MadNCL`](@ref), [`Strategies.metadata`](@ref)
 """
 function Strategies.metadata(::Type{Solvers.MadNCL})
-    return Strategies.metadata(Solvers.MadNCL{_default_parameter(Solvers.MadNCL)})
+    return Strategies.metadata(Solvers.MadNCL{Strategies._default_parameter(Solvers.MadNCL)})
 end

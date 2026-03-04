@@ -46,6 +46,9 @@ export AbstractStrategy, StrategyRegistry, StrategyMetadata, StrategyOptions, Op
 export RoutedOption, BypassValue
 export AbstractStrategyParameter, CPU, GPU
 
+# Parameter validation functions
+export validate_supported_parameter
+
 # Type-level contract methods
 export id, metadata
 

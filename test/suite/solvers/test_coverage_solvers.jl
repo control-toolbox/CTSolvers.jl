@@ -46,73 +46,7 @@ function test_coverage_solvers()
             Test.@test_throws Exceptions.NotImplemented solver(nlp; display=false)
         end
 
-        # ====================================================================
-        # UNIT TESTS - Solvers.Knitro (knitro_solver.jl)
-        # ====================================================================
-
-        Test.@testset "Solvers.Knitro" begin
-            # Type hierarchy
-            Test.@test Solvers.Knitro <: Solvers.AbstractNLPSolver
-            Test.@test Solvers.Knitro <: Strategies.AbstractStrategy
-            Test.@test !isabstracttype(Solvers.Knitro)
-
-            # id() contract
-            Test.@test Strategies.id(Solvers.Knitro) === :knitro
-
-            # Tag type
-            Test.@test Solvers.KnitroTag <: Solvers.AbstractTag
-            Test.@test !isabstracttype(Solvers.KnitroTag)
-            # Tags are now used as types, not instances
-
-            # Struct fields
-            Test.@test :options in fieldnames(Solvers.Knitro)
-            Test.@test length(fieldnames(Solvers.Knitro)) == 1
-
-            # Constructor throws ExtensionError (NLPModelsKnitro not loaded)
-            Test.@test_throws Exceptions.ExtensionError Solvers.Knitro()
-
-            # build_knitro_solver stub throws ExtensionError
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_knitro_solver(Solvers.KnitroTag)
-
-            # Verify error message content
-            err = nothing
-            try
-                Solvers.build_knitro_solver(Solvers.KnitroTag)
-            catch e
-                err = e
-            end
-            Test.@test err isa Exceptions.ExtensionError
-            err_str = string(err)
-            Test.@test occursin("Knitro", err_str)
-            Test.@test occursin("NLPModelsKnitro", err_str)
-        end
-
-        # ====================================================================
-        # UNIT TESTS - Solvers.Ipopt stub (ipopt_solver.jl)
-        # ====================================================================
-
-        Test.@testset "Solvers.Ipopt - ExtensionError on construct" begin
-            # Without NLPModelsIpopt loaded, constructor should throw
-            # (NLPModelsIpopt IS loaded in test env, so this tests the stub path)
-            # We test the stub directly with a non-IpoptTag
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(Solvers.KnitroTag)
-        end
-
-        # ====================================================================
-        # UNIT TESTS - Solvers.MadNLP stub (madnlp_solver.jl)
-        # ====================================================================
-
-        Test.@testset "Solvers.MadNLP - stub with wrong tag" begin
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(Solvers.KnitroTag, Strategies.CPU)
-        end
-
-        # ====================================================================
-        # UNIT TESTS - Solvers.MadNCL stub (madncl_solver.jl)
-        # ====================================================================
-
-        Test.@testset "Solvers.MadNCL - stub with wrong tag" begin
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(Solvers.KnitroTag, Strategies.CPU)
-        end
+        # Note: Knitro tests removed as Knitro is not currently tested
 
         # ====================================================================
         # UNIT TESTS - __display() helper (common_solve_api.jl)
@@ -130,7 +64,6 @@ function test_coverage_solvers()
             Test.@test Strategies.id(Solvers.Ipopt) === :ipopt
             Test.@test Strategies.id(Solvers.MadNLP) === :madnlp
             Test.@test Strategies.id(Solvers.MadNCL) === :madncl
-            Test.@test Strategies.id(Solvers.Knitro) === :knitro
         end
 
         # ====================================================================

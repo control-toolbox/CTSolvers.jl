@@ -15,6 +15,9 @@ import NLPModelsKnitro
 import NLPModels
 import SolverCore
 
+# Import parameter types
+using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter, validate_supported_parameter
+
 # ============================================================================
 # Metadata Definition
 # ============================================================================
@@ -24,7 +27,9 @@ $(TYPEDSIGNATURES)
 
 Return metadata defining Knitro options and their specifications.
 """
-function Strategies.metadata(::Type{Solvers.Knitro})
+function Strategies.metadata(::Type{Solvers.Knitro{P}}) where {P<:AbstractStrategyParameter}
+    # Validate parameter support
+    validate_supported_parameter(Solvers.Knitro, P)
     return Strategies.StrategyMetadata(
         # ====================================================================
         # TERMINATION OPTIONS
@@ -168,6 +173,7 @@ function Strategies.metadata(::Type{Solvers.Knitro})
     )
 end
 
+
 # ============================================================================
 # Constructor implementation
 # ============================================================================
@@ -191,9 +197,14 @@ solver = build_knitro_solver(KnitroTag; max_iter=1000)
 solver_permissive = build_knitro_solver(KnitroTag; max_iter=1000, custom_option=123; mode=:permissive)
 ```
 """
-function Solvers.build_knitro_solver(::Type{Solvers.KnitroTag}; mode::Symbol=:strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.Knitro; mode=mode, kwargs...)
-    return Solvers.Knitro(opts)
+function Solvers.build_knitro_solver(
+    ::Type{Solvers.KnitroTag},
+    parameter::Type{<:AbstractStrategyParameter};
+    mode::Symbol=:strict,
+    kwargs...
+)
+    opts = Strategies.build_strategy_options(Solvers.Knitro{parameter}; mode=mode, kwargs...)
+    return Solvers.Knitro{parameter}(opts)
 end
 
 # ============================================================================

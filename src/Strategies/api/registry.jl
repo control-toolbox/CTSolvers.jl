@@ -409,7 +409,7 @@ function type_from_id(
             available_params = [get_parameter_type(T) for T in param_strategies 
                                if get_parameter_type(T) !== nothing]
             throw(Exceptions.IncorrectArgument(
-                "Strategy not found with specified parameter",
+                "Strategy not found with specified parameter - check available parameters",
                 got="strategy :$strategy_id with parameter $parameter",
                 expected="strategy :$strategy_id with one of: $available_params",
                 suggestion="Check available parameters in the registry or use a non-parameterized version",

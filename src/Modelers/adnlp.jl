@@ -23,10 +23,22 @@ automatic differentiation support. It provides configurable options for
 timing information, AD backend selection, memory optimization, and model
 identification.
 
-# Constructor
+## Parameterized Types
+
+The modeler supports parameterization for execution backend:
+- `ADNLP{CPU}`: CPU execution (default and only supported parameter)
+
+**Note:** Unlike `Exa`, `MadNLP`, and `MadNCL`, this modeler only supports CPU execution.
+GPU execution is not available for ADNLP.
+
+# Constructors
 
 ```julia
+# Default constructor (CPU)
 Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
+
+# Explicit parameter specification (only CPU supported)
+Modelers.ADNLP{CPU}(; mode::Symbol=:strict, kwargs...)
 ```
 
 # Arguments
@@ -34,6 +46,16 @@ Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Modeler options (see Options section)
+
+# Parameter Behavior
+
+## CPU Parameter (Default)
+
+The CPU parameter indicates standard CPU-based execution:
+- Uses CPU-optimized automatic differentiation backends
+- No GPU acceleration available
+- Compatible with all standard Julia environments
+- Default AD backend: `:optimized`
 
 # Options
 
@@ -60,8 +82,11 @@ or an `ADBackend` instance (used directly).
 
 ## Basic Usage
 ```julia
-# Default modeler
+# Default modeler (CPU)
 modeler = Modelers.ADNLP()
+
+# Explicit CPU specification
+modeler = Modelers.ADNLP{CPU}()
 
 # With custom options
 modeler = Modelers.ADNLP(
@@ -69,6 +94,12 @@ modeler = Modelers.ADNLP(
     matrix_free=true,
     name="MyOptimizationProblem"
 )
+```
+
+## Invalid Usage
+```julia
+# GPU is NOT supported - will throw IncorrectArgument
+modeler = Modelers.ADNLP{GPU}()  # ❌ Error!
 ```
 
 ## Advanced Backend Configuration
@@ -105,12 +136,14 @@ modeler = Modelers.ADNLP(
 
 # Throws
 
+- `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 - `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 
 # See also
 
-- [`Modelers.Exa`](@ref): Alternative modeler using ExaModels
+- [`CPU`](@ref): CPU parameter type
+- [`Modelers.Exa`](@ref): Alternative modeler using ExaModels (supports GPU)
 - [`Optimization.build_model`](@ref): Build a backend NLP model from a problem and a modeler
 - [`Optimization.build_solution`](@ref): Build a problem-level solution from execution statistics
 
@@ -126,15 +159,51 @@ modeler = Modelers.ADNLP(
 - ADNLPModels.jl: [https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl)
 - Automatic Differentiation in Julia: [https://github.com/JuliaDiff/](https://github.com/JuliaDiff/)
 """
-struct ADNLP <: AbstractNLPModeler
+struct ADNLP{P<:AbstractStrategyParameter} <: AbstractNLPModeler
+    "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
 
 # Strategy identification
 Strategies.id(::Type{<:Modelers.ADNLP}) = :adnlp
 
-# Strategy metadata with option definitions
-function Strategies.metadata(::Type{<:Modelers.ADNLP})
+"""
+$(TYPEDSIGNATURES)
+
+Default parameter type for ADNLP when not explicitly specified.
+
+Returns `CPU` as the default execution parameter.
+
+# Implementation Notes
+
+This method is part of the `AbstractStrategy` parameter contract and must be
+implemented by all parameterized strategies.
+
+See also: [`ADNLP`](@ref), [`CPU`](@ref), [`_supported_parameters`](@ref)
+"""
+Strategies._default_parameter(::Type{<:Modelers.ADNLP}) = CPU
+
+"""
+$(TYPEDSIGNATURES)
+
+Supported parameter types for ADNLP.
+
+Returns a tuple of parameter types that this strategy accepts. ADNLP
+only supports CPU execution.
+
+# Implementation Notes
+
+This method is part of the `AbstractStrategy` parameter contract and must be
+implemented by all parameterized strategies.
+
+See also: [`ADNLP`](@ref), [`CPU`](@ref), [`GPU`](@ref), [`_default_parameter`](@ref)
+"""
+Strategies._supported_parameters(::Type{<:Modelers.ADNLP}) = (CPU,)
+
+# Strategy metadata with option definitions (parameterized)
+function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:AbstractStrategyParameter}
+    # Validate parameter support
+    validate_supported_parameter(Modelers.ADNLP, P)
     return Strategies.StrategyMetadata(
         # === Existing Options (unchanged) ===
         Strategies.OptionDefinition(;
@@ -267,6 +336,11 @@ function Strategies.metadata(::Type{<:Modelers.ADNLP})
     )
 end
 
+# Fallback metadata for non-parameterized type (delegates to CPU)
+function Strategies.metadata(::Type{Modelers.ADNLP})
+    return Strategies.metadata(Modelers.ADNLP{Strategies._default_parameter(Modelers.ADNLP)})
+end
+
 # Constructor with option validation
 """
 $(TYPEDSIGNATURES)
@@ -311,9 +385,25 @@ function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
     end
     
     opts = Strategies.build_strategy_options(
-        Modelers.ADNLP; mode=mode, kwargs...
+        Modelers.ADNLP{CPU}; mode=mode, kwargs...
     )
-    return Modelers.ADNLP(opts)
+    return Modelers.ADNLP{Strategies._default_parameter(Modelers.ADNLP)}(opts)
+end
+
+# Parameterized constructor
+function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
+    # Validate parameter support
+    validate_supported_parameter(Modelers.ADNLP, P)
+    
+    # Check for deprecated aliases
+    if haskey(kwargs, :adnlp_backend)
+        @warn "adnlp_backend is deprecated, use backend instead" maxlog=1
+    end
+    
+    opts = Strategies.build_strategy_options(
+        Modelers.ADNLP{P}; mode=mode, kwargs...
+    )
+    return Modelers.ADNLP{P}(opts)
 end
 
 # Access to strategy options

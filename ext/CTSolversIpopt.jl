@@ -15,6 +15,9 @@ import NLPModelsIpopt
 import NLPModels
 import SolverCore
 
+# Import parameter types
+using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter, validate_supported_parameter
+
 # ============================================================================
 # Metadata definition
 # ============================================================================
@@ -24,7 +27,9 @@ $(TYPEDSIGNATURES)
 
 Return metadata defining Ipopt options and their specifications.
 """
-function Strategies.metadata(::Type{Solvers.Ipopt})
+function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:AbstractStrategyParameter}
+    # Validate parameter support
+    validate_supported_parameter(Solvers.Ipopt, P)
     return Strategies.StrategyMetadata(
         # ====================================================================
         # Termination options
@@ -439,6 +444,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt})
     )
 end
 
+
 # ============================================================================
 # Constructor implementation
 # ============================================================================
@@ -464,9 +470,14 @@ solver_permissive = build_ipopt_solver(IpoptTag; max_iter=1000, custom_option=12
 
 See also: [`Solvers.Ipopt`](@ref), [`Strategies.build_strategy_options`](@ref)
 """
-function Solvers.build_ipopt_solver(::Type{Solvers.IpoptTag}; mode::Symbol=:strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.Ipopt; mode=mode, kwargs...)
-    return Solvers.Ipopt(opts)
+function Solvers.build_ipopt_solver(
+    ::Type{Solvers.IpoptTag},
+    parameter::Type{<:AbstractStrategyParameter};
+    mode::Symbol=:strict,
+    kwargs...
+)
+    opts = Strategies.build_strategy_options(Solvers.Ipopt{parameter}; mode=mode, kwargs...)
+    return Solvers.Ipopt{parameter}(opts)
 end
 
 # ============================================================================
