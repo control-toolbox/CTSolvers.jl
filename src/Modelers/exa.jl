@@ -58,7 +58,7 @@ and returns an appropriate CUDA backend.
 
 # Notes
 - Issues a warning if CUDA is loaded but not functional
-- Uses KernelAbstractions.CUDABackend() for GPU execution
+- Uses CUDA.CUDABackend() for GPU execution
 """
 function __get_cuda_backend()
     if !isdefined(Main, :CUDA)
@@ -72,7 +72,7 @@ function __get_cuda_backend()
     if !Main.CUDA.functional()
         @warn "CUDA is loaded but not functional. GPU backend may not work properly." maxlog=1
     end
-    return KernelAbstractions.CUDABackend()
+    return Main.CUDA.CUDABackend()
 end
 
 # NOTE: GPU options removed - not relevant for current implementation
