@@ -25,6 +25,8 @@ function test_coverage_validation()
             Test.@test Modelers.validate_adnlp_backend(:generic) == :generic
             Test.@test Modelers.validate_adnlp_backend(:manual) == :manual
 
+            Test.@test_nowarn Test.@inferred Modelers.validate_adnlp_backend(:default)
+
             # Enzyme/Zygote warnings (packages not loaded) - capture to avoid console output
             redirect_stderr(devnull) do
                 Test.@test_logs (:warn,) Modelers.validate_adnlp_backend(:enzyme)
@@ -47,6 +49,8 @@ function test_coverage_validation()
             Test.@test Modelers.validate_exa_base_type(Float16) == Float16
             Test.@test Modelers.validate_exa_base_type(BigFloat) == BigFloat
 
+            Test.@test_nowarn Test.@inferred Modelers.validate_exa_base_type(Float64)
+
             # Invalid types
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Int)
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(String)
@@ -63,6 +67,8 @@ function test_coverage_validation()
             Test.@test Modelers.validate_gpu_preference(:rocm) == :rocm
             Test.@test Modelers.validate_gpu_preference(:oneapi) == :oneapi
 
+            Test.@test_nowarn Test.@inferred Modelers.validate_gpu_preference(:cuda)
+
             # Invalid preferences
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_gpu_preference(:invalid)
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_gpu_preference(:metal)
@@ -75,6 +81,8 @@ function test_coverage_validation()
         Test.@testset "validate_precision_mode" begin
             # Valid modes
             Test.@test Modelers.validate_precision_mode(:standard) == :standard
+
+            Test.@test_nowarn Test.@inferred Modelers.validate_precision_mode(:standard)
 
             # :high and :mixed emit @info
             Test.@test_logs (:info,) Modelers.validate_precision_mode(:high)
@@ -95,6 +103,8 @@ function test_coverage_validation()
             Test.@test Modelers.validate_model_name("test-name") == "test-name"
             Test.@test Modelers.validate_model_name("name_123") == "name_123"
 
+            Test.@test_nowarn Test.@inferred Modelers.validate_model_name("MyModel")
+
             # Empty name
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_model_name("")
 
@@ -111,6 +121,8 @@ function test_coverage_validation()
             # Basic validation
             Test.@test Modelers.validate_matrix_free(true) == true
             Test.@test Modelers.validate_matrix_free(false) == false
+
+            Test.@test_nowarn Test.@inferred Modelers.validate_matrix_free(true)
 
             # Large problem recommendation
             Test.@test_logs (:info,) Modelers.validate_matrix_free(false, 200_000)
@@ -130,6 +142,8 @@ function test_coverage_validation()
         Test.@testset "validate_optimization_direction" begin
             Test.@test Modelers.validate_optimization_direction(true) == true
             Test.@test Modelers.validate_optimization_direction(false) == false
+
+            Test.@test_nowarn Test.@inferred Modelers.validate_optimization_direction(true)
         end
 
         # ====================================================================
@@ -139,6 +153,8 @@ function test_coverage_validation()
         Test.@testset "validate_backend_override" begin
             # Valid overrides: nothing
             Test.@test Modelers.validate_backend_override(nothing) === nothing
+
+            Test.@test_nowarn Test.@inferred Modelers.validate_backend_override(nothing)
             # Valid overrides: Type{<:ADBackend}
             Test.@test Modelers.validate_backend_override(FakeCoverageBackend) == FakeCoverageBackend
             # Valid overrides: ADBackend instance

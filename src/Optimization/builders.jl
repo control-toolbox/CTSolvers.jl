@@ -1,10 +1,6 @@
-# Abstract Builders
+# Optimization builders
 #
-# General abstract builder types and concrete implementations for optimization problems.
-# Builders are callable objects that construct NLP models and solutions.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-26
+# Abstract builder types and concrete builder implementations.
 
 """
 $(TYPEDEF)
@@ -64,12 +60,9 @@ The wrapped function should accept an initial guess and keyword arguments.
 - `f::T`: A callable that builds the ADNLPModel when invoked
 
 # Example
-```julia-repl
-julia> builder = ADNLPModelBuilder(build_adnlp_model)
-ADNLPModelBuilder(...)
-
-julia> nlp_model = builder(initial_guess; show_time=false, backend=:optimized)
-ADNLPModel(...)
+```julia
+builder = ADNLPModelBuilder(build_adnlp_model)
+nlp = builder(initial_guess; show_time=false, backend=:optimized)
 ```
 """
 struct ADNLPModelBuilder{T<:Function} <: AbstractModelBuilder
@@ -105,12 +98,9 @@ The wrapped function should accept a base type, initial guess, and keyword argum
 - `f::T`: A callable that builds the ExaModel when invoked
 
 # Example
-```julia-repl
-julia> builder = ExaModelBuilder(build_exa_model)
-ExaModelBuilder(...)
-
-julia> nlp_model = builder(Float64, initial_guess; backend=nothing, minimize=true)
-ExaModel{Float64}(...)
+```julia
+builder = ExaModelBuilder(build_exa_model)
+nlp = builder(Float64, initial_guess; backend=nothing, minimize=true)
 ```
 """
 struct ExaModelBuilder{T<:Function} <: AbstractModelBuilder
@@ -151,12 +141,9 @@ statistics into optimal control solutions.
 - `f::T`: A callable that builds the solution when invoked
 
 # Example
-```julia-repl
-julia> builder = ADNLPSolutionBuilder(build_adnlp_solution)
-ADNLPSolutionBuilder(...)
-
-julia> solution = builder(nlp_stats)
-OptimalControlSolution(...)
+```julia
+builder = ADNLPSolutionBuilder(build_adnlp_solution)
+sol = builder(nlp_stats)
 ```
 """
 struct ADNLPSolutionBuilder{T<:Function} <: AbstractOCPSolutionBuilder
@@ -192,12 +179,9 @@ statistics into optimal control solutions.
 - `f::T`: A callable that builds the solution when invoked
 
 # Example
-```julia-repl
-julia> builder = ExaSolutionBuilder(build_exa_solution)
-ExaSolutionBuilder(...)
-
-julia> solution = builder(nlp_stats)
-OptimalControlSolution(...)
+```julia
+builder = ExaSolutionBuilder(build_exa_solution)
+sol = builder(nlp_stats)
 ```
 """
 struct ExaSolutionBuilder{T<:Function} <: AbstractOCPSolutionBuilder

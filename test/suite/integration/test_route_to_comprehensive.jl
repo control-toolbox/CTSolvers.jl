@@ -17,7 +17,6 @@ module TestRouteToComprehensive
 
 import Test
 import CTBase.Exceptions
-import CTSolvers
 import CTSolvers.Strategies
 import CTSolvers.Orchestration
 import CTSolvers.Options
@@ -515,8 +514,12 @@ function test_route_to_comprehensive()
                 )
                 
                 # Build real modeler
-                real_modeler = Strategies.build_strategy_from_method(
-                    MOCK_METHOD, Modelers.AbstractNLPModeler, real_registry; 
+                resolved = Orchestration.resolve_method(MOCK_METHOD, real_families, real_registry)
+                real_modeler = Orchestration.build_strategy_from_resolved(
+                    resolved,
+                    :modeler,
+                    real_families,
+                    real_registry;
                     routed.strategies.modeler...
                 )
                 
@@ -551,8 +554,12 @@ function test_route_to_comprehensive()
                     )
                     
                     # Build real solver
-                    real_solver = Strategies.build_strategy_from_method(
-                        MOCK_METHOD, Solvers.AbstractNLPSolver, real_registry; 
+                    resolved = Orchestration.resolve_method(MOCK_METHOD, real_families, real_registry)
+                    real_solver = Orchestration.build_strategy_from_resolved(
+                        resolved,
+                        :solver,
+                        real_families,
+                        real_registry;
                         routed.strategies.solver...
                     )
                     

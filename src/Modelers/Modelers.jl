@@ -1,14 +1,22 @@
-# Modelers Module
-# 
-# This module provides strategy-based modelers for converting discretized optimal 
-# control problems to NLP backend models using the new AbstractStrategy contract.
+# Modelers
 #
-# Author: CTSolvers Development Team
-# Date: 2026-01-25
+# Strategy-based modelers for converting discretized optimization problems into
+# NLP backend models.
 
+"""
+Modelers module.
+
+This module defines `AbstractNLPModeler` and concrete modeler strategies such as
+`ADNLP` and `Exa`. Modelers are strategies that:
+- Build NLP backend models from an `Optimization.AbstractOptimizationProblem` and an initial guess.
+- Build problem-specific solution objects from solver execution statistics.
+
+Modelers implement the `Strategies.AbstractStrategy` contract and participate in
+orchestration and option routing.
+"""
 module Modelers
 
-# Importing to avoid namespace pollution
+# Imports
 import CTBase.Exceptions
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 import SolverCore
@@ -16,12 +24,12 @@ import ADNLPModels
 import ExaModels
 import KernelAbstractions
 
-# Using CTSolvers modules to get access to the api
+# Internal CTSolvers API
 using ..Options
 using ..Strategies
 using ..Optimization
 
-# Include submodules
+# Submodules
 include(joinpath(@__DIR__, "abstract_modeler.jl"))
 include(joinpath(@__DIR__, "validation.jl"))
 include(joinpath(@__DIR__, "adnlp.jl"))

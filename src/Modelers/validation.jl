@@ -1,10 +1,6 @@
-# Validation Functions for Enhanced Modelers
+# Modelers validation
 #
-# This module provides validation functions for the enhanced Modelers.ADNLP and Modelers.Exa
-# options. These functions provide robust error checking and user guidance.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-31
+# Validation helpers used by the `Modelers.ADNLP` and `Modelers.Exa` constructors.
 
 """
 $(TYPEDSIGNATURES)
@@ -15,15 +11,15 @@ Validate that the specified ADNLPModels backend is supported and available.
 - `backend::Symbol`: The backend symbol to validate
 
 # Throws
-- `ArgumentError`: If the backend is not supported
+- `CTBase.Exceptions.IncorrectArgument`: If the backend is not supported
 
 # Examples
 ```julia
-julia> validate_adnlp_backend(:optimized)
-:optimized
+validate_adnlp_backend(:optimized)
+validate_adnlp_backend(:default)
 
-julia> validate_adnlp_backend(:invalid_backend)
-ERROR: ArgumentError: Invalid backend: :invalid_backend. Valid options: (:default, :optimized, :generic, :enzyme, :zygote)
+# Throws CTBase.Exceptions.IncorrectArgument
+validate_adnlp_backend(:invalid_backend)
 ```
 """
 function validate_adnlp_backend(backend::Symbol)
@@ -66,18 +62,15 @@ Validate that the specified base type is appropriate for ExaModels.
 - `T::Type`: The type to validate
 
 # Throws
-- `ArgumentError`: If the type is not a valid floating-point type
+- `CTBase.Exceptions.IncorrectArgument`: If `T` is not a subtype of `AbstractFloat`
 
 # Examples
 ```julia
-julia> validate_exa_base_type(Float64)
-Float64
+validate_exa_base_type(Float64)
+validate_exa_base_type(Float32)
 
-julia> validate_exa_base_type(Float32)
-Float32
-
-julia> validate_exa_base_type(Int)
-ERROR: ArgumentError: base_type must be a subtype of AbstractFloat, got: Int
+# Throws CTBase.Exceptions.IncorrectArgument
+validate_exa_base_type(Int)
 ```
 """
 function validate_exa_base_type(T::Type)
@@ -110,15 +103,15 @@ Validate the GPU backend preference.
 - `preference::Symbol`: Preferred GPU backend
 
 # Throws
-- `ArgumentError`: If the preference is invalid
+- `CTBase.Exceptions.IncorrectArgument`: If the preference is invalid
 
 # Examples
 ```julia
-julia> validate_gpu_preference(:cuda)
-:cuda
+validate_gpu_preference(:cuda)
+validate_gpu_preference(:rocm)
 
-julia> validate_gpu_preference(:invalid)
-ERROR: ArgumentError: Invalid GPU preference: :invalid. Valid options: (:cuda, :rocm, :oneapi)
+# Throws CTBase.Exceptions.IncorrectArgument
+validate_gpu_preference(:invalid)
 ```
 """
 function validate_gpu_preference(preference::Symbol)
@@ -146,15 +139,14 @@ Validate the precision mode setting.
 - `mode::Symbol`: Precision mode (:standard, :high, :mixed)
 
 # Throws
-- `ArgumentError`: If the mode is invalid
+- `CTBase.Exceptions.IncorrectArgument`: If the mode is invalid
 
 # Examples
 ```julia
-julia> validate_precision_mode(:standard)
-:standard
+validate_precision_mode(:standard)
 
-julia> validate_precision_mode(:invalid)
-ERROR: Exceptions.IncorrectArgument: Invalid precision mode
+# Throws CTBase.Exceptions.IncorrectArgument
+validate_precision_mode(:invalid)
 ```
 """
 function validate_precision_mode(mode::Symbol)
@@ -189,15 +181,14 @@ Validate that the model name is appropriate.
 - `name::String`: The model name to validate
 
 # Throws
-- `ArgumentError`: If the name is invalid
+- `CTBase.Exceptions.IncorrectArgument`: If the name is invalid
 
 # Examples
 ```julia
-julia> validate_model_name("MyProblem")
-"MyProblem"
+validate_model_name("MyProblem")
 
-julia> validate_model_name("")
-ERROR: Exceptions.IncorrectArgument: Empty model name
+# Throws CTBase.Exceptions.IncorrectArgument
+validate_model_name("")
 ```
 """
 function validate_model_name(name::String)
@@ -243,12 +234,8 @@ Validate matrix-free mode setting and provide recommendations.
 
 # Examples
 ```julia
-julia> validate_matrix_free(true, 10000)
-true
-
-julia> validate_matrix_free(false, 1000000)
-@info "Consider using matrix_free=true for large problems (n > 100000)"
-false
+validate_matrix_free(true, 10_000)
+validate_matrix_free(false, 1_000_000)
 ```
 """
 function validate_matrix_free(matrix_free::Bool, problem_size::Int = 1000)
@@ -283,15 +270,12 @@ Validate that the optimization direction is a boolean value.
 - `minimize::Bool`: The optimization direction to validate
 
 # Throws
-- `ArgumentError`: If the value is not a boolean
+- `CTBase.Exceptions.IncorrectArgument`: If the value is not a boolean
 
 # Examples
 ```julia
-julia> validate_optimization_direction(true)
-true
-
-julia> validate_optimization_direction(false)
-false
+validate_optimization_direction(true)
+validate_optimization_direction(false)
 ```
 """
 function validate_optimization_direction(minimize::Bool)
@@ -318,21 +302,16 @@ ADNLPModels.jl accepts both types (to be constructed internally) and pre-constru
 - `backend`: The backend to validate (any value accepted for dispatch)
 
 # Throws
-- `IncorrectArgument`: If the backend is not `nothing`, a `Type{<:ADBackend}`, or an `ADBackend` instance
+- `CTBase.Exceptions.IncorrectArgument`: If the backend is not `nothing`, a `Type{<:ADBackend}`, or an `ADBackend` instance
 
 # Examples
 ```julia
-julia> validate_backend_override(nothing)
-nothing
+validate_backend_override(nothing)
+validate_backend_override(ADNLPModels.ForwardDiffADGradient)
+validate_backend_override(ADNLPModels.ForwardDiffADGradient())
 
-julia> validate_backend_override(ForwardDiffADGradient)  # Type
-ForwardDiffADGradient
-
-julia> validate_backend_override(ForwardDiffADGradient())  # Instance
-ForwardDiffADGradient()
-
-julia> validate_backend_override("invalid")
-ERROR: Exceptions.IncorrectArgument: Backend override must be nothing, a Type{<:ADBackend}, or an ADBackend instance
+# Throws CTBase.Exceptions.IncorrectArgument
+validate_backend_override("invalid")
 ```
 """
 function validate_backend_override(backend)

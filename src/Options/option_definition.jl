@@ -1,6 +1,4 @@
-# ============================================================================
 # Unified option definition and schema
-# ============================================================================
 
 """
 $(TYPEDEF)
@@ -39,33 +37,23 @@ The constructor performs the following validations:
 2. Runs the `validator` on the `default` value (if both are provided)
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
+```julia
+def = OptionDefinition(
+    name = :max_iter,
+    type = Int,
+    default = 100,
+    description = "Maximum number of iterations",
+    aliases = (:max, :maxiter),
+    validator = x -> x > 0 || throw(ArgumentError("\$x must be positive"))
+)
 
-julia> def = OptionDefinition(
-           name = :max_iter,
-           type = Int,
-           default = 100,
-           description = "Maximum number of iterations",
-           aliases = (:max, :maxiter),
-           validator = x -> x > 0 || throw(ArgumentError("\$x must be positive"))
-       )
-max_iter (max, maxiter) :: Int64
-  default: 100
-  description: Maximum number of iterations
-
-julia> def.name
-:max_iter
-
-julia> def.aliases
-(:max, :maxiter)
-
-julia> all_names(def)
-(:max_iter, :max, :maxiter)
+def.name      # :max_iter
+def.aliases   # (:max, :maxiter)
+all_names(def) # (:max_iter, :max, :maxiter)
 ```
 
 # Throws
-- `Exceptions.IncorrectArgument`: If the default value does not match the declared type
+- `CTBase.Exceptions.IncorrectArgument`: If the default value does not match the declared type
 - `Exception`: If the validator function fails when applied to the default value
 
 See also: [`all_names`](@ref), [`extract_option`](@ref), [`extract_options`](@ref)
@@ -158,9 +146,7 @@ function OptionDefinition(;
     )
 end
 
-# =============================================================================
 # OptionDefinition getters and introspection
-# =============================================================================
 
 """
 $(TYPEDSIGNATURES)
@@ -171,14 +157,10 @@ Get the primary name of this option definition.
 - `Symbol`: The option name
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                              description="Maximum iterations")
-
-julia> name(def)
-:max_iter
+```julia
+def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                      description="Maximum iterations")
+name(def)  # :max_iter
 ```
 
 See also: [`type`](@ref), [`default`](@ref), [`aliases`](@ref)
@@ -194,14 +176,10 @@ Get the expected type for this option definition.
 - `Type`: The expected type
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                              description="Maximum iterations")
-
-julia> type(def)
-Int64
+```julia
+def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                      description="Maximum iterations")
+type(def)  # Int
 ```
 
 See also: [`name`](@ref), [`default`](@ref)
@@ -217,14 +195,10 @@ Get the default value for this option definition.
 - The default value
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                              description="Maximum iterations")
-
-julia> default(def)
-100
+```julia
+def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                      description="Maximum iterations")
+default(def)  # 100
 ```
 
 See also: [`name`](@ref), [`type`](@ref), [`is_required`](@ref)
@@ -240,14 +214,10 @@ Get the description for this option definition.
 - `String`: The option description
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                              description="Maximum iterations")
-
-julia> description(def)
-"Maximum iterations"
+```julia
+def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                      description="Maximum iterations")
+description(def)  # "Maximum iterations"
 ```
 
 See also: [`name`](@ref), [`type`](@ref)
@@ -263,16 +233,12 @@ Get the validator function for this option definition.
 - `Union{Function, Nothing}`: The validator function or `nothing`
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> validator_fn = x -> x > 0
-julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                              description="Maximum iterations",
-                              validator=validator_fn)
-
-julia> validator(def) === validator_fn
-true
+```julia
+validator_fn = x -> x > 0
+def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                      description="Maximum iterations",
+                      validator=validator_fn)
+validator(def) === validator_fn  # true
 ```
 
 See also: [`has_validator`](@ref), [`name`](@ref)
@@ -288,15 +254,11 @@ Get the aliases for this option definition.
 - `Tuple{Vararg{Symbol}}`: Tuple of alias names
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                              description="Maximum iterations",
-                              aliases=(:max, :maxiter))
-
-julia> aliases(def)
-(:max, :maxiter)
+```julia
+def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                      description="Maximum iterations",
+                      aliases=(:max, :maxiter))
+aliases(def)  # (:max, :maxiter)
 ```
 
 See also: [`all_names`](@ref), [`name`](@ref)
@@ -314,14 +276,10 @@ Returns `true` when the default value is `NotProvided`.
 - `Bool`: `true` if the option is required
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> def = OptionDefinition(name=:input, type=String, default=NotProvided,
-                              description="Input file")
-
-julia> is_required(def)
-true
+```julia
+def = OptionDefinition(name=:input, type=String, default=NotProvided,
+                      description="Input file")
+is_required(def)  # true
 ```
 
 See also: [`has_default`](@ref), [`default`](@ref)
@@ -339,14 +297,10 @@ Returns `false` when the default value is `NotProvided`.
 - `Bool`: `true` if a default value is defined
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                              description="Maximum iterations")
-
-julia> has_default(def)
-true
+```julia
+def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                      description="Maximum iterations")
+has_default(def)  # true
 ```
 
 See also: [`is_required`](@ref), [`default`](@ref)
@@ -362,15 +316,11 @@ Check if this option definition has a validator function.
 - `Bool`: `true` if a validator is defined
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                              description="Maximum iterations",
-                              validator=x -> x > 0)
-
-julia> has_validator(def)
-true
+```julia
+def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                      description="Maximum iterations",
+                      validator=x -> x > 0)
+has_validator(def)  # true
 ```
 
 See also: [`validator`](@ref), [`name`](@ref)
@@ -393,22 +343,15 @@ using all possible names (primary name and all aliases).
 - `Tuple{Vararg{Symbol}}`: Tuple containing the primary name followed by all aliases
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> def = OptionDefinition(
-           name = :grid_size,
-           type = Int,
-           default = 100,
-           description = "Grid size",
-           aliases = (:n, :size)
-       )
-grid_size (n, size) :: Int64
-  default: 100
-  description: Grid size
-
-julia> all_names(def)
-(:grid_size, :n, :size)
+```julia
+def = OptionDefinition(
+    name = :grid_size,
+    type = Int,
+    default = 100,
+    description = "Grid size",
+    aliases = (:n, :size)
+)
+all_names(def)  # (:grid_size, :n, :size)
 ```
 
 See also: [`OptionDefinition`](@ref), [`extract_option`](@ref)
@@ -429,24 +372,18 @@ they are shown in parentheses after the primary name.
 - `def::OptionDefinition`: The option definition to display
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> def = OptionDefinition(
-           name = :max_iter,
-           type = Int,
-           default = 100,
-           description = "Maximum iterations",
-           aliases = (:max, :maxiter)
-       )
-max_iter (max, maxiter) :: Int64
-  default: 100
-  description: Maximum iterations
-
-julia> println(def)
-max_iter (max, maxiter) :: Int64
-  default: 100
-  description: Maximum iterations
+```julia
+def = OptionDefinition(
+    name = :max_iter,
+    type = Int,
+    default = 100,
+    description = "Maximum iterations",
+    aliases = (:max, :maxiter)
+)
+println(def)
+# max_iter (max, maxiter) :: Int64
+#   default: 100
+#   description: Maximum iterations
 ```
 
 See also: [`OptionDefinition`](@ref)

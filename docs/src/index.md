@@ -45,7 +45,7 @@ It provides the **solution layer** for optimal control problems:
 | `Optimization` | Abstract problem types, builder pattern, build/solve API |
 | `Modelers` | Modelers.ADNLP, Modelers.Exa — NLP backend adapters |
 | `DOCP` | DiscretizedModel — concrete problem type |
-| `Solvers` | Solvers.Ipopt, Solvers.MadNLP, Solvers.Knitro — NLP solver wrappers |
+| `Solvers` | Solvers.Ipopt, Solvers.MadNLP, Solvers.MadNCL, Solvers.Knitro — NLP solver wrappers |
 
 ## Documentation
 
@@ -54,6 +54,7 @@ It provides the **solution layer** for optimal control problems:
 - [Architecture](@ref) — module overview, type hierarchy, data flow
 - [Options System](@ref) — OptionDefinition, OptionValue, extraction, validation modes
 - [Implementing a Strategy](@ref) — two-level contract, metadata, StrategyOptions, registry
+- [Strategy Parameters](@ref) — CPU/GPU parameters, type-based specialization, parameterized metadata
 - [Implementing a Solver](@ref) — tag dispatch, extension pattern, CommonSolve integration
 - [Implementing a Modeler](@ref) — callable contracts, builder interaction
 - [Implementing an Optimization Problem](@ref) — builder pattern, DOCP example

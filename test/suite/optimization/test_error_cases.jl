@@ -2,7 +2,6 @@ module TestOptimizationErrorCases
 
 import Test
 import CTBase.Exceptions
-import CTSolvers
 import NLPModels
 import SolverCore
 import ADNLPModels

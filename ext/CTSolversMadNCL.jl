@@ -17,6 +17,9 @@ import MadNLP
 import NLPModels
 import SolverCore
 
+# Import parameter types
+using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter
+
 # ============================================================================
 # Helper Functions
 # ============================================================================
@@ -28,6 +31,39 @@ Extract the base floating-point type from NCLOptions type parameter.
 """
 base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseType
 
+"""
+$(TYPEDSIGNATURES)
+
+Return the default linear solver for CPU execution.
+
+Returns `MadNLP.MumpsSolver` which is the standard CPU linear solver.
+"""
+function __madncl_default_linear_solver(::Type{CPU})
+    return MadNLP.MumpsSolver
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the default linear solver for GPU execution.
+
+Returns `MadNLPGPU.CUDSSSolver` if MadNLPGPU is loaded, otherwise throws an error.
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: If MadNLPGPU is not loaded
+"""
+function __madncl_default_linear_solver(::Type{GPU})
+    if !isdefined(Main, :MadNLPGPU)
+        throw(Exceptions.ExtensionError(
+            :MadNLPGPU;
+            message="to use GPU linear solver with MadNCL",
+            feature="GPU computation with MadNCL",
+            context="Load MadNLPGPU extension first: using MadNLPGPU"
+        ))
+    end
+    return Main.MadNLPGPU.CUDSSSolver
+end
+
 # ============================================================================
 # Metadata Definition
 # ============================================================================
@@ -36,8 +72,12 @@ base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseT
 $(TYPEDSIGNATURES)
 
 Return metadata defining MadNCL options and their specifications.
+
+The metadata is parameterized by the execution backend (CPU or GPU).
+For GPU execution, the default linear solver is automatically set to
+`MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`.
 """
-function Strategies.metadata(::Type{Solvers.MadNCL})
+function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrategyParameter}
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:max_iter,
@@ -75,8 +115,8 @@ function Strategies.metadata(::Type{Solvers.MadNCL})
         Strategies.OptionDefinition(;
             name=:linear_solver,
             type=Type{<:MadNLP.AbstractLinearSolver},
-            default=MadNLP.MumpsSolver,
-            description="Linear solver implementation used inside MadNCL"
+            default=__madncl_default_linear_solver(P),
+            description="Linear solver implementation used inside MadNCL. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU."
         ),
         # ---- Termination options ----
         Strategies.OptionDefinition(;
@@ -299,7 +339,7 @@ Available fields:
 end
 
 # ============================================================================
-# Constructor Implementation
+# Constructor implementation
 # ============================================================================
 
 """
@@ -308,29 +348,37 @@ $(TYPEDSIGNATURES)
 Build a MadNCL with validated options.
 
 # Arguments
+- `tag::Solvers.MadNCLTag`: Tag for dispatch
+- `parameter::AbstractStrategyParameter`: Execution parameter (CPU or GPU)
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Options to pass to the MadNCL constructor
 
-# Examples
-```julia-repl
-# Strict mode (default) - rejects unknown options
-julia> solver = build_madncl_solver(MadNCLTag; max_iter=1000)
-MadNCL(...)
+# Example
 
-# Permissive mode - accepts unknown options with warning
-julia> solver = build_madncl_solver(MadNCLTag; max_iter=1000, custom_option=123; mode=:permissive)
-MadNCL(...)  # with warning about custom_option
+```julia
+# Conceptual usage
+solver_cpu = build_madncl_solver(MadNCLTag(), CPU(); max_iter=1000)
+solver_gpu = build_madncl_solver(MadNCLTag(), GPU(); max_iter=1000)  # requires MadNLPGPU
 ```
 """
-function Solvers.build_madncl_solver(::Solvers.MadNCLTag; mode::Symbol=:strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.MadNCL; mode=mode, kwargs...)
-    return Solvers.MadNCL(opts)
+function Solvers.build_madncl_solver(
+    ::Type{Solvers.MadNCLTag},
+    parameter::Type{<:AbstractStrategyParameter};
+    mode::Symbol=:strict,
+    kwargs...
+)
+    opts = Strategies.build_strategy_options(
+        Solvers.MadNCL{parameter};
+        mode=mode,
+        kwargs...
+    )
+    return Solvers.MadNCL{parameter}(opts)
 end
 
 # ============================================================================
-# Callable Interface with Display Handling
+# Callable interface with display handling
 # ============================================================================
 
 """
@@ -365,7 +413,7 @@ function (solver::Solvers.MadNCL)(
 end
 
 # ============================================================================
-# Backend Solver Interface
+# Backend solver interface
 # ============================================================================
 
 """
@@ -385,7 +433,7 @@ function solve_with_madncl(
 end
 
 # ============================================================================
-# Solver Information Extraction
+# Solver information extraction
 # ============================================================================
 
 """
@@ -393,31 +441,24 @@ $(TYPEDSIGNATURES)
 
 Extract solver information from MadNCL execution statistics.
 
-This method handles MadNCL-specific behavior:
-- Objective sign depends on whether the problem is a minimization or maximization
-- Status codes are MadNLP-specific (e.g., `:SOLVE_SUCCEEDED`, `:SOLVED_TO_ACCEPTABLE_LEVEL`)
-- Uses the same field mapping as MadNLP since NCLStats has compatible structure
+Uses the same field mapping as MadNLP since NCLStats has compatible structure.
 
 # Arguments
 
 - `nlp_solution::MadNCL.NCLStats`: MadNCL execution statistics
 
 # Returns
-- `objective`: The objective value (MadNCL returns correct sign, no flip needed)
-- `iterations`: Number of iterations
-- `constraints_violation`: Constraint violation measure
-- `message`: Solver name ("MadNCL")
-- `status`: Solver status as a Symbol
-- `successful`: Whether the solve was successful
-
-# Notes
-Unlike MadNLP, MadNCL correctly handles maximization problems and returns the
-objective with the correct sign. Therefore, we do NOT flip the sign for maximization.
+A 6-element tuple `(objective, iterations, constraints_violation, message, status, successful)`:
+- `objective::Float64`: The final objective value
+- `iterations::Int`: Number of iterations performed
+- `constraints_violation::Float64`: Maximum constraint violation (primal feasibility)
+- `message::String`: Solver identifier string ("MadNCL")
+- `status::Symbol`: Termination status from SolverCore
+- `successful::Bool`: Whether the solver converged successfully
 """
 function Optimization.extract_solver_infos(
     nlp_solution::MadNCL.NCLStats,
 )
-    # MadNCL returns the correct objective sign (no bug like MadNLP)
     objective = nlp_solution.objective
     iterations = nlp_solution.iter
     constraints_violation = nlp_solution.primal_feas

@@ -1,6 +1,4 @@
-# ============================================================================
 # Option value representation with provenance
-# ============================================================================
 
 """
 $(TYPEDEF)
@@ -18,21 +16,14 @@ The `source` field tracks the provenance of the option value:
 - `:computed`: Value was computed/derived from other options
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> opt = OptionValue(100, :user)
-100 (user)
-
-julia> opt.value
-100
-
-julia> opt.source
-:user
+```julia
+opt = OptionValue(100, :user)
+opt.value  # 100
+opt.source  # :user
 ```
 
 # Throws
-- `Exceptions.IncorrectArgument`: If source is not one of `:default`, `:user`, or `:computed`
+- `CTBase.Exceptions.IncorrectArgument`: If source is not one of `:default`, `:user`, or `:computed`
 """
 struct OptionValue{T}
     value::T
@@ -64,18 +55,13 @@ Create an `OptionValue` defaulting to `:user` source.
 - `OptionValue{T}`: Option value with `:user` source.
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> OptionValue(42)
-42 (user)
+```julia
+OptionValue(42)  # Equivalent to OptionValue(42, :user)
 ```
 """
 OptionValue(value) = OptionValue(value, :user)
 
-# =============================================================================
 # OptionValue getters and introspection
-# =============================================================================
 
 """
 $(TYPEDSIGNATURES)
@@ -86,13 +72,9 @@ Get the value from this option value wrapper.
 - The stored option value
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> opt = OptionValue(100, :user)
-
-julia> value(opt)
-100
+```julia
+opt = OptionValue(100, :user)
+value(opt)  # 100
 ```
 
 See also: [`source`](@ref), [`is_user`](@ref)
@@ -108,13 +90,9 @@ Get the source provenance of this option value.
 - `Symbol`: `:default`, `:user`, or `:computed`
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> opt = OptionValue(100, :user)
-
-julia> source(opt)
-:user
+```julia
+opt = OptionValue(100, :user)
+source(opt)  # :user
 ```
 
 See also: [`value`](@ref), [`is_user`](@ref)
@@ -130,13 +108,9 @@ Check if this option value was explicitly provided by the user.
 - `Bool`: `true` if the source is `:user`
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> opt = OptionValue(100, :user)
-
-julia> is_user(opt)
-true
+```julia
+opt = OptionValue(100, :user)
+is_user(opt)  # true
 ```
 
 See also: [`is_default`](@ref), [`is_computed`](@ref), [`source`](@ref)
@@ -152,13 +126,9 @@ Check if this option value is using its default.
 - `Bool`: `true` if the source is `:default`
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> opt = OptionValue(100, :default)
-
-julia> is_default(opt)
-true
+```julia
+opt = OptionValue(100, :default)
+is_default(opt)  # true
 ```
 
 See also: [`is_user`](@ref), [`is_computed`](@ref), [`source`](@ref)
@@ -174,13 +144,9 @@ Check if this option value was computed from other options.
 - `Bool`: `true` if the source is `:computed`
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> opt = OptionValue(100, :computed)
-
-julia> is_computed(opt)
-true
+```julia
+opt = OptionValue(100, :computed)
+is_computed(opt)  # true
 ```
 
 See also: [`is_user`](@ref), [`is_default`](@ref), [`source`](@ref)
@@ -193,11 +159,8 @@ $(TYPEDSIGNATURES)
 Display the option value in the format "value (source)".
 
 # Example
-```julia-repl
-julia> using CTSolvers.Options
-
-julia> println(OptionValue(3.14, :default))
-3.14 (default)
+```julia
+println(OptionValue(3.14, :default))  # "3.14 (default)"
 ```
 """
 Base.show(io::IO, opt::OptionValue) = print(io, "$(opt.value) ($(opt.source))")

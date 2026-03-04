@@ -15,8 +15,11 @@ import NLPModelsIpopt
 import NLPModels
 import SolverCore
 
+# Import parameter types
+using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter, validate_supported_parameter
+
 # ============================================================================
-# Metadata Definition
+# Metadata definition
 # ============================================================================
 
 """
@@ -24,10 +27,12 @@ $(TYPEDSIGNATURES)
 
 Return metadata defining Ipopt options and their specifications.
 """
-function Strategies.metadata(::Type{Solvers.Ipopt})
+function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:AbstractStrategyParameter}
+    # Validate parameter support
+    validate_supported_parameter(Solvers.Ipopt, P)
     return Strategies.StrategyMetadata(
         # ====================================================================
-        # TERMINATION OPTIONS
+        # Termination options
         # ====================================================================
         
         Strategies.OptionDefinition(;
@@ -154,7 +159,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt})
         ),
 
         # ====================================================================
-        # DEBUGGING OPTIONS
+        # Debugging options
         # ====================================================================
 
         Strategies.OptionDefinition(;
@@ -196,7 +201,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt})
         ),
 
         # ====================================================================
-        # HESSIAN OPTIONS
+        # Hessian options
         # ====================================================================
 
         Strategies.OptionDefinition(;
@@ -226,7 +231,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt})
         ),
 
         # ====================================================================
-        # WARM START OPTIONS
+        # Warm start options
         # ====================================================================
 
         Strategies.OptionDefinition(;
@@ -268,7 +273,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt})
         ),
 
         # ====================================================================
-        # ALGORITHM OPTIONS
+        # Algorithm options
         # ====================================================================
         
         Strategies.OptionDefinition(;
@@ -364,7 +369,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt})
         ),
         
         # ====================================================================
-        # OUTPUT OPTIONS
+        # Output options
         # ====================================================================
         
         Strategies.OptionDefinition(;
@@ -439,8 +444,9 @@ function Strategies.metadata(::Type{Solvers.Ipopt})
     )
 end
 
+
 # ============================================================================
-# Constructor Implementation
+# Constructor implementation
 # ============================================================================
 
 """
@@ -454,24 +460,28 @@ Build an Ipopt with validated options.
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Options to pass to the Ipopt constructor
 
-# Examples
-```julia-repl
-# Strict mode (default) - rejects unknown options
-julia> solver = build_ipopt_solver(IpoptTag; max_iter=1000)
-Ipopt(...)
+# Example
 
-# Permissive mode - accepts unknown options with warning
-julia> solver = build_ipopt_solver(IpoptTag; max_iter=1000, custom_option=123; mode=:permissive)
-Ipopt(...)  # with warning about custom_option
+```julia
+# Conceptual usage
+solver = build_ipopt_solver(IpoptTag; max_iter=1000)
+solver_permissive = build_ipopt_solver(IpoptTag; max_iter=1000, custom_option=123; mode=:permissive)
 ```
+
+See also: [`Solvers.Ipopt`](@ref), [`Strategies.build_strategy_options`](@ref)
 """
-function Solvers.build_ipopt_solver(::Solvers.IpoptTag; mode::Symbol=:strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.Ipopt; mode=mode, kwargs...)
-    return Solvers.Ipopt(opts)
+function Solvers.build_ipopt_solver(
+    ::Type{Solvers.IpoptTag},
+    parameter::Type{<:AbstractStrategyParameter};
+    mode::Symbol=:strict,
+    kwargs...
+)
+    opts = Strategies.build_strategy_options(Solvers.Ipopt{parameter}; mode=mode, kwargs...)
+    return Solvers.Ipopt{parameter}(opts)
 end
 
 # ============================================================================
-# Callable Interface with Display Handling
+# Callable interface with display handling
 # ============================================================================
 
 """
@@ -496,7 +506,7 @@ function (solver::Solvers.Ipopt)(
 end
 
 # ============================================================================
-# Backend Solver Interface
+# Backend solver interface
 # ============================================================================
 
 """
@@ -504,7 +514,16 @@ $(TYPEDSIGNATURES)
 
 Backend interface for Ipopt solver.
 
-Calls NLPModelsIpopt to solve the NLP problem.
+Solves the NLP problem using NLPModelsIpopt backend.
+
+# Arguments
+- `nlp::NLPModels.AbstractNLPModel`: The NLP problem to solve
+- `options...`: Ipopt options as keyword arguments
+
+# Returns
+- `SolverCore.GenericExecutionStats`: Solver execution statistics
+
+See also: [`Solvers.Ipopt`](@ref), [`NLPModelsIpopt.ipopt`](@ref)
 """
 function solve_with_ipopt(
     nlp::NLPModels.AbstractNLPModel;

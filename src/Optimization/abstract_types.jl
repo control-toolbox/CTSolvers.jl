@@ -1,10 +1,6 @@
-# Abstract Optimization Types
+# Optimization abstract types
 #
 # General abstract types for optimization problems.
-# These types are independent of specific optimal control problem implementations.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-26
 
 """
 $(TYPEDEF)
@@ -19,11 +15,11 @@ Subtypes are typically paired with AbstractModelBuilder and AbstractSolutionBuil
 implementations that know how to construct and interpret NLP back-end models and solutions.
 
 # Example
-```julia-repl
-julia> struct MyOptimizationProblem <: AbstractOptimizationProblem
-           objective::Function
-           constraints::Vector{Function}
-       end
+```julia
+struct MyOptimizationProblem <: AbstractOptimizationProblem
+    objective::Function
+    constraints::Vector{Function}
+end
 ```
 """
 abstract type AbstractOptimizationProblem end

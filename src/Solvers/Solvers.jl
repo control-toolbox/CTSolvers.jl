@@ -40,20 +40,20 @@ See also: [`AbstractNLPSolver`](@ref), [`Solvers.Ipopt`](@ref)
 """
 module Solvers
 
-# Importing to avoid namespace pollution
+# Imports
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES, TYPEDFIELDS
 import NLPModels
 import SolverCore
 import CommonSolve
 import CTBase.Exceptions
 
-# Using CTSolvers modules to get access to the api
+# CTSolvers modules
 using ..Strategies
 using ..Options
 using ..Optimization
 using ..Modelers
 
-# Tag Dispatch Infrastructure
+# Tag dispatch infrastructure
 """
     AbstractTag
 

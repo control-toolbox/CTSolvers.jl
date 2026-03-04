@@ -1,10 +1,7 @@
 module TestRealProblems
 
 import Test
-import CTSolvers
-import CTBase
 import NLPModels
-import SolverCore
 import ADNLPModels
 import ExaModels
 

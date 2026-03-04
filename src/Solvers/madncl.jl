@@ -1,5 +1,5 @@
 # ============================================================================
-# Tag Dispatch Infrastructure
+# Tag dispatch infrastructure
 # ============================================================================
 
 """
@@ -10,7 +10,7 @@ Tag type for MadNCL-specific implementation dispatch.
 struct MadNCLTag <: AbstractTag end
 
 # ============================================================================
-# Solver Type Definition
+# Solver type definition
 # ============================================================================
 
 """
@@ -21,6 +21,12 @@ NCL (Non-Convex Lagrangian) variant of MadNLP solver.
 MadNCL extends MadNLP with specialized handling for non-convex problems
 using a modified Lagrangian approach, providing improved convergence for
 challenging nonlinear optimization problems.
+
+## Parameterized Types
+
+The solver supports parameterization for execution backend:
+- `MadNCL{CPU}`: CPU execution (default)
+- `MadNCL{GPU}`: GPU execution (requires CUDA.jl)
 
 # Fields
 
@@ -34,42 +40,35 @@ Load the extension to access option definitions and documentation:
 using MadNCL, MadNLP
 ```
 
-# Examples
+# Example
 
 ```julia
-# Load the extension first
+# Conceptual usage pattern (requires MadNCL, MadNLP extensions)
 using MadNCL, MadNLP
-
-# Create solver with default options
-solver = Solvers.MadNCL()
-
-# Create solver with custom options
 solver = Solvers.MadNCL(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
-
-# Solve an NLP problem
-using ADNLPModels
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
 stats = solver(nlp, display=true)
 ```
 
 # Extension Required
 
-This solver requires the `MadNCL` and `MadNLP` packages:
+This solver requires the `MadNCL` package:
 ```julia
 using MadNCL, MadNLP
 ```
 
 # Implementation Notes
 
-- Implements the `AbstractStrategy` contract via `Strategies.id()`
-- Metadata and constructor implementation provided by CTSolversMadNCL extension
+- Implements the `AbstractStrategy` contract via `Strategies.id`, `Strategies.metadata`, and `Strategies.options`
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::Solvers.MadNCL)(nlp; display=true)` provided by extension
-- Specialized for non-convex optimization problems
+- Callable interface: `(solver::MadNCL{P})(nlp; display=true)`
+- Extends MadNLP with NCL-specific optimizations
+- Default backend is automatically selected based on the parameter type
+- **GPU linear solver**: When using `MadNCL{GPU}`, the linear solver automatically defaults to `MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`. This ensures compatibility with GPU execution and avoids attempting to use CPU-only solvers on CUDA backends.
 
-See also: [`AbstractNLPSolver`](@ref), [`Solvers.MadNLP`](@ref), [`Solvers.Ipopt`](@ref)
+See also: [`AbstractNLPSolver`](@ref), [`MadNLP`](@ref), [`Ipopt`](@ref), [`CPU`](@ref), [`GPU`](@ref)
 """
-struct MadNCL <: AbstractNLPSolver
+struct MadNCL{P<:AbstractStrategyParameter} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -85,14 +84,42 @@ Return the unique identifier for Solvers.MadNCL.
 """
 Strategies.id(::Type{<:Solvers.MadNCL}) = :madncl
 
+"""
+$(TYPEDSIGNATURES)
+
+Default parameter type for MadNCL when not explicitly specified.
+
+Returns `CPU` as the default execution parameter.
+
+See also: [`MadNCL`](@ref), [`CPU`](@ref)
+"""
+Strategies._default_parameter(::Type{<:Solvers.MadNCL}) = CPU
+
+"""
+$(TYPEDSIGNATURES)
+
+Supported parameter types for MadNCL.
+
+Returns a tuple of parameter types that this strategy accepts. MadNCL
+supports both CPU and GPU execution.
+
+# Implementation Notes
+
+This method is part of the `AbstractStrategy` parameter contract and must be
+implemented by all parameterized strategies.
+
+See also: [`MadNCL`](@ref), [`CPU`](@ref), [`GPU`](@ref), [`_default_parameter`](@ref)
+"""
+Strategies._supported_parameters(::Type{<:Solvers.MadNCL}) = (CPU, GPU)
+
 # ============================================================================
-# Constructor with Tag Dispatch
+# Constructor with tag dispatch
 # ============================================================================
 
 """
 $(TYPEDSIGNATURES)
 
-Create a Solvers.MadNCL with specified options.
+Create a Solvers.MadNCL with specified options (defaults to CPU).
 
 Requires the CTSolversMadNCL extension to be loaded.
 
@@ -102,22 +129,54 @@ Requires the CTSolversMadNCL extension to be loaded.
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Solver options (see extension documentation for available options)
 
-# Examples
+# Example
+
 ```julia
+# Conceptual usage (requires MadNCL, MadNLP extensions)
 using MadNCL, MadNLP
-
-# Strict mode (default) - rejects unknown options
 solver = Solvers.MadNCL(max_iter=1000, tol=1e-6)
-
-# Permissive mode - accepts unknown options with warning
-solver = Solvers.MadNCL(max_iter=1000, custom_option=123; mode=:permissive)
+solver_permissive = Solvers.MadNCL(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: If the MadNCL extension is not loaded
+- `CTBase.Exceptions.ExtensionError`: If the MadNCL extension is not loaded
+
+See also: [`MadNCL`](@ref), [`build_madncl_solver`](@ref)
 """
 function Solvers.MadNCL(; mode::Symbol=:strict, kwargs...)
-    return build_madncl_solver(MadNCLTag(); mode=mode, kwargs...)
+    return build_madncl_solver(MadNCLTag, Strategies._default_parameter(Solvers.MadNCL); mode=mode, kwargs...)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Create a parameterized Solvers.MadNCL with specified options.
+
+Requires the CTSolversMadNCL extension to be loaded.
+
+# Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
+- `kwargs...`: Solver options (see extension documentation for available options)
+
+# Example
+
+```julia
+# Conceptual usage (requires MadNCL, MadNLP extensions)
+using MadNCL, MadNLP
+solver_cpu = Solvers.MadNCL{CPU}(max_iter=1000, tol=1e-6)
+solver_gpu = Solvers.MadNCL{GPU}(max_iter=1000, tol=1e-6)  # requires CUDA.jl
+```
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: If the MadNCL extension is not loaded
+- `CTBase.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
+
+See also: [`MadNCL`](@ref), [`CPU`](@ref), [`GPU`](@ref)
+"""
+function Solvers.MadNCL{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
+    return build_madncl_solver(MadNCLTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -127,9 +186,11 @@ Stub function that throws ExtensionError if CTSolversMadNCL extension is not loa
 Real implementation provided by the extension.
 
 # Throws
-- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+- `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
+
+See also: [`MadNCL`](@ref), [`Strategies.metadata`](@ref)
 """
-function build_madncl_solver(::AbstractTag; kwargs...)
+function build_madncl_solver(::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...)
     throw(Exceptions.ExtensionError(
         :MadNCL, :MadNLP;
         message="to create MadNCL, access options, and solve problems",
@@ -144,14 +205,40 @@ $(TYPEDSIGNATURES)
 Stub function that throws ExtensionError if CTSolversMadNCL extension is not loaded.
 Real metadata implementation provided by the extension.
 
+This stub is for parameterized types `MadNCL{P}` where `P <: AbstractStrategyParameter`.
+
 # Throws
-- `Strategies.Exceptions.ExtensionError`: Always thrown by this stub implementation
+- `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
+
+See also: [`MadNCL`](@ref), [`Strategies.StrategyMetadata`](@ref)
 """
-function Strategies.metadata(::Type{<:Solvers.MadNCL})
+function Strategies.metadata(::Type{<:Solvers.MadNCL{P}}) where {P<:AbstractStrategyParameter}
     throw(Exceptions.ExtensionError(
         :MadNCL, :MadNLP;
-        message="to access MadNCL options metadata",
+        message="to access MadNCL{$P} options metadata",
         feature="MadNCL metadata",
         context="Load MadNCL extension first: using MadNCL, MadNLP"
     ))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Fallback for non-parameterized `MadNCL` type that delegates to `MadNCL{CPU}`.
+
+This provides backward compatibility and a sensible default when the parameter
+is not specified. The call will delegate to `metadata(MadNCL{CPU})`, which will
+either use the extension implementation (if loaded) or throw an ExtensionError
+(if not loaded).
+
+# Returns
+- `StrategyMetadata`: Metadata for `MadNCL{CPU}` (if extension loaded)
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: If extension not loaded (via delegation)
+
+See also: [`MadNCL`](@ref), [`Strategies.metadata`](@ref)
+"""
+function Strategies.metadata(::Type{Solvers.MadNCL})
+    return Strategies.metadata(Solvers.MadNCL{Strategies._default_parameter(Solvers.MadNCL)})
 end

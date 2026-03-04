@@ -4,12 +4,14 @@
 #
 # See test/README.md for details.
 #
+# ⚠️ Prerequisites:
+# The Coverage package must be installed in your base Julia environment:
+#   julia --project=@v1.12 -e 'using Pkg; Pkg.add("Coverage")'
+#
 # Usage:
 #   julia --project=@. -e 'using Pkg; Pkg.test("CTSolvers"; coverage=true); include("test/coverage.jl")'
 #
 # ==============================================================================
-
-pushfirst!(LOAD_PATH, @__DIR__)
 using Coverage
 using CTBase
-CTBase.postprocess_coverage(; root_dir=dirname(@__DIR__))
+CTBase.postprocess_coverage(; root_dir=dirname(@__DIR__), dest_dir=".coverage")

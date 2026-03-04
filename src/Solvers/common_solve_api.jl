@@ -32,17 +32,15 @@ High-level solve: Build NLP model, solve it, and build solution.
 
 # Example
 ```julia
-using CTSolvers
-
-# Define problem, initial guess, modeler, solver
-problem = ...
-x0 = ...
-modeler = Modelers.ADNLP()
-solver = Solvers.Ipopt(max_iter=1000)
-
-# Solve
-solution = solve(problem, x0, modeler, solver, display=true)
+# Conceptual usage pattern
+# problem = ...
+# x0 = ...
+# modeler = Modelers.ADNLP()
+# solver = Solvers.Ipopt(max_iter=1000)
+# solution = solve(problem, x0, modeler, solver, display=true)
 ```
+
+See also: [`Optimization.build_model`](@ref), [`Optimization.build_solution`](@ref)
 """
 function CommonSolve.solve(
     problem::Optimization.AbstractOptimizationProblem,
@@ -78,12 +76,13 @@ Mid-level solve: Solve NLP problem directly.
 
 # Example
 ```julia
-using ADNLPModels
-
-nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-solver = Solvers.Ipopt()
-stats = solve(nlp, solver, display=false)
+# Conceptual usage pattern
+# nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
+# solver = Solvers.Ipopt()
+# stats = solve(nlp, solver, display=false)
 ```
+
+See also: [`AbstractNLPSolver`](@ref)
 """
 function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel,
@@ -108,6 +107,8 @@ that may be compatible with the solver's callable interface.
 
 # Returns
 - Result from solver (type depends on solver implementation)
+
+See also: [`CommonSolve.solve`](@ref), [`AbstractNLPSolver`](@ref)
 """
 function CommonSolve.solve(
     nlp, 

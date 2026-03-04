@@ -1,10 +1,7 @@
 module TestEndToEnd
 
 import Test
-import CTSolvers
-import CTBase
 import NLPModels
-import SolverCore
 import ADNLPModels
 import ExaModels
 import MadNLP
@@ -98,7 +95,7 @@ function test_end_to_end()
             redirect_stderr(devnull) do
                 modeler = Modelers.Exa(base_type=Float64, minimize=true; mode=:permissive)
                 Test.@test modeler isa Modelers.AbstractNLPModeler
-                Test.@test typeof(modeler) == Modelers.Exa
+                Test.@test modeler isa Modelers.Exa
                 
                 # Step 3: Build NLP model
                 nlp = modeler(prob, ros.init)

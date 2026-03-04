@@ -2,7 +2,6 @@ module TestCoverageOptions
 
 import Test
 import CTBase.Exceptions
-import CTSolvers
 import CTSolvers.Options
 import CTSolvers.Strategies
 import CTSolvers.Modelers

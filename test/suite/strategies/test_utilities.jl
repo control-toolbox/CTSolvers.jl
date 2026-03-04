@@ -1,9 +1,9 @@
 module TestStrategiesUtilities
 
 import Test
-import CTSolvers
 import CTSolvers.Strategies
-import CTSolvers.Options: OptionDefinition
+import CTSolvers.Options
+
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
@@ -20,21 +20,21 @@ end
 Strategies.id(::Type{TestUtilStrategy}) = :test_util
 
 Strategies.metadata(::Type{TestUtilStrategy}) = Strategies.StrategyMetadata(
-    OptionDefinition(
+    Options.OptionDefinition(
         name = :max_iter,
         type = Int,
         default = 100,
         description = "Maximum iterations",
         aliases = (:max, :maxiter)
     ),
-    OptionDefinition(
+    Options.OptionDefinition(
         name = :tolerance,
         type = Float64,
         default = 1e-6,
         description = "Convergence tolerance",
         aliases = (:tol,)
     ),
-    OptionDefinition(
+    Options.OptionDefinition(
         name = :verbose,
         type = Bool,
         default = false,

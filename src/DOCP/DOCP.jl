@@ -1,28 +1,35 @@
-# DOCP Module
-#
-# This module provides the DiscretizedModel type and implements
-# the AbstractOptimizationProblem contract.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-26
+# DOCP
+ #
+ # Defines the `DiscretizedModel` (DOCP) type and implements the
+ # `Optimization.AbstractOptimizationProblem` contract.
+ 
+"""
+DOCP (Discretized Optimal Control Problem) module.
 
-module DOCP
+This module defines the `DiscretizedModel` type and the associated API to build
+NLP models and reconstruct OCP solutions via the `Optimization` and `Modelers`
+contracts.
 
-# Importing to avoid namespace pollution
-import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
-import NLPModels
-import SolverCore
-import CTModels
-
-# Using CTSolvers modules to get access to the api
-using ..CTSolvers.Optimization
-using ..CTSolvers.Modelers
-
-# Include submodules
-include(joinpath(@__DIR__, "types.jl"))
-include(joinpath(@__DIR__, "contract_impl.jl"))
-include(joinpath(@__DIR__, "accessors.jl"))
-include(joinpath(@__DIR__, "building.jl"))
+The DOCP layer is the bridge between continuous-time models (from `CTModels`) and
+the solver/modeler infrastructure provided by CTSolvers.
+"""
+ module DOCP
+ 
+ # Imports
+ import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+ import NLPModels
+ import SolverCore
+ import CTModels
+ 
+ # Internal CTSolvers API
+ using ..CTSolvers.Optimization
+ using ..CTSolvers.Modelers
+ 
+ # Submodules
+ include(joinpath(@__DIR__, "types.jl"))
+ include(joinpath(@__DIR__, "contract_impl.jl"))
+ include(joinpath(@__DIR__, "accessors.jl"))
+ include(joinpath(@__DIR__, "building.jl"))
 
 # Public API
 export DiscretizedModel

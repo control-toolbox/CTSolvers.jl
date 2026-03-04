@@ -1,10 +1,7 @@
-# Tests for Enhanced Modelers Options
+# Enhanced Modelers options tests
 #
-# This file tests the enhanced Modelers.ADNLP and Modelers.Exa options
-# to ensure they work correctly with validation and provide expected behavior.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-31
+# Tests for the `Modelers.ADNLP` and `Modelers.Exa` constructors and their
+# validation logic.
 
 module TestEnhancedOptions
 

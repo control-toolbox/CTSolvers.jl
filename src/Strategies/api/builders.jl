@@ -22,7 +22,7 @@ This function creates a concrete strategy instance by:
 - Concrete strategy instance of the appropriate type
 
 # Throws
-- `KeyError`: If the ID is not found in the registry for the given family
+- `Exceptions.IncorrectArgument`: If the strategy ID is not found in the registry for the given family
 
 # Example
 ```julia-repl
@@ -38,7 +38,7 @@ julia> modeler = build_strategy(:adnlp, AbstractNLPModeler, registry;
 Modelers.ADNLP(options=StrategyOptions{...})
 ```
 
-See also: [`type_from_id`](@ref), [`build_strategy_from_method`](@ref)
+See also: [`type_from_id`](@ref)
 """
 function build_strategy(
     id::Symbol,
@@ -68,7 +68,7 @@ This function identifies which ID corresponds to the requested family.
 - `Symbol`: The ID corresponding to the requested family
 
 # Throws
-- `ErrorException`: If no ID or multiple IDs are found for the family
+- `Exceptions.IncorrectArgument`: If no ID or multiple IDs are found for the family
 
 # Example
 ```julia-repl
@@ -81,7 +81,7 @@ julia> extract_id_from_method(method, AbstractNLPSolver, registry)
 :ipopt
 ```
 
-See also: [`strategy_ids`](@ref), [`build_strategy_from_method`](@ref)
+See also: [`strategy_ids`](@ref)
 """
 function extract_id_from_method(
     method::Tuple{Vararg{Symbol}},
@@ -89,17 +89,21 @@ function extract_id_from_method(
     registry::StrategyRegistry
 )
     allowed = strategy_ids(family, registry)
-    hits = Symbol[]
-    
+    found::Union{Nothing, Symbol} = nothing
+    n_hits::Int = 0
+
     for s in method
         if s in allowed
-            push!(hits, s)
+            n_hits += 1
+            if found === nothing
+                found = s
+            end
         end
     end
-    
-    if length(hits) == 1
-        return hits[1]
-    elseif isempty(hits)
+
+    if n_hits == 1
+        return (found::Symbol)
+    elseif n_hits == 0
         throw(Exceptions.IncorrectArgument(
             "No strategy ID found for family in method",
             got="family $family in method $method",
@@ -110,7 +114,7 @@ function extract_id_from_method(
     else
         throw(Exceptions.IncorrectArgument(
             "Multiple strategy IDs found for family in method",
-            got="family $family appears $length(hits) times in method $method",
+            got="family $family appears $n_hits times in method $method",
             expected="exactly one ID per family in method tuple",
             suggestion="Remove duplicate family IDs from method tuple, keep only one",
             context="extract_id_from_method - validating unique family IDs"
@@ -121,88 +125,199 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Get option names for a strategy family from a method tuple.
+Internal helper returning the set of all registered strategy IDs.
 
-This is a convenience function that combines ID extraction with option introspection.
+This function is used by registry utilities that need to distinguish strategy
+tokens from other tokens that may appear in a method tuple (e.g. parameter
+tokens).
 
 # Arguments
-- `method::Tuple{Vararg{Symbol}}`: Tuple of strategy IDs
-- `family::Type{<:AbstractStrategy}`: Abstract family type to search for
-- `registry::StrategyRegistry`: Registry containing strategy mappings
+- `registry::StrategyRegistry`: Strategy registry.
 
 # Returns
-- `Tuple{Vararg{Symbol}}`: Tuple of option names for the identified strategy
+- `Set{Symbol}`: Set of all strategy IDs present in the registry.
 
-# Example
-```julia-repl
-julia> method = (:collocation, :adnlp, :ipopt)
-
-julia> option_names_from_method(method, AbstractNLPModeler, registry)
-(:backend, :show_time)
-```
-
-See also: [`extract_id_from_method`](@ref), [`option_names`](@ref)
+# Notes
+- This function is internal and not part of the public API.
 """
-function option_names_from_method(
-    method::Tuple{Vararg{Symbol}},
-    family::Type{<:AbstractStrategy},
-    registry::StrategyRegistry
-)
-    id = extract_id_from_method(method, family, registry)
-    strategy_type = type_from_id(id, family, registry)
-    return option_names(strategy_type)
+function _strategy_id_set(registry::StrategyRegistry)
+    ids = Set{Symbol}()
+    for strategies in values(registry.families)
+        for T in strategies
+            push!(ids, id(T))
+        end
+    end
+    return ids
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Build a strategy from a method tuple and options.
+Return all available strategy parameter types for a given `(strategy_id, family)`.
 
-This is a high-level convenience function that:
-1. Extracts the appropriate ID from the method tuple
-2. Builds the strategy with the provided options
+This function is used by orchestration to validate that a global parameter token
+present in the method tuple is compatible with all selected strategies.
 
 # Arguments
-- `method::Tuple{Vararg{Symbol}}`: Tuple of strategy IDs
-- `family::Type{<:AbstractStrategy}`: Abstract family type to search for
+- `strategy_id::Symbol`: Strategy identifier (e.g. `:madnlp`).
+- `family::Type{<:AbstractStrategy}`: Family to search within.
+- `registry::StrategyRegistry`: Strategy registry.
+
+# Returns
+- `Vector{Type{<:AbstractStrategyParameter}}`: Supported parameter types. Returns
+  an empty vector if the strategy is not parameterized.
+
+See also: [`extract_global_parameter_from_method`](@ref), [`get_parameter_type`](@ref)
+"""
+function available_parameters(
+    strategy_id::Symbol,
+    family::Type{<:AbstractStrategy},
+    registry::StrategyRegistry
+)
+    params = Type{<:AbstractStrategyParameter}[]
+    for T in registry.families[family]
+        if id(T) === strategy_id
+            P = get_parameter_type(T)
+            if P !== nothing
+                push!(params, P::Type{<:AbstractStrategyParameter})
+            end
+        end
+    end
+    return params
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract the global strategy parameter from a method tuple.
+
+The method tuple may contain at most one parameter token (e.g. `:cpu`, `:gpu`).
+If present, it is resolved to a parameter type using `registry.parameters`.
+
+If any of the selected strategies in the method are parameterized, then a
+parameter token is required and must be supported by each parameterized strategy.
+
+# Arguments
+- `method::Tuple{Vararg{Symbol}}`: Method tuple containing strategy IDs and
+  optionally one parameter token.
+- `registry::StrategyRegistry`: Strategy registry.
+
+# Returns
+- `Union{Nothing, Type{<:AbstractStrategyParameter}}`: The extracted parameter
+  type, or `nothing` if none is present.
+
+# Throws
+- `Exceptions.IncorrectArgument`: If more than one parameter token is present,
+  if a parameter is missing but required, if a parameter is unsupported, or if a
+  parameter token is provided but no selected strategy is parameterized.
+
+See also: [`available_parameters`](@ref), [`Strategies.AbstractStrategyParameter`](@ref)
+"""
+function extract_global_parameter_from_method(
+    method::Tuple{Vararg{Symbol}},
+    registry::StrategyRegistry
+)
+    param_map = registry.parameters
+    param_tokens = Symbol[s for s in method if haskey(param_map, s)]
+    if length(param_tokens) > 1
+        throw(Exceptions.IncorrectArgument(
+            "Multiple parameters found in method",
+            got="method $method",
+            expected="at most one global parameter token",
+            suggestion="Remove extra parameter tokens; keep a single one like :cpu or :gpu",
+            context="extract_global_parameter_from_method - validating unique global parameter"
+        ))
+    end
+    param = isempty(param_tokens) ? nothing : param_map[param_tokens[1]]
+
+    strategy_ids = _strategy_id_set(registry)
+    selected_strategy_ids = Symbol[s for s in method if s in strategy_ids]
+
+    any_parameterized = false
+    for (family, _) in registry.families
+        for s_id in selected_strategy_ids
+            available = available_parameters(s_id, family, registry)
+            if !isempty(available)
+                any_parameterized = true
+                if param === nothing
+                    throw(Exceptions.IncorrectArgument(
+                        "Missing parameter in method",
+                        got="method $method",
+                        expected="a global parameter token for parameterized strategies",
+                        suggestion="Add :cpu or :gpu to your method tuple",
+                        context="extract_global_parameter_from_method - parameter required"
+                    ))
+                end
+                if !(param in available)
+                    available_ids = Tuple(id(p) for p in available)
+                    throw(Exceptions.IncorrectArgument(
+                        "Unsupported parameter in method",
+                        got="strategy :$s_id with parameter $(id(param)) in method $method",
+                        expected="strategy :$s_id with one of: $available_ids",
+                        suggestion="Use one of: $available_ids",
+                        context="extract_global_parameter_from_method - validating parameter support"
+                    ))
+                end
+            end
+        end
+    end
+
+    if param !== nothing && !any_parameterized
+        throw(Exceptions.IncorrectArgument(
+            "Useless parameter in method",
+            got="method $method with parameter $(id(param))",
+            expected="parameter token to be accepted by at least one selected strategy",
+            suggestion="Remove the parameter token or select a strategy that accepts it",
+            context="extract_global_parameter_from_method - unused parameter"
+        ))
+    end
+
+    return param
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Build a parameterized strategy instance from ID, parameter, and options.
+
+This function creates a concrete parameterized strategy instance by:
+1. Looking up the parameterized strategy type from its ID and parameter
+2. Constructing the instance with the provided options
+
+# Arguments
+- `id::Symbol`: Strategy identifier (e.g., `:madnlp`)
+- `parameter::Type{<:AbstractStrategyParameter}`: Parameter type (e.g., `GPU`)
+- `family::Type{<:AbstractStrategy}`: Abstract family type to search within
 - `registry::StrategyRegistry`: Registry containing strategy mappings
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
 - `kwargs...`: Options to pass to the strategy constructor
 
 # Returns
-- Concrete strategy instance of the appropriate type
+- Concrete parameterized strategy instance (e.g., `MadNLP{GPU}`)
+
+# Throws
+- `CTBase.Exceptions.IncorrectArgument`: If the strategy-parameter combination is not found
 
 # Example
 ```julia-repl
-julia> method = (:collocation, :adnlp, :ipopt)
-
-julia> modeler = build_strategy_from_method(
-           method, 
-           AbstractNLPModeler, 
-           registry; 
-           backend=:sparse
+julia> registry = create_registry(
+           AbstractNLPSolver => ((MadNLP, [CPU, GPU]),)
        )
-Modelers.ADNLP(options=StrategyOptions{...})
 
-julia> modeler = build_strategy_from_method(
-           method, 
-           AbstractNLPModeler, 
-           registry; 
-           backend=:sparse,
-           mode=:permissive
-       )
-Modelers.ADNLP(options=StrategyOptions{...})
+julia> solver = build_strategy(:madnlp, GPU, AbstractNLPSolver, registry; max_iter=1000)
+MadNLP{GPU}(options=StrategyOptions{...})
 ```
 
-See also: [`extract_id_from_method`](@ref), [`build_strategy`](@ref)
+See also: [`build_strategy`](@ref)
 """
-function build_strategy_from_method(
-    method::Tuple{Vararg{Symbol}},
+function build_strategy(
+    id::Symbol,
+    parameter::Type{<:AbstractStrategyParameter},
     family::Type{<:AbstractStrategy},
     registry::StrategyRegistry;
     mode::Symbol = :strict,
     kwargs...
 )
-    id = extract_id_from_method(method, family, registry)
-    return build_strategy(id, family, registry; mode=mode, kwargs...)
+    T = type_from_id(id, family, registry; parameter=parameter)
+    return T(; mode=mode, kwargs...)
 end

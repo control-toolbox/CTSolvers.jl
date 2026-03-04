@@ -1,0 +1,345 @@
+# ============================================================================
+# Strategy Parameters Contract
+# ============================================================================
+
+"""
+Abstract base type for strategy parameters.
+
+Strategy parameters allow specialization of strategy behavior and default options.
+Every concrete parameter must implement:
+- `id(::Type{<:AbstractStrategyParameter})::Symbol` - Unique identifier
+
+# Examples
+```julia
+struct CPU <: AbstractStrategyParameter end
+id(::Type{CPU}) = :cpu
+
+struct GPU <: AbstractStrategyParameter end
+id(::Type{GPU}) = :gpu
+```
+
+# Notes
+- Parameters are singleton types (no fields) - they exist only for type dispatch
+- IDs must be globally unique across all strategies and parameters
+- Parameters are used to specialize default options in strategy metadata
+"""
+abstract type AbstractStrategyParameter end
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the unique identifier for a parameter type.
+
+Every concrete parameter type must implement this method to provide
+a unique symbol identifier used in routing and registry operations.
+
+# Arguments
+- `parameter_type::Type{<:AbstractStrategyParameter}`: The parameter type
+
+# Returns
+- `Symbol`: Unique identifier for the parameter
+
+# Throws
+- `CTBase.Exceptions.NotImplemented`: If the parameter type doesn't implement this method
+
+# Examples
+```julia-repl
+julia> id(CPU)
+:cpu
+
+julia> id(GPU)
+:gpu
+```
+"""
+function id(parameter_type::Type{<:AbstractStrategyParameter})
+    throw(Exceptions.NotImplemented(
+        "id() must be implemented for parameter type",
+        required_method="id(::Type{$(parameter_type)})",
+        suggestion="Define id(::Type{$(parameter_type)}) = :your_id",
+        context="AbstractStrategyParameter contract"
+    ))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Check whether a type is a strategy parameter type.
+
+This predicate is useful for contract validation and generic code paths that
+need to distinguish parameter types from other types.
+
+# Arguments
+- `T::Type`: Any Julia type
+
+# Returns
+- `Bool`: `true` if `T <: AbstractStrategyParameter`, otherwise `false`
+
+# Example
+```julia-repl
+julia> Strategies.is_parameter_type(Strategies.CPU)
+true
+
+julia> Strategies.is_parameter_type(Int)
+false
+```
+
+See also: [`AbstractStrategyParameter`](@ref), [`validate_parameter_type`](@ref)
+"""
+is_parameter_type(::Type{T}) where {T} = T <: AbstractStrategyParameter
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the identifier of a strategy parameter type.
+
+This is an explicit alias for [`id`](@ref) to make code using parameter IDs
+more self-documenting.
+
+# Arguments
+- `parameter_type::Type{<:AbstractStrategyParameter}`: The parameter type
+
+# Returns
+- `Symbol`: The parameter identifier
+
+# Example
+```julia-repl
+julia> Strategies.parameter_id(Strategies.CPU)
+:cpu
+```
+
+See also: [`id`](@ref), [`AbstractStrategyParameter`](@ref)
+"""
+parameter_id(parameter_type::Type{<:AbstractStrategyParameter}) = id(parameter_type)
+
+"""
+$(TYPEDSIGNATURES)
+
+Validate that a parameter type satisfies the `AbstractStrategyParameter` contract.
+
+This function performs lightweight structural checks:
+- the parameter type must be concrete
+- the parameter type must be a singleton type (no fields)
+- the parameter type must implement [`id`](@ref)
+
+# Arguments
+- `parameter_type::Type{<:AbstractStrategyParameter}`: The parameter type to validate
+
+# Returns
+- `Nothing`: Returns `nothing` if validation succeeds
+
+# Throws
+- `Exceptions.IncorrectArgument`: If the parameter type is not concrete or has fields
+- `Exceptions.NotImplemented`: If the parameter type does not implement `id`
+
+# Example
+```julia
+struct MyParam <: Strategies.AbstractStrategyParameter end
+Strategies.id(::Type{MyParam}) = :my_param
+
+Strategies.validate_parameter_type(MyParam)  # returns nothing
+```
+
+# Notes
+- This function does not validate global ID uniqueness; that is handled by registry construction.
+
+See also: [`id`](@ref), [`parameter_id`](@ref), [`is_parameter_type`](@ref)
+"""
+function validate_parameter_type(parameter_type::Type{<:AbstractStrategyParameter})
+    if !isconcretetype(parameter_type)
+        throw(Exceptions.IncorrectArgument(
+            "Invalid parameter type",
+            got="parameter_type=$parameter_type",
+            expected="a concrete DataType subtype of AbstractStrategyParameter",
+            suggestion="Define a concrete struct subtype, e.g. struct MyParam <: AbstractStrategyParameter end",
+            context="validate_parameter_type - contract validation"
+        ))
+    end
+    if fieldcount(parameter_type) != 0
+        throw(Exceptions.IncorrectArgument(
+            "Invalid parameter type",
+            got="parameter_type=$parameter_type with $(fieldcount(parameter_type)) fields",
+            expected="a singleton parameter type with no fields",
+            suggestion="Remove fields from the parameter type; use type dispatch only",
+            context="validate_parameter_type - singleton type requirement"
+        ))
+    end
+    _ = id(parameter_type)
+    return nothing
+end
+
+# ============================================================================
+
+"""
+CPU parameter type for CPU-based computation.
+
+This parameter indicates that a strategy should use CPU-based backends
+and default options optimized for CPU execution.
+"""
+struct CPU <: AbstractStrategyParameter end
+
+"""
+GPU parameter type for GPU-based computation.
+
+This parameter indicates that a strategy should use GPU-based backends
+and default options optimized for GPU execution.
+
+# Notes
+- Requires CUDA.jl to be loaded and functional
+- Strategies may throw `CTBase.Exceptions.ExtensionError` if CUDA is not available
+"""
+struct GPU <: AbstractStrategyParameter end
+
+# Implement the contract for built-in parameters
+id(::Type{CPU}) = :cpu
+id(::Type{GPU}) = :gpu
+
+# ============================================================================
+# Parameter Support Validation
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the tuple of supported parameter types for a strategy.
+
+This function returns the parameter types that a strategy accepts. Strategies
+should override this method to restrict which parameters they support.
+
+# Arguments
+- `strategy_type::Type{<:AbstractStrategy}`: The strategy type
+
+# Returns
+- `Tuple{Vararg{Type{<:AbstractStrategyParameter}}}`: Tuple of supported parameter types
+
+# Default Behavior
+By default, returns `(CPU, GPU)` for backward compatibility. Strategies that
+only support a subset of parameters should override this method.
+
+# Example
+```julia
+# Strategy that only supports CPU
+_supported_parameters(::Type{<:MyStrategy}) = (CPU,)
+
+# Strategy that supports both CPU and GPU (default)
+_supported_parameters(::Type{<:MyOtherStrategy}) = (CPU, GPU)
+```
+
+See also: [`validate_supported_parameter`](@ref), [`CPU`](@ref), [`GPU`](@ref)
+"""
+function _supported_parameters(::Type{<:AbstractStrategy})
+    throw(Exceptions.NotImplemented(
+        "Strategy must implement _supported_parameters",
+        required_method="Strategies._supported_parameters(::Type{<:YourStrategy})",
+        suggestion="Define Strategies._supported_parameters(::Type{<:YourStrategy}) = (CPU,) or (CPU, GPU)",
+        context="Parameter contract - all parameterized strategies must declare supported parameters"
+    ))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the default parameter type for a strategy.
+
+This function returns the default parameter type that a strategy accepts.
+Strategies should override this method to specify their default parameter.
+
+# Arguments
+- `strategy_type::Type{<:AbstractStrategy}`: The strategy type
+
+# Returns
+- `Type{<:AbstractStrategyParameter}`: Default parameter type
+
+# Default Behavior
+By default, returns `CPU` for backward compatibility. Strategies that
+have a different default parameter should override this method.
+
+# Example
+```julia
+# Strategy that defaults to CPU
+_default_parameter(::Type{<:MyStrategy}) = CPU
+
+# Strategy that defaults to GPU
+_default_parameter(::Type{<:MyOtherStrategy}) = GPU
+```
+
+See also: [`validate_supported_parameter`](@ref), [`CPU`](@ref), [`GPU`](@ref)
+"""
+function _default_parameter(::Type{<:AbstractStrategy})
+    throw(Exceptions.NotImplemented(
+        "Strategy must implement _default_parameter",
+        required_method="Strategies._default_parameter(::Type{<:YourStrategy})",
+        suggestion="Define Strategies._default_parameter(::Type{<:YourStrategy}) = CPU or GPU",
+        context="Parameter contract - all parameterized strategies must declare default parameter"
+    ))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Validate that a parameter is supported by a strategy type.
+
+This function checks whether the given parameter type is in the list of
+supported parameters for the strategy. If not, it throws a detailed error
+message indicating which parameters are supported.
+
+# Arguments
+- `strategy_type::Type{<:AbstractStrategy}`: The strategy type
+- `parameter::Type{<:AbstractStrategyParameter}`: The parameter to validate
+
+# Returns
+- `Nothing`: Returns `nothing` if validation succeeds
+
+# Throws
+- `Exceptions.IncorrectArgument`: If the parameter is not supported by the strategy
+
+# Example
+```julia
+# Define a strategy that only supports CPU
+struct MyStrategy{P<:AbstractStrategyParameter} <: AbstractStrategy
+    options::StrategyOptions
+end
+
+_supported_parameters(::Type{<:MyStrategy}) = (CPU,)
+
+# This will succeed
+validate_supported_parameter(MyStrategy, CPU)
+
+# This will throw IncorrectArgument
+validate_supported_parameter(MyStrategy, GPU)
+```
+
+# Notes
+- Strategies must implement `_supported_parameters(::Type{<:StrategyType})` to
+  restrict which parameters they accept
+- The error message includes the strategy name, the invalid parameter, and the
+  list of supported parameters
+
+See also: [`_supported_parameters`](@ref), [`AbstractStrategyParameter`](@ref)
+"""
+function validate_supported_parameter(
+    strategy_type::Type{<:AbstractStrategy},
+    parameter::Type{<:AbstractStrategyParameter}
+)
+    supported = _supported_parameters(strategy_type)
+    
+    if parameter ∉ supported
+        # Extract readable names - handle both concrete and UnionAll types
+        if isa(strategy_type, UnionAll)
+            strategy_name = string(nameof(strategy_type))
+        else
+            strategy_name = string(nameof(strategy_type.name.wrapper))
+        end
+        param_name = string(nameof(parameter))
+        supported_names = join([string(nameof(p)) for p in supported], ", ")
+        
+        throw(Exceptions.IncorrectArgument(
+            "Unsupported parameter for strategy",
+            got="$strategy_name{$param_name}",
+            expected="$strategy_name with one of: $supported_names",
+            suggestion="Use $strategy_name{$(nameof(first(supported)))}() or check available parameters",
+            context="validate_supported_parameter - parameter validation"
+        ))
+    end
+    
+    return nothing
+end

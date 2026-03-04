@@ -16,6 +16,46 @@ import MadNLP
 import NLPModels
 import SolverCore
 
+# Import parameter types
+using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter
+
+# ============================================================================
+# Helper Functions
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the default linear solver for CPU execution.
+
+Returns `MadNLP.MumpsSolver` which is the standard CPU linear solver.
+"""
+function __madnlp_default_linear_solver(::Type{CPU})
+    return MadNLP.MumpsSolver
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the default linear solver for GPU execution.
+
+Returns `MadNLPGPU.CUDSSSolver` if MadNLPGPU is loaded, otherwise throws an error.
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: If MadNLPGPU is not loaded
+"""
+function __madnlp_default_linear_solver(::Type{GPU})
+    if !isdefined(Main, :MadNLPGPU)
+        throw(Exceptions.ExtensionError(
+            :MadNLPGPU;
+            message="to use GPU linear solver with MadNLP",
+            feature="GPU computation with MadNLP",
+            context="Load MadNLPGPU extension first: using MadNLPGPU"
+        ))
+    end
+    return Main.MadNLPGPU.CUDSSSolver
+end
+
 # ============================================================================
 # Metadata Definition
 # ============================================================================
@@ -24,8 +64,12 @@ import SolverCore
 $(TYPEDSIGNATURES)
 
 Return metadata defining MadNLP options and their specifications.
+
+The metadata is parameterized by the execution backend (CPU or GPU).
+For GPU execution, the default linear solver is automatically set to
+`MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`.
 """
-function Strategies.metadata(::Type{Solvers.MadNLP})
+function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrategyParameter}
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:max_iter,
@@ -63,8 +107,8 @@ function Strategies.metadata(::Type{Solvers.MadNLP})
         Strategies.OptionDefinition(;
             name=:linear_solver,
             type=Type{<:MadNLP.AbstractLinearSolver},
-            default=MadNLP.MumpsSolver,
-            description="Sparse linear solver for the KKT system. Default is MadNLP.MumpsSolver. Other options include MadNLP.UmfpackSolver, MadNLP.LDLSolver, MadNLP.CHOLMODSolver."
+            default=__madnlp_default_linear_solver(P),
+            description="Sparse linear solver for the KKT system. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU. Other options include MadNLP.UmfpackSolver, MadNLP.LDLSolver, MadNLP.CHOLMODSolver."
         ),
         # ---- Termination options ----
         Strategies.OptionDefinition(;
@@ -270,7 +314,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP})
 end
 
 # ============================================================================
-# Constructor Implementation
+# Constructor implementation
 # ============================================================================
 
 """
@@ -279,29 +323,37 @@ $(TYPEDSIGNATURES)
 Build a MadNLP with validated options.
 
 # Arguments
+- `tag::Solvers.MadNLPTag`: Tag for dispatch
+- `parameter::AbstractStrategyParameter`: Execution parameter (CPU or GPU)
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
 - `kwargs...`: Options to pass to the MadNLP constructor
 
-# Examples
-```julia-repl
-# Strict mode (default) - rejects unknown options
-julia> solver = build_madnlp_solver(MadNLPTag; max_iter=1000)
-MadNLP(...)
+# Example
 
-# Permissive mode - accepts unknown options with warning
-julia> solver = build_madnlp_solver(MadNLPTag; max_iter=1000, custom_option=123; mode=:permissive)
-MadNLP(...)  # with warning about custom_option
+```julia
+# Conceptual usage
+solver_cpu = build_madnlp_solver(MadNLPTag(), CPU(); max_iter=1000)
+solver_gpu = build_madnlp_solver(MadNLPTag(), GPU(); max_iter=1000)  # requires MadNLPGPU
 ```
 """
-function Solvers.build_madnlp_solver(::Solvers.MadNLPTag; mode::Symbol=:strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.MadNLP; mode=mode, kwargs...)
-    return Solvers.MadNLP(opts)
+function Solvers.build_madnlp_solver(
+    ::Type{Solvers.MadNLPTag},
+    parameter::Type{<:AbstractStrategyParameter};
+    mode::Symbol=:strict,
+    kwargs...
+)
+    opts = Strategies.build_strategy_options(
+        Solvers.MadNLP{parameter};
+        mode=mode,
+        kwargs...
+    )
+    return Solvers.MadNLP{parameter}(opts)
 end
 
 # ============================================================================
-# Callable Interface with Display Handling
+# Callable interface with display handling
 # ============================================================================
 
 """
@@ -326,7 +378,7 @@ function (solver::Solvers.MadNLP)(
 end
 
 # ============================================================================
-# Backend Solver Interface
+# Backend solver interface
 # ============================================================================
 
 """
@@ -349,22 +401,16 @@ $(TYPEDSIGNATURES)
 
 Extract solver information from MadNLP execution statistics.
 
-This method handles MadNLP-specific behavior:
-- Objective sign depends on whether the problem is a minimization or maximization
-- Status codes are MadNLP-specific (e.g., `:SOLVE_SUCCEEDED`, `:SOLVED_TO_ACCEPTABLE_LEVEL`)
-
 # Arguments
-
 - `nlp_solution::MadNLP.MadNLPExecutionStats`: MadNLP execution statistics
 
 # Returns
-
 A 6-element tuple `(objective, iterations, constraints_violation, message, status, successful)`:
-- `objective::Float64`: The final objective value (sign corrected for minimization)
+- `objective::Float64`: The final objective value
 - `iterations::Int`: Number of iterations performed
 - `constraints_violation::Float64`: Maximum constraint violation (primal feasibility)
 - `message::String`: Solver identifier string ("MadNLP")
-- `status::Symbol`: MadNLP termination status
+- `status::Symbol`: Termination status from SolverCore
 - `successful::Bool`: Whether the solver converged successfully
 """
 function Optimization.extract_solver_infos(

@@ -2,7 +2,6 @@ module TestCoverageDisambiguation
 
 import Test
 import CTBase.Exceptions
-import CTSolvers
 import CTSolvers.Orchestration
 import CTSolvers.Strategies
 import CTSolvers.Options
@@ -95,6 +94,7 @@ const COV_ACTION_DEFS = [
 
 function test_coverage_disambiguation()
     Test.@testset "Coverage: Disambiguation & Routing" verbose=VERBOSE showtiming=SHOWTIMING begin
+        resolved = Orchestration.resolve_method(COV_METHOD, COV_FAMILIES, COV_REGISTRY)
 
         # ====================================================================
         # UNIT TESTS - build_alias_to_primary_map (disambiguation.jl)
@@ -102,7 +102,7 @@ function test_coverage_disambiguation()
 
         Test.@testset "build_alias_to_primary_map" begin
             alias_map = Orchestration.build_alias_to_primary_map(
-                COV_METHOD, COV_FAMILIES, COV_REGISTRY
+                resolved, COV_FAMILIES, COV_REGISTRY
             )
 
             Test.@test alias_map isa Dict{Symbol, Symbol}

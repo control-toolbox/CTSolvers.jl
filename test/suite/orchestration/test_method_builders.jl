@@ -4,7 +4,7 @@ import Test
 import CTSolvers.Orchestration
 import CTSolvers.Strategies
 import CTSolvers.Options
-import CTBase
+
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
@@ -81,16 +81,22 @@ const BUILDER_METHOD = (:collocation, :adnlp)
 
 function test_method_builders()
     Test.@testset "Orchestration Method Builders" verbose = VERBOSE showtiming = SHOWTIMING begin
+        families = (
+            discretizer = BuilderTestDiscretizer,
+            modeler = BuilderTestModeler,
+        )
+        resolved = Orchestration.resolve_method(BUILDER_METHOD, families, BUILDER_REGISTRY)
         
         # ====================================================================
-        # build_strategy_from_method - Wrapper Tests
+        # build_strategy_from_resolved
         # ====================================================================
         
-        Test.@testset "build_strategy_from_method" begin
+        Test.@testset "build_strategy_from_resolved" begin
             # Build with default options
-            discretizer = Orchestration.build_strategy_from_method(
-                BUILDER_METHOD,
-                BuilderTestDiscretizer,
+            discretizer = Orchestration.build_strategy_from_resolved(
+                resolved,
+                :discretizer,
+                families,
                 BUILDER_REGISTRY
             )
             
@@ -98,9 +104,10 @@ function test_method_builders()
             Test.@test Strategies.option_value(discretizer, :grid_size) == 100
             
             # Build with custom options
-            discretizer2 = Orchestration.build_strategy_from_method(
-                BUILDER_METHOD,
-                BuilderTestDiscretizer,
+            discretizer2 = Orchestration.build_strategy_from_resolved(
+                resolved,
+                :discretizer,
+                families,
                 BUILDER_REGISTRY;
                 grid_size = 200
             )
@@ -109,9 +116,10 @@ function test_method_builders()
             Test.@test Strategies.option_value(discretizer2, :grid_size) == 200
             
             # Build modeler
-            modeler = Orchestration.build_strategy_from_method(
-                BUILDER_METHOD,
-                BuilderTestModeler,
+            modeler = Orchestration.build_strategy_from_resolved(
+                resolved,
+                :modeler,
+                families,
                 BUILDER_REGISTRY;
                 backend = :sparse,
                 show_time = true
@@ -123,14 +131,15 @@ function test_method_builders()
         end
         
         # ====================================================================
-        # option_names_from_method - Wrapper Tests
+        # option_names_from_resolved
         # ====================================================================
         
-        Test.@testset "option_names_from_method" begin
+        Test.@testset "option_names_from_resolved" begin
             # Get option names for discretizer
-            names = Orchestration.option_names_from_method(
-                BUILDER_METHOD,
-                BuilderTestDiscretizer,
+            names = Orchestration.option_names_from_resolved(
+                resolved,
+                :discretizer,
+                families,
                 BUILDER_REGISTRY
             )
             
@@ -139,9 +148,10 @@ function test_method_builders()
             Test.@test length(names) == 1
             
             # Get option names for modeler
-            names2 = Orchestration.option_names_from_method(
-                BUILDER_METHOD,
-                BuilderTestModeler,
+            names2 = Orchestration.option_names_from_resolved(
+                resolved,
+                :modeler,
+                families,
                 BUILDER_REGISTRY
             )
             
@@ -157,14 +167,16 @@ function test_method_builders()
         
         Test.@testset "Integration: Build and inspect workflow" begin
             # 1. Get option names
-            discretizer_opts = Orchestration.option_names_from_method(
-                BUILDER_METHOD,
-                BuilderTestDiscretizer,
+            discretizer_opts = Orchestration.option_names_from_resolved(
+                resolved,
+                :discretizer,
+                families,
                 BUILDER_REGISTRY
             )
-            modeler_opts = Orchestration.option_names_from_method(
-                BUILDER_METHOD,
-                BuilderTestModeler,
+            modeler_opts = Orchestration.option_names_from_resolved(
+                resolved,
+                :modeler,
+                families,
                 BUILDER_REGISTRY
             )
             
@@ -172,15 +184,17 @@ function test_method_builders()
             Test.@test :backend in modeler_opts
             
             # 2. Build strategies with those options
-            discretizer = Orchestration.build_strategy_from_method(
-                BUILDER_METHOD,
-                BuilderTestDiscretizer,
+            discretizer = Orchestration.build_strategy_from_resolved(
+                resolved,
+                :discretizer,
+                families,
                 BUILDER_REGISTRY;
                 grid_size = 150
             )
-            modeler = Orchestration.build_strategy_from_method(
-                BUILDER_METHOD,
-                BuilderTestModeler,
+            modeler = Orchestration.build_strategy_from_resolved(
+                resolved,
+                :modeler,
+                families,
                 BUILDER_REGISTRY;
                 backend = :sparse
             )

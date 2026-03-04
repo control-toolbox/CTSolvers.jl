@@ -1,10 +1,7 @@
-# AbstractOptimizationProblem Contract
+# Optimization problem contract
 #
-# Defines the interface that all optimization problems must implement
-# to work with the Modelers system.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-26
+# Contract methods required for an `AbstractOptimizationProblem` to interact with
+# the model building and solution building pipeline.
 
 """
 $(TYPEDSIGNATURES)
@@ -23,16 +20,15 @@ the problem.
 
 # Throws
 
-- `Exceptions.NotImplemented`: If the problem type does not support ADNLPModels backend
+- `CTBase.Exceptions.NotImplemented`: If the problem type does not support the ADNLPModels backend
 
 # Example
-```julia-repl
-julia> builder = get_adnlp_model_builder(prob)
-ADNLPModelBuilder(...)
-
-julia> nlp_model = builder(initial_guess; show_time=false, backend=:optimized)
-ADNLPModel(...)
+```julia
+builder = get_adnlp_model_builder(prob)
+nlp = builder(initial_guess; show_time=false, backend=:optimized)
 ```
+
+See also: [`get_exa_model_builder`](@ref), [`build_model`](@ref)
 """
 function get_adnlp_model_builder(prob::AbstractOptimizationProblem)
     throw(Exceptions.NotImplemented(
@@ -60,16 +56,15 @@ the problem.
 
 # Throws
 
-- `Exceptions.NotImplemented`: If the problem type does not support ExaModels backend
+- `CTBase.Exceptions.NotImplemented`: If the problem type does not support the ExaModels backend
 
 # Example
-```julia-repl
-julia> builder = get_exa_model_builder(prob)
-ExaModelBuilder(...)
-
-julia> nlp_model = builder(Float64, initial_guess; backend=nothing, minimize=true)
-ExaModel{Float64}(...)
+```julia
+builder = get_exa_model_builder(prob)
+nlp = builder(Float64, initial_guess; backend=nothing, minimize=true)
 ```
+
+See also: [`get_adnlp_model_builder`](@ref), [`build_model`](@ref)
 """
 function get_exa_model_builder(prob::AbstractOptimizationProblem)
     throw(Exceptions.NotImplemented(
@@ -97,16 +92,15 @@ into problem-specific solutions.
 
 # Throws
 
-- `Exceptions.NotImplemented`: If the problem type does not support ADNLPModels backend
+- `CTBase.Exceptions.NotImplemented`: If the problem type does not support the ADNLPModels backend
 
 # Example
-```julia-repl
-julia> builder = get_adnlp_solution_builder(prob)
-ADNLPSolutionBuilder(...)
-
-julia> solution = builder(nlp_stats)
-OptimalControlSolution(...)
+```julia
+builder = get_adnlp_solution_builder(prob)
+sol = builder(nlp_stats)
 ```
+
+See also: [`get_exa_solution_builder`](@ref), [`build_solution`](@ref)
 """
 function get_adnlp_solution_builder(prob::AbstractOptimizationProblem)
     throw(Exceptions.NotImplemented(
@@ -134,16 +128,15 @@ into problem-specific solutions.
 
 # Throws
 
-- `Exceptions.NotImplemented`: If the problem type does not support ExaModels backend
+- `CTBase.Exceptions.NotImplemented`: If the problem type does not support the ExaModels backend
 
 # Example
-```julia-repl
-julia> builder = get_exa_solution_builder(prob)
-ExaSolutionBuilder(...)
-
-julia> solution = builder(nlp_stats)
-OptimalControlSolution(...)
+```julia
+builder = get_exa_solution_builder(prob)
+sol = builder(nlp_stats)
 ```
+
+See also: [`get_adnlp_solution_builder`](@ref), [`build_solution`](@ref)
 """
 function get_exa_solution_builder(prob::AbstractOptimizationProblem)
     throw(Exceptions.NotImplemented(

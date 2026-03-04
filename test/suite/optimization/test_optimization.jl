@@ -3,15 +3,14 @@ module TestOptimization
 import Test
 import CTBase.Exceptions
 import CTSolvers
+import CTSolvers.Optimization
 import NLPModels
 import SolverCore
 import ADNLPModels
 import ExaModels
+
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
-
-# Import from Optimization module to avoid name conflicts
-import CTSolvers.Optimization
 
 # ============================================================================
 # FAKE TYPES FOR CONTRACT TESTING (TOP-LEVEL)
@@ -93,6 +92,20 @@ This function tests the complete Optimization module including:
 """
 function test_optimization()
     Test.@testset "Optimization Module" verbose=VERBOSE showtiming=SHOWTIMING begin
+
+        # ====================================================================
+        # META TESTS - Exports / Public API surface
+        # ====================================================================
+
+        Test.@testset "Exports verification" begin
+            Test.@test isdefined(CTSolvers, :Optimization)
+            Test.@test isdefined(CTSolvers.Optimization, :AbstractOptimizationProblem)
+            Test.@test isdefined(CTSolvers.Optimization, :ADNLPModelBuilder)
+            Test.@test isdefined(CTSolvers.Optimization, :ExaModelBuilder)
+            Test.@test isdefined(CTSolvers.Optimization, :build_model)
+            Test.@test isdefined(CTSolvers.Optimization, :build_solution)
+            Test.@test isdefined(CTSolvers.Optimization, :extract_solver_infos)
+        end
 
         # ====================================================================
         # UNIT TESTS - Abstract Types
@@ -339,6 +352,8 @@ function test_optimization()
                 Test.@test msg == "Ipopt/generic"
                 Test.@test status == :first_order
                 Test.@test success == true
+
+                Test.@test_nowarn Test.@inferred Optimization.extract_solver_infos(stats)
             end
             
             Test.@testset "extract_solver_infos - acceptable status" begin

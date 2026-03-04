@@ -124,6 +124,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             primary_modules=[
                 CTSolvers.Orchestration => src(
                     joinpath("Orchestration", "Orchestration.jl"),
+                    joinpath("Orchestration", "builders.jl"),
                     joinpath("Orchestration", "disambiguation.jl"),
                     joinpath("Orchestration", "routing.jl"),
                 ),
@@ -170,6 +171,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                     joinpath("Strategies", "Strategies.jl"),
                     joinpath("Strategies", "contract", "abstract_strategy.jl"),
                     joinpath("Strategies", "contract", "metadata.jl"),
+                    joinpath("Strategies", "contract", "parameters.jl"),
                     joinpath("Strategies", "contract", "strategy_options.jl"),
                 ),
             ],
@@ -189,6 +191,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             primary_modules=[
                 CTSolvers.Strategies => src(
                     joinpath("Strategies", "api", "builders.jl"),
+                    joinpath("Strategies", "api", "bypass.jl"),
                     joinpath("Strategies", "api", "configuration.jl"),
                     joinpath("Strategies", "api", "disambiguation.jl"),
                     joinpath("Strategies", "api", "introspection.jl"),

@@ -1,10 +1,88 @@
-# ============================================================================
 # Disambiguation helpers for strategy-based option routing
-# ============================================================================
 
-# ----------------------------------------------------------------------------
-# Strategy ID Extraction
-# ----------------------------------------------------------------------------
+"""
+$(TYPEDEF)
+
+Resolved representation of a method tuple for strategy-aware option routing.
+
+`ResolvedMethod` contains precomputed lookups derived from a `method` tuple and a
+set of `families`. It is intended to be created via [`resolve_method`](@ref) and
+then reused by routing and builder utilities.
+
+# Fields
+- `tokens::T`: The original method tokens.
+- `ids_by_family::I`: Family-wise strategy IDs extracted from `tokens`.
+- `strategy_to_family::Dict{Symbol, Symbol}`: Reverse map `strategy_id => family_name`.
+- `strategy_ids::Tuple{Vararg{Symbol}}`: Tuple of active strategy IDs.
+- `parameter::Union{Nothing, Type{<:Strategies.AbstractStrategyParameter}}`: Optional global
+  parameter extracted from the method tuple.
+
+# Notes
+- This type is internal to `CTSolvers.Orchestration`.
+
+See also: [`resolve_method`](@ref), [`route_all_options`](@ref)
+"""
+struct ResolvedMethod{T<:Tuple, I<:NamedTuple}
+    tokens::T
+    ids_by_family::I
+    strategy_to_family::Dict{Symbol, Symbol}
+    strategy_ids::Tuple{Vararg{Symbol}}
+    parameter::Union{Nothing, Type{<:Strategies.AbstractStrategyParameter}}
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Resolve a method tuple into a [`ResolvedMethod`](@ref) for routing and builders.
+
+This function extracts one strategy ID per family (using the `Strategies` contract),
+builds reverse lookup maps, and extracts a global strategy parameter (if present).
+
+# Arguments
+- `method::Tuple{Vararg{Symbol}}`: Method tokens, e.g. `(:collocation, :adnlp, :ipopt)`.
+- `families::NamedTuple`: Mapping `family_name => family_type` used for ID extraction.
+- `registry::Strategies.StrategyRegistry`: Strategy registry.
+
+# Returns
+- `ResolvedMethod`: Precomputed lookups derived from `method`.
+
+# Throws
+- `CTBase.Exceptions.IncorrectArgument`: If a family strategy ID cannot be extracted from `method`.
+
+# Example
+```julia
+resolved = resolve_method(method, families, registry)
+resolved.strategy_ids
+```
+
+See also: [`extract_strategy_ids`](@ref), [`build_strategy_to_family_map`](@ref)
+"""
+function resolve_method(
+    method::Tuple{Vararg{Symbol}},
+    families::NamedTuple,
+    registry::Strategies.StrategyRegistry
+)::ResolvedMethod
+    ids_by_family = NamedTuple{keys(families)}(
+        Tuple(
+            Strategies.extract_id_from_method(method, family_type, registry)
+            for (family_name, family_type) in pairs(families)
+        )
+    )
+
+    strategy_to_family = Dict{Symbol, Symbol}(
+        getfield(ids_by_family, family_name) => family_name
+        for family_name in keys(ids_by_family)
+    )
+
+    strategy_ids = Tuple(
+        getfield(ids_by_family, family_name)
+        for family_name in keys(ids_by_family)
+    )
+
+    parameter = Strategies.extract_global_parameter_from_method(method, registry)
+
+    return ResolvedMethod(method, ids_by_family, strategy_to_family, strategy_ids, parameter)
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -25,8 +103,7 @@ value = route_to(solver=100, modeler=50)        # Multiple strategies
 
 # Arguments
 - `raw`: The raw option value to analyze
-- `method::Tuple{Vararg{Symbol}}`: Complete method tuple containing all
-  strategy IDs
+- `resolved::ResolvedMethod`: Resolved method information (active strategy IDs)
 
 # Returns
 - `nothing` if no disambiguation syntax detected
@@ -34,42 +111,31 @@ value = route_to(solver=100, modeler=50)        # Multiple strategies
 
 # Throws
 
-- `Exceptions.IncorrectArgument`: If a strategy ID in the disambiguation syntax
+- `CTBase.Exceptions.IncorrectArgument`: If a strategy ID in the disambiguation syntax
   is not present in the method tuple
 
 # Examples
-```julia-repl
-julia> # RoutedOption (recommended)
-julia> extract_strategy_ids(route_to(solver=100), (:collocation, :adnlp, :ipopt))
-[(100, :solver)]
-
-julia> # Multiple strategies
-julia> extract_strategy_ids(route_to(solver=100, modeler=50), (:collocation, :adnlp, :ipopt))
-[(100, :solver), (50, :modeler)]
-
-julia> # No disambiguation
-julia> extract_strategy_ids(:sparse, (:collocation, :adnlp, :ipopt))
-nothing
+```julia
+resolved = resolve_method(method, families, registry)
+ids = extract_strategy_ids(route_to(solver=100), resolved)
 ```
 
 See also: [`route_to`](@ref), [`RoutedOption`](@ref), [`route_all_options`](@ref)
 """
 function extract_strategy_ids(
     raw,
-    method::Tuple{Vararg{Symbol}}
+    resolved::ResolvedMethod
 )::Union{Nothing, Vector{Tuple{Any, Symbol}}}
-    
-    # Modern syntax: RoutedOption (recommended)
     if raw isa Strategies.RoutedOption
         results = Tuple{Any, Symbol}[]
         for (strategy_id, value) in pairs(raw)
-            if strategy_id in method
+            if strategy_id in resolved.strategy_ids
                 push!(results, (value, strategy_id))
             else
                 throw(Exceptions.IncorrectArgument(
                     "Strategy ID not found in method tuple",
                     got="strategy ID :$strategy_id",
-                    expected="one of available strategy IDs: $method",
+                    expected="one of available strategy IDs: $(resolved.tokens)",
                     suggestion="Use a valid strategy ID from your method tuple",
                     context="extract_strategy_ids - validating RoutedOption strategy ID"
                 ))
@@ -77,14 +143,11 @@ function extract_strategy_ids(
         end
         return results
     end
-    
-    # No disambiguation detected
+
     return nothing
 end
 
-# ----------------------------------------------------------------------------
-# Strategy-to-Family Mapping
-# ----------------------------------------------------------------------------
+# Strategy-to-family mapping
 
 """
 $(TYPEDSIGNATURES)
@@ -96,8 +159,7 @@ strategy ID in the method to its corresponding family name. This is used
 by the routing system to determine which family owns each strategy.
 
 # Arguments
-- `method::Tuple{Vararg{Symbol}}`: Complete method tuple (e.g.,
-  `(:collocation, :adnlp, :ipopt)`)
+- `resolved::ResolvedMethod`: Resolved method information (active strategy IDs)
 - `families::NamedTuple`: NamedTuple mapping family names to abstract types
 - `registry::Strategies.StrategyRegistry`: Strategy registry
 
@@ -105,43 +167,22 @@ by the routing system to determine which family owns each strategy.
 - `Dict{Symbol, Symbol}`: Dictionary mapping strategy ID => family name
 
 # Example
-```julia-repl
-julia> method = (:collocation, :adnlp, :ipopt)
-
-julia> families = (
-           discretizer = AbstractOptimalControlDiscretizer,
-           modeler = AbstractNLPModeler,
-           solver = AbstractNLPSolver
-       )
-
-julia> map = build_strategy_to_family_map(method, families, registry)
-Dict{Symbol, Symbol} with 3 entries:
-  :collocation => :discretizer
-  :adnlp       => :modeler
-  :ipopt       => :solver
+```julia
+resolved = resolve_method(method, families, registry)
+map = build_strategy_to_family_map(resolved, families, registry)
 ```
 
 See also: [`build_option_ownership_map`](@ref), [`extract_strategy_ids`](@ref)
 """
 function build_strategy_to_family_map(
-    method::Tuple{Vararg{Symbol}},
+    resolved::ResolvedMethod,
     families::NamedTuple,
     registry::Strategies.StrategyRegistry
 )::Dict{Symbol, Symbol}
-    
-    strategy_to_family = Dict{Symbol, Symbol}()
-    
-    for (family_name, family_type) in pairs(families)
-        id = Strategies.extract_id_from_method(method, family_type, registry)
-        strategy_to_family[id] = family_name
-    end
-    
-    return strategy_to_family
+    return copy(resolved.strategy_to_family)
 end
 
-# ----------------------------------------------------------------------------
-# Option Ownership Map
-# ----------------------------------------------------------------------------
+# Option ownership map
 
 """
 $(TYPEDSIGNATURES)
@@ -154,7 +195,7 @@ appear in multiple families are considered ambiguous and require
 disambiguation.
 
 # Arguments
-- `method::Tuple{Vararg{Symbol}}`: Complete method tuple
+- `resolved::ResolvedMethod`: Resolved method information (active strategies)
 - `families::NamedTuple`: NamedTuple mapping family names to abstract types
 - `registry::Strategies.StrategyRegistry`: Strategy registry
 
@@ -163,12 +204,9 @@ disambiguation.
   Set{family_name}
 
 # Example
-```julia-repl
-julia> map = build_option_ownership_map(method, families, registry)
-Dict{Symbol, Set{Symbol}} with 3 entries:
-  :grid_size => Set([:discretizer])
-  :backend   => Set([:modeler, :solver])  # Ambiguous!
-  :max_iter  => Set([:solver])
+```julia
+resolved = resolve_method(method, families, registry)
+map = build_option_ownership_map(resolved, families, registry)
 ```
 
 # Notes
@@ -179,26 +217,23 @@ Dict{Symbol, Set{Symbol}} with 3 entries:
 See also: [`build_strategy_to_family_map`](@ref), [`route_all_options`](@ref)
 """
 function build_option_ownership_map(
-    method::Tuple{Vararg{Symbol}},
+    resolved::ResolvedMethod,
     families::NamedTuple,
     registry::Strategies.StrategyRegistry
 )::Dict{Symbol, Set{Symbol}}
-    
     option_owners = Dict{Symbol, Set{Symbol}}()
-    
+
     for (family_name, family_type) in pairs(families)
-        id = Strategies.extract_id_from_method(method, family_type, registry)
+        id = getfield(resolved.ids_by_family, family_name)
         strategy_type = Strategies.type_from_id(id, family_type, registry)
         meta = Strategies.metadata(strategy_type)
-        
+
         for (primary_name, def) in pairs(meta)
-            # Register primary name
             if !haskey(option_owners, primary_name)
                 option_owners[primary_name] = Set{Symbol}()
             end
             push!(option_owners[primary_name], family_name)
-            
-            # Register aliases with the same ownership
+
             for alias in def.aliases
                 if !haskey(option_owners, alias)
                     option_owners[alias] = Set{Symbol}()
@@ -207,7 +242,7 @@ function build_option_ownership_map(
             end
         end
     end
-    
+
     return option_owners
 end
 
@@ -216,11 +251,25 @@ $(TYPEDSIGNATURES)
 
 Build a mapping from alias names to their primary option names for all strategies in the method.
 
+# Arguments
+- `resolved::ResolvedMethod`: Resolved method information (active strategies)
+- `families::NamedTuple`: NamedTuple mapping family names to abstract types
+- `registry::Strategies.StrategyRegistry`: Strategy registry
+
 # Returns
-- `Dict{Symbol, Symbol}`: Dictionary mapping alias => primary_name
+- `Dict{Symbol, Symbol}`: Dictionary mapping `alias => primary_name`
+
+# Example
+```julia
+resolved = resolve_method(method, families, registry)
+alias_map = build_alias_to_primary_map(resolved, families, registry)
+```
+
+See also: [`build_option_ownership_map`](@ref), [`resolve_method`](@ref)
+
 """
 function build_alias_to_primary_map(
-    method::Tuple{Vararg{Symbol}},
+    resolved::ResolvedMethod,
     families::NamedTuple,
     registry::Strategies.StrategyRegistry
 )::Dict{Symbol, Symbol}
@@ -228,7 +277,7 @@ function build_alias_to_primary_map(
     alias_map = Dict{Symbol, Symbol}()
     
     for (family_name, family_type) in pairs(families)
-        id = Strategies.extract_id_from_method(method, family_type, registry)
+        id = getfield(resolved.ids_by_family, family_name)
         strategy_type = Strategies.type_from_id(id, family_type, registry)
         meta = Strategies.metadata(strategy_type)
         

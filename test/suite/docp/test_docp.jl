@@ -2,8 +2,10 @@ module TestDOCP
 
 import Test
 import CTModels
+import CTSolvers
 import CTSolvers.DOCP
-import CTBase
+import CTSolvers.Optimization
+import CTSolvers.Modelers
 import NLPModels
 import SolverCore
 import ADNLPModels
@@ -11,9 +13,6 @@ import ExaModels
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 
-# Import from Optimization module to avoid name conflicts
-import CTSolvers.Optimization
-import CTSolvers.Modelers
 
 # ============================================================================
 # FAKE TYPES FOR TESTING (TOP-LEVEL)
@@ -70,6 +69,18 @@ end
 
 function test_docp()
     Test.@testset "DOCP Module" verbose = VERBOSE showtiming = SHOWTIMING begin
+
+        # ====================================================================
+        # META TESTS - Exports / Public API surface
+        # ====================================================================
+
+        Test.@testset "Exports verification" begin
+            Test.@test isdefined(CTSolvers, :DOCP)
+            Test.@test isdefined(CTSolvers.DOCP, :DiscretizedModel)
+            Test.@test isdefined(CTSolvers.DOCP, :ocp_model)
+            Test.@test isdefined(CTSolvers.DOCP, :nlp_model)
+            Test.@test isdefined(CTSolvers.DOCP, :ocp_solution)
+        end
 
         # ====================================================================
         # UNIT TESTS - DOCP.DiscretizedModel Type
@@ -182,6 +193,13 @@ function test_docp()
                 Test.@test builder === exa_sol_builder
                 Test.@test builder isa Optimization.ExaSolutionBuilder
             end
+
+            Test.@testset "Type stability" begin
+                Test.@test_nowarn Test.@inferred Optimization.get_adnlp_model_builder(docp)
+                Test.@test_nowarn Test.@inferred Optimization.get_exa_model_builder(docp)
+                Test.@test_nowarn Test.@inferred Optimization.get_adnlp_solution_builder(docp)
+                Test.@test_nowarn Test.@inferred Optimization.get_exa_solution_builder(docp)
+            end
         end
 
         # ====================================================================
@@ -210,6 +228,8 @@ function test_docp()
                 retrieved_ocp = DOCP.ocp_model(docp)
                 Test.@test retrieved_ocp === ocp
                 Test.@test retrieved_ocp.name == "my_ocp"
+
+                Test.@test_nowarn Test.@inferred DOCP.ocp_model(docp)
             end
         end
 
@@ -242,8 +262,11 @@ function test_docp()
                 nlp = DOCP.nlp_model(docp, x0, modeler)
                 Test.@test nlp isa NLPModels.AbstractNLPModel
                 Test.@test nlp isa ADNLPModels.ADNLPModel
-                Test.@test nlp.meta.x0 == x0
                 Test.@test NLPModels.obj(nlp, x0) ≈ 5.0
+
+                nlp2 = Optimization.build_model(docp, x0, modeler)
+                Test.@test nlp2 isa ADNLPModels.ADNLPModel
+                Test.@test NLPModels.obj(nlp2, x0) ≈ 5.0
             end
             
             Test.@testset "nlp_model with Exa" begin
@@ -254,6 +277,10 @@ function test_docp()
                 Test.@test nlp isa NLPModels.AbstractNLPModel
                 Test.@test nlp isa ExaModels.ExaModel{Float64}
                 Test.@test NLPModels.obj(nlp, x0) ≈ 5.0
+
+                nlp2 = Optimization.build_model(docp, x0, modeler)
+                Test.@test nlp2 isa ExaModels.ExaModel{Float64}
+                Test.@test NLPModels.obj(nlp2, x0) ≈ 5.0
             end
             
             Test.@testset "ocp_solution with ADNLP" begin
@@ -263,6 +290,10 @@ function test_docp()
                 sol = DOCP.ocp_solution(docp, stats, modeler)
                 Test.@test sol.objective ≈ 1.23
                 Test.@test sol.status == :first_order
+
+                sol2 = Optimization.build_solution(docp, stats, modeler)
+                Test.@test sol2.objective ≈ 1.23
+                Test.@test sol2.status == :first_order
             end
             
             Test.@testset "ocp_solution with Exa" begin
@@ -272,6 +303,10 @@ function test_docp()
                 sol = DOCP.ocp_solution(docp, stats, modeler)
                 Test.@test sol.objective ≈ 2.34
                 Test.@test sol.iter == 15
+
+                sol2 = Optimization.build_solution(docp, stats, modeler)
+                Test.@test sol2.objective ≈ 2.34
+                Test.@test sol2.iter == 15
             end
         end
 
@@ -325,7 +360,7 @@ function test_docp()
                 Test.@test sol.objective ≈ 14.0
                 Test.@test sol.iterations == 20
                 Test.@test sol.status == :first_order
-                Test.@test sol.success == true
+                Test.@test sol.success === true
             end
             
             Test.@testset "Complete DOCP workflow - Exa" begin

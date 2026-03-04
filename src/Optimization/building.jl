@@ -1,10 +1,6 @@
-# Optimization Model API
+# Optimization building API
 #
 # General API for building NLP models and solutions from optimization problems.
-# These functions work with any AbstractOptimizationProblem.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-26
 
 """
 $(TYPEDSIGNATURES)
@@ -23,13 +19,12 @@ The modeler handles the conversion to the specific NLP backend.
 - An NLP model suitable for the chosen backend
 
 # Example
-```julia-repl
-julia> modeler = Modelers.ADNLP(show_time=false)
-Modelers.ADNLP(...)
-
-julia> nlp = build_model(prob, initial_guess, modeler)
-ADNLPModel(...)
+```julia
+modeler = Modelers.ADNLP(show_time=false)
+nlp = build_model(prob, initial_guess, modeler)
 ```
+
+See also: [`build_solution`](@ref)
 """
 function build_model(prob, initial_guess, modeler)
     return modeler(prob, initial_guess)
@@ -52,10 +47,11 @@ The modeler handles the conversion from NLP solution to problem-specific solutio
 - A solution object appropriate for the problem type
 
 # Example
-```julia-repl
-julia> solution = build_solution(prob, nlp_stats, modeler)
-OptimalControlSolution(...)
+```julia
+sol = build_solution(prob, nlp_stats, modeler)
 ```
+
+See also: [`build_model`](@ref)
 """
 function build_solution(prob, model_solution, modeler)
     return modeler(prob, model_solution)

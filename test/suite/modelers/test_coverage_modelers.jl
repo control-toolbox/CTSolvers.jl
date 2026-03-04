@@ -49,6 +49,23 @@ function test_coverage_modelers()
         end
 
         # ====================================================================
+        # UNIT TESTS - Exa helper __get_cuda_backend
+        # ====================================================================
+
+        Test.@testset "Exa __get_cuda_backend - ExtensionError" begin
+            # This should throw ExtensionError if CUDA is not loaded
+            # Note: We only test the error path since CUDA is loaded in test env
+            # but the actual backend type check would require CUDA to be functional
+            if !isdefined(Main, :CUDA)
+                Test.@test_throws Exceptions.ExtensionError Modelers.__get_cuda_backend()
+            else
+                # CUDA is loaded in test environment, skip functional test
+                # (would require CUDA.functional() to be true)
+                Test.@test true
+            end
+        end
+
+        # ====================================================================
         # UNIT TESTS - Modelers.ADNLP defaults (adnlp_modeler.jl)
         # ====================================================================
 

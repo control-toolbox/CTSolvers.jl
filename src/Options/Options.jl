@@ -12,22 +12,17 @@ CTModels modules, making it reusable across the ecosystem.
 """
 module Options
 
-# Importing to avoid namespace pollution
+# Imports
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 import CTBase.Exceptions
 
-# ==============================================================================
-# Include submodules
-# ==============================================================================
-
+# Submodules
 include(joinpath(@__DIR__, "not_provided.jl"))
 include(joinpath(@__DIR__, "option_value.jl"))
 include(joinpath(@__DIR__, "option_definition.jl"))
 include(joinpath(@__DIR__, "extraction.jl"))
 
-# ==============================================================================
 # Public API
-# ==============================================================================
 
 export NotProvided, NotProvidedType
 export OptionValue, OptionDefinition, extract_option, extract_options, extract_raw_options
