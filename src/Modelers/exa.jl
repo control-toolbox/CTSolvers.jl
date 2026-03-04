@@ -1,10 +1,7 @@
-# Exa Modeler
+# Exa modeler
 #
-# Implementation of Modelers.Exa using the AbstractStrategy contract.
-# This modeler converts discretized optimal control problems to ExaModels.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-25
+# Implementation of `Modelers.Exa` using the `Strategies.AbstractStrategy`
+# contract.
 
 # Default option values
 """

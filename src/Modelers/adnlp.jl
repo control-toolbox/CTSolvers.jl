@@ -1,10 +1,7 @@
-# ADNLP Modeler
+# ADNLP modeler
 #
-# Implementation of Modelers.ADNLP using the AbstractStrategy contract.
-# This modeler converts discretized optimal control problems to ADNLPModels.
-#
-# Author: CTSolvers Development Team
-# Date: 2026-01-25
+# Implementation of `Modelers.ADNLP` using the `Strategies.AbstractStrategy`
+# contract.
 
 # Default option values
 """
@@ -114,8 +111,8 @@ modeler = Modelers.ADNLP(
 # See also
 
 - [`Modelers.Exa`](@ref): Alternative modeler using ExaModels
-- [`build_model`](@ref): Build model from problem and modeler
-- [`solve!`](@ref): Solve optimization problem
+- [`Optimization.build_model`](@ref): Build a backend NLP model from a problem and a modeler
+- [`Optimization.build_solution`](@ref): Build a problem-level solution from execution statistics
 
 # Notes
 
