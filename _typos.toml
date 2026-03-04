@@ -6,6 +6,7 @@ extend-ignore-re = [
     "ipopt_backen",
     # Common variable names in our codebase
     "strat",
+    "Strat",
 ]
 
 [files]
