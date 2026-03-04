@@ -5,6 +5,132 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.0-beta (2026-03-04)
+
+**Breaking change:** Strategy parameter contract enforcement and mandatory parameterization.
+
+### Summary
+
+- All strategies must now explicitly implement parameter contract methods
+- Non-parameterized strategy construction is no longer allowed
+- Fallback implementations have been removed and now throw `NotImplemented`
+- Enhanced error messages with actionable implementation guidance
+
+### Breaking Changes
+
+#### 1. Mandatory strategy parameterization
+
+**Before:** Strategies could be constructed without parameters.
+
+```julia
+# Old (no longer supported)
+solver = Ipopt()
+modeler = ADNLP()
+```
+
+**After:** All strategies must specify a parameter type.
+
+```julia
+# New (required parameterization)
+solver = Ipopt{CPU}()
+modeler = ADNLP{CPU}()
+```
+
+#### 2. Required contract implementation
+
+**Before:** Strategies could rely on default fallback implementations.
+
+**After:** Strategies must implement explicit parameter contract methods:
+
+```julia
+# Required for all strategy implementations
+function Strategies._supported_parameters(::Type{<:MyStrategy})
+    return (CPU,)  # or (CPU, GPU) depending on support
+end
+
+function Strategies._default_parameter(::Type{<:MyStrategy})
+    return CPU  # or GPU depending on default
+end
+```
+
+#### 3. Fallback methods removed
+
+**Before:** Default implementations existed for `_supported_parameters` and `_default_parameter`.
+
+**After:** These methods now throw `NotImplemented` with detailed error messages:
+
+```julia
+# Now throws: NotImplemented with required_method, suggestion, and context
+Strategies._supported_parameters(MyStrategy)  # → NotImplemented
+Strategies._default_parameter(MyStrategy)     # → NotImplemented
+```
+
+#### 4. Non-parameterized strategies rejected
+
+**Before:** Parameterless strategy types were accepted.
+
+**After:** Attempting to create non-parameterized strategies throws `IncorrectArgument`:
+
+```julia
+MyStrategy()  # → IncorrectArgument: "Strategy must be parameterized"
+```
+
+### Migration
+
+**For existing strategy users:**
+
+```julia
+# Update all strategy instantiations
+# Old
+solver = Ipopt()
+modeler = ADNLP()
+
+# New
+solver = Ipopt{CPU}()
+modeler = ADNLP{CPU}()
+```
+
+**For custom strategy implementations:**
+
+```julia
+# Add these required methods to your strategy
+struct MyStrategy{P<:AbstractStrategyParameter} <: AbstractStrategy
+    options::StrategyOptions
+end
+
+# Required contract methods
+function Strategies._supported_parameters(::Type{<:MyStrategy})
+    return (CPU,)  # Specify which parameters you support
+end
+
+function Strategies._default_parameter(::Type{<:MyStrategy})
+    return CPU  # Specify your default parameter
+end
+```
+
+**For GPU-enabled strategies:**
+
+```julia
+# Support both CPU and GPU
+function Strategies._supported_parameters(::Type{<:MyGPUStrategy})
+    return (CPU, GPU)
+end
+
+function Strategies._default_parameter(::Type{<:MyGPUStrategy})
+    return CPU  # Default to CPU for compatibility
+end
+```
+
+### Benefits
+
+- **Type safety**: Explicit parameter specification prevents runtime errors
+- **Clear contracts**: Strategies must declare their parameter support upfront
+- **Better error messages**: Detailed guidance for implementing contracts correctly
+- **GPU support**: Clean separation between CPU and GPU execution paths
+- **Extensibility**: Framework supports future parameter types beyond CPU/GPU
+
+---
+
 ## v0.3.7-beta (2026-02-20)
 
 **Breaking change:** Action option shadowing detection and `route_to` bypass behavior.

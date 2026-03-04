@@ -10,6 +10,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-beta] - 2026-03-04
+
+### Breaking Changes
+
+- **Strategy parameter contract enforcement** - All strategies must now explicitly implement `_supported_parameters` and `_default_parameter` methods
+- **Non-parameterized strategies disallowed** - Attempting to create non-parameterized strategies now throws `IncorrectArgument`
+- **Fallback methods removed** - Default implementations of `_supported_parameters` and `_default_parameter` now throw `NotImplemented`
+
+### Added
+
+- **Strategy parameter contract system** - Complete framework for CPU/GPU specialization of strategies
+- **Comprehensive parameter validation** - Automatic validation with detailed error messages
+- **New parameter types** - `CPU` and `GPU` parameter types for execution backend specification
+- **Full API documentation** - Complete docstrings for all parameter-related functions
+- **Comprehensive test suite** - 3078 tests passing with full contract enforcement coverage
+- **Strategy parameters guide** - Complete documentation for the new parameter system
+
+### Changed
+
+- **Strategy construction** - All strategies now require parameter specification (e.g., `Ipopt{CPU}()`)
+- **Error messages** - Enhanced error messages with actionable suggestions for contract implementation
+- **Extension stubs** - Added parameter validation before `ExtensionError` in all solver stubs
+- **CUDA backend access** - Fixed Exa modeler to use `CUDA.CUDABackend()` instead of `KernelAbstractions.CUDABackend()`
+
+### Migration
+
+**For strategy construction:**
+
+```julia
+# Old (no longer supported)
+solver = Ipopt()
+
+# New (parameterized)
+solver = Ipopt{CPU}()
+```
+
+**For strategy implementations:**
+
+```julia
+# Must now implement these methods
+function Strategies._supported_parameters(::Type{<:MyStrategy})
+    return (CPU,)  # or (CPU, GPU)
+end
+
+function Strategies._default_parameter(::Type{<:MyStrategy})
+    return CPU  # or GPU
+end
+```
+
+**For non-parameterized strategies:**
+
+```julia
+# Old: Could create parameterless strategies
+# New: Must use parameter type
+MyStrategy()  # → throws IncorrectArgument
+MyStrategy{CPU}()  # → correct usage
+```
+
+### Benefits
+
+- **Type safety** - Explicit parameter specification prevents runtime errors
+- **Clear contracts** - Strategies must declare their parameter support
+- **Better error messages** - Detailed guidance for implementing contracts
+- **GPU support** - Clean separation between CPU and GPU execution paths
+- **Extensibility** - Framework supports future parameter types beyond CPU/GPU
+
+---
+
 ## [0.3.7-beta] - 2026-02-20
 
 ### Added
