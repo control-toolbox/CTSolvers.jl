@@ -200,44 +200,6 @@ id(::Type{GPU}) = :gpu
 """
 $(TYPEDSIGNATURES)
 
-Get the tuple of supported parameter types for a strategy.
-
-This function returns the parameter types that a strategy accepts. Strategies
-should override this method to restrict which parameters they support.
-
-# Arguments
-- `strategy_type::Type{<:AbstractStrategy}`: The strategy type
-
-# Returns
-- `Tuple{Vararg{Type{<:AbstractStrategyParameter}}}`: Tuple of supported parameter types
-
-# Default Behavior
-By default, returns `(CPU, GPU)` for backward compatibility. Strategies that
-only support a subset of parameters should override this method.
-
-# Example
-```julia
-# Strategy that only supports CPU
-_supported_parameters(::Type{<:MyStrategy}) = (CPU,)
-
-# Strategy that supports both CPU and GPU (default)
-_supported_parameters(::Type{<:MyOtherStrategy}) = (CPU, GPU)
-```
-
-See also: [`validate_supported_parameter`](@ref), [`CPU`](@ref), [`GPU`](@ref)
-"""
-function _supported_parameters(::Type{<:AbstractStrategy})
-    throw(Exceptions.NotImplemented(
-        "Strategy must implement _supported_parameters",
-        required_method="Strategies._supported_parameters(::Type{<:YourStrategy})",
-        suggestion="Define Strategies._supported_parameters(::Type{<:YourStrategy}) = (CPU,) or (CPU, GPU)",
-        context="Parameter contract - all parameterized strategies must declare supported parameters"
-    ))
-end
-
-"""
-$(TYPEDSIGNATURES)
-
 Get the default parameter type for a strategy.
 
 This function returns the default parameter type that a strategy accepts.
@@ -262,7 +224,7 @@ _default_parameter(::Type{<:MyStrategy}) = CPU
 _default_parameter(::Type{<:MyOtherStrategy}) = GPU
 ```
 
-See also: [`validate_supported_parameter`](@ref), [`CPU`](@ref), [`GPU`](@ref)
+See also: [`CPU`](@ref), [`GPU`](@ref)
 """
 function _default_parameter(::Type{<:AbstractStrategy})
     throw(Exceptions.NotImplemented(
@@ -271,75 +233,4 @@ function _default_parameter(::Type{<:AbstractStrategy})
         suggestion="Define Strategies._default_parameter(::Type{<:YourStrategy}) = CPU or GPU",
         context="Parameter contract - all parameterized strategies must declare default parameter"
     ))
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Validate that a parameter is supported by a strategy type.
-
-This function checks whether the given parameter type is in the list of
-supported parameters for the strategy. If not, it throws a detailed error
-message indicating which parameters are supported.
-
-# Arguments
-- `strategy_type::Type{<:AbstractStrategy}`: The strategy type
-- `parameter::Type{<:AbstractStrategyParameter}`: The parameter to validate
-
-# Returns
-- `Nothing`: Returns `nothing` if validation succeeds
-
-# Throws
-- `Exceptions.IncorrectArgument`: If the parameter is not supported by the strategy
-
-# Example
-```julia
-# Define a strategy that only supports CPU
-struct MyStrategy{P<:AbstractStrategyParameter} <: AbstractStrategy
-    options::StrategyOptions
-end
-
-_supported_parameters(::Type{<:MyStrategy}) = (CPU,)
-
-# This will succeed
-validate_supported_parameter(MyStrategy, CPU)
-
-# This will throw IncorrectArgument
-validate_supported_parameter(MyStrategy, GPU)
-```
-
-# Notes
-- Strategies must implement `_supported_parameters(::Type{<:StrategyType})` to
-  restrict which parameters they accept
-- The error message includes the strategy name, the invalid parameter, and the
-  list of supported parameters
-
-See also: [`_supported_parameters`](@ref), [`AbstractStrategyParameter`](@ref)
-"""
-function validate_supported_parameter(
-    strategy_type::Type{<:AbstractStrategy},
-    parameter::Type{<:AbstractStrategyParameter}
-)
-    supported = _supported_parameters(strategy_type)
-    
-    if parameter ∉ supported
-        # Extract readable names - handle both concrete and UnionAll types
-        if isa(strategy_type, UnionAll)
-            strategy_name = string(nameof(strategy_type))
-        else
-            strategy_name = string(nameof(strategy_type.name.wrapper))
-        end
-        param_name = string(nameof(parameter))
-        supported_names = join([string(nameof(p)) for p in supported], ", ")
-        
-        throw(Exceptions.IncorrectArgument(
-            "Unsupported parameter for strategy",
-            got="$strategy_name{$param_name}",
-            expected="$strategy_name with one of: $supported_names",
-            suggestion="Use $strategy_name{$(nameof(first(supported)))}() or check available parameters",
-            context="validate_supported_parameter - parameter validation"
-        ))
-    end
-    
-    return nothing
 end

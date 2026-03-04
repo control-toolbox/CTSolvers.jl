@@ -68,7 +68,7 @@ using MadNCL, MadNLP
 
 See also: [`AbstractNLPSolver`](@ref), [`MadNLP`](@ref), [`Ipopt`](@ref), [`CPU`](@ref), [`GPU`](@ref)
 """
-struct MadNCL{P<:AbstractStrategyParameter} <: AbstractNLPSolver
+struct MadNCL{P<:Union{CPU, GPU}} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -94,23 +94,6 @@ Returns `CPU` as the default execution parameter.
 See also: [`MadNCL`](@ref), [`CPU`](@ref)
 """
 Strategies._default_parameter(::Type{<:Solvers.MadNCL}) = CPU
-
-"""
-$(TYPEDSIGNATURES)
-
-Supported parameter types for MadNCL.
-
-Returns a tuple of parameter types that this strategy accepts. MadNCL
-supports both CPU and GPU execution.
-
-# Implementation Notes
-
-This method is part of the `AbstractStrategy` parameter contract and must be
-implemented by all parameterized strategies.
-
-See also: [`MadNCL`](@ref), [`CPU`](@ref), [`GPU`](@ref), [`_default_parameter`](@ref)
-"""
-Strategies._supported_parameters(::Type{<:Solvers.MadNCL}) = (CPU, GPU)
 
 # ============================================================================
 # Constructor with tag dispatch

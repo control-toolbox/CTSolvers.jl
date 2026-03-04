@@ -44,32 +44,14 @@ function test_ipopt_parameter_validation()
             Test.@test Strategies.id(Solvers.Ipopt{Strategies.CPU}) == :ipopt
         end
         
-        Test.@testset "_supported_parameters" begin
-            supported = Strategies._supported_parameters(Solvers.Ipopt)
-            Test.@test supported == (Strategies.CPU,)
-            Test.@test Strategies.CPU in supported
-            Test.@test Strategies.GPU ∉ supported
-        end
-        
-        Test.@testset "validate_supported_parameter" begin
-            # CPU should be valid
-            Test.@test_nowarn Strategies.validate_supported_parameter(
-                Solvers.Ipopt, Strategies.CPU
-            )
-            
-            # GPU should be invalid
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.validate_supported_parameter(
-                Solvers.Ipopt, Strategies.GPU
-            )
-        end
         
         # ====================================================================
         # UNIT TESTS - Constructor Validation (without extension)
         # ====================================================================
         
         Test.@testset "Constructor validation without extension" begin
-            # GPU parameter should fail with IncorrectArgument
-            Test.@test_throws Exceptions.IncorrectArgument Solvers.Ipopt{Strategies.GPU}()
+            # GPU parameter should fail with TypeError (compile-time validation)
+            Test.@test_throws TypeError Solvers.Ipopt{Strategies.GPU}()
         end
         
         # Note: Detailed error message testing removed - the important validation
@@ -79,8 +61,8 @@ function test_ipopt_parameter_validation()
         # ====================================================================
         
         Test.@testset "metadata() validation without extension" begin
-            # GPU parameter should fail with IncorrectArgument
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.metadata(Solvers.Ipopt{Strategies.GPU})
+            # GPU parameter should fail with TypeError (compile-time validation)
+            Test.@test_throws TypeError Strategies.metadata(Solvers.Ipopt{Strategies.GPU})
         end
         
         # ====================================================================

@@ -3,7 +3,7 @@ module TestParameterContract
 using Test
 using CTSolvers
 using CTSolvers.Strategies
-using CTSolvers.Strategies: _supported_parameters, _default_parameter
+using CTSolvers.Strategies: _default_parameter
 using CTBase.Exceptions
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
@@ -23,8 +23,7 @@ struct FakeStrategyWithoutContract <: AbstractStrategy
     options::StrategyOptions
 end
 
-# Intentionally DO NOT implement _supported_parameters or _default_parameter
-# to test the fallback behavior
+# Intentionally DO NOT implement _default_parameter to test the fallback behavior
 
 # ============================================================================
 # Test function
@@ -48,20 +47,6 @@ function test_parameter_contract()
         # ====================================================================
         
         Test.@testset "Fallback implementations throw NotImplemented" begin
-            Test.@testset "_supported_parameters fallback" begin
-                err = try
-                    _supported_parameters(FakeStrategyWithoutContract)
-                catch e
-                    e
-                end
-                
-                Test.@test err isa NotImplemented
-                Test.@test occursin("must implement _supported_parameters", err.msg)
-                Test.@test occursin("Strategies._supported_parameters", err.required_method)
-                Test.@test occursin("Strategies._supported_parameters", err.suggestion)
-                Test.@test occursin("parameter contract", lowercase(err.context))
-            end
-            
             Test.@testset "_default_parameter fallback" begin
                 err = try
                     _default_parameter(FakeStrategyWithoutContract)
@@ -84,23 +69,22 @@ function test_parameter_contract()
         Test.@testset "All real strategies implement the contract" begin
             # List of all parameterized strategies
             strategies = [
-                (CTSolvers.Modelers.ADNLP, "ADNLP", (CPU,)),
-                (CTSolvers.Modelers.Exa, "Exa", (CPU, GPU)),
-                (CTSolvers.Solvers.Ipopt, "Ipopt", (CPU,)),
-                (CTSolvers.Solvers.Knitro, "Knitro", (CPU,)),
-                (CTSolvers.Solvers.MadNLP, "MadNLP", (CPU, GPU)),
-                (CTSolvers.Solvers.MadNCL, "MadNCL", (CPU, GPU))
+                (CTSolvers.Modelers.ADNLP, "ADNLP"),
+                (CTSolvers.Modelers.Exa, "Exa"),
+                (CTSolvers.Solvers.Ipopt, "Ipopt"),
+                (CTSolvers.Solvers.Knitro, "Knitro"),
+                (CTSolvers.Solvers.MadNLP, "MadNLP"),
+                (CTSolvers.Solvers.MadNCL, "MadNCL")
             ]
             
-            for (strategy_type, name, expected_params) in strategies
+            for (strategy_type, name) in strategies
                 Test.@testset "$name implements contract" begin
                     # Should not throw NotImplemented
-                    supported = Test.@test_nowarn _supported_parameters(strategy_type)
-                    Test.@test supported == expected_params
-                    
                     default = Test.@test_nowarn _default_parameter(strategy_type)
-                    Test.@test default ∈ supported
                     Test.@test default == CPU  # All current strategies default to CPU
+                    
+                    # Type constraints enforce parameter validation at compile-time
+                    # No runtime _supported_parameters() needed
                 end
             end
         end
@@ -111,9 +95,8 @@ function test_parameter_contract()
         
         Test.@testset "Contract enforcement prevents invalid usage" begin
             Test.@testset "Cannot use FakeStrategyWithoutContract in registry" begin
-                # Attempting to query parameters for a strategy without contract
+                # Attempting to query default parameter for a strategy without contract
                 # should fail with NotImplemented
-                Test.@test_throws NotImplemented _supported_parameters(FakeStrategyWithoutContract)
                 Test.@test_throws NotImplemented _default_parameter(FakeStrategyWithoutContract)
             end
         end

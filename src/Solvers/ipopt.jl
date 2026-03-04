@@ -106,7 +106,7 @@ using NLPModelsIpopt
 
 See also: [`CPU`](@ref), [`AbstractNLPSolver`](@ref), [`MadNLP`](@ref), [`Knitro`](@ref)
 """
-struct Ipopt{P<:AbstractStrategyParameter} <: AbstractNLPSolver
+struct Ipopt{P<:CPU} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -134,26 +134,9 @@ Returns `CPU` as the default execution parameter.
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: [`Ipopt`](@ref), [`CPU`](@ref), [`_supported_parameters`](@ref)
+See also: [`Ipopt`](@ref), [`CPU`](@ref)
 """
 Strategies._default_parameter(::Type{<:Solvers.Ipopt}) = CPU
-
-"""
-$(TYPEDSIGNATURES)
-
-Supported parameter types for Ipopt.
-
-Returns a tuple of parameter types that this strategy accepts. Ipopt
-only supports CPU execution.
-
-# Implementation Notes
-
-This method is part of the `AbstractStrategy` parameter contract and must be
-implemented by all parameterized strategies.
-
-See also: [`Ipopt`](@ref), [`CPU`](@ref), [`GPU`](@ref), [`_default_parameter`](@ref)
-"""
-Strategies._supported_parameters(::Type{<:Solvers.Ipopt}) = (CPU,)
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -217,9 +200,7 @@ solver_cpu = Solvers.Ipopt{CPU}(max_iter=1000, tol=1e-6)
 
 See also: [`Ipopt`](@ref), [`CPU`](@ref)
 """
-function Solvers.Ipopt{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
-    # Validate parameter support
-    validate_supported_parameter(Solvers.Ipopt, P)
+function Solvers.Ipopt{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
     return build_ipopt_solver(IpoptTag, P; mode=mode, kwargs...)
 end
 
@@ -256,11 +237,8 @@ This stub is for parameterized types `Ipopt{P}` where `P <: AbstractStrategyPara
 
 See also: [`Ipopt`](@ref), [`Strategies.StrategyMetadata`](@ref)
 """
-function Strategies.metadata(::Type{<:Solvers.Ipopt{P}}) where {P<:AbstractStrategyParameter}
-    # Validate parameter BEFORE checking extension
-    Strategies.validate_supported_parameter(Solvers.Ipopt, P)
-    
-    # If validation passes, extension is missing
+function Strategies.metadata(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU}
+    # Extension is missing
     throw(Exceptions.ExtensionError(
         :NLPModelsIpopt;
         message="to access Ipopt{$P} options metadata",

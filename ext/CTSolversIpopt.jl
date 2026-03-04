@@ -16,7 +16,7 @@ import NLPModels
 import SolverCore
 
 # Import parameter types
-using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter, validate_supported_parameter
+using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter
 
 # ============================================================================
 # Metadata definition
@@ -27,9 +27,7 @@ $(TYPEDSIGNATURES)
 
 Return metadata defining Ipopt options and their specifications.
 """
-function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:AbstractStrategyParameter}
-    # Validate parameter support
-    validate_supported_parameter(Solvers.Ipopt, P)
+function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
     return Strategies.StrategyMetadata(
         # ====================================================================
         # Termination options
