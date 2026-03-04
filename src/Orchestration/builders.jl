@@ -1,6 +1,4 @@
-# ==========================================================================
 # Strategy builders based on ResolvedMethod
-# ==========================================================================
 
 """
 $(TYPEDSIGNATURES)
@@ -21,8 +19,16 @@ global `resolved.parameter`.
 - `Tuple{Vararg{Symbol}}`: Option names for the active strategy
 
 # Throws
-- `Exceptions.IncorrectArgument`: If the active strategy is parameterized but
+- `CTBase.Exceptions.IncorrectArgument`: If the active strategy is parameterized but
   `resolved.parameter` is `nothing`
+
+# Example
+```julia
+resolved = resolve_method(method, families, registry)
+names = option_names_from_resolved(resolved, :solver, families, registry)
+```
+
+See also: [`resolve_method`](@ref), [`build_strategy_from_resolved`](@ref), [`Strategies.option_names`](@ref)
 """
 function option_names_from_resolved(
     resolved::ResolvedMethod,
@@ -72,8 +78,16 @@ validated and resolved by [`resolve_method`](@ref).
 - Concrete strategy instance for the selected ID (parameterized if required)
 
 # Throws
-- `Exceptions.IncorrectArgument`: If the active strategy is parameterized but
+- `CTBase.Exceptions.IncorrectArgument`: If the active strategy is parameterized but
   `resolved.parameter` is `nothing`
+
+# Example
+```julia
+resolved = resolve_method(method, families, registry)
+solver = build_strategy_from_resolved(resolved, :solver, families, registry; mode=:strict, kwargs...)
+```
+
+See also: [`resolve_method`](@ref), [`Strategies.build_strategy`](@ref), [`option_names_from_resolved`](@ref)
 """
 function build_strategy_from_resolved(
     resolved::ResolvedMethod,

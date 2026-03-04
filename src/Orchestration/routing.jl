@@ -1,10 +1,4 @@
-# ============================================================================
 # Option routing with strategy-aware disambiguation
-# ============================================================================
-
-# ----------------------------------------------------------------------------
-# Main Routing Function
-# ----------------------------------------------------------------------------
 
 """
 $(TYPEDSIGNATURES)
@@ -67,41 +61,19 @@ solve(ocp, :collocation, :adnlp, :ipopt;
 
 # Throws
 
-- `Exceptions.IncorrectArgument`: If an option is unknown, ambiguous without
+- `CTBase.Exceptions.IncorrectArgument`: If an option is unknown, ambiguous without
   disambiguation, or routed to the wrong strategy
 
 # Example
-```julia-repl
-julia> method = (:collocation, :adnlp, :ipopt)
-
-julia> families = (
-           discretizer = AbstractOptimalControlDiscretizer,
-           modeler = AbstractNLPModeler,
-           solver = AbstractNLPSolver
-       )
-
-julia> action_defs = [
-           OptionDefinition(name=:display, type=Bool, default=true,
-                          description="Display progress")
-       ]
-
-julia> kwargs = (
-           grid_size = 100,
-           backend = (:sparse, :adnlp),
-           max_iter = 1000,
-           display = true
-       )
-
-julia> routed = route_all_options(method, families, action_defs, kwargs,
-                                   registry)
-(action = (display = true (user),),
- strategies = (discretizer = (grid_size = 100,),
-              modeler = (backend = :sparse,),
-              solver = (max_iter = 1000,)))
+```julia
+method = (:collocation, :adnlp, :ipopt)
+families = (discretizer = DiscretizerFamily, modeler = ModelerFamily, solver = SolverFamily)
+action_defs = Options.OptionDefinition[]
+kwargs = (grid_size=100, backend=Strategies.route_to(adnlp=:sparse))
+routed = route_all_options(method, families, action_defs, kwargs, registry)
 ```
 
-See also: [`extract_strategy_ids`](@ref),
-[`build_strategy_to_family_map`](@ref), [`build_option_ownership_map`](@ref)
+See also: [`extract_strategy_ids`](@ref), [`build_strategy_to_family_map`](@ref), [`build_option_ownership_map`](@ref)
 """
 function route_all_options(
     method::Tuple{Vararg{Symbol}},
@@ -113,8 +85,8 @@ function route_all_options(
 )
     resolved = resolve_method(method, families, registry)
 
-    # Step 1: Extract action options FIRST
-    # We exclude RoutedOptions from action extraction, as they are explicitly meant for strategies
+    # Step 1: Extract action options first.
+    # RoutedOption values are intended for strategies and are excluded from action extraction.
     action_kwargs = NamedTuple(
         k => v for (k, v) in pairs(kwargs) if !(v isa Strategies.RoutedOption)
     )
@@ -123,21 +95,21 @@ function route_all_options(
         action_kwargs, action_defs
     )
     
-    # Re-integrate RoutedOptions for strategy routing
+    # Re-integrate RoutedOption values for strategy routing.
     remaining_kwargs = merge(
         remaining_action_kwargs,
         NamedTuple(k => v for (k, v) in pairs(kwargs) if v isa Strategies.RoutedOption)
     )
 
-    # Step 2: Build strategy-to-family mapping
+    # Step 2: Build strategy-to-family mapping.
     strategy_to_family = build_strategy_to_family_map(
         resolved, families, registry
     )
 
-    # Step 3: Build option ownership map
+    # Step 3: Build option ownership map.
     option_owners = build_option_ownership_map(resolved, families, registry)
 
-    # Detect action option shadowing (Action masking a Strategy option)
+    # Detect action option shadowing (action masks a strategy option).
     for (k, opt_val) in action_options
         if opt_val.source === :user && haskey(option_owners, k) && !isempty(option_owners[k])
             owners_str = join(sort(collect(option_owners[k])), ", ")
@@ -147,17 +119,17 @@ function route_all_options(
         end
     end
 
-    # Step 4: Route each remaining option
+    # Step 4: Route each remaining option.
     routed = Dict{Symbol, Vector{Pair{Symbol, Any}}}()
     for family_name in keys(families)
         routed[family_name] = Pair{Symbol, Any}[]
     end
     for (key, raw_val) in pairs(remaining_kwargs)
-        # Try to extract disambiguation
+        # Try to extract disambiguation.
         disambiguations = extract_strategy_ids(raw_val, resolved)
 
         if disambiguations !== nothing
-            # Explicitly disambiguated (single or multiple strategies)
+            # Explicit disambiguation (single or multiple strategies).
             for (value, strategy_id) in disambiguations
                 family_name = strategy_to_family[strategy_id]
                 owners = get(option_owners, key, Set{Symbol}())

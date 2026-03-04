@@ -1,11 +1,27 @@
-# ============================================================================
 # Disambiguation helpers for strategy-based option routing
-# ============================================================================
 
-# ----------------------------------------------------------------------------
-# Strategy ID Extraction
-# ----------------------------------------------------------------------------
+"""
+$(TYPEDEF)
 
+Resolved representation of a method tuple for strategy-aware option routing.
+
+`ResolvedMethod` contains precomputed lookups derived from a `method` tuple and a
+set of `families`. It is intended to be created via [`resolve_method`](@ref) and
+then reused by routing and builder utilities.
+
+# Fields
+- `tokens::T`: The original method tokens.
+- `ids_by_family::I`: Family-wise strategy IDs extracted from `tokens`.
+- `strategy_to_family::Dict{Symbol, Symbol}`: Reverse map `strategy_id => family_name`.
+- `strategy_ids::Tuple{Vararg{Symbol}}`: Tuple of active strategy IDs.
+- `parameter::Union{Nothing, Type{<:Strategies.AbstractStrategyParameter}}`: Optional global
+  parameter extracted from the method tuple.
+
+# Notes
+- This type is internal to `CTSolvers.Orchestration`.
+
+See also: [`resolve_method`](@ref), [`route_all_options`](@ref)
+"""
 struct ResolvedMethod{T<:Tuple, I<:NamedTuple}
     tokens::T
     ids_by_family::I
@@ -14,6 +30,33 @@ struct ResolvedMethod{T<:Tuple, I<:NamedTuple}
     parameter::Union{Nothing, Type{<:Strategies.AbstractStrategyParameter}}
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Resolve a method tuple into a [`ResolvedMethod`](@ref) for routing and builders.
+
+This function extracts one strategy ID per family (using the `Strategies` contract),
+builds reverse lookup maps, and extracts a global strategy parameter (if present).
+
+# Arguments
+- `method::Tuple{Vararg{Symbol}}`: Method tokens, e.g. `(:collocation, :adnlp, :ipopt)`.
+- `families::NamedTuple`: Mapping `family_name => family_type` used for ID extraction.
+- `registry::Strategies.StrategyRegistry`: Strategy registry.
+
+# Returns
+- `ResolvedMethod`: Precomputed lookups derived from `method`.
+
+# Throws
+- `CTBase.Exceptions.IncorrectArgument`: If a family strategy ID cannot be extracted from `method`.
+
+# Example
+```julia
+resolved = resolve_method(method, families, registry)
+resolved.strategy_ids
+```
+
+See also: [`extract_strategy_ids`](@ref), [`build_strategy_to_family_map`](@ref)
+"""
 function resolve_method(
     method::Tuple{Vararg{Symbol}},
     families::NamedTuple,
@@ -68,22 +111,13 @@ value = route_to(solver=100, modeler=50)        # Multiple strategies
 
 # Throws
 
-- `Exceptions.IncorrectArgument`: If a strategy ID in the disambiguation syntax
+- `CTBase.Exceptions.IncorrectArgument`: If a strategy ID in the disambiguation syntax
   is not present in the method tuple
 
 # Examples
-```julia-repl
-julia> # RoutedOption (recommended)
-julia> extract_strategy_ids(route_to(solver=100), (:collocation, :adnlp, :ipopt))
-[(100, :solver)]
-
-julia> # Multiple strategies
-julia> extract_strategy_ids(route_to(solver=100, modeler=50), (:collocation, :adnlp, :ipopt))
-[(100, :solver), (50, :modeler)]
-
-julia> # No disambiguation
-julia> extract_strategy_ids(:sparse, (:collocation, :adnlp, :ipopt))
-nothing
+```julia
+resolved = resolve_method(method, families, registry)
+ids = extract_strategy_ids(route_to(solver=100), resolved)
 ```
 
 See also: [`route_to`](@ref), [`RoutedOption`](@ref), [`route_all_options`](@ref)
@@ -113,9 +147,7 @@ function extract_strategy_ids(
     return nothing
 end
 
-# ----------------------------------------------------------------------------
-# Strategy-to-Family Mapping
-# ----------------------------------------------------------------------------
+# Strategy-to-family mapping
 
 """
 $(TYPEDSIGNATURES)
@@ -135,20 +167,9 @@ by the routing system to determine which family owns each strategy.
 - `Dict{Symbol, Symbol}`: Dictionary mapping strategy ID => family name
 
 # Example
-```julia-repl
-julia> method = (:collocation, :adnlp, :ipopt)
-
-julia> families = (
-           discretizer = AbstractOptimalControlDiscretizer,
-           modeler = AbstractNLPModeler,
-           solver = AbstractNLPSolver
-       )
-
-julia> map = build_strategy_to_family_map(method, families, registry)
-Dict{Symbol, Symbol} with 3 entries:
-  :collocation => :discretizer
-  :adnlp       => :modeler
-  :ipopt       => :solver
+```julia
+resolved = resolve_method(method, families, registry)
+map = build_strategy_to_family_map(resolved, families, registry)
 ```
 
 See also: [`build_option_ownership_map`](@ref), [`extract_strategy_ids`](@ref)
@@ -161,9 +182,7 @@ function build_strategy_to_family_map(
     return copy(resolved.strategy_to_family)
 end
 
-# ----------------------------------------------------------------------------
-# Option Ownership Map
-# ----------------------------------------------------------------------------
+# Option ownership map
 
 """
 $(TYPEDSIGNATURES)
@@ -185,12 +204,9 @@ disambiguation.
   Set{family_name}
 
 # Example
-```julia-repl
-julia> map = build_option_ownership_map(method, families, registry)
-Dict{Symbol, Set{Symbol}} with 3 entries:
-  :grid_size => Set([:discretizer])
-  :backend   => Set([:modeler, :solver])  # Ambiguous!
-  :max_iter  => Set([:solver])
+```julia
+resolved = resolve_method(method, families, registry)
+map = build_option_ownership_map(resolved, families, registry)
 ```
 
 # Notes
@@ -235,8 +251,22 @@ $(TYPEDSIGNATURES)
 
 Build a mapping from alias names to their primary option names for all strategies in the method.
 
+# Arguments
+- `resolved::ResolvedMethod`: Resolved method information (active strategies)
+- `families::NamedTuple`: NamedTuple mapping family names to abstract types
+- `registry::Strategies.StrategyRegistry`: Strategy registry
+
 # Returns
-- `Dict{Symbol, Symbol}`: Dictionary mapping alias => primary_name
+- `Dict{Symbol, Symbol}`: Dictionary mapping `alias => primary_name`
+
+# Example
+```julia
+resolved = resolve_method(method, families, registry)
+alias_map = build_alias_to_primary_map(resolved, families, registry)
+```
+
+See also: [`build_option_ownership_map`](@ref), [`resolve_method`](@ref)
+
 """
 function build_alias_to_primary_map(
     resolved::ResolvedMethod,

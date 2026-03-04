@@ -7,6 +7,7 @@ ensuring unknown options are handled correctly in both strict and permissive mod
 module TestRoutingValidation
 
 import Test
+import CTBase.Exceptions
 import CTSolvers.Strategies
 import CTSolvers.Orchestration
 import CTSolvers.Options
@@ -92,7 +93,7 @@ function test_routing_validation()
             # Unknown option without disambiguation always fails
             kwargs = (unknown_option = 123,)
             
-            Test.@test_throws Exception Orchestration.route_all_options(
+            Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
         end
@@ -104,7 +105,7 @@ function test_routing_validation()
             # Unknown option with disambiguation but no bypass always fails
             kwargs = (unknown_option = Strategies.route_to(test_solver=123),)
             
-            Test.@test_throws Exception Orchestration.route_all_options(
+            Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
         end
@@ -155,7 +156,7 @@ function test_routing_validation()
             # Unknown option without disambiguation always fails (no bypass possible)
             kwargs = (unknown_option = 123,)
             
-            Test.@test_throws Exception Orchestration.route_all_options(
+            Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
         end
@@ -189,7 +190,7 @@ function test_routing_validation()
             # Without mode parameter, should behave as strict
             kwargs = (unknown_option = Strategies.route_to(test_solver=123),)
             
-            Test.@test_throws Exception Orchestration.route_all_options(
+            Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
         end
