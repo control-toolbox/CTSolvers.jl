@@ -3,6 +3,17 @@
 # Strategy-based modelers for converting discretized optimization problems into
 # NLP backend models.
 
+"""
+Modelers module.
+
+This module defines `AbstractNLPModeler` and concrete modeler strategies such as
+`ADNLP` and `Exa`. Modelers are strategies that:
+- Build NLP backend models from an `Optimization.AbstractOptimizationProblem` and an initial guess.
+- Build problem-specific solution objects from solver execution statistics.
+
+Modelers implement the `Strategies.AbstractStrategy` contract and participate in
+orchestration and option routing.
+"""
 module Modelers
 
 # Imports

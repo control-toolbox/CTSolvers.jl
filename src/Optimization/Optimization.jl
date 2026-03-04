@@ -3,6 +3,18 @@
 # General optimization problem types, builders, and the
 # `AbstractOptimizationProblem` contract.
 
+"""
+Optimization module.
+
+This module defines the abstract optimization problem interface
+(`AbstractOptimizationProblem`) together with the builder pattern used by
+modelers:
+- model builders construct backend NLP models from an initial guess
+- solution builders convert solver statistics into domain-level solutions
+
+The functions `build_model` and `build_solution` provide a backend-agnostic API
+delegating the actual work to the selected modeler strategy.
+"""
 module Optimization
 
 # Imports

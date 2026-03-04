@@ -122,6 +122,24 @@ function extract_id_from_method(
     end
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Internal helper returning the set of all registered strategy IDs.
+
+This function is used by registry utilities that need to distinguish strategy
+tokens from other tokens that may appear in a method tuple (e.g. parameter
+tokens).
+
+# Arguments
+- `registry::StrategyRegistry`: Strategy registry.
+
+# Returns
+- `Set{Symbol}`: Set of all strategy IDs present in the registry.
+
+# Notes
+- This function is internal and not part of the public API.
+"""
 function _strategy_id_set(registry::StrategyRegistry)
     ids = Set{Symbol}()
     for strategies in values(registry.families)
@@ -132,6 +150,25 @@ function _strategy_id_set(registry::StrategyRegistry)
     return ids
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Return all available strategy parameter types for a given `(strategy_id, family)`.
+
+This function is used by orchestration to validate that a global parameter token
+present in the method tuple is compatible with all selected strategies.
+
+# Arguments
+- `strategy_id::Symbol`: Strategy identifier (e.g. `:madnlp`).
+- `family::Type{<:AbstractStrategy}`: Family to search within.
+- `registry::StrategyRegistry`: Strategy registry.
+
+# Returns
+- `Vector{Type{<:AbstractStrategyParameter}}`: Supported parameter types. Returns
+  an empty vector if the strategy is not parameterized.
+
+See also: [`extract_global_parameter_from_method`](@ref), [`get_parameter_type`](@ref)
+"""
 function available_parameters(
     strategy_id::Symbol,
     family::Type{<:AbstractStrategy},
@@ -149,6 +186,33 @@ function available_parameters(
     return params
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Extract the global strategy parameter from a method tuple.
+
+The method tuple may contain at most one parameter token (e.g. `:cpu`, `:gpu`).
+If present, it is resolved to a parameter type using `registry.parameters`.
+
+If any of the selected strategies in the method are parameterized, then a
+parameter token is required and must be supported by each parameterized strategy.
+
+# Arguments
+- `method::Tuple{Vararg{Symbol}}`: Method tuple containing strategy IDs and
+  optionally one parameter token.
+- `registry::StrategyRegistry`: Strategy registry.
+
+# Returns
+- `Union{Nothing, Type{<:AbstractStrategyParameter}}`: The extracted parameter
+  type, or `nothing` if none is present.
+
+# Throws
+- `Exceptions.IncorrectArgument`: If more than one parameter token is present,
+  if a parameter is missing but required, if a parameter is unsupported, or if a
+  parameter token is provided but no selected strategy is parameterized.
+
+See also: [`available_parameters`](@ref), [`Strategies.AbstractStrategyParameter`](@ref)
+"""
 function extract_global_parameter_from_method(
     method::Tuple{Vararg{Symbol}},
     registry::StrategyRegistry

@@ -220,7 +220,7 @@ flowchart TB
 
 See [Implementing a Strategy](@ref) for a step-by-step tutorial.
 
-### Strategy Parameters
+### Strategy Parameters (Overview)
 
 Strategies can be **parameterized** to specialize behavior based on execution context (e.g., CPU vs GPU):
 

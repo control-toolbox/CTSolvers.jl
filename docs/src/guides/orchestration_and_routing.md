@@ -70,6 +70,13 @@ families = (
 nothing # hide
 ```
 
+```@example routing
+using CTSolvers.Orchestration: resolve_method
+
+resolved = resolve_method(method, families, registry)
+nothing # hide
+```
+
 The orchestration system uses the `StrategyRegistry` to resolve each symbol to its concrete type and access its metadata.
 
 ## Automatic Routing
@@ -138,19 +145,19 @@ opt = route_to(ipopt = 100, adnlp = 50)
 ```
 
 ```@example routing
-extract_strategy_ids(opt, (:collocation, :adnlp, :ipopt))
+extract_strategy_ids(opt, resolved)
 ```
 
 No disambiguation detected for plain values:
 
 ```@example routing
-extract_strategy_ids(:plain_value, (:collocation, :adnlp, :ipopt))
+extract_strategy_ids(:plain_value, resolved)
 ```
 
 Invalid strategy ID in `route_to`:
 
 ```@repl routing
-extract_strategy_ids(route_to(unknown = 42), (:collocation, :adnlp, :ipopt))
+extract_strategy_ids(route_to(unknown = 42), resolved)
 ```
 
 ## Strict and Permissive Modes
@@ -170,7 +177,7 @@ Maps each strategy ID in the method to its family name:
 
 ```@example routing
 using CTSolvers.Orchestration: build_strategy_to_family_map
-build_strategy_to_family_map(method, families, registry)
+build_strategy_to_family_map(resolved, families, registry)
 ```
 
 ### `build_option_ownership_map`
@@ -179,7 +186,7 @@ Scans all strategy metadata and maps each option name to the set of families tha
 
 ```@example routing
 using CTSolvers.Orchestration: build_option_ownership_map
-build_option_ownership_map(method, families, registry)
+build_option_ownership_map(resolved, families, registry)
 ```
 
 Note that `:backend` is owned by both `:modeler` and `:solver` — it is ambiguous and requires disambiguation.
@@ -189,11 +196,11 @@ Note that `:backend` is owned by both `:modeler` and `:solver` — it is ambiguo
 Detects disambiguation syntax and extracts `(value, strategy_id)` pairs:
 
 ```@example routing
-extract_strategy_ids(route_to(ipopt = 1000), method)
+extract_strategy_ids(route_to(ipopt = 1000), resolved)
 ```
 
 ```@example routing
-extract_strategy_ids(42, method)
+extract_strategy_ids(42, resolved)
 ```
 
 ## Complete Example
