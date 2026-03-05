@@ -66,6 +66,50 @@ function test_exa_gpu()
             modeler = Modelers.Exa()
             Test.@test modeler isa Modelers.Exa{Strategies.CPU}
         end
+        
+        # ====================================================================
+        # UNIT TESTS - Consistency Validation
+        # ====================================================================
+        
+        Test.@testset "Consistency validation warnings" begin
+            # Test that metadata contains validators for backend consistency
+            
+            # Test Exa metadata structure
+            exa_cpu_meta = Strategies.metadata(Modelers.Exa{Strategies.CPU})
+            exa_gpu_meta = Strategies.metadata(Modelers.Exa{Strategies.GPU})
+            
+            Test.@test haskey(exa_cpu_meta, :backend)
+            Test.@test haskey(exa_gpu_meta, :backend)
+            
+            # Verify that the backend options have validators
+            Test.@test exa_cpu_meta[:backend].validator !== nothing
+            Test.@test exa_gpu_meta[:backend].validator !== nothing
+            
+            # Test that validators are functions (callable)
+            Test.@test isa(exa_cpu_meta[:backend].validator, Function)
+            Test.@test isa(exa_gpu_meta[:backend].validator, Function)
+            
+            # Test actual validation with different backends
+            cpu_validator = exa_cpu_meta[:backend].validator
+            gpu_validator = exa_gpu_meta[:backend].validator
+            
+            # Test validators accept different inputs (no warnings expected)
+            Test.@test cpu_validator(nothing) === nothing
+            Test.@test gpu_validator(nothing) === nothing  # This will warn but still return nothing
+            
+            # Test GPU parameter with nothing backend (should warn)
+            Test.@test_logs (:warn, r"Inconsistent backend") gpu_validator(nothing)
+            
+            # If CUDA is available, test with CUDA backend
+            if is_cuda_on()
+                cuda_backend = CUDA.CUDABackend()
+                Test.@test cpu_validator(cuda_backend) === cuda_backend  # This will warn but still return cuda_backend
+                Test.@test gpu_validator(cuda_backend) === cuda_backend
+                
+                # Test CPU parameter with CUDA backend (should warn)
+                Test.@test_logs (:warn, r"Inconsistent backend") cpu_validator(cuda_backend)
+            end
+        end
     end
 end
 

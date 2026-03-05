@@ -61,7 +61,7 @@ function __madncl_default_linear_solver(::Type{GPU})
             context="Load MadNLPGPU extension first: using MadNLPGPU"
         ))
     end
-    return Main.MadNLPGPU.CUDSSSolver
+    return MadNLPGPU.CUDSSSolver
 end
 
 # ============================================================================
@@ -78,6 +78,30 @@ For GPU execution, the default linear solver is automatically set to
 `MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`.
 """
 function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrategyParameter}
+    # Create parameter-specific linear solver validator
+    linear_solver_validator = if P == CPU
+        function(linear_solver::Type{<:MadNLP.AbstractLinearSolver})
+            # Check if using GPU linear solver with CPU parameter
+            if isdefined(Main, :MadNLPGPU) && linear_solver == MadNLPGPU.CUDSSSolver
+                @warn "Using GPU linear solver (CUDSSSolver) with CPU parameter. " *
+                      "This may be inefficient. Consider using MadNLP.MumpsSolver for optimal CPU performance." maxlog=1
+            end
+            return linear_solver
+        end
+    else  # P == GPU
+        function(linear_solver::Type{<:MadNLP.AbstractLinearSolver})
+            # Check if using CPU linear solver with GPU parameter
+            if linear_solver == MadNLP.MumpsSolver
+                @warn "Using CPU linear solver (MumpsSolver) with GPU parameter. " *
+                      "Consider using MadNLPGPU.CUDSSSolver for optimal GPU performance." maxlog=1
+            elseif isdefined(Main, :MadNLPGPU) && linear_solver != MadNLPGPU.CUDSSSolver
+                @warn "Using non-GPU linear solver with GPU parameter. " *
+                      "Consider using MadNLPGPU.CUDSSSolver for optimal GPU performance." maxlog=1
+            end
+            return linear_solver
+        end
+    end
+
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:max_iter,
@@ -116,7 +140,8 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             name=:linear_solver,
             type=Type{<:MadNLP.AbstractLinearSolver},
             default=__madncl_default_linear_solver(P),
-            description="Linear solver implementation used inside MadNCL. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU."
+            description="Linear solver implementation used inside MadNCL. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU.",
+            validator=linear_solver_validator
         ),
         # ---- Termination options ----
         Strategies.OptionDefinition(;

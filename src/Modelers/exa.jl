@@ -38,8 +38,8 @@ Return the default execution backend for GPU parameter.
 
 Returns CUDA backend if available, throws ExtensionError otherwise.
 """
-function __exa_model_backend(::Type{GPU})
-    return __get_cuda_backend()
+function __exa_model_backend(P::Type{GPU})
+    return __get_cuda_backend(P)
 end
 
 """
@@ -60,19 +60,33 @@ and returns an appropriate CUDA backend.
 - Issues a warning if CUDA is loaded but not functional
 - Uses CUDA.CUDABackend() for GPU execution
 """
-function __get_cuda_backend()
-    if !isdefined(Main, :CUDA)
-        throw(Exceptions.ExtensionError(
-            :CUDA;
-            message="to use GPU backend with Exa modeler",
-            feature="GPU computation with ExaModels",
-            context="Load CUDA extension first: using CUDA"
-        ))
-    end
-    if !Main.CUDA.functional()
-        @warn "CUDA is loaded but not functional. GPU backend may not work properly." maxlog=1
-    end
-    return Main.CUDA.CUDABackend()
+function __get_cuda_backend(::Type{<:GPU})
+    throw(Exceptions.ExtensionError(
+        :CUDA;
+        message="to use GPU backend with Exa modeler",
+        feature="GPU computation with ExaModels",
+        context="Load CUDA extension first: using CUDA"
+    ))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if backend is consistent with parameter type.
+
+# Arguments
+- `parameter_type::Type{<:AbstractStrategyParameter}`: CPU or GPU parameter
+- `backend`: Backend to check consistency for
+
+# Returns
+- `Bool`: true if consistent, false otherwise
+
+# Notes
+- Default implementation returns true (all combinations allowed)
+- Specific implementations in extensions provide actual consistency checks
+"""
+function __consistent_backend(::Type{<:AbstractStrategyParameter}, backend)
+    return true
 end
 
 # NOTE: GPU options removed - not relevant for current implementation
@@ -236,7 +250,15 @@ function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU, GPU
             type=Union{Nothing, KernelAbstractions.Backend},  # More permissive for various backend types
             default=__exa_model_backend(P),
             description="Execution backend for ExaModels (CPU, GPU, etc.)",
-            aliases=(:exa_backend,)
+            aliases=(:exa_backend,),
+            validator=function(backend)
+                if !__consistent_backend(P, backend)
+                    param_str = P == CPU ? "CPU" : "GPU"
+                    backend_str = backend === nothing ? "no backend" : string(typeof(backend))
+                    @warn "Inconsistent backend ($backend_str) for $param_str parameter" maxlog=1
+                end
+                return backend
+            end
         )
     )
 end
