@@ -31,117 +31,6 @@ Extract the base floating-point type from NCLOptions type parameter.
 """
 base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseType
 
-"""
-$(TYPEDSIGNATURES)
-
-Return the default linear solver for CPU execution.
-
-Returns `MadNLP.MumpsSolver` which is the standard CPU linear solver.
-"""
-function Solvers.__madncl_default_linear_solver(::Type{Strategies.CPU})
-    return MadNLP.MumpsSolver
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Check if MumpsSolver is consistent with GPU parameter.
-
-# Arguments
-- `parameter_type::Type{GPU}`: GPU parameter type
-- `linear_solver::Type{MadNLP.MumpsSolver}`: CPU linear solver
-
-# Returns
-- `Bool`: false (CPU linear solver inconsistent with GPU parameter)
-
-# Notes
-- CPU linear solver should not be used with GPU parameter
-- Other linear solvers fall through to default implementation (returns true)
-"""
-function Solvers.__madncl_consistent_linear_solver(::Type{Strategies.GPU}, linear_solver::Type{MadNLP.MumpsSolver})
-    return false
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Check if UmfpackSolver is consistent with GPU parameter.
-
-# Arguments
-- `parameter_type::Type{GPU}`: GPU parameter type
-- `linear_solver::Type{MadNLP.UmfpackSolver}`: CPU linear solver
-
-# Returns
-- `Bool`: false (CPU linear solver inconsistent with GPU parameter)
-
-# Notes
-- CPU linear solver should not be used with GPU parameter
-- Other linear solvers fall through to default implementation (returns true)
-"""
-function Solvers.__madncl_consistent_linear_solver(::Type{Strategies.GPU}, linear_solver::Type{MadNLP.UmfpackSolver})
-    return false
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Check if LapackCPUSolver is consistent with GPU parameter.
-
-# Arguments
-- `parameter_type::Type{GPU}`: GPU parameter type
-- `linear_solver::Type{MadNLP.LapackCPUSolver}`: CPU linear solver
-
-# Returns
-- `Bool`: false (CPU linear solver inconsistent with GPU parameter)
-
-# Notes
-- CPU linear solver should not be used with GPU parameter
-- Other linear solvers fall through to default implementation (returns true)
-"""
-function Solvers.__madncl_consistent_linear_solver(::Type{Strategies.GPU}, linear_solver::Type{MadNLP.LapackCPUSolver})
-    return false
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Check if LDLSolver is consistent with GPU parameter.
-
-# Arguments
-- `parameter_type::Type{GPU}`: GPU parameter type
-- `linear_solver::Type{MadNLP.LDLSolver}`: CPU linear solver
-
-# Returns
-- `Bool`: false (CPU linear solver inconsistent with GPU parameter)
-
-# Notes
-- CPU linear solver should not be used with GPU parameter
-- Other linear solvers fall through to default implementation (returns true)
-"""
-function Solvers.__madncl_consistent_linear_solver(::Type{Strategies.GPU}, linear_solver::Type{MadNLP.LDLSolver})
-    return false
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Check if CHOLMODSolver is consistent with GPU parameter.
-
-# Arguments
-- `parameter_type::Type{GPU}`: GPU parameter type
-- `linear_solver::Type{MadNLP.CHOLMODSolver}`: CPU linear solver
-
-# Returns
-- `Bool`: false (CPU linear solver inconsistent with GPU parameter)
-
-# Notes
-- CPU linear solver should not be used with GPU parameter
-- Other linear solvers fall through to default implementation (returns true)
-"""
-function Solvers.__madncl_consistent_linear_solver(::Type{Strategies.GPU}, linear_solver::Type{MadNLP.CHOLMODSolver})
-    return false
-end
-
 # ============================================================================
 # Metadata Definition
 # ============================================================================
@@ -193,10 +82,10 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:linear_solver,
             type=Type{<:MadNLP.AbstractLinearSolver},
-            default=Solvers.__madncl_default_linear_solver(P),
+            default=Solvers.__madnlp_suite_default_linear_solver(P),
             description="Linear solver implementation used inside MadNCL. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU.",
             validator=function(linear_solver)
-                if !Solvers.__madncl_consistent_linear_solver(P, linear_solver)
+                if !Solvers.__madnlp_suite_consistent_linear_solver(P, linear_solver)
                     param_str = P == CPU ? "CPU" : "GPU"
                     @warn "Inconsistent linear solver ($linear_solver) for $param_str parameter" maxlog=1
                 end

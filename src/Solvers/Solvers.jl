@@ -66,6 +66,7 @@ include(joinpath(@__DIR__, "abstract_solver.jl"))
 include(joinpath(@__DIR__, "ipopt.jl"))
 include(joinpath(@__DIR__, "madnlp.jl"))
 include(joinpath(@__DIR__, "madncl.jl"))
+include(joinpath(@__DIR__, "madnlpsuite.jl"))
 include(joinpath(@__DIR__, "knitro.jl"))
 include(joinpath(@__DIR__, "common_solve_api.jl"))
 
