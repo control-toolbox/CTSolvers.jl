@@ -15,8 +15,10 @@ NLPModels = "a4795742-8479-5a88-8948-cc11e1c8c1a6"
 SolverCore = "ff4d7338-4cf1-434d-91df-b86cb86fb843"
 
 [weakdeps]
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 MadNCL = "434a0bcb-5a7c-42b2-a9d3-9e3f760e7af0"
 MadNLP = "2621e9c9-9eb4-46b1-8089-e8c72242dfb6"
+MadNLPGPU = "d72a61cc-809d-412f-99be-fd81f4b8a598"
 NLPModelsIpopt = "f4238b75-b362-5c4c-b852-0801c9a21d71"
 NLPModelsKnitro = "bec4dd0d-7755-52d5-9a02-22f0ffc7efcb"
 
@@ -25,6 +27,8 @@ CTSolversIpopt = "NLPModelsIpopt"
 CTSolversKnitro = "NLPModelsKnitro"
 CTSolversMadNCL = ["MadNCL", "MadNLP"]
 CTSolversMadNLP = ["MadNLP"]
+CTSolversMadNLPGPU = "MadNLPGPU"
+CTSolversCUDA = "CUDA"
 
 [compat]
 ADNLPModels = "0.8"
@@ -52,8 +56,6 @@ julia = "1.10"
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
-CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
-MadNLPGPU = "d72a61cc-809d-412f-99be-fd81f4b8a598"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

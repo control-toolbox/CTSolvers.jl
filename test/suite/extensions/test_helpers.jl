@@ -3,6 +3,7 @@ module TestExtensionHelpers
 import Test
 import CTBase.Exceptions
 import CTSolvers
+import CTSolvers.Solvers
 import CTSolvers.Strategies: CPU, GPU
 import MadNLP
 import MadNCL
@@ -54,7 +55,7 @@ function test_helpers()
         # ====================================================================
         
         Test.@testset "MadNCL default linear solver - CPU" begin
-            solver_type = CTSolversMadNCL.__madncl_default_linear_solver(CPU)
+            solver_type = Solvers.__madnlp_suite_default_linear_solver(CPU)
             Test.@test solver_type === MadNLP.MumpsSolver
         end
         
@@ -65,10 +66,10 @@ function test_helpers()
         Test.@testset "MadNCL default linear solver - GPU" begin
             # This should throw ExtensionError if MadNLPGPU is not loaded
             if !isdefined(Main, :MadNLPGPU)
-                Test.@test_throws Exceptions.ExtensionError CTSolversMadNCL.__madncl_default_linear_solver(GPU)
+                Test.@test_throws Exceptions.ExtensionError Solvers.__madnlp_suite_default_linear_solver(GPU)
             else
                 # If MadNLPGPU is loaded, should return CUDSSSolver
-                solver_type = CTSolversMadNCL.__madncl_default_linear_solver(GPU)
+                solver_type = Solvers.__madnlp_suite_default_linear_solver(GPU)
                 Test.@test solver_type === Main.MadNLPGPU.CUDSSSolver
             end
         end
@@ -78,7 +79,7 @@ function test_helpers()
         # ====================================================================
         
         Test.@testset "MadNLP default linear solver - CPU" begin
-            solver_type = CTSolversMadNLP.__madnlp_default_linear_solver(CPU)
+            solver_type = Solvers.__madnlp_suite_default_linear_solver(CPU)
             Test.@test solver_type === MadNLP.MumpsSolver
         end
         
@@ -89,10 +90,10 @@ function test_helpers()
         Test.@testset "MadNLP default linear solver - GPU" begin
             # This should throw ExtensionError if MadNLPGPU is not loaded
             if !isdefined(Main, :MadNLPGPU)
-                Test.@test_throws Exceptions.ExtensionError CTSolversMadNLP.__madnlp_default_linear_solver(GPU)
+                Test.@test_throws Exceptions.ExtensionError Solvers.__madnlp_suite_default_linear_solver(GPU)
             else
                 # If MadNLPGPU is loaded, should return CUDSSSolver
-                solver_type = CTSolversMadNLP.__madnlp_default_linear_solver(GPU)
+                solver_type = Solvers.__madnlp_suite_default_linear_solver(GPU)
                 Test.@test solver_type === Main.MadNLPGPU.CUDSSSolver
             end
         end
@@ -107,8 +108,8 @@ function test_helpers()
             Test.@test_nowarn CTSolversMadNCL.base_type(ncl_opts)
             
             # default_linear_solver should be type-stable for CPU
-            Test.@test_nowarn CTSolversMadNCL.__madncl_default_linear_solver(CPU)
-            Test.@test_nowarn CTSolversMadNLP.__madnlp_default_linear_solver(CPU)
+            Test.@test_nowarn Solvers.__madnlp_suite_default_linear_solver(CPU)
+            Test.@test_nowarn Solvers.__madnlp_suite_default_linear_solver(CPU)
         end
     end
 end

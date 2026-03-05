@@ -31,39 +31,6 @@ Extract the base floating-point type from NCLOptions type parameter.
 """
 base_type(::MadNCL.NCLOptions{BaseType}) where {BaseType<:AbstractFloat} = BaseType
 
-"""
-$(TYPEDSIGNATURES)
-
-Return the default linear solver for CPU execution.
-
-Returns `MadNLP.MumpsSolver` which is the standard CPU linear solver.
-"""
-function __madncl_default_linear_solver(::Type{CPU})
-    return MadNLP.MumpsSolver
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Return the default linear solver for GPU execution.
-
-Returns `MadNLPGPU.CUDSSSolver` if MadNLPGPU is loaded, otherwise throws an error.
-
-# Throws
-- `CTBase.Exceptions.ExtensionError`: If MadNLPGPU is not loaded
-"""
-function __madncl_default_linear_solver(::Type{GPU})
-    if !isdefined(Main, :MadNLPGPU)
-        throw(Exceptions.ExtensionError(
-            :MadNLPGPU;
-            message="to use GPU linear solver with MadNCL",
-            feature="GPU computation with MadNCL",
-            context="Load MadNLPGPU extension first: using MadNLPGPU"
-        ))
-    end
-    return Main.MadNLPGPU.CUDSSSolver
-end
-
 # ============================================================================
 # Metadata Definition
 # ============================================================================
@@ -115,8 +82,15 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:linear_solver,
             type=Type{<:MadNLP.AbstractLinearSolver},
-            default=__madncl_default_linear_solver(P),
-            description="Linear solver implementation used inside MadNCL. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU."
+            default=Solvers.__madnlp_suite_default_linear_solver(P),
+            description="Linear solver implementation used inside MadNCL. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU.",
+            validator=function(linear_solver)
+                if !Solvers.__madnlp_suite_consistent_linear_solver(P, linear_solver)
+                    param_str = P == CPU ? "CPU" : "GPU"
+                    @warn "Inconsistent linear solver ($linear_solver) for $param_str parameter" maxlog=1
+                end
+                return linear_solver
+            end
         ),
         # ---- Termination options ----
         Strategies.OptionDefinition(;

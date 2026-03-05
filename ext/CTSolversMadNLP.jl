@@ -30,30 +30,108 @@ Return the default linear solver for CPU execution.
 
 Returns `MadNLP.MumpsSolver` which is the standard CPU linear solver.
 """
-function __madnlp_default_linear_solver(::Type{CPU})
+function Solvers.__madnlp_suite_default_linear_solver(::Type{Strategies.CPU})
     return MadNLP.MumpsSolver
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Return the default linear solver for GPU execution.
+Check if MumpsSolver is consistent with GPU parameter.
 
-Returns `MadNLPGPU.CUDSSSolver` if MadNLPGPU is loaded, otherwise throws an error.
+# Arguments
+- `parameter_type::Type{GPU}`: GPU parameter type
+- `linear_solver::Type{MadNLP.MumpsSolver}`: CPU linear solver
 
-# Throws
-- `CTBase.Exceptions.ExtensionError`: If MadNLPGPU is not loaded
+# Returns
+- `Bool`: false (CPU linear solver inconsistent with GPU parameter)
+
+# Notes
+- CPU linear solver should not be used with GPU parameter
+- Other linear solvers fall through to default implementation (returns true)
 """
-function __madnlp_default_linear_solver(::Type{GPU})
-    if !isdefined(Main, :MadNLPGPU)
-        throw(Exceptions.ExtensionError(
-            :MadNLPGPU;
-            message="to use GPU linear solver with MadNLP",
-            feature="GPU computation with MadNLP",
-            context="Load MadNLPGPU extension first: using MadNLPGPU"
-        ))
-    end
-    return Main.MadNLPGPU.CUDSSSolver
+function Solvers.__madnlp_suite_consistent_linear_solver(::Type{Strategies.GPU}, linear_solver::Type{MadNLP.MumpsSolver})
+    return false
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if UmfpackSolver is consistent with GPU parameter.
+
+# Arguments
+- `parameter_type::Type{GPU}`: GPU parameter type
+- `linear_solver::Type{MadNLP.UmfpackSolver}`: CPU linear solver
+
+# Returns
+- `Bool`: false (CPU linear solver inconsistent with GPU parameter)
+
+# Notes
+- CPU linear solver should not be used with GPU parameter
+- Other linear solvers fall through to default implementation (returns true)
+"""
+function Solvers.__madnlp_suite_consistent_linear_solver(::Type{Strategies.GPU}, linear_solver::Type{MadNLP.UmfpackSolver})
+    return false
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if LapackCPUSolver is consistent with GPU parameter.
+
+# Arguments
+- `parameter_type::Type{GPU}`: GPU parameter type
+- `linear_solver::Type{MadNLP.LapackCPUSolver}`: CPU linear solver
+
+# Returns
+- `Bool`: false (CPU linear solver inconsistent with GPU parameter)
+
+# Notes
+- CPU linear solver should not be used with GPU parameter
+- Other linear solvers fall through to default implementation (returns true)
+"""
+function Solvers.__madnlp_suite_consistent_linear_solver(::Type{Strategies.GPU}, linear_solver::Type{MadNLP.LapackCPUSolver})
+    return false
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if LDLSolver is consistent with GPU parameter.
+
+# Arguments
+- `parameter_type::Type{GPU}`: GPU parameter type
+- `linear_solver::Type{MadNLP.LDLSolver}`: CPU linear solver
+
+# Returns
+- `Bool`: false (CPU linear solver inconsistent with GPU parameter)
+
+# Notes
+- CPU linear solver should not be used with GPU parameter
+- Other linear solvers fall through to default implementation (returns true)
+"""
+function Solvers.__madnlp_suite_consistent_linear_solver(::Type{Strategies.GPU}, linear_solver::Type{MadNLP.LDLSolver})
+    return false
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if CHOLMODSolver is consistent with GPU parameter.
+
+# Arguments
+- `parameter_type::Type{GPU}`: GPU parameter type
+- `linear_solver::Type{MadNLP.CHOLMODSolver}`: CPU linear solver
+
+# Returns
+- `Bool`: false (CPU linear solver inconsistent with GPU parameter)
+
+# Notes
+- CPU linear solver should not be used with GPU parameter
+- Other linear solvers fall through to default implementation (returns true)
+"""
+function Solvers.__madnlp_suite_consistent_linear_solver(::Type{Strategies.GPU}, linear_solver::Type{MadNLP.CHOLMODSolver})
+    return false
 end
 
 # ============================================================================
@@ -107,8 +185,15 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:linear_solver,
             type=Type{<:MadNLP.AbstractLinearSolver},
-            default=__madnlp_default_linear_solver(P),
-            description="Sparse linear solver for the KKT system. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU. Other options include MadNLP.UmfpackSolver, MadNLP.LDLSolver, MadNLP.CHOLMODSolver."
+            default=Solvers.__madnlp_suite_default_linear_solver(P),
+            description="Sparse linear solver for the KKT system. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU. Other options include MadNLP.UmfpackSolver, MadNLP.LDLSolver, MadNLP.CHOLMODSolver.",
+            validator=function(linear_solver)
+                if !Solvers.__madnlp_suite_consistent_linear_solver(P, linear_solver)
+                    param_str = P == CPU ? "CPU" : "GPU"
+                    @warn "Inconsistent linear solver ($linear_solver) for $param_str parameter" maxlog=1
+                end
+                return linear_solver
+            end
         ),
         # ---- Termination options ----
         Strategies.OptionDefinition(;
