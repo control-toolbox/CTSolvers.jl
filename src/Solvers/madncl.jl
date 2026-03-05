@@ -225,3 +225,51 @@ See also: [`MadNCL`](@ref), [`Strategies.metadata`](@ref)
 function Strategies.metadata(::Type{Solvers.MadNCL})
     return Strategies.metadata(Solvers.MadNCL{Strategies._default_parameter(Solvers.MadNCL)})
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the default linear solver for the given parameter type.
+
+# Arguments
+- `parameter_type::Type{<:AbstractStrategyParameter}`: CPU or GPU parameter
+
+# Returns
+- `Type{<:MadNLP.AbstractLinearSolver}`: Default linear solver type
+
+# Throws
+- `Exceptions.ExtensionError`: If GPU parameter used but MadNLPGPU not loaded
+
+# Notes
+- Default implementation throws ExtensionError for GPU
+- CPU implementation provided by CTSolversMadNCL extension
+- GPU implementation provided by CTSolversMadNLPGPU extension
+"""
+function __madncl_default_linear_solver(::Type{<:GPU})
+    throw(Exceptions.ExtensionError(
+        :MadNLPGPU;
+        message="to use GPU linear solver with MadNCL",
+        feature="GPU computation with MadNCL",
+        context="Load MadNLPGPU extension first: using MadNLPGPU"
+    ))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if linear solver is consistent with parameter type.
+
+# Arguments
+- `parameter_type::Type{<:AbstractStrategyParameter}`: CPU or GPU parameter
+- `linear_solver::Type`: Linear solver type
+
+# Returns
+- `Bool`: true if consistent, false otherwise
+
+# Notes
+- Default implementation returns true (all combinations allowed)
+- Specific implementations in extensions provide actual consistency checks
+"""
+function __madncl_consistent_linear_solver(::Type{<:AbstractStrategyParameter}, linear_solver::Type)
+    return true
+end

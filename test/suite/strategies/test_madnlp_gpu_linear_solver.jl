@@ -102,58 +102,91 @@ function test_madnlp_gpu_linear_solver()
             cpu_madnlp_validator = madnlp_cpu_meta[:linear_solver].validator
             cpu_madncl_validator = madncl_cpu_meta[:linear_solver].validator
             
-            # Test CPU validator with different solvers
+            # Test CPU validator with different solvers (no warnings expected)
             Test.@test cpu_madnlp_validator(MadNLP.MumpsSolver) === MadNLP.MumpsSolver
             Test.@test cpu_madncl_validator(MadNLP.MumpsSolver) === MadNLP.MumpsSolver
             
             # Test GPU solver validation with CPU parameter (should warn but work)
-            Test.@test cpu_madnlp_validator(MadNLPGPU.CUDSSSolver) === MadNLPGPU.CUDSSSolver
-            Test.@test cpu_madncl_validator(MadNLPGPU.CUDSSSolver) === MadNLPGPU.CUDSSSolver
+            Test.@test_logs (:warn, r"Inconsistent linear solver") cpu_madnlp_validator(MadNLPGPU.CUDSSSolver)
+            Test.@test_logs (:warn, r"Inconsistent linear solver") cpu_madncl_validator(MadNLPGPU.CUDSSSolver)
             
-            # Note: The warnings are tested indirectly through integration tests
-            # and manual verification. The validators work correctly but
-            # @test_warn is complex to use with custom validators.
-            
-            # Note: GPU metadata testing would require loading MadNLPGPU extension 
-            # in Main module, which is complex for testing. The validators 
-            # are tested indirectly through the CPU validator tests above.
+            # Test GPU metadata if MadNLPGPU is available
+            if isdefined(Main, :MadNLPGPU)
+                # Test MadNLP GPU metadata
+                madnlp_gpu_meta = Strategies.metadata(Solvers.MadNLP{Strategies.GPU})
+                Test.@test haskey(madnlp_gpu_meta, :linear_solver)
+                gpu_madnlp_validator = madnlp_gpu_meta[:linear_solver].validator
+                
+                # Test CPU solver with GPU parameter (should warn)
+                Test.@test_logs (:warn, r"Inconsistent linear solver") gpu_madnlp_validator(MadNLP.MumpsSolver)
+                
+                # Test GPU solver with GPU parameter (no warning)
+                Test.@test gpu_madnlp_validator(MadNLPGPU.CUDSSSolver) === MadNLPGPU.CUDSSSolver
+                
+                # Test MadNCL GPU metadata
+                madncl_gpu_meta = Strategies.metadata(Solvers.MadNCL{Strategies.GPU})
+                Test.@test haskey(madncl_gpu_meta, :linear_solver)
+                gpu_madncl_validator = madncl_gpu_meta[:linear_solver].validator
+                
+                # Test CPU solver with GPU parameter (should warn)
+                Test.@test_logs (:warn, r"Inconsistent linear solver") gpu_madncl_validator(MadNLP.MumpsSolver)
+                
+                # Test GPU solver with GPU parameter (no warning)
+                Test.@test gpu_madnlp_validator(MadNLPGPU.CUDSSSolver) === MadNLPGPU.CUDSSSolver
+                Test.@test gpu_madncl_validator(MadNLPGPU.CUDSSSolver) === MadNLPGPU.CUDSSSolver
+            end
         end
         
         # ====================================================================
         # INTEGRATION TESTS - Type stability
         # ====================================================================
         
-        # Test.@testset "Type stability" begin
-        #     # Test that parameter extraction is type stable
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.CPU})
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.GPU})
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNCL{Strategies.CPU})
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNCL{Strategies.GPU})
-        # end
+        Test.@testset "Type stability" begin
+            # Test that parameter extraction is type stable
+            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.CPU})
+            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.GPU})
+            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNCL{Strategies.CPU})
+            Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNCL{Strategies.GPU})
+        end
         
         # ====================================================================
-        # NOTE: Tests for actual linear_solver defaults and warnings
+        # INTEGRATION TESTS - Actual linear_solver defaults and warnings
         # ====================================================================
         
-        # We cannot test the actual linear_solver defaults and warnings without loading
-        # the MadNLP and MadNLPStrategies.GPU extensions. These tests would need to be
-        # in a separate test file that conditionally runs when extensions
-        # are loaded.
-        #
-        # Expected behavior (to be tested when extensions are loaded):
-        # - MadNLP{Strategies.CPU}() should have linear_solver = MadNLP.MumpsSolver
-        # - MadNLP{Strategies.GPU}() should have linear_solver = MadNLPStrategies.GPU.CUDSSSolver
-        # - MadNCL{Strategies.CPU}() should have linear_solver = MadNLP.MumpsSolver
-        # - MadNCL{Strategies.GPU}() should have linear_solver = MadNLPStrategies.GPU.CUDSSSolver
-        #
-        # - MadNLP{Strategies.GPU}() without MadNLPStrategies.GPU loaded should throw ExtensionError
-        # - MadNCL{Strategies.GPU}() without MadNLPStrategies.GPU loaded should throw ExtensionError
-        #
-        # - Warnings should be emitted for inconsistent parameter-option combinations:
-        #   * MadNLP{Strategies.CPU} with MadNLPGPU.CUDSSSolver
-        #   * MadNLP{Strategies.GPU} with MadNLP.MumpsSolver
-        #   * MadNCL{Strategies.CPU} with MadNLPGPU.CUDSSSolver  
-        #   * MadNCL{Strategies.GPU} with MadNLP.MumpsSolver
+        Test.@testset "Linear solver defaults and warnings" begin
+            # Test actual linear_solver defaults with extensions loaded
+            
+            # Test MadNLP CPU defaults
+            madnlp_cpu_meta = Strategies.metadata(Solvers.MadNLP{Strategies.CPU})
+            Test.@test madnlp_cpu_meta[:linear_solver].default == MadNLP.MumpsSolver
+            
+            # Test MadNCL CPU defaults
+            madncl_cpu_meta = Strategies.metadata(Solvers.MadNCL{Strategies.CPU})
+            Test.@test madncl_cpu_meta[:linear_solver].default == MadNLP.MumpsSolver
+            
+            # Test GPU defaults (should work with MadNLPGPU loaded)
+            if isdefined(Main, :MadNLPGPU)
+                # Test MadNLP GPU defaults
+                madnlp_gpu_meta = Strategies.metadata(Solvers.MadNLP{Strategies.GPU})
+                Test.@test madnlp_gpu_meta[:linear_solver].default == MadNLPGPU.CUDSSSolver
+                
+                # Test MadNCL GPU defaults
+                madncl_gpu_meta = Strategies.metadata(Solvers.MadNCL{Strategies.GPU})
+                Test.@test madncl_gpu_meta[:linear_solver].default == MadNLPGPU.CUDSSSolver
+                
+                # Test warnings for inconsistent combinations
+                Test.@test_logs (:warn, r"Inconsistent linear solver") madnlp_cpu_meta[:linear_solver].validator(MadNLPGPU.CUDSSSolver)
+                Test.@test_logs (:warn, r"Inconsistent linear solver") madncl_cpu_meta[:linear_solver].validator(MadNLPGPU.CUDSSSolver)
+                Test.@test_logs (:warn, r"Inconsistent linear solver") madnlp_gpu_meta[:linear_solver].validator(MadNLP.MumpsSolver)
+                Test.@test_logs (:warn, r"Inconsistent linear solver") madncl_gpu_meta[:linear_solver].validator(MadNLP.MumpsSolver)
+                
+                # Test consistent combinations (no warnings)
+                Test.@test madnlp_cpu_meta[:linear_solver].validator(MadNLP.MumpsSolver) === MadNLP.MumpsSolver
+                Test.@test madncl_cpu_meta[:linear_solver].validator(MadNLP.MumpsSolver) === MadNLP.MumpsSolver
+                Test.@test madnlp_gpu_meta[:linear_solver].validator(MadNLPGPU.CUDSSSolver) === MadNLPGPU.CUDSSSolver
+                Test.@test madncl_gpu_meta[:linear_solver].validator(MadNLPGPU.CUDSSSolver) === MadNLPGPU.CUDSSSolver
+            end
+        end
     end
 end
 
