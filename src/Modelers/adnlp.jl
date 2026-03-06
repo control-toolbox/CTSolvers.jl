@@ -3,6 +3,17 @@
 # Implementation of `Modelers.ADNLP` using the `Strategies.AbstractStrategy`
 # contract.
 
+# ============================================================================
+# Tag dispatch infrastructure
+# ============================================================================
+
+"""
+$(TYPEDEF)
+
+Tag type for ADNLP-specific implementation dispatch.
+"""
+struct ADNLPTag <: AbstractTag end
+
 # Default option values
 """
 $(TYPEDSIGNATURES)
@@ -198,7 +209,7 @@ function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
             type=Symbol,
             default=__adnlp_model_backend(),
             description="Automatic differentiation backend used by ADNLPModels",
-            validator=validate_adnlp_backend,
+            validator=get_validate_adnlp_backend(ADNLPTag),
             aliases=(:adnlp_backend,)
         ),
         
@@ -489,4 +500,41 @@ function (modeler::Modelers.ADNLP)(
     # Get the appropriate solution builder for this problem type
     builder = get_adnlp_solution_builder(prob)
     return builder(nlp_solution)
+end
+
+# ============================================================================
+# Backend validation factory
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Factory function that returns a backend validator for the specified tag type.
+
+# Arguments
+- `T::Type{<:AbstractTag}`: Tag type for dispatch
+
+# Returns
+- `Function`: Validator function that takes `backend::Symbol` and validates it
+
+# Examples
+```julia
+# Get validator for ADNLP
+validator = get_validate_adnlp_backend(ADNLPTag)
+validated_backend = validator(:enzyme)  # May throw ExtensionError
+
+# Get validator for dummy tag (will throw for enzyme)
+dummy_validator = get_validate_adnlp_backend(DummyTag)
+dummy_validator(:enzyme)  # Throws ExtensionError
+```
+
+# Notes
+- Uses dispatch pattern with `Val{:backend}` for type safety
+- Extensions can override specific backend validation for their tag types
+- Default implementations throw `ExtensionError` for Enzyme/Zygote backends
+
+See also: [`validate_adnlp_backend`](@ref), [`ADNLPTag`](@ref)
+"""
+function get_validate_adnlp_backend(T::Type{<:AbstractTag})
+    return backend::Symbol -> validate_adnlp_backend(T(), Val(backend))
 end

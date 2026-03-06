@@ -2,55 +2,81 @@
 #
 # Validation helpers used by the `Modelers.ADNLP` and `Modelers.Exa` constructors.
 
+# ============================================================================
+# Tag dispatch infrastructure
+# ============================================================================
+
 """
 $(TYPEDSIGNATURES)
 
-Validate that the specified ADNLPModels backend is supported and available.
+Validate that the specified ADNLPModels backend is supported and available using tag dispatch.
 
 # Arguments
-- `backend::Symbol`: The backend symbol to validate
+- `tag::AbstractTag`: Tag for dispatch (e.g., ADNLPTag)
+- `backend::Val{:backend}`: Backend type as Val for dispatch
+
+# Returns
+- `Symbol`: Validated backend symbol
 
 # Throws
 - `CTBase.Exceptions.IncorrectArgument`: If the backend is not supported
+- `CTBase.Exceptions.ExtensionError`: If extension is required but not loaded
 
 # Examples
 ```julia
-validate_adnlp_backend(:optimized)
-validate_adnlp_backend(:default)
+# Valid backends (always work)
+validate_adnlp_backend(ADNLPTag(), Val(:default))
+validate_adnlp_backend(ADNLPTag(), Val(:optimized))
 
-# Throws CTBase.Exceptions.IncorrectArgument
-validate_adnlp_backend(:invalid_backend)
+# Extension backends (require extensions)
+validate_adnlp_backend(ADNLPTag(), Val(:enzyme))  # Requires CTSolversEnzyme
+validate_adnlp_backend(ADNLPTag(), Val(:zygote))  # Requires CTSolversZygote
+
+# Invalid backend
+validate_adnlp_backend(ADNLPTag(), Val(:invalid))  # Throws IncorrectArgument
 ```
+
+# Notes
+- Uses dispatch pattern for type safety and extensibility
+- Extensions can override specific backend validation for their tag types
+- Default implementations throw `ExtensionError` for Enzyme/Zygote backends
+
+See also: [`get_validate_adnlp_backend`](@ref), [`ADNLPTag`](@ref)
 """
-function validate_adnlp_backend(backend::Symbol)
-    valid_backends = (:default, :optimized, :generic, :enzyme, :zygote, :manual)
-    
-    if backend ∉ valid_backends
-        throw(Exceptions.IncorrectArgument(
-            "Invalid ADNLPModels backend",
-            got="backend=$backend",
-            expected="one of $(valid_backends)",
-            suggestion="Use :default for general purpose, :optimized for performance, or :enzyme/:zygote for specific AD backends",
-            context="Modelers.ADNLP backend validation"
-        ))
-    end
-    
-    # Check package availability with helpful warnings
-    if backend == :enzyme
-        if !isdefined(Main, :Enzyme)
-            @warn "Enzyme.jl not loaded. Enzyme backend will not work correctly. " *
-                  "Load with `using Enzyme` before creating the modeler."
-        end
-    end
-    
-    if backend == :zygote
-        if !isdefined(Main, :Zygote)
-            @warn "Zygote.jl not loaded. Zygote backend will not work correctly. " *
-                  "Load with `using Zygote` before creating the modeler."
-        end
-    end
-    
-    return backend
+function validate_adnlp_backend(tag::AbstractTag, backend::Val)
+    # This is the generic fallback - should never be reached
+    throw(Exceptions.IncorrectArgument(
+        "Invalid ADNLPModels backend",
+        got="backend=$(backend)",
+        expected="one of (:default, :optimized, :generic, :enzyme, :zygote, :manual)",
+        suggestion="Use :default for general purpose, :optimized for performance, or :enzyme/:zygote for specific AD backends",
+        context="Modelers.ADNLP backend validation"
+    ))
+end
+
+# Valid backends (always available)
+validate_adnlp_backend(tag::AbstractTag, ::Val{:default}) = :default
+validate_adnlp_backend(tag::AbstractTag, ::Val{:optimized}) = :optimized
+validate_adnlp_backend(tag::AbstractTag, ::Val{:generic}) = :generic
+validate_adnlp_backend(tag::AbstractTag, ::Val{:manual}) = :manual
+
+# Backends requiring extensions (throw ExtensionError by default)
+function validate_adnlp_backend(tag::AbstractTag, ::Val{:enzyme})
+    throw(Exceptions.ExtensionError(
+        :Enzyme;
+        message="to use Enzyme backend with ADNLP modeler",
+        feature="Enzyme automatic differentiation",
+        context="Load Enzyme extension first: using Enzyme"
+    ))
+end
+
+function validate_adnlp_backend(tag::AbstractTag, ::Val{:zygote})
+    throw(Exceptions.ExtensionError(
+        :Zygote;
+        message="to use Zygote backend with ADNLP modeler",
+        feature="Zygote automatic differentiation",
+        context="Load Zygote extension first: using Zygote"
+    ))
 end
 
 """
