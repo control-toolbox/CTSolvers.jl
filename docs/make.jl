@@ -1,41 +1,68 @@
 using Documenter
+using DocumenterMermaid
+using CTSolvers
+using CTBase
+using Markdown
+using MarkdownAST: MarkdownAST
 
-# For reproducibility
-mkpath(joinpath(@__DIR__, "src", "assets"))
-cp(
-    joinpath(@__DIR__, "Manifest.toml"),
-    joinpath(@__DIR__, "src", "assets", "Manifest.toml");
-    force=true,
-)
-cp(
-    joinpath(@__DIR__, "Project.toml"),
-    joinpath(@__DIR__, "src", "assets", "Project.toml");
-    force=true,
-)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+draft = false  # Draft mode: if true, @example blocks in markdown are not executed
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# Load extensions
+# ═══════════════════════════════════════════════════════════════════════════════
+const DocumenterReference = Base.get_extension(CTBase, :DocumenterReference)
+
+if !isnothing(DocumenterReference)
+    DocumenterReference.reset_config!()
+end
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Paths
+# ═══════════════════════════════════════════════════════════════════════════════
 repo_url = "github.com/control-toolbox/CTSolvers.jl"
+src_dir = abspath(joinpath(@__DIR__, "..", "src"))
+ext_dir = abspath(joinpath(@__DIR__, "..", "ext"))
 
-makedocs(;
-    draft=false, # if draft is true, then the julia code from .md is not executed
-    # to disable the draft mode in a specific markdown file, use the following:
-    #=
-    ```@meta
-    Draft = false
-    ```
-    =#
-    remotes=nothing,
-    warnonly=:cross_references,
-    sitename="CTSolvers",
-    format=Documenter.HTML(;
-        repolink="https://" * repo_url,
-        prettyurls=false,
-        size_threshold_ignore=["index.md"],
-        assets=[
-            asset("https://control-toolbox.org/assets/css/documentation.css"),
-            asset("https://control-toolbox.org/assets/js/documentation.js"),
+# Include the API reference manager
+include("api_reference.jl")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Build documentation
+# ═══════════════════════════════════════════════════════════════════════════════
+with_api_reference(src_dir, ext_dir) do api_pages
+    makedocs(;
+        draft=draft,
+        remotes=nothing, # Disable remote links. Needed for DocumenterReference
+        warnonly=true,
+        sitename="CTSolvers.jl",
+        format=Documenter.HTML(;
+            repolink="https://" * repo_url,
+            prettyurls=false,
+            assets=[
+                asset("https://control-toolbox.org/assets/css/documentation.css"),
+                asset("https://control-toolbox.org/assets/js/documentation.js"),
+            ],
+        ),
+        pages=[
+            "Introduction" => "index.md",
+            "Architecture" => "architecture.md",
+            "Developer Guides" => [
+                "Options System" => "guides/options_system.md",
+                "Implementing a Strategy" => "guides/implementing_a_strategy.md",
+                "Strategy Parameters" => "guides/strategy_parameters.md",
+                "Implementing a Solver" => "guides/implementing_a_solver.md",
+                "Implementing a Modeler" => "guides/implementing_a_modeler.md",
+                "Implementing an Optimization Problem" => "guides/implementing_an_optimization_problem.md",
+                "Orchestration & Routing" => "guides/orchestration_and_routing.md",
+                "Error Messages Reference" => "guides/error_messages.md",
+            ],
+            "API Reference" => api_pages,
         ],
-    ),
-    pages=["Introduction" => "index.md"],
-)
+    )
+end
 
+# ═══════════════════════════════════════════════════════════════════════════════
 deploydocs(; repo=repo_url * ".git", devbranch="main")
