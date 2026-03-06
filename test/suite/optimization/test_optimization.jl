@@ -8,9 +8,11 @@ import NLPModels
 import SolverCore
 import ADNLPModels
 import ExaModels
+using CTSolvers.Optimization  # For testing exported symbols
 
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
+const CurrentModule = TestOptimization
 
 # ============================================================================
 # FAKE TYPES FOR CONTRACT TESTING (TOP-LEVEL)
@@ -98,13 +100,63 @@ function test_optimization()
         # ====================================================================
 
         Test.@testset "Exports verification" begin
-            Test.@test isdefined(CTSolvers, :Optimization)
-            Test.@test isdefined(CTSolvers.Optimization, :AbstractOptimizationProblem)
-            Test.@test isdefined(CTSolvers.Optimization, :ADNLPModelBuilder)
-            Test.@test isdefined(CTSolvers.Optimization, :ExaModelBuilder)
-            Test.@test isdefined(CTSolvers.Optimization, :build_model)
-            Test.@test isdefined(CTSolvers.Optimization, :build_solution)
-            Test.@test isdefined(CTSolvers.Optimization, :extract_solver_infos)
+            # Test that Optimization module is available
+            Test.@testset "Optimization Module" begin
+                Test.@test isdefined(CTSolvers, :Optimization)
+                Test.@test CTSolvers.Optimization isa Module
+            end
+            
+            # Test exported abstract types
+            Test.@testset "Exported Abstract Types" begin
+                for T in (
+                    AbstractOptimizationProblem,
+                    AbstractBuilder,
+                    AbstractModelBuilder,
+                    AbstractSolutionBuilder,
+                    AbstractOCPSolutionBuilder,
+                )
+                    Test.@testset "$(nameof(T))" begin
+                        Test.@test isdefined(Optimization, nameof(T))
+                        Test.@test isdefined(CurrentModule, nameof(T))
+                        Test.@test T isa DataType || T isa UnionAll
+                    end
+                end
+            end
+            
+            # Test exported concrete types
+            Test.@testset "Exported Concrete Types" begin
+                for T in (
+                    ADNLPModelBuilder,
+                    ExaModelBuilder,
+                    ADNLPSolutionBuilder,
+                    ExaSolutionBuilder,
+                )
+                    Test.@testset "$(nameof(T))" begin
+                        Test.@test isdefined(Optimization, nameof(T))
+                        Test.@test isdefined(CurrentModule, nameof(T))
+                        Test.@test T isa DataType || T isa UnionAll
+                    end
+                end
+            end
+            
+            # Test exported functions
+            Test.@testset "Exported Functions" begin
+                for f in (
+                    :get_adnlp_model_builder,
+                    :get_exa_model_builder,
+                    :get_adnlp_solution_builder,
+                    :get_exa_solution_builder,
+                    :build_model,
+                    :build_solution,
+                    :extract_solver_infos,
+                )
+                    Test.@testset "$f" begin
+                        Test.@test isdefined(Optimization, f)
+                        Test.@test isdefined(CurrentModule, f)
+                        Test.@test getfield(CurrentModule, f) isa Function
+                    end
+                end
+            end
         end
 
         # ====================================================================

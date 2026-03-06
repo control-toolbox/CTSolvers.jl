@@ -76,7 +76,7 @@ module TestExtraction
 
 using Test
 using CTSolvers
-using Main.TestOptions: VERBOSE, SHOWTIMING
+using Main.Data: VERBOSE, SHOWTIMING
 
 function test_extraction()
     @testset "Options Extraction" verbose=VERBOSE showtiming=SHOWTIMING begin

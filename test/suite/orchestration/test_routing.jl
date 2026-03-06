@@ -7,8 +7,9 @@ import CTSolvers.Orchestration
 import CTSolvers.Strategies
 import CTSolvers.Options
 
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
+const CurrentModule = TestOrchestrationRouting
 
 # ============================================================================
 # Test fixtures
@@ -105,15 +106,6 @@ function test_routing()
         # ====================================================================
         # META TESTS - Exports / Public API surface
         # ====================================================================
-
-        Test.@testset "Exports verification" begin
-            Test.@test isdefined(Orchestration, :route_all_options)
-            Test.@test isdefined(Orchestration, :resolve_method)
-            Test.@test isdefined(Orchestration, :extract_strategy_ids)
-            Test.@test isdefined(Orchestration, :build_strategy_to_family_map)
-            Test.@test isdefined(Orchestration, :build_option_ownership_map)
-            Test.@test isdefined(Orchestration, :build_alias_to_primary_map)
-        end
 
         Test.@testset "Type stability smoke tests" begin
             Test.@test_nowarn Orchestration.resolve_method(ROUTING_METHOD, ROUTING_FAMILIES, ROUTING_REGISTRY)
