@@ -322,11 +322,11 @@ function Strategies.metadata(::Type{Modelers.ADNLP})
     return Strategies.metadata(Modelers.ADNLP{Strategies._default_parameter(Modelers.ADNLP)})
 end
 
-# Constructor with option validation
+# Parameterized constructor
 """
 $(TYPEDSIGNATURES)
 
-Create an Modelers.ADNLP with validated options.
+Create a parameterized Modelers.ADNLP with validated options.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
@@ -335,44 +335,26 @@ Create an Modelers.ADNLP with validated options.
 - `kwargs...`: Modeler options (see [`Modelers.ADNLP`](@ref) documentation)
 
 # Returns
-- `Modelers.ADNLP`: Configured modeler instance
+- `Modelers.ADNLP{P}`: Configured modeler instance with specified parameter
 
 # Examples
 ```julia
-# Default modeler
-modeler = Modelers.ADNLP()
+# Explicit CPU modeler
+modeler = Modelers.ADNLP{CPU}()
 
 # With custom options
-modeler = Modelers.ADNLP(backend=:optimized, matrix_free=true)
+modeler = Modelers.ADNLP{CPU}(backend=:optimized, matrix_free=true)
 
 # With permissive mode
-modeler = Modelers.ADNLP(backend=:optimized, custom_option=123; mode=:permissive)
+modeler = Modelers.ADNLP{CPU}(backend=:optimized, custom_option=123; mode=:permissive)
 ```
 
 # Throws
-
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 - `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 
-# See also
-
-- [`Modelers.ADNLP`](@ref): Type documentation
-- [`Strategies.build_strategy_options`](@ref): Option validation function
+See also: [`Modelers.ADNLP`](@ref), [`Strategies.build_strategy_options`](@ref)
 """
-function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
-    # Check for deprecated aliases
-    if haskey(kwargs, :adnlp_backend)
-        @warn "adnlp_backend is deprecated, use backend instead" maxlog=1
-    end
-    
-    P = Strategies._default_parameter(Modelers.ADNLP)
-    opts = Strategies.build_strategy_options(
-        Modelers.ADNLP{P}; mode=mode, kwargs...
-    )
-    return Modelers.ADNLP{P}(opts)
-end
-
-# Parameterized constructor
 function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
     # Check for deprecated aliases
     if haskey(kwargs, :adnlp_backend)
@@ -385,8 +367,43 @@ function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
     return Modelers.ADNLP{P}(opts)
 end
 
-# Access to strategy options
-Strategies.options(m::Modelers.ADNLP) = m.options
+# Simple constructor
+"""
+$(TYPEDSIGNATURES)
+
+Create an Modelers.ADNLP with validated options (defaults to CPU).
+
+# Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
+- `kwargs...`: Modeler options (see [`Modelers.ADNLP`](@ref) documentation)
+
+# Returns
+- `Modelers.ADNLP{CPU}`: Configured modeler instance with CPU parameter
+
+# Examples
+```julia
+# Default modeler (CPU)
+modeler = Modelers.ADNLP()
+
+# With custom options
+modeler = Modelers.ADNLP(backend=:optimized, matrix_free=true)
+
+# With permissive mode
+modeler = Modelers.ADNLP(backend=:optimized, custom_option=123; mode=:permissive)
+```
+
+# Throws
+- `CTBase.Exceptions.IncorrectArgument`: If option validation fails
+- `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
+
+See also: [`Modelers.ADNLP`](@ref), [`Modelers.ADNLP{CPU}`](@ref), [`Strategies.build_strategy_options`](@ref)
+"""
+function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
+    P = Strategies._default_parameter(Modelers.ADNLP)
+    return Modelers.ADNLP{P}(; mode=mode, kwargs...)
+end
 
 # Model building interface
 """

@@ -278,58 +278,6 @@ function Strategies.metadata(::Type{Modelers.Exa})
     return Strategies.metadata(Modelers.Exa{Strategies._default_parameter(Modelers.Exa)})
 end
 
-# Simple constructor
-"""
-$(TYPEDSIGNATURES)
-
-Create an Modelers.Exa with validated options (defaults to CPU).
-
-# Arguments
-- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
-  - `:strict` (default): Rejects unknown options with detailed error message
-  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Modeler options (see [`Modelers.Exa`](@ref) documentation)
-
-# Returns
-- `Modelers.Exa{CPU}`: Configured modeler instance with CPU parameter
-
-# Examples
-```julia
-# Default modeler (CPU)
-modeler = Modelers.Exa()
-
-# With custom options
-modeler = Modelers.Exa(base_type=Float32, backend=nothing)
-
-# With permissive mode
-modeler = Modelers.Exa(base_type=Float64, custom_option=123; mode=:permissive)
-```
-
-# Throws
-
-- `CTBase.Exceptions.IncorrectArgument`: If option validation fails
-- `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
-
-# See also
-
-- [`Modelers.Exa`](@ref): Type documentation
-- [`Modelers.Exa{CPU}`](@ref): Explicit CPU constructor
-- [`Modelers.Exa{GPU}`](@ref): GPU constructor
-- [`Strategies.build_strategy_options`](@ref): Option validation function
-"""
-function Modelers.Exa(; mode::Symbol=:strict, kwargs...)
-    # Check for deprecated aliases
-    if haskey(kwargs, :exa_backend)
-        @warn "exa_backend is deprecated, use backend instead" maxlog=1
-    end
-    
-    P = Strategies._default_parameter(Modelers.Exa)
-    opts = Strategies.build_strategy_options(
-        Modelers.Exa{P}; mode=mode, kwargs...
-    )
-    return Modelers.Exa{P}(opts)
-end
-
 # Parameterized constructor
 """
 $(TYPEDSIGNATURES)
@@ -361,15 +309,11 @@ modeler = Modelers.Exa{GPU}(base_type=Float64, custom_option=123; mode=:permissi
 ```
 
 # Throws
-
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 - `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 - `CTBase.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
 
-# See also
-
-- [`Modelers.Exa`](@ref): Type documentation
-- [`Strategies.build_strategy_options`](@ref): Option validation function
+See also: [`Modelers.Exa`](@ref), [`Strategies.build_strategy_options`](@ref)
 """
 function Modelers.Exa{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
     # Check for deprecated aliases
@@ -383,8 +327,43 @@ function Modelers.Exa{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractSt
     return Modelers.Exa{P}(opts)
 end
 
-# Access to strategy options
-Strategies.options(m::Modelers.Exa) = m.options
+# Simple constructor
+"""
+$(TYPEDSIGNATURES)
+
+Create an Modelers.Exa with validated options (defaults to CPU).
+
+# Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
+- `kwargs...`: Modeler options (see [`Modelers.Exa`](@ref) documentation)
+
+# Returns
+- `Modelers.Exa{CPU}`: Configured modeler instance with CPU parameter
+
+# Examples
+```julia
+# Default modeler (CPU)
+modeler = Modelers.Exa()
+
+# With custom options
+modeler = Modelers.Exa(base_type=Float32, backend=nothing)
+
+# With permissive mode
+modeler = Modelers.Exa(base_type=Float64, custom_option=123; mode=:permissive)
+```
+
+# Throws
+- `CTBase.Exceptions.IncorrectArgument`: If option validation fails
+- `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
+
+See also: [`Modelers.Exa`](@ref), [`Modelers.Exa{CPU}`](@ref), [`Modelers.Exa{GPU}`](@ref), [`Strategies.build_strategy_options`](@ref)
+"""
+function Modelers.Exa(; mode::Symbol=:strict, kwargs...)
+    P = Strategies._default_parameter(Modelers.Exa)
+    return Modelers.Exa{P}(; mode=mode, kwargs...)
+end
 
 # Model building interface
 """
