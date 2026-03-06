@@ -11,6 +11,13 @@ struct FakeCoverageBackend <: ADNLPModels.ADBackend end
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
+# ============================================================================
+# Fake types for testing (must be at module top-level)
+# ============================================================================
+
+# Dummy tag for testing extension behavior
+struct DummyTag <: Modelers.AbstractTag end
+
 function test_coverage_validation()
     Test.@testset "Coverage: Modelers Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
 
@@ -19,23 +26,22 @@ function test_coverage_validation()
         # ====================================================================
 
         Test.@testset "validate_adnlp_backend" begin
-            # Valid backends
-            Test.@test Modelers.validate_adnlp_backend(:default) == :default
-            Test.@test Modelers.validate_adnlp_backend(:optimized) == :optimized
-            Test.@test Modelers.validate_adnlp_backend(:generic) == :generic
-            Test.@test Modelers.validate_adnlp_backend(:manual) == :manual
+            # Valid backends with DummyTag (always available)
+            dummy_tag = DummyTag()
+            Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:default)) == :default
+            Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:optimized)) == :optimized
+            Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:generic)) == :generic
+            Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:manual)) == :manual
 
-            Test.@test_nowarn Test.@inferred Modelers.validate_adnlp_backend(:default)
+            Test.@test_nowarn Test.@inferred Modelers.validate_adnlp_backend(dummy_tag, Val(:default))
 
-            # Enzyme/Zygote warnings (packages not loaded) - capture to avoid console output
-            redirect_stderr(devnull) do
-                Test.@test_logs (:warn,) Modelers.validate_adnlp_backend(:enzyme)
-                Test.@test_logs (:warn,) Modelers.validate_adnlp_backend(:zygote)
-            end
+            # Enzyme/Zygote throw ExtensionError (extensions not loaded for DummyTag)
+            Test.@test_throws Exceptions.ExtensionError Modelers.validate_adnlp_backend(dummy_tag, Val(:enzyme))
+            Test.@test_throws Exceptions.ExtensionError Modelers.validate_adnlp_backend(dummy_tag, Val(:zygote))
 
             # Invalid backend
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(:invalid)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(:foo)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(dummy_tag, Val(:invalid))
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(dummy_tag, Val(:foo))
         end
 
         # ====================================================================
@@ -55,6 +61,7 @@ function test_coverage_validation()
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Int)
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(String)
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Bool)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Function)
         end
 
         # ====================================================================

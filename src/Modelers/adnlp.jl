@@ -512,28 +512,41 @@ $(TYPEDSIGNATURES)
 Factory function that returns a backend validator for the specified tag type.
 
 # Arguments
-- `T::Type{<:AbstractTag}`: Tag type for dispatch
+- `T::Type{<:AbstractTag}`: Tag type for dispatch (e.g., ADNLPTag, DummyTag)
 
 # Returns
 - `Function`: Validator function that takes `backend::Symbol` and validates it
 
 # Examples
-```julia
-# Get validator for ADNLP
-validator = get_validate_adnlp_backend(ADNLPTag)
-validated_backend = validator(:enzyme)  # May throw ExtensionError
+```julia-repl
+julia> using CTSolvers.Modelers
 
-# Get validator for dummy tag (will throw for enzyme)
-dummy_validator = get_validate_adnlp_backend(DummyTag)
-dummy_validator(:enzyme)  # Throws ExtensionError
+julia> # Get validator for ADNLP (with extensions loaded)
+julia> validator = get_validate_adnlp_backend(ADNLPTag)
+(::Symbol)->validate_adnlp_backend(#=method=#1, #=generic#=)
+
+julia> validator(:default)
+:default
+
+julia> validator(:enzyme)  # Works with CTSolversEnzyme extension
+:enzyme
+
+julia> # Get validator for dummy tag (no extensions)
+julia> dummy_validator = get_validate_adnlp_backend(DummyTag)
+(::Symbol)->validate_adnlp_backend(#=method=#1, #=generic#=)
+
+julia> dummy_validator(:enzyme)  # Throws ExtensionError
+ERROR: Control Toolbox Error
+❌ Error: CTBase.Exceptions.ExtensionError, to use Enzyme backend with ADNLP modeler
 ```
 
 # Notes
-- Uses dispatch pattern with `Val{:backend}` for type safety
-- Extensions can override specific backend validation for their tag types
+- Creates a closure that converts `Symbol` to `Val` for type-safe dispatch
+- Used by ADNLP metadata system for runtime validation
+- Extensions enable specific backends for their tag types
 - Default implementations throw `ExtensionError` for Enzyme/Zygote backends
 
-See also: [`validate_adnlp_backend`](@ref), [`ADNLPTag`](@ref)
+See also: [`validate_adnlp_backend`](@ref), [`ADNLPTag`](@ref), [`Modelers.ADNLP`](@ref)
 """
 function get_validate_adnlp_backend(T::Type{<:AbstractTag})
     return backend::Symbol -> validate_adnlp_backend(T(), Val(backend))
