@@ -365,10 +365,11 @@ function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
         @warn "adnlp_backend is deprecated, use backend instead" maxlog=1
     end
     
+    P = Strategies._default_parameter(Modelers.ADNLP)
     opts = Strategies.build_strategy_options(
-        Modelers.ADNLP{CPU}; mode=mode, kwargs...
+        Modelers.ADNLP{P}; mode=mode, kwargs...
     )
-    return Modelers.ADNLP{Strategies._default_parameter(Modelers.ADNLP)}(opts)
+    return Modelers.ADNLP{P}(opts)
 end
 
 # Parameterized constructor

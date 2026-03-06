@@ -323,10 +323,11 @@ function Modelers.Exa(; mode::Symbol=:strict, kwargs...)
         @warn "exa_backend is deprecated, use backend instead" maxlog=1
     end
     
+    P = Strategies._default_parameter(Modelers.Exa)
     opts = Strategies.build_strategy_options(
-        Modelers.Exa{CPU}; mode=mode, kwargs...
+        Modelers.Exa{P}; mode=mode, kwargs...
     )
-    return Modelers.Exa{Strategies._default_parameter(Modelers.Exa)}(opts)
+    return Modelers.Exa{P}(opts)
 end
 
 # Parameterized constructor
