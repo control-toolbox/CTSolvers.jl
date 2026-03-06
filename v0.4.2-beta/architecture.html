@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Architecture · CTSolvers.jl</title><meta name="title" content="Architecture · CTSolvers.jl"/><meta property="og:title" content="Architecture · CTSolvers.jl"/><meta property="twitter:title" content="Architecture · CTSolvers.jl"/><meta name="description" content="Documentation for CTSolvers.jl."/><meta property="og:description" content="Documentation for CTSolvers.jl."/><meta property="twitter:description" content="Documentation for CTSolvers.jl."/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script><link href="https://control-toolbox.org/assets/css/documentation.css" rel="stylesheet" type="text/css"/><script src="https://control-toolbox.org/assets/js/documentation.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="index.html">CTSolvers.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="index.html">Introduction</a></li><li class="is-active"><a class="tocitem" href="architecture.html">Architecture</a><ul class="internal"><li><a class="tocitem" href="#Module-Overview"><span>Module Overview</span></a></li><li><a class="tocitem" href="#Type-Hierarchies"><span>Type Hierarchies</span></a></li><li><a class="tocitem" href="#Module-Dependencies"><span>Module Dependencies</span></a></li><li><a class="tocitem" href="#Data-Flow"><span>Data Flow</span></a></li><li><a class="tocitem" href="#Architectural-Patterns"><span>Architectural Patterns</span></a></li><li><a class="tocitem" href="#Conventions"><span>Conventions</span></a></li></ul></li><li><span class="tocitem">Developer Guides</span><ul><li><a class="tocitem" href="guides/options_system.html">Options System</a></li><li><a class="tocitem" href="guides/implementing_a_strategy.html">Implementing a Strategy</a></li><li><a class="tocitem" href="guides/strategy_parameters.html">Strategy Parameters</a></li><li><a class="tocitem" href="guides/implementing_a_solver.html">Implementing a Solver</a></li><li><a class="tocitem" href="guides/implementing_a_modeler.html">Implementing a Modeler</a></li><li><a class="tocitem" href="guides/implementing_an_optimization_problem.html">Implementing an Optimization Problem</a></li><li><a class="tocitem" href="guides/orchestration_and_routing.html">Orchestration &amp; Routing</a></li><li><a class="tocitem" href="guides/error_messages.html">Error Messages Reference</a></li></ul></li><li><span class="tocitem">API Reference</span><ul><li><input class="collapse-toggle" id="menuitem-4-1" type="checkbox"/><label class="tocitem" for="menuitem-4-1"><span class="docs-label">DOCP</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="api/docp_public.html">Public</a></li><li><a class="tocitem" href="api/docp_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-2" type="checkbox"/><label class="tocitem" for="menuitem-4-2"><span class="docs-label">Modelers</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="api/modelers_public.html">Public</a></li><li><a class="tocitem" href="api/modelers_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-3" type="checkbox"/><label class="tocitem" for="menuitem-4-3"><span class="docs-label">Optimization</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="api/optimization_public.html">Public</a></li><li><a class="tocitem" href="api/optimization_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-4" type="checkbox"/><label class="tocitem" for="menuitem-4-4"><span class="docs-label">Options</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="api/options_public.html">Public</a></li><li><a class="tocitem" href="api/options_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-5" type="checkbox"/><label class="tocitem" for="menuitem-4-5"><span class="docs-label">Orchestration</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="api/orchestration_public.html">Public</a></li><li><a class="tocitem" href="api/orchestration_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-6" type="checkbox"/><label class="tocitem" for="menuitem-4-6"><span class="docs-label">Solvers</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="api/solvers_public.html">Public</a></li><li><a class="tocitem" href="api/solvers_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-7" type="checkbox"/><label class="tocitem" for="menuitem-4-7"><span class="docs-label">Strategies (Contract)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="api/strategies_contract_public.html">Public</a></li><li><a class="tocitem" href="api/strategies_contract_private.html">Private</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4-8" type="checkbox"/><label class="tocitem" for="menuitem-4-8"><span class="docs-label">Strategies (API)</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="api/strategies_api_public.html">Public</a></li><li><a class="tocitem" href="api/strategies_api_private.html">Private</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href="architecture.html">Architecture</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="architecture.html">Architecture</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/control-toolbox/CTSolvers.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Architecture"><a class="docs-heading-anchor" href="#Architecture">Architecture</a><a id="Architecture-1"></a><a class="docs-heading-anchor-permalink" href="#Architecture" title="Permalink"></a></h1><p>CTSolvers is the <strong>resolution layer</strong> of the <a href="https://github.com/control-toolbox">control-toolbox</a> ecosystem. It transforms optimal control problems (defined in <a href="https://github.com/control-toolbox/CTModels.jl">CTModels.jl</a>) into NLP models, solves them, and converts the results back into optimal control solutions.</p><p>This page provides the complete architectural overview. Read it before diving into any specific guide.</p><h2 id="Module-Overview"><a class="docs-heading-anchor" href="#Module-Overview">Module Overview</a><a id="Module-Overview-1"></a><a class="docs-heading-anchor-permalink" href="#Module-Overview" title="Permalink"></a></h2><p>CTSolvers is organized into 7 modules, loaded in strict dependency order:</p><table><tr><th style="text-align: right">#</th><th style="text-align: right">Module</th><th style="text-align: right">Responsibility</th></tr><tr><td style="text-align: right">1</td><td style="text-align: right"><strong>Options</strong></td><td style="text-align: right">Configuration primitives: <code>OptionDefinition</code>, <code>OptionValue</code>, extraction, validation</td></tr><tr><td style="text-align: right">2</td><td style="text-align: right"><strong>Strategies</strong></td><td style="text-align: right">Strategy contract (<code>AbstractStrategy</code>), registry, metadata, options building</td></tr><tr><td style="text-align: right">3</td><td style="text-align: right"><strong>Orchestration</strong></td><td style="text-align: right">Multi-strategy option routing and disambiguation</td></tr><tr><td style="text-align: right">4</td><td style="text-align: right"><strong>Optimization</strong></td><td style="text-align: right">Abstract optimization types (<code>AbstractOptimizationProblem</code>), builders, <code>build_model</code>/<code>build_solution</code></td></tr><tr><td style="text-align: right">5</td><td style="text-align: right"><strong>Modelers</strong></td><td style="text-align: right">NLP model backends: <code>Modelers.ADNLP</code>, <code>Modelers.Exa</code></td></tr><tr><td style="text-align: right">6</td><td style="text-align: right"><strong>DOCP</strong></td><td style="text-align: right"><code>DiscretizedModel</code> — bridges CTModels and CTSolvers</td></tr><tr><td style="text-align: right">7</td><td style="text-align: right"><strong>Solvers</strong></td><td style="text-align: right">Solver integration: <code>Solvers.Ipopt</code>, <code>Solvers.MadNLP</code>, <code>Solvers.MadNCL</code>, <code>Solvers.Knitro</code>, CommonSolve API</td></tr></table><p>All access is <strong>qualified</strong> — CTSolvers does not export symbols at the top level:</p><pre><code class="language-julia hljs">using CTSolvers
+
+# Correct: qualified access
+CTSolvers.Strategies.id(MyStrategy)
+CTSolvers.Options.OptionDefinition(name=:x, type=Int, default=1, description=&quot;...&quot;)
+
+# Wrong: not exported
+id(MyStrategy)  # ERROR: UndefVarError</code></pre><h2 id="Type-Hierarchies"><a class="docs-heading-anchor" href="#Type-Hierarchies">Type Hierarchies</a><a id="Type-Hierarchies-1"></a><a class="docs-heading-anchor-permalink" href="#Type-Hierarchies" title="Permalink"></a></h2><h3 id="Strategy-Branch"><a class="docs-heading-anchor" href="#Strategy-Branch">Strategy Branch</a><a id="Strategy-Branch-1"></a><a class="docs-heading-anchor-permalink" href="#Strategy-Branch" title="Permalink"></a></h3><p>All configurable components (modelers, solvers) in CTSolvers are <strong>strategies</strong>. They share a common contract defined by <code>AbstractStrategy</code>.</p><div class="mermaid">classDiagram
+    direction TB
+    class AbstractStrategy {
+        &lt;&lt;abstract&gt;&gt;
+        id(::Type)::Symbol
+        metadata(::Type)::StrategyMetadata
+        options(instance)::StrategyOptions
+    }
+
+    AbstractStrategy &lt;|-- AbstractNLPModeler
+    AbstractStrategy &lt;|-- AbstractNLPSolver
+
+    class AbstractNLPModeler {
+        &lt;&lt;abstract&gt;&gt;
+        (modeler)(prob, x0) → NLP
+        (modeler)(prob, stats) → Solution
+    }
+    AbstractNLPModeler &lt;|-- Modelers.ADNLP
+    AbstractNLPModeler &lt;|-- Modelers.Exa
+
+    class AbstractNLPSolver {
+        &lt;&lt;abstract&gt;&gt;
+        (solver)(nlp; display) → Stats
+    }
+    AbstractNLPSolver &lt;|-- Solvers.Ipopt
+    AbstractNLPSolver &lt;|-- Solvers.MadNLP
+    AbstractNLPSolver &lt;|-- Solvers.MadNCL
+    AbstractNLPSolver &lt;|-- Solvers.Knitro</div><ul><li><strong><code>AbstractNLPModeler</code></strong> (in <code>Modelers</code>): converts problems into NLP models and back into solutions.</li><li><strong><code>AbstractNLPSolver</code></strong> (in <code>Solvers</code>): solves NLP models via backend libraries.</li></ul><div class="admonition is-info" id="External-Strategy-Families-a59b1ba580065f38"><header class="admonition-header">External Strategy Families<a class="admonition-anchor" href="#External-Strategy-Families-a59b1ba580065f38" title="Permalink"></a></header><div class="admonition-body"><p>Other packages in the control-toolbox ecosystem define additional strategy families:</p><ul><li><strong><code>AbstractDiscretizer</code></strong> (in <a href="https://github.com/control-toolbox/CTDirect.jl">CTDirect.jl</a>): discretizes continuous-time OCP into finite-dimensional problems (e.g., <code>Collocation</code>, <code>DirectShooting</code>).</li></ul><p>These external strategies follow the same <code>AbstractStrategy</code> contract. See <a href="guides/implementing_a_strategy.html#Implementing-a-Strategy">Implementing a Strategy</a> for a complete tutorial.</p></div></div><h3 id="Optimization-/-Builder-Branch"><a class="docs-heading-anchor" href="#Optimization-/-Builder-Branch">Optimization / Builder Branch</a><a id="Optimization-/-Builder-Branch-1"></a><a class="docs-heading-anchor-permalink" href="#Optimization-/-Builder-Branch" title="Permalink"></a></h3><p>The optimization module defines the <strong>problem–builder</strong> pattern: problems provide builders, modelers use them.</p><div class="mermaid">classDiagram
+    direction TB
+    class AbstractOptimizationProblem {
+        &lt;&lt;abstract&gt;&gt;
+        get_adnlp_model_builder()
+        get_exa_model_builder()
+        get_adnlp_solution_builder()
+        get_exa_solution_builder()
+    }
+    AbstractOptimizationProblem &lt;|-- DiscretizedModel
+
+    class AbstractBuilder {
+        &lt;&lt;abstract&gt;&gt;
+    }
+    AbstractBuilder &lt;|-- AbstractModelBuilder
+    AbstractBuilder &lt;|-- AbstractSolutionBuilder
+
+    class AbstractModelBuilder {
+        &lt;&lt;abstract&gt;&gt;
+        (builder)(x0; kwargs...) → NLP
+    }
+    AbstractModelBuilder &lt;|-- ADNLPModelBuilder
+    AbstractModelBuilder &lt;|-- ExaModelBuilder
+
+    class AbstractSolutionBuilder {
+        &lt;&lt;abstract&gt;&gt;
+    }
+    AbstractSolutionBuilder &lt;|-- AbstractOCPSolutionBuilder
+    AbstractOCPSolutionBuilder &lt;|-- ADNLPSolutionBuilder
+    AbstractOCPSolutionBuilder &lt;|-- ExaSolutionBuilder</div><ul><li><strong><code>AbstractOptimizationProblem</code></strong>: any problem that can provide builders for NLP model construction and solution conversion.</li><li><strong><code>AbstractModelBuilder</code></strong>: callable that constructs an NLP model (ADNLPModel or ExaModel).</li><li><strong><code>AbstractSolutionBuilder</code></strong>: callable that converts NLP solver results into problem-specific solutions.</li><li><strong><code>DiscretizedModel</code></strong> (in <code>DOCP</code>): the concrete implementation that bridges CTModels OCP with CTSolvers builders.</li></ul><h2 id="Module-Dependencies"><a class="docs-heading-anchor" href="#Module-Dependencies">Module Dependencies</a><a id="Module-Dependencies-1"></a><a class="docs-heading-anchor-permalink" href="#Module-Dependencies" title="Permalink"></a></h2><div class="mermaid">flowchart LR
+    Options --&gt; Strategies
+    Strategies --&gt; Orchestration
+    Strategies --&gt; Optimization
+    Strategies --&gt; Modelers
+    Strategies --&gt; Solvers
+    Options --&gt; Modelers
+    Options --&gt; Solvers
+    Optimization --&gt; Modelers
+    Optimization --&gt; DOCP
+    Optimization --&gt; Solvers
+    Modelers --&gt; Solvers</div><p>The loading order in <code>CTSolvers.jl</code> is:</p><pre><code class="nohighlight hljs">Options → Strategies → Orchestration → Optimization → Modelers → DOCP → Solvers</code></pre><p>Each module only depends on modules loaded before it. This strict ordering ensures:</p><ul><li>No circular dependencies</li><li>Types are available when needed</li><li>Extensions can target specific modules</li></ul><h2 id="Data-Flow"><a class="docs-heading-anchor" href="#Data-Flow">Data Flow</a><a id="Data-Flow-1"></a><a class="docs-heading-anchor-permalink" href="#Data-Flow" title="Permalink"></a></h2><p>The complete resolution pipeline transforms an optimal control problem into a solution through a sequence of well-defined steps:</p><div class="mermaid">sequenceDiagram
+    participant User
+    participant Solve as CommonSolve.solve
+    participant Modeler as AbstractNLPModeler
+    participant Problem as AbstractOptimizationProblem
+    participant Builder as AbstractModelBuilder
+    participant Solver as AbstractNLPSolver
+    participant SolBuilder as AbstractSolutionBuilder
+
+    User-&gt;&gt;Solve: solve(problem, x0, modeler, solver)
+    Solve-&gt;&gt;Modeler: build_model(problem, x0, modeler)
+    Modeler-&gt;&gt;Problem: get_adnlp_model_builder(problem)
+    Problem--&gt;&gt;Modeler: ADNLPModelBuilder
+    Modeler-&gt;&gt;Builder: builder(x0; options...)
+    Builder--&gt;&gt;Modeler: NLP model
+    Modeler--&gt;&gt;Solve: NLP model
+    Solve-&gt;&gt;Solver: solve(nlp, solver)
+    Solver-&gt;&gt;Solver: solver(nlp; display)
+    Solver--&gt;&gt;Solve: ExecutionStats
+    Solve-&gt;&gt;Modeler: build_solution(problem, stats, modeler)
+    Modeler-&gt;&gt;Problem: get_adnlp_solution_builder(problem)
+    Problem--&gt;&gt;Modeler: ADNLPSolutionBuilder
+    Modeler-&gt;&gt;SolBuilder: builder(stats)
+    SolBuilder--&gt;&gt;Modeler: OCP Solution
+    Modeler--&gt;&gt;Solve: OCP Solution
+    Solve--&gt;&gt;User: OCP Solution</div><p>The three levels of <code>CommonSolve.solve</code>:</p><table><tr><th style="text-align: right">Level</th><th style="text-align: right">Signature</th><th style="text-align: right">Purpose</th></tr><tr><td style="text-align: right"><strong>High</strong></td><td style="text-align: right"><code>solve(problem, x0, modeler, solver)</code></td><td style="text-align: right">Full pipeline: build NLP → solve → build solution</td></tr><tr><td style="text-align: right"><strong>Mid</strong></td><td style="text-align: right"><code>solve(nlp, solver)</code></td><td style="text-align: right">Solve an NLP model directly</td></tr><tr><td style="text-align: right"><strong>Low</strong></td><td style="text-align: right"><code>solve(any, solver)</code></td><td style="text-align: right">Flexible dispatch for custom types</td></tr></table><h2 id="Architectural-Patterns"><a class="docs-heading-anchor" href="#Architectural-Patterns">Architectural Patterns</a><a id="Architectural-Patterns-1"></a><a class="docs-heading-anchor-permalink" href="#Architectural-Patterns" title="Permalink"></a></h2><h3 id="Two-Level-Contract"><a class="docs-heading-anchor" href="#Two-Level-Contract">Two-Level Contract</a><a id="Two-Level-Contract-1"></a><a class="docs-heading-anchor-permalink" href="#Two-Level-Contract" title="Permalink"></a></h3><p>Every strategy implements a <strong>two-level contract</strong> separating static metadata from dynamic configuration:</p><div class="mermaid">flowchart TB
+    subgraph TypeLevel[&quot;Type-Level (static)&quot;]
+        id[&quot;id(::Type{&lt;:MyStrategy}) → :my_id&quot;]
+        meta[&quot;metadata(::Type{&lt;:MyStrategy}) → StrategyMetadata&quot;]
+    end
+
+    subgraph InstanceLevel[&quot;Instance-Level (dynamic)&quot;]
+        opts[&quot;options(strategy) → StrategyOptions&quot;]
+    end
+
+    TypeLevel --&gt;|&quot;introspection without instantiation&quot;| Registry[&quot;Registry &amp; Routing&quot;]
+    TypeLevel --&gt;|&quot;validation before construction&quot;| Constructor[&quot;Constructor&quot;]
+    Constructor --&gt; InstanceLevel
+    InstanceLevel --&gt;|&quot;configured state&quot;| Execution[&quot;Execution&quot;]</div><ul><li><strong>Type-level methods</strong> (<code>id</code>, <code>metadata</code>) are called on the <strong>type</strong> — they enable introspection, routing, and validation without creating objects.</li><li><strong>Instance-level methods</strong> (<code>options</code>) are called on <strong>instances</strong> — they provide the actual configuration with provenance tracking.</li></ul><p>See <a href="guides/implementing_a_strategy.html#Implementing-a-Strategy">Implementing a Strategy</a> for a step-by-step tutorial.</p><h3 id="Strategy-Parameters-(Overview)"><a class="docs-heading-anchor" href="#Strategy-Parameters-(Overview)">Strategy Parameters (Overview)</a><a id="Strategy-Parameters-(Overview)-1"></a><a class="docs-heading-anchor-permalink" href="#Strategy-Parameters-(Overview)" title="Permalink"></a></h3><p>Strategies can be <strong>parameterized</strong> to specialize behavior based on execution context (e.g., CPU vs GPU):</p><div class="mermaid">flowchart TB
+    subgraph Parameters[&quot;Strategy Parameters&quot;]
+        CPU[&quot;CPU &lt;: AbstractStrategyParameter&quot;]
+        GPU[&quot;GPU &lt;: AbstractStrategyParameter&quot;]
+    end
+    
+    subgraph Metadata[&quot;Parameterized Metadata&quot;]
+        MetaCPU[&quot;metadata(Solvers.MadNLP, CPU) → CPU defaults&quot;]
+        MetaGPU[&quot;metadata(Solvers.MadNLP, GPU) → GPU defaults&quot;]
+    end
+    
+    CPU --&gt; MetaCPU
+    GPU --&gt; MetaGPU
+    MetaCPU --&gt; InstanceCPU[&quot;MadNLP(CPU; max_iter=1000)&quot;]
+    MetaGPU --&gt; InstanceGPU[&quot;MadNLP(GPU; max_iter=1000)&quot;]</div><p><strong>Key features:</strong></p><ul><li><strong>Singleton types</strong> for compile-time dispatch</li><li><strong>Specialized defaults</strong> per parameter (e.g., different linear solvers for CPU/GPU)</li><li><strong>Type-based metadata</strong> via <code>metadata(::Type{&lt;:Strategy}, ::Type{&lt;:Parameter})</code></li></ul><p>See <a href="guides/strategy_parameters.html#Strategy-Parameters">Strategy Parameters</a> for a complete guide.</p><h3 id="NotImplemented-Pattern"><a class="docs-heading-anchor" href="#NotImplemented-Pattern">NotImplemented Pattern</a><a id="NotImplemented-Pattern-1"></a><a class="docs-heading-anchor-permalink" href="#NotImplemented-Pattern" title="Permalink"></a></h3><p>All contract methods have default implementations that throw <code>NotImplemented</code> with helpful error messages:</p><pre><code class="language-julia hljs"># If you forget to implement `id` for your strategy:
+julia&gt; Strategies.id(IncompleteStrategy)
+# ERROR: NotImplemented
+#   Strategy ID method not implemented
+#   Required method: id(::Type{&lt;:IncompleteStrategy})
+#   Suggestion: Implement id(::Type{&lt;:IncompleteStrategy}) to return a unique Symbol identifier</code></pre><p>This pattern ensures that:</p><ul><li>Missing implementations are detected immediately with clear guidance</li><li>Error messages tell the developer exactly what to implement</li><li>No silent failures or incorrect defaults</li></ul><h3 id="Tag-Dispatch"><a class="docs-heading-anchor" href="#Tag-Dispatch">Tag Dispatch</a><a id="Tag-Dispatch-1"></a><a class="docs-heading-anchor-permalink" href="#Tag-Dispatch" title="Permalink"></a></h3><p>Solvers use <strong>Tag Dispatch</strong> to separate type definitions (in <code>src/Solvers/</code>) from backend implementations (in <code>ext/</code>):</p><div class="mermaid">flowchart LR
+    subgraph src[&quot;src/Solvers/&quot;]
+        SolverType[&quot;Solvers.Ipopt &lt;: AbstractNLPSolver&quot;]
+        Tag[&quot;IpoptTag &lt;: AbstractTag&quot;]
+        Callable[&quot;(solver)(nlp) → _solve(IpoptTag(), nlp, opts)&quot;]
+    end
+
+    subgraph ext[&quot;ext/CTSolversIpopt/&quot;]
+        Impl[&quot;_solve(::IpoptTag, nlp, opts) → ipopt(nlp; opts...)&quot;]
+    end
+
+    Callable --&gt;|&quot;dispatch on tag type&quot;| Impl</div><ul><li><strong><code>src/Solvers/</code></strong>: defines the solver type, its options, and a callable that dispatches on a tag.</li><li><strong><code>ext/CTSolversXxx/</code></strong>: implements the actual backend call, loaded only when the backend package is available.</li><li>This keeps CTSolvers lightweight — backend dependencies are optional.</li></ul><h3 id="Qualified-Access"><a class="docs-heading-anchor" href="#Qualified-Access">Qualified Access</a><a id="Qualified-Access-1"></a><a class="docs-heading-anchor-permalink" href="#Qualified-Access" title="Permalink"></a></h3><p>CTSolvers does <strong>not</strong> export symbols at the top level. All access goes through qualified module paths:</p><pre><code class="language-julia hljs">CTSolvers.Strategies.id(MyStrategy)
+CTSolvers.Options.OptionDefinition(...)
+CTSolvers.Optimization.build_model(problem, x0, modeler)</code></pre><p>This ensures namespace clarity, avoids conflicts with other packages, and makes dependencies explicit.</p><h2 id="Conventions"><a class="docs-heading-anchor" href="#Conventions">Conventions</a><a id="Conventions-1"></a><a class="docs-heading-anchor-permalink" href="#Conventions" title="Permalink"></a></h2><h3 id="Naming"><a class="docs-heading-anchor" href="#Naming">Naming</a><a id="Naming-1"></a><a class="docs-heading-anchor-permalink" href="#Naming" title="Permalink"></a></h3><ul><li><strong>Types</strong>: <code>PascalCase</code> — <code>StrategyOptions</code>, <code>ADNLPModelBuilder</code></li><li><strong>Modules</strong>: <code>PascalCase</code> — <code>Options</code>, <code>Strategies</code>, <code>Orchestration</code></li><li><strong>Functions</strong>: <code>snake_case</code> — <code>build_strategy_options</code>, <code>option_value</code></li><li><strong>Strategy IDs</strong>: <code>snake_case</code> symbols — <code>:collocation</code>, <code>:adnlp</code>, <code>:ipopt</code></li><li><strong>Private defaults</strong>: <code>__name()</code> pattern — <code>__grid_size()</code>, <code>__scheme()</code></li></ul><h3 id="Constructor-Pattern"><a class="docs-heading-anchor" href="#Constructor-Pattern">Constructor Pattern</a><a id="Constructor-Pattern-1"></a><a class="docs-heading-anchor-permalink" href="#Constructor-Pattern" title="Permalink"></a></h3><p>Every strategy constructor follows the same pattern:</p><pre><code class="language-julia hljs">function MyStrategy(; mode::Symbol = :strict, kwargs...)
+    opts = Strategies.build_strategy_options(MyStrategy; mode = mode, kwargs...)
+    return MyStrategy(opts)
+end</code></pre><ul><li><code>mode = :strict</code> (default): rejects unknown options with Levenshtein suggestions.</li><li><code>mode = :permissive</code>: accepts unknown options with a warning.</li></ul><h3 id="OptionDefinition-Pattern"><a class="docs-heading-anchor" href="#OptionDefinition-Pattern">OptionDefinition Pattern</a><a id="OptionDefinition-Pattern-1"></a><a class="docs-heading-anchor-permalink" href="#OptionDefinition-Pattern" title="Permalink"></a></h3><p>Options are declared via <code>OptionDefinition</code> in the <code>metadata</code> method:</p><pre><code class="language-julia hljs">Strategies.metadata(::Type{&lt;:MyStrategy}) = Strategies.StrategyMetadata(
+    Options.OptionDefinition(
+        name = :max_iter,
+        type = Int,
+        default = 1000,
+        description = &quot;Maximum number of iterations&quot;,
+    ),
+    Options.OptionDefinition(
+        name = :tol,
+        type = Float64,
+        default = 1e-8,
+        description = &quot;Convergence tolerance&quot;,
+        aliases = [:tolerance],
+    ),
+)</code></pre><p>Each definition specifies: <code>name</code>, <code>type</code>, <code>default</code>, <code>description</code>, and optionally <code>aliases</code> and <code>validator</code>.</p><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="index.html">« Introduction</a><a class="docs-footer-nextpage" href="guides/options_system.html">Options System »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Friday 6 March 2026 10:55">Friday 6 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
