@@ -110,10 +110,21 @@ end
 # ----------------------------------------------------------------------------
 
 """
+$(TYPEDEF)
+
 Internal struct to encapsulate routing context.
 
 Holds precomputed mappings used during option routing to avoid
-passing multiple dictionaries around.
+passing multiple dictionaries around and improve performance.
+
+# Fields
+- `strategy_to_family::Dict{Symbol, Symbol}`: Maps strategy IDs to their family names
+- `option_owners::Dict{Symbol, Set{Symbol}}`: Maps option names to the set of families that own them
+
+# Notes
+- This struct is immutable and created once per routing operation
+- Precomputing these mappings avoids repeated lookups during routing
+- Used internally by the routing helper functions
 """
 struct RoutingContext
     strategy_to_family::Dict{Symbol, Symbol}
@@ -121,11 +132,26 @@ struct RoutingContext
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Separate action options from strategy options.
 
-Returns a tuple of (action_options, strategy_kwargs) where:
-- action_options: Dict of extracted action options with OptionValue wrappers
-- strategy_kwargs: NamedTuple of remaining kwargs for strategy routing
+Filters out RoutedOption values from action extraction, processes action
+definitions, and re-integrates RoutedOption values for strategy routing.
+
+# Arguments
+- `kwargs::NamedTuple`: All keyword arguments (action + strategy options mixed)
+- `action_defs::Vector{<:Options.OptionDefinition}`: Definitions for action-specific options
+
+# Returns
+- `Tuple{Dict, NamedTuple}`: (action_options, strategy_kwargs) where:
+  - `action_options`: Dict of extracted action options with OptionValue wrappers
+  - `strategy_kwargs`: NamedTuple of remaining kwargs for strategy routing
+
+# Notes
+- RoutedOption values are excluded from action extraction and preserved for strategy routing
+- Action options are wrapped in OptionValue with source tracking
+- Strategy options remain in their original form for further processing
 """
 function _separate_action_and_strategy_options(
     kwargs::NamedTuple,
@@ -150,9 +176,25 @@ function _separate_action_and_strategy_options(
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Build routing context with precomputed mappings.
 
-Creates a RoutingContext containing strategy-to-family and option ownership maps.
+Creates a RoutingContext containing strategy-to-family and option ownership
+maps to optimize routing performance by avoiding repeated computations.
+
+# Arguments
+- `resolved::ResolvedMethod`: Resolved method containing strategy information
+- `families::NamedTuple`: NamedTuple mapping family names to AbstractStrategy types
+- `registry::Strategies.StrategyRegistry`: Strategy registry for metadata lookup
+
+# Returns
+- `RoutingContext`: Context containing precomputed mappings for efficient routing
+
+# Notes
+- Precomputes expensive mapping operations once per routing call
+- Strategy-to-family mapping enables quick family lookup from strategy ID
+- Option ownership mapping enables quick validation of option routing
 """
 function _build_routing_context(
     resolved::ResolvedMethod,
@@ -165,10 +207,25 @@ function _build_routing_context(
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Check for action option shadowing and emit info messages.
 
 Detects when a user-provided action option also exists in strategy metadata,
-which means the action option "shadows" the strategy option.
+which means the action option "shadows" the strategy option. Emits
+informational messages to help users understand the shadowing.
+
+# Arguments
+- `action_options::Dict`: Dictionary of extracted action options with OptionValue wrappers
+- `option_owners::Dict{Symbol, Set{Symbol}}`: Maps option names to families that own them
+
+# Returns
+- `Nothing`: This function only emits info messages
+
+# Notes
+- Only checks user-provided options (source === :user), not default values
+- Provides helpful guidance on using route_to() for specific strategy targeting
+- Uses @info to emit messages without interrupting execution
 """
 function _check_action_option_shadowing(
     action_options::Dict,
@@ -186,9 +243,23 @@ function _check_action_option_shadowing(
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Initialize the routing dictionary structure.
 
-Creates an empty routing dictionary with one entry per family.
+Creates an empty routing dictionary with one entry per family to collect
+routed options during the routing process.
+
+# Arguments
+- `families::NamedTuple`: NamedTuple mapping family names to AbstractStrategy types
+
+# Returns
+- `Dict{Symbol, Vector{Pair{Symbol, Any}}}`: Empty routing dictionary with entries for each family
+
+# Notes
+- Each family gets an empty Vector{Pair{Symbol, Any}} to collect routed options
+- The structure enables efficient accumulation of options per family
+- Used as the starting point for routing operations
 """
 function _initialize_routing_dict(families::NamedTuple)::Dict{Symbol, Vector{Pair{Symbol, Any}}}
     routed = Dict{Symbol, Vector{Pair{Symbol, Any}}}()
@@ -199,10 +270,32 @@ function _initialize_routing_dict(families::NamedTuple)::Dict{Symbol, Vector{Pai
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Route a single option with explicit disambiguation.
 
 Handles options wrapped in route_to() with explicit strategy targets.
 Validates that the target family owns the option or that bypass is used.
+
+# Arguments
+- `routed::Dict{Symbol, Vector{Pair{Symbol, Any}}}`: Routing dictionary to populate
+- `key::Symbol`: Option name being routed
+- `disambiguations::Vector{Tuple{Any, Symbol}}`: List of (value, strategy_id) pairs
+- `context::RoutingContext`: Precomputed routing mappings
+- `resolved::ResolvedMethod`: Resolved method containing strategy information
+- `families::NamedTuple`: NamedTuple mapping family names to AbstractStrategy types
+- `registry::Strategies.StrategyRegistry`: Strategy registry for metadata lookup
+
+# Returns
+- `Nothing`: Modifies `routed` in-place
+
+# Throws
+- `Exceptions.IncorrectArgument`: If option is unknown or routed to wrong family
+
+# Notes
+- BypassValue allows routing unknown options without validation
+- Validates option ownership to prevent incorrect routing
+- Provides helpful error messages for misrouted options
 """
 function _route_with_disambiguation!(
     routed::Dict{Symbol, Vector{Pair{Symbol, Any}}},
@@ -244,12 +337,35 @@ function _route_with_disambiguation!(
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Route a single option automatically based on ownership.
 
 Handles options without explicit disambiguation by checking ownership:
-- Unknown option → error
-- Single owner → auto-route
-- Multiple owners → ambiguity error
+- Unknown option → error with helpful suggestions
+- Single owner → auto-route to that family
+- Multiple owners → ambiguity error requiring disambiguation
+
+# Arguments
+- `routed::Dict{Symbol, Vector{Pair{Symbol, Any}}}`: Routing dictionary to populate
+- `key::Symbol`: Option name being routed
+- `value::Any`: Option value to route
+- `context::RoutingContext`: Precomputed routing mappings
+- `resolved::ResolvedMethod`: Resolved method containing strategy information
+- `families::NamedTuple`: NamedTuple mapping family names to AbstractStrategy types
+- `registry::Strategies.StrategyRegistry`: Strategy registry for metadata lookup
+- `source_mode::Symbol`: Controls error verbosity (:description or :explicit)
+
+# Returns
+- `Nothing`: Modifies `routed` in-place
+
+# Throws
+- `Exceptions.IncorrectArgument`: If option is unknown or ambiguous
+
+# Notes
+- Uses option ownership mapping to determine routing destination
+- Provides detailed error messages with suggestions for unknown/ambiguous options
+- Auto-routing only occurs when option has exactly one owner
 """
 function _route_auto!(
     routed::Dict{Symbol, Vector{Pair{Symbol, Any}}},
@@ -283,9 +399,31 @@ function _route_auto!(
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Route a single option (dispatcher).
 
 Determines whether the option has explicit disambiguation and routes accordingly.
+Acts as the main dispatcher for option routing logic.
+
+# Arguments
+- `routed::Dict{Symbol, Vector{Pair{Symbol, Any}}}`: Routing dictionary to populate
+- `key::Symbol`: Option name being routed
+- `raw_val::Any`: Raw option value (may be wrapped in RoutedOption)
+- `context::RoutingContext`: Precomputed routing mappings
+- `resolved::ResolvedMethod`: Resolved method containing strategy information
+- `families::NamedTuple`: NamedTuple mapping family names to AbstractStrategy types
+- `registry::Strategies.StrategyRegistry`: Strategy registry for metadata lookup
+- `source_mode::Symbol`: Controls error verbosity (:description or :explicit)
+
+# Returns
+- `Nothing`: Modifies `routed` in-place
+
+# Notes
+- Extracts strategy disambiguations from RoutedOption values if present
+- Delegates to _route_with_disambiguation! for explicit routing
+- Delegates to _route_auto! for automatic routing
+- Central point for all option routing decisions
 """
 function _route_single_option!(
     routed::Dict{Symbol, Vector{Pair{Symbol, Any}}},
@@ -312,9 +450,27 @@ function _route_single_option!(
 end
 
 """
+$(TYPEDSIGNATURES)
+
 Build the final routed result structure.
 
-Converts the routing dictionary and action options into the final NamedTuple format.
+Converts the routing dictionary and action options into the final NamedTuple format
+expected by the routing system API.
+
+# Arguments
+- `action_options::Dict`: Dictionary of extracted action options with OptionValue wrappers
+- `routed::Dict{Symbol, Vector{Pair{Symbol, Any}}}`: Routing dictionary with options per family
+
+# Returns
+- `NamedTuple`: Final result with structure `(action=..., strategies=...)` where:
+  - `action`: NamedTuple of action options with OptionValue wrappers
+  - `strategies`: NamedTuple of strategy options per family (raw values)
+
+# Notes
+- Converts routing dictionary to nested NamedTuple structure
+- Preserves OptionValue wrappers for action options
+- Strategy options remain in their raw form for downstream processing
+- This is the final step in the routing pipeline
 """
 function _build_routed_result(
     action_options::Dict,
