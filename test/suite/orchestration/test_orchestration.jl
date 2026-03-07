@@ -69,6 +69,17 @@ function test_orchestration()
             end
             
             # Test that internal symbols are NOT exported
+            Test.@testset "Internal Types (not exported)" begin
+                for T in (
+                    :RoutingContext,
+                )
+                    Test.@testset "$T" begin
+                        Test.@test isdefined(Orchestration, T)
+                        Test.@test !isdefined(CurrentModule, T)
+                    end
+                end
+            end
+            
             Test.@testset "Internal Functions (not exported)" begin
                 for f in (
                     :build_alias_to_primary_map,  # Internal helper function
@@ -76,6 +87,15 @@ function test_orchestration()
                     :_collect_suggestions_across_strategies,
                     :_error_ambiguous_option,
                     :_warn_unknown_option_permissive,
+                    # New internal functions from route_all_options refactoring
+                    :_separate_action_and_strategy_options,
+                    :_build_routing_context,
+                    :_check_action_option_shadowing,
+                    :_initialize_routing_dict,
+                    :_route_single_option!,
+                    :_route_with_disambiguation!,
+                    :_route_auto!,
+                    :_build_routed_result,
                 )
                     Test.@testset "$f" begin
                         Test.@test isdefined(Orchestration, f)
