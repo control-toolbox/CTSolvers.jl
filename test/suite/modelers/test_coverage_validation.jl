@@ -65,42 +65,6 @@ function test_coverage_validation()
         end
 
         # ====================================================================
-        # UNIT TESTS - validate_gpu_preference
-        # ====================================================================
-
-        Test.@testset "validate_gpu_preference" begin
-            # Valid preferences
-            Test.@test Modelers.validate_gpu_preference(:cuda) == :cuda
-            Test.@test Modelers.validate_gpu_preference(:rocm) == :rocm
-            Test.@test Modelers.validate_gpu_preference(:oneapi) == :oneapi
-
-            Test.@test_nowarn Test.@inferred Modelers.validate_gpu_preference(:cuda)
-
-            # Invalid preferences
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_gpu_preference(:invalid)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_gpu_preference(:metal)
-        end
-
-        # ====================================================================
-        # UNIT TESTS - validate_precision_mode
-        # ====================================================================
-
-        Test.@testset "validate_precision_mode" begin
-            # Valid modes
-            Test.@test Modelers.validate_precision_mode(:standard) == :standard
-
-            Test.@test_nowarn Test.@inferred Modelers.validate_precision_mode(:standard)
-
-            # :high and :mixed emit @info
-            Test.@test_logs (:info,) Modelers.validate_precision_mode(:high)
-            Test.@test_logs (:info,) Modelers.validate_precision_mode(:mixed)
-
-            # Invalid modes
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_precision_mode(:invalid)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_precision_mode(:ultra)
-        end
-
-        # ====================================================================
         # UNIT TESTS - validate_model_name
         # ====================================================================
 

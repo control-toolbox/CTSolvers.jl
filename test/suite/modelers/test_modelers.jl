@@ -48,8 +48,6 @@ function test_modelers_basic()
                 for f in (
                     :validate_adnlp_backend,      # Validation functions
                     :validate_exa_base_type,
-                    :validate_gpu_preference,
-                    :validate_precision_mode,
                     :validate_model_name,
                     :validate_matrix_free,
                     :validate_optimization_direction,
