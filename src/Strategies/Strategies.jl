@@ -73,6 +73,6 @@ export build_strategy_options, resolve_alias
 
 # Utility functions
 export filter_options, suggest_options, format_suggestion, options_dict, route_to
-export bypass
+export bypass, force
 
 end # module Strategies

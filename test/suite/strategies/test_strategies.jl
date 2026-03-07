@@ -168,6 +168,7 @@ function test_strategies()
                     :options_dict,
                     :route_to,
                     :bypass,
+                    :force,
                 )
                     Test.@testset "$f" begin
                         Test.@test isdefined(Strategies, f)

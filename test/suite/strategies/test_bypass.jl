@@ -179,6 +179,30 @@ function test_bypass()
             Test.@test Strategies.option_source(strat2, :tol) === :user
         end
 
+        # ====================================================================
+        # UNIT TESTS - Force Alias
+        # ====================================================================
+
+        Test.@testset "Force Alias" begin
+            # Test that force and bypass are the same function
+            Test.@test Strategies.force === Strategies.bypass
+            
+            # Test that force and bypass produce identical results
+            Test.@test Strategies.force(42) == Strategies.bypass(42)
+            Test.@test Strategies.force("test") == Strategies.bypass("test")
+            Test.@test Strategies.force(:symbol) == Strategies.bypass(:symbol)
+            
+            # Test that force creates BypassValue
+            result = Strategies.force(123)
+            Test.@test result isa Strategies.BypassValue
+            Test.@test result.value == 123
+            
+            # Test that force works in strategy construction
+            strat = MockSolver(unknown_opt=Strategies.force(456))
+            Test.@test Strategies.option_value(strat, :unknown_opt) == 456
+            Test.@test Strategies.option_source(strat, :unknown_opt) === :user
+        end
+
     end
 end
 
