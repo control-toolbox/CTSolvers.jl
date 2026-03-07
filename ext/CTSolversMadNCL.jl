@@ -84,6 +84,7 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             type=Type{<:MadNLP.AbstractLinearSolver},
             default=Solvers.__madnlp_suite_default_linear_solver(P),
             description="Linear solver implementation used inside MadNCL. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU.",
+            computed=true,  # Default is computed from parameter P
             validator=function(linear_solver)
                 if !Solvers.__madnlp_suite_consistent_linear_solver(P, linear_solver)
                     param_str = P == CPU ? "CPU" : "GPU"

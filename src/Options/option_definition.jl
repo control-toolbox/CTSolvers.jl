@@ -17,6 +17,7 @@ This type provides a comprehensive option definition that can be used for:
 - `description::String`: Human-readable description of the option's purpose
 - `aliases::Tuple{Vararg{Symbol}}`: Alternative names for this option (default: empty tuple)
 - `validator::Union{Function, Nothing}`: Optional validation function (default: `nothing`)
+- `computed::Bool`: Whether the default value is computed from parameters (default: `false`)
 
 # Type Parameter `T`
 
@@ -72,6 +73,7 @@ struct OptionDefinition{T}
     description::String
     aliases::Tuple{Vararg{Symbol}}
     validator::Union{Function, Nothing}
+    computed::Bool
     
     function OptionDefinition{T}(;
         name::Symbol,
@@ -79,7 +81,8 @@ struct OptionDefinition{T}
         default::T,
         description::String,
         aliases::Tuple{Vararg{Symbol}} = (),
-        validator::Union{Function, Nothing} = nothing
+        validator::Union{Function, Nothing} = nothing,
+        computed::Bool = false
     ) where T
         # Validate with custom validator if provided (skip for NotProvided)
         if validator !== nothing && !(default isa NotProvidedType)
@@ -91,7 +94,7 @@ struct OptionDefinition{T}
             end
         end
         
-        new{T}(name, type, default, description, aliases, validator)
+        new{T}(name, type, default, description, aliases, validator, computed)
     end
 end
 
@@ -113,6 +116,7 @@ delegates to specialized methods based on the type of `default`:
 - `description::String`: Human-readable description of the option's purpose
 - `aliases::Tuple{Vararg{Symbol}}`: Alternative names (default: empty tuple)
 - `validator::Union{Function, Nothing}`: Optional validation function (default: `nothing`)
+- `computed::Bool`: Whether the default is computed from parameters (default: `false`)
 
 # Returns
 - `OptionDefinition{T}`: Option definition with inferred type parameter
@@ -166,9 +170,10 @@ function OptionDefinition(;
     default,
     description::String,
     aliases::Tuple{Vararg{Symbol}} = (),
-    validator::Union{Function, Nothing} = nothing
+    validator::Union{Function, Nothing} = nothing,
+    computed::Bool = false
 )
-    return _construct_option_definition(name, type, default, description, aliases, validator)
+    return _construct_option_definition(name, type, default, description, aliases, validator, computed)
 end
 
 # Dispatch methods for different default types
@@ -188,6 +193,7 @@ This method handles the special case where `default = nothing`, creating an
 - `description::String`: Human-readable description
 - `aliases::Tuple{Vararg{Symbol}}`: Alternative names (default: empty tuple)
 - `validator::Union{Function, Nothing}`: Optional validation function (default: `nothing`)
+- `computed::Bool`: Whether the default is computed from parameters (default: `false`)
 
 # Returns
 - `OptionDefinition{Any}`: Option definition with `nothing` default
@@ -217,7 +223,8 @@ function _construct_option_definition(
     default::Nothing, 
     description::String, 
     aliases::Tuple{Vararg{Symbol}}, 
-    validator::Union{Function, Nothing}
+    validator::Union{Function, Nothing},
+    computed::Bool
 )
     return OptionDefinition{Any}(;
         name=name,
@@ -225,7 +232,8 @@ function _construct_option_definition(
         default=nothing,
         description=description,
         aliases=aliases,
-        validator=validator
+        validator=validator,
+        computed=computed
     )
 end
 
@@ -246,6 +254,7 @@ information for validation.
 - `description::String`: Human-readable description
 - `aliases::Tuple{Vararg{Symbol}}`: Alternative names (default: empty tuple)
 - `validator::Union{Function, Nothing}`: Optional validation function (default: `nothing`)
+- `computed::Bool`: Whether the default is computed from parameters (default: `false`)
 
 # Returns
 - `OptionDefinition{NotProvidedType}`: Option definition with no default value
@@ -275,7 +284,8 @@ function _construct_option_definition(
     default::NotProvidedType, 
     description::String, 
     aliases::Tuple{Vararg{Symbol}}, 
-    validator::Union{Function, Nothing}
+    validator::Union{Function, Nothing},
+    computed::Bool
 )
     return OptionDefinition{NotProvidedType}(;
         name=name,
@@ -283,7 +293,8 @@ function _construct_option_definition(
         default=default,
         description=description,
         aliases=aliases,
-        validator=validator
+        validator=validator,
+        computed=computed
     )
 end
 
@@ -303,6 +314,7 @@ the default value is compatible with the declared `type`.
 - `description::String`: Human-readable description
 - `aliases::Tuple{Vararg{Symbol}}`: Alternative names (default: empty tuple)
 - `validator::Union{Function, Nothing}`: Optional validation function (default: `nothing`)
+- `computed::Bool`: Whether the default is computed from parameters (default: `false`)
 
 # Returns
 - `OptionDefinition{T}`: Option definition with concrete default value
@@ -335,7 +347,8 @@ function _construct_option_definition(
     default::T, 
     description::String, 
     aliases::Tuple{Vararg{Symbol}}, 
-    validator::Union{Function, Nothing}
+    validator::Union{Function, Nothing},
+    computed::Bool
 ) where {T}
     # Check type compatibility
     if !isa(default, type)
@@ -355,7 +368,8 @@ function _construct_option_definition(
         default=default,
         description=description,
         aliases=aliases,
-        validator=validator
+        validator=validator,
+        computed=computed
     )
 end
 
@@ -586,6 +600,42 @@ See also: [`validator`](@ref), [`name`](@ref)
 """
 has_validator(def::OptionDefinition) = def.validator !== nothing
 
+"""
+$(TYPEDSIGNATURES)
+
+Check if this option definition has a computed default value.
+
+Returns `true` when the default value is computed from strategy parameters
+(e.g., `backend` in `Exa{GPU}` which depends on the `GPU` parameter).
+
+# Returns
+- `Bool`: `true` if the default is computed from parameters
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> # Static default
+julia> def1 = OptionDefinition(name=:max_iter, type=Int, default=100,
+                          description="Maximum iterations")
+OptionDefinition{Int}(...)
+
+julia> is_computed(def1)
+false
+
+julia> # Computed default
+julia> def2 = OptionDefinition(name=:backend, type=Any, default=compute_backend(),
+                          description="Backend", computed=true)
+OptionDefinition{...}(...)
+
+julia> is_computed(def2)
+true
+```
+
+See also: [`has_default`](@ref), [`is_required`](@ref), [`OptionDefinition`](@ref)
+"""
+is_computed(def::OptionDefinition) = def.computed
+
 # Get all names (primary + aliases) for extraction
 """
 $(TYPEDSIGNATURES)
@@ -663,5 +713,11 @@ function Base.show(io::IO, def::OptionDefinition)
     else
         print(io, "$(def.name) ($(join(def.aliases, ", "))) :: $(def.type)")
     end
-    print(io, " (default: $(def.default))")
+    
+    # Show default with source indicator
+    if def.computed
+        print(io, " (default: $(def.default) [computed])")
+    else
+        print(io, " (default: $(def.default))")
+    end
 end

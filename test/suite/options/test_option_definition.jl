@@ -212,7 +212,8 @@ function test_option_definition()
                     nothing,
                     "Execution backend",
                     (:be,),
-                    nothing
+                    nothing,
+                    false
                 )
                 
                 Test.@test def isa Options.OptionDefinition{Any}
@@ -232,7 +233,8 @@ function test_option_definition()
                     Options.NotProvided,
                     "Input file path",
                     (:input,),
-                    nothing
+                    nothing,
+                    false
                 )
                 
                 Test.@test def isa Options.OptionDefinition{Options.NotProvidedType}
@@ -252,7 +254,8 @@ function test_option_definition()
                     100,
                     "Maximum iterations",
                     (:max, :maxiter),
-                    nothing
+                    nothing,
+                    false
                 )
                 
                 Test.@test def_int isa Options.OptionDefinition{Int}
@@ -270,7 +273,8 @@ function test_option_definition()
                     "output.txt",
                     "Output file name",
                     (),
-                    nothing
+                    nothing,
+                    false
                 )
                 
                 Test.@test def_string isa Options.OptionDefinition{String}
@@ -289,7 +293,8 @@ function test_option_definition()
                     1e-6,
                     "Convergence tolerance",
                     (),
-                    validator
+                    validator,
+                    false
                 )
                 
                 Test.@test def_float isa Options.OptionDefinition{Float64}
@@ -306,20 +311,22 @@ function test_option_definition()
                 Test.@test_throws Exceptions.IncorrectArgument Options._construct_option_definition(
                     :test_option,
                     Int,
-                    "not an int",  # String instead of Int
+                    "not an int",
                     "Test option",
                     (),
-                    nothing
+                    nothing,
+                    false
                 )
                 
                 # Test type mismatch with Union type
                 Test.@test_throws Exceptions.IncorrectArgument Options._construct_option_definition(
                     :test_option,
                     Union{Int, Float64},
-                    "not a number",  # String instead of Int or Float64
+                    "not a number",
                     "Test option",
                     (),
-                    nothing
+                    nothing,
+                    false
                 )
                 
                 # Test valid Union type (should work)
@@ -329,7 +336,8 @@ function test_option_definition()
                     42,  # Int is valid for Union{Int, Float64}
                     "Test option",
                     (),
-                    nothing
+                    nothing,
+                    false
                 )
             end
         end

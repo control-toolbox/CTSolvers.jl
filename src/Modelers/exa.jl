@@ -250,6 +250,7 @@ function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU, GPU
             type=Union{Nothing, KernelAbstractions.Backend},  # More permissive for various backend types
             default=__exa_model_backend(P),
             description="Execution backend for ExaModels (CPU, GPU, etc.)",
+            computed=true,  # Default is computed from parameter P
             aliases=(:exa_backend,),
             validator=function(backend)
                 if !__consistent_backend(P, backend)
