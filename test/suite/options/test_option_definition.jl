@@ -200,6 +200,199 @@ function test_option_definition()
         end
         
         # ========================================================================
+        # Dispatch methods - Unit tests
+        # ========================================================================
+        
+        Test.@testset "Dispatch methods - Unit tests" begin
+            Test.@testset "_construct_option_definition with Nothing" begin
+                # Test the Nothing dispatch method directly
+                def = Options._construct_option_definition(
+                    :backend,
+                    Union{Nothing, String},
+                    nothing,
+                    "Execution backend",
+                    (:be,),
+                    nothing
+                )
+                
+                Test.@test def isa Options.OptionDefinition{Any}
+                Test.@test Options.name(def) == :backend
+                Test.@test Options.type(def) == Any
+                Test.@test Options.default(def) === nothing
+                Test.@test Options.description(def) == "Execution backend"
+                Test.@test Options.aliases(def) == (:be,)
+                Test.@test Options.validator(def) === nothing
+            end
+            
+            Test.@testset "_construct_option_definition with NotProvided" begin
+                # Test the NotProvided dispatch method directly
+                def = Options._construct_option_definition(
+                    :input_file,
+                    String,
+                    Options.NotProvided,
+                    "Input file path",
+                    (:input,),
+                    nothing
+                )
+                
+                Test.@test def isa Options.OptionDefinition{Options.NotProvidedType}
+                Test.@test Options.name(def) == :input_file
+                Test.@test Options.type(def) == String
+                Test.@test Options.default(def) === Options.NotProvided
+                Test.@test Options.description(def) == "Input file path"
+                Test.@test Options.aliases(def) == (:input,)
+                Test.@test Options.validator(def) === nothing
+            end
+            
+            Test.@testset "_construct_option_definition with concrete values" begin
+                # Test Int concrete value
+                def_int = Options._construct_option_definition(
+                    :max_iter,
+                    Int,
+                    100,
+                    "Maximum iterations",
+                    (:max, :maxiter),
+                    nothing
+                )
+                
+                Test.@test def_int isa Options.OptionDefinition{Int}
+                Test.@test Options.name(def_int) == :max_iter
+                Test.@test Options.type(def_int) == Int
+                Test.@test Options.default(def_int) == 100
+                Test.@test Options.description(def_int) == "Maximum iterations"
+                Test.@test Options.aliases(def_int) == (:max, :maxiter)
+                Test.@test Options.validator(def_int) === nothing
+                
+                # Test String concrete value
+                def_string = Options._construct_option_definition(
+                    :output_file,
+                    String,
+                    "output.txt",
+                    "Output file name",
+                    (),
+                    nothing
+                )
+                
+                Test.@test def_string isa Options.OptionDefinition{String}
+                Test.@test Options.name(def_string) == :output_file
+                Test.@test Options.type(def_string) == String
+                Test.@test Options.default(def_string) == "output.txt"
+                Test.@test Options.description(def_string) == "Output file name"
+                Test.@test Options.aliases(def_string) == ()
+                Test.@test Options.validator(def_string) === nothing
+                
+                # Test Float64 concrete value with validator
+                validator = x -> x > 0
+                def_float = Options._construct_option_definition(
+                    :tolerance,
+                    Float64,
+                    1e-6,
+                    "Convergence tolerance",
+                    (),
+                    validator
+                )
+                
+                Test.@test def_float isa Options.OptionDefinition{Float64}
+                Test.@test Options.name(def_float) == :tolerance
+                Test.@test Options.type(def_float) == Float64
+                Test.@test Options.default(def_float) == 1e-6
+                Test.@test Options.description(def_float) == "Convergence tolerance"
+                Test.@test Options.aliases(def_float) == ()
+                Test.@test Options.validator(def_float) === validator
+            end
+            
+            Test.@testset "_construct_option_definition type compatibility validation" begin
+                # Test type mismatch error in concrete dispatch method
+                Test.@test_throws Exceptions.IncorrectArgument Options._construct_option_definition(
+                    :test_option,
+                    Int,
+                    "not an int",  # String instead of Int
+                    "Test option",
+                    (),
+                    nothing
+                )
+                
+                # Test type mismatch with Union type
+                Test.@test_throws Exceptions.IncorrectArgument Options._construct_option_definition(
+                    :test_option,
+                    Union{Int, Float64},
+                    "not a number",  # String instead of Int or Float64
+                    "Test option",
+                    (),
+                    nothing
+                )
+                
+                # Test valid Union type (should work)
+                Test.@test_nowarn Options._construct_option_definition(
+                    :test_option,
+                    Union{Int, Float64},
+                    42,  # Int is valid for Union{Int, Float64}
+                    "Test option",
+                    (),
+                    nothing
+                )
+            end
+        end
+        
+        # ========================================================================
+        # Constructor dispatch integration
+        # ========================================================================
+        
+        Test.@testset "Constructor dispatch integration" begin
+            Test.@testset "Public constructor routes to correct dispatch method" begin
+                # Test that public constructor with nothing creates OptionDefinition{Any}
+                def_nothing = Options.OptionDefinition(
+                    name = :backend,
+                    type = Union{Nothing, String},
+                    default = nothing,
+                    description = "Execution backend"
+                )
+                Test.@test def_nothing isa Options.OptionDefinition{Any}
+                Test.@test Options.type(def_nothing) == Any  # type is overridden to Any
+                
+                # Test that public constructor with NotProvided creates OptionDefinition{NotProvidedType}
+                def_not_provided = Options.OptionDefinition(
+                    name = :input_file,
+                    type = String,
+                    default = Options.NotProvided,
+                    description = "Input file"
+                )
+                Test.@test def_not_provided isa Options.OptionDefinition{Options.NotProvidedType}
+                Test.@test Options.type(def_not_provided) == String  # type is preserved
+                
+                # Test that public constructor with concrete value creates correct type
+                def_concrete = Options.OptionDefinition(
+                    name = :max_iter,
+                    type = Int,
+                    default = 100,
+                    description = "Maximum iterations"
+                )
+                Test.@test def_concrete isa Options.OptionDefinition{Int}
+                Test.@test Options.type(def_concrete) == Int
+            end
+            
+            Test.@testset "Type parameter inference correctness" begin
+                # Test various concrete types
+                def_int = Options.OptionDefinition(name=:i, type=Int, default=42, description="int")
+                Test.@test def_int isa Options.OptionDefinition{Int64}
+                
+                def_float = Options.OptionDefinition(name=:f, type=Float64, default=3.14, description="float")
+                Test.@test def_float isa Options.OptionDefinition{Float64}
+                
+                def_string = Options.OptionDefinition(name=:s, type=String, default="hello", description="string")
+                Test.@test def_string isa Options.OptionDefinition{String}
+                
+                def_bool = Options.OptionDefinition(name=:b, type=Bool, default=true, description="bool")
+                Test.@test def_bool isa Options.OptionDefinition{Bool}
+                
+                # Test that Nothing always creates Any regardless of declared type
+                def_any_type = Options.OptionDefinition(name=:any, type=String, default=nothing, description="any")
+                Test.@test def_any_type isa Options.OptionDefinition{Any}
+                Test.@test Options.type(def_any_type) == Any
+            end
+        end
+        
+        # ========================================================================
         # Edge cases
         # ========================================================================
         
