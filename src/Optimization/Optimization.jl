@@ -20,8 +20,8 @@ module Optimization
 # Imports
 import CTBase.Exceptions
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
-import NLPModels
-import SolverCore
+using NLPModels: NLPModels
+using SolverCore: SolverCore
 
 # Submodules
 include(joinpath(@__DIR__, "abstract_types.jl"))

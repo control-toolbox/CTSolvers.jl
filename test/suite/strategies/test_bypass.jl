@@ -1,6 +1,6 @@
 module TestBypass
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Strategies
 import CTSolvers.Orchestration
@@ -21,31 +21,25 @@ end
 
 Strategies.id(::Type{MockSolver}) = :mock_solver
 
-Strategies.metadata(::Type{MockSolver}) = Strategies.StrategyMetadata(
-    Options.OptionDefinition(
-        name = :max_iter,
-        type = Int,
-        default = 100,
-        description = "Maximum iterations"
-    ),
-    Options.OptionDefinition(
-        name = :tol,
-        type = Float64,
-        default = 1e-6,
-        description = "Tolerance"
+function Strategies.metadata(::Type{MockSolver})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(
+            name=:max_iter, type=Int, default=100, description="Maximum iterations"
+        ),
+        Options.OptionDefinition(
+            name=:tol, type=Float64, default=1e-6, description="Tolerance"
+        ),
     )
-)
+end
 
-function MockSolver(; mode::Symbol = :strict, kwargs...)
+function MockSolver(; mode::Symbol=:strict, kwargs...)
     options = Strategies.build_strategy_options(MockSolver; mode=mode, kwargs...)
     return MockSolver(options)
 end
 
-const BYPASS_REGISTRY = Strategies.create_registry(
-    BypassTestSolver => (MockSolver,)
-)
+const BYPASS_REGISTRY = Strategies.create_registry(BypassTestSolver => (MockSolver,))
 
-const BYPASS_FAMILIES = (solver = BypassTestSolver,)
+const BYPASS_FAMILIES = (solver=BypassTestSolver,)
 const BYPASS_METHOD = (:mock_solver,)
 const BYPASS_ACTION_DEFS = Options.OptionDefinition[]
 
@@ -98,8 +92,7 @@ function test_bypass()
 
             # Multiple bypassed options
             strat4 = MockSolver(
-                custom_a=Strategies.bypass(1),
-                custom_b=Strategies.bypass("x")
+                custom_a=Strategies.bypass(1), custom_b=Strategies.bypass("x")
             )
             Test.@test Strategies.option_value(strat4, :custom_a) == 1
             Test.@test Strategies.option_value(strat4, :custom_b) == "x"
@@ -111,7 +104,7 @@ function test_bypass()
 
         Test.@testset "route_to with bypass(val) - routing" begin
             # Unknown option with bypass → routed as BypassValue, no error
-            kwargs = (custom_opt = Strategies.route_to(mock_solver=Strategies.bypass(42)),)
+            kwargs = (custom_opt=Strategies.route_to(mock_solver=Strategies.bypass(42)),)
             routed = Orchestration.route_all_options(
                 BYPASS_METHOD, BYPASS_FAMILIES, BYPASS_ACTION_DEFS, kwargs, BYPASS_REGISTRY
             )
@@ -122,15 +115,19 @@ function test_bypass()
             Test.@test bv.value == 42
 
             # Unknown option WITHOUT bypass → error
-            kwargs_no_bypass = (custom_opt = Strategies.route_to(mock_solver=42),)
+            kwargs_no_bypass = (custom_opt=Strategies.route_to(mock_solver=42),)
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
-                BYPASS_METHOD, BYPASS_FAMILIES, BYPASS_ACTION_DEFS, kwargs_no_bypass, BYPASS_REGISTRY
+                BYPASS_METHOD,
+                BYPASS_FAMILIES,
+                BYPASS_ACTION_DEFS,
+                kwargs_no_bypass,
+                BYPASS_REGISTRY,
             )
         end
 
         Test.@testset "route_to with bypass(val) - end-to-end" begin
             # Route BypassValue, then build strategy: bypass accepted by constructor
-            kwargs = (custom_opt = Strategies.route_to(mock_solver=Strategies.bypass(99)),)
+            kwargs = (custom_opt=Strategies.route_to(mock_solver=Strategies.bypass(99)),)
             routed = Orchestration.route_all_options(
                 BYPASS_METHOD, BYPASS_FAMILIES, BYPASS_ACTION_DEFS, kwargs, BYPASS_REGISTRY
             )
@@ -141,9 +138,13 @@ function test_bypass()
             Test.@test Strategies.option_value(strat, :custom_opt) == 99
 
             # Known option routed normally (no bypass needed)
-            kwargs_known = (max_iter = Strategies.route_to(mock_solver=500),)
+            kwargs_known = (max_iter=Strategies.route_to(mock_solver=500),)
             routed_known = Orchestration.route_all_options(
-                BYPASS_METHOD, BYPASS_FAMILIES, BYPASS_ACTION_DEFS, kwargs_known, BYPASS_REGISTRY
+                BYPASS_METHOD,
+                BYPASS_FAMILIES,
+                BYPASS_ACTION_DEFS,
+                kwargs_known,
+                BYPASS_REGISTRY,
             )
             strat_known = MockSolver(; routed_known.strategies.solver...)
             Test.@test Strategies.option_value(strat_known, :max_iter) == 500
@@ -178,7 +179,6 @@ function test_bypass()
             Test.@test Strategies.option_value(strat2, :tol) === :flexible
             Test.@test Strategies.option_source(strat2, :tol) === :user
         end
-
     end
 end
 

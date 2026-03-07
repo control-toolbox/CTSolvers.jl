@@ -42,7 +42,8 @@ include(joinpath(@__DIR__, "api", "disambiguation.jl"))
 # ==============================================================================
 
 # Core types
-export AbstractStrategy, StrategyRegistry, StrategyMetadata, StrategyOptions, OptionDefinition
+export AbstractStrategy,
+    StrategyRegistry, StrategyMetadata, StrategyOptions, OptionDefinition
 export RoutedOption, BypassValue
 export AbstractStrategyParameter, CPU, GPU
 

@@ -198,10 +198,7 @@ See also: [`option_default`](@ref), [`option_names`](@ref)
 """
 function option_defaults(strategy_type::Type{<:AbstractStrategy})
     meta = metadata(strategy_type)
-    defaults = NamedTuple(
-        key => Options.default(spec)
-        for (key, spec) in pairs(meta)
-    )
+    defaults = NamedTuple(key => Options.default(spec) for (key, spec) in pairs(meta))
     return defaults
 end
 
@@ -316,7 +313,6 @@ See also: [`option_value`](@ref), [`option_source`](@ref)
 function has_option(strategy::AbstractStrategy, key::Symbol)
     return haskey(options(strategy), key)
 end
-
 
 """
 $(TYPEDSIGNATURES)

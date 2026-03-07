@@ -1,8 +1,8 @@
 module TestAqua
 
-import Test
-import CTSolvers
-import Aqua
+using Test: Test
+using CTSolvers: CTSolvers
+using Aqua: Aqua
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
 

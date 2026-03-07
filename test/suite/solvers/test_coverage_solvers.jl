@@ -1,14 +1,14 @@
 module TestCoverageSolvers
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Solvers
 import CTSolvers.Strategies
 import CTSolvers.Options
-import NLPModels
-import SolverCore
-import ADNLPModels
-import CommonSolve
+using NLPModels: NLPModels
+using SolverCore: SolverCore
+using ADNLPModels: ADNLPModels
+using CommonSolve: CommonSolve
 
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
@@ -40,7 +40,7 @@ function test_coverage_solvers()
         Test.@testset "AbstractNLPSolver callable - NotImplemented" begin
             opts = Strategies.StrategyOptions()
             solver = CovUnimplementedSolver(opts)
-            nlp = ADNLPModels.ADNLPModel(x -> sum(x.^2), [1.0])
+            nlp = ADNLPModels.ADNLPModel(x -> sum(x .^ 2), [1.0])
 
             Test.@test_throws Exceptions.NotImplemented solver(nlp)
             Test.@test_throws Exceptions.NotImplemented solver(nlp; display=false)

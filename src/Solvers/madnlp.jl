@@ -74,7 +74,7 @@ using MadNLP
 
 See also: [`AbstractNLPSolver`](@ref), [`Ipopt`](@ref), [`Solvers.MadNCL`](@ref), [`CPU`](@ref), [`GPU`](@ref)
 """
-struct MadNLP{P<:Union{CPU, GPU}} <: AbstractNLPSolver
+struct MadNLP{P<:Union{CPU,GPU}} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -133,7 +133,9 @@ solver_permissive = MadNLP(max_iter=1000, custom_option=123; mode=:permissive)
 See also: [`MadNLP`](@ref), [`build_madnlp_solver`](@ref)
 """
 function Solvers.MadNLP(; mode::Symbol=:strict, kwargs...)
-    return build_madnlp_solver(MadNLPTag, Strategies._default_parameter(Solvers.MadNLP); mode=mode, kwargs...)
+    return build_madnlp_solver(
+        MadNLPTag, Strategies._default_parameter(Solvers.MadNLP); mode=mode, kwargs...
+    )
 end
 
 """
@@ -164,7 +166,9 @@ solver_gpu = MadNLP{GPU}(max_iter=1000, tol=1e-6)  # requires CUDA.jl
 
 See also: [`MadNLP`](@ref), [`CPU`](@ref), [`GPU`](@ref)
 """
-function Solvers.MadNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
+function Solvers.MadNLP{P}(;
+    mode::Symbol=:strict, kwargs...
+) where {P<:AbstractStrategyParameter}
     return build_madnlp_solver(MadNLPTag, P; mode=mode, kwargs...)
 end
 
@@ -179,13 +183,17 @@ Real implementation provided by the extension.
 
 See also: [`MadNLP`](@ref), [`Strategies.metadata`](@ref)
 """
-function build_madnlp_solver(::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...)
-    throw(Exceptions.ExtensionError(
-        :MadNLP;
-        message="to create MadNLP, access options, and solve problems",
-        feature="MadNLP functionality",
-        context="Load MadNLP extension first: using MadNLP"
-    ))
+function build_madnlp_solver(
+    ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+)
+    throw(
+        Exceptions.ExtensionError(
+            :MadNLP;
+            message="to create MadNLP, access options, and solve problems",
+            feature="MadNLP functionality",
+            context="Load MadNLP extension first: using MadNLP",
+        ),
+    )
 end
 
 """
@@ -201,13 +209,17 @@ This stub is for parameterized types `MadNLP{P}` where `P <: AbstractStrategyPar
 
 See also: [`MadNLP`](@ref), [`Strategies.StrategyMetadata`](@ref)
 """
-function Strategies.metadata(::Type{<:Solvers.MadNLP{P}}) where {P<:AbstractStrategyParameter}
-    throw(Exceptions.ExtensionError(
-        :MadNLP;
-        message="to access MadNLP{$P} options metadata",
-        feature="MadNLP metadata",
-        context="Load MadNLP extension first: using MadNLP"
-    ))
+function Strategies.metadata(
+    ::Type{<:Solvers.MadNLP{P}}
+) where {P<:AbstractStrategyParameter}
+    throw(
+        Exceptions.ExtensionError(
+            :MadNLP;
+            message="to access MadNLP{$P} options metadata",
+            feature="MadNLP metadata",
+            context="Load MadNLP extension first: using MadNLP",
+        ),
+    )
 end
 
 """
@@ -229,5 +241,7 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 See also: [`MadNLP`](@ref), [`Strategies.metadata`](@ref)
 """
 function Strategies.metadata(::Type{Solvers.MadNLP})
-    return Strategies.metadata(Solvers.MadNLP{Strategies._default_parameter(Solvers.MadNLP)})
+    return Strategies.metadata(
+        Solvers.MadNLP{Strategies._default_parameter(Solvers.MadNLP)}
+    )
 end

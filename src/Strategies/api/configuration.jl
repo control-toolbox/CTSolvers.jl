@@ -70,29 +70,29 @@ StrategyOptions with 2 options:
 See also: [`StrategyOptions`](@ref), [`metadata`](@ref), [`Options.extract_options`](@ref)
 """
 function build_strategy_options(
-    strategy_type::Type{<:AbstractStrategy};
-    mode::Symbol = :strict,
-    kwargs...
+    strategy_type::Type{<:AbstractStrategy}; mode::Symbol=:strict, kwargs...
 )
     # Validate mode parameter
     if mode ∉ (:strict, :permissive)
-        throw(Exceptions.IncorrectArgument(
-            "Invalid validation mode",
-            got="mode=$mode",
-            expected=":strict or :permissive",
-            suggestion="Use mode=:strict for strict validation (default) or mode=:permissive to accept unknown options with warnings",
-            context="build_strategy_options - validating mode parameter"
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "Invalid validation mode";
+                got="mode=$mode",
+                expected=":strict or :permissive",
+                suggestion="Use mode=:strict for strict validation (default) or mode=:permissive to accept unknown options with warnings",
+                context="build_strategy_options - validating mode parameter",
+            ),
+        )
     end
-    
+
     meta = metadata(strategy_type)
     defs = collect(values(meta))
-    
+
     # Separate BypassValue kwargs from normal kwargs
     # BypassValue options are accepted unconditionally regardless of mode
     input_kwargs = (; kwargs...)
-    bypass_pairs = Pair{Symbol, Any}[]
-    normal_pairs = Pair{Symbol, Any}[]
+    bypass_pairs = Pair{Symbol,Any}[]
+    normal_pairs = Pair{Symbol,Any}[]
     for (k, v) in pairs(input_kwargs)
         if v isa BypassValue
             push!(bypass_pairs, k => v.value)
@@ -101,11 +101,11 @@ function build_strategy_options(
         end
     end
     normal_kwargs = NamedTuple(normal_pairs)
-    
+
     # Use Options.extract_options for validation and extraction of normal options
     # This validates known options (type, custom validators, etc.)
     extracted, remaining = Options.extract_options(normal_kwargs, defs)
-    
+
     # Handle unknown normal options based on mode
     if !isempty(remaining)
         if mode == :strict
@@ -119,15 +119,15 @@ function build_strategy_options(
             end
         end
     end
-    
+
     # Inject bypassed options unconditionally (no validation, no warning)
     for (key, value) in bypass_pairs
         extracted[key] = Options.OptionValue(value, :user)
     end
-    
+
     # Convert Dict to NamedTuple
     nt = (; (k => v for (k, v) in extracted)...)
-    
+
     return StrategyOptions(nt)
 end
 
@@ -167,13 +167,13 @@ function resolve_alias(meta::StrategyMetadata, key::Symbol)
     if haskey(meta, key)
         return key
     end
-    
+
     # Check if key is an alias
     for (primary_key, spec) in pairs(meta)
         if key in spec.aliases
             return primary_key
         end
     end
-    
+
     return nothing
 end

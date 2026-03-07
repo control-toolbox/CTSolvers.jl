@@ -1,6 +1,6 @@
 module TestInternalDefaultsCoverage
 
-import Test
+using Test: Test
 import CTSolvers.Modelers
 import CTSolvers.Solvers
 
@@ -18,22 +18,22 @@ Tests uncovered lines:
 """
 function test_internal_defaults_coverage()
     Test.@testset "Internal Defaults Coverage" verbose=VERBOSE showtiming=SHOWTIMING begin
-        
+
         # ====================================================================
         # UNIT TESTS - __adnlp_model_backend()
         # ====================================================================
-        
+
         Test.@testset "__adnlp_model_backend()" begin
             # Test internal default function (covers adnlp.jl:14)
             # This function is called internally by metadata()
             default_backend = Modelers.__adnlp_model_backend()
             Test.@test default_backend === :optimized
         end
-        
+
         # ====================================================================
         # UNIT TESTS - __display()
         # ====================================================================
-        
+
         Test.@testset "__display()" begin
             # Test internal default function (covers common_solve_api.jl:16)
             # This function defines the default display behavior
@@ -45,4 +45,6 @@ end
 
 end # module
 
-test_internal_defaults_coverage() = TestInternalDefaultsCoverage.test_internal_defaults_coverage()
+function test_internal_defaults_coverage()
+    TestInternalDefaultsCoverage.test_internal_defaults_coverage()
+end

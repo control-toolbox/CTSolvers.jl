@@ -1,6 +1,6 @@
 module TestCoverageAbstractStrategy
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Strategies
 import CTSolvers.Options
@@ -18,21 +18,20 @@ end
 
 Strategies.id(::Type{<:CovFakeStrategy}) = :cov_fake
 
-Strategies.metadata(::Type{<:CovFakeStrategy}) = Strategies.StrategyMetadata(
-    Options.OptionDefinition(
-        name = :max_iter,
-        type = Int,
-        default = 100,
-        description = "Maximum iterations",
-        aliases = (:maxiter,)
-    ),
-    Options.OptionDefinition(
-        name = :tol,
-        type = Float64,
-        default = 1e-6,
-        description = "Convergence tolerance"
+function Strategies.metadata(::Type{<:CovFakeStrategy})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(
+            name=:max_iter,
+            type=Int,
+            default=100,
+            description="Maximum iterations",
+            aliases=(:maxiter,),
+        ),
+        Options.OptionDefinition(
+            name=:tol, type=Float64, default=1e-6, description="Convergence tolerance"
+        ),
     )
-)
+end
 
 Strategies.options(s::CovFakeStrategy) = s.options
 
@@ -57,14 +56,13 @@ end
 
 Strategies.id(::Type{<:CovSingleOptStrategy}) = :cov_single
 
-Strategies.metadata(::Type{<:CovSingleOptStrategy}) = Strategies.StrategyMetadata(
-    Options.OptionDefinition(
-        name = :value,
-        type = Int,
-        default = 42,
-        description = "Single value"
+function Strategies.metadata(::Type{<:CovSingleOptStrategy})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(
+            name=:value, type=Int, default=42, description="Single value"
+        ),
     )
-)
+end
 
 Strategies.options(s::CovSingleOptStrategy) = s.options
 
@@ -81,8 +79,8 @@ function test_coverage_abstract_strategy()
 
         Test.@testset "show(io, MIME text/plain) - instance display" begin
             opts = Strategies.StrategyOptions(
-                max_iter = Options.OptionValue(200, :user),
-                tol = Options.OptionValue(1e-8, :default)
+                max_iter=Options.OptionValue(200, :user),
+                tol=Options.OptionValue(1e-8, :default),
             )
             strategy = CovFakeStrategy(opts)
 
@@ -126,9 +124,7 @@ function test_coverage_abstract_strategy()
         end
 
         Test.@testset "show(io, MIME text/plain) - single option (└─ prefix)" begin
-            opts = Strategies.StrategyOptions(
-                value = Options.OptionValue(42, :default)
-            )
+            opts = Strategies.StrategyOptions(value=Options.OptionValue(42, :default))
             strategy = CovSingleOptStrategy(opts)
 
             buf = IOBuffer()
@@ -145,8 +141,8 @@ function test_coverage_abstract_strategy()
 
         Test.@testset "show(io, strategy) - compact display" begin
             opts = Strategies.StrategyOptions(
-                max_iter = Options.OptionValue(200, :user),
-                tol = Options.OptionValue(1e-8, :default)
+                max_iter=Options.OptionValue(200, :user),
+                tol=Options.OptionValue(1e-8, :default),
             )
             strategy = CovFakeStrategy(opts)
 
@@ -230,9 +226,7 @@ function test_coverage_abstract_strategy()
         # ====================================================================
 
         Test.@testset "options() default - field access" begin
-            opts = Strategies.StrategyOptions(
-                max_iter = Options.OptionValue(100, :default)
-            )
+            opts = Strategies.StrategyOptions(max_iter=Options.OptionValue(100, :default))
             strategy = CovFakeStrategy(opts)
             Test.@test Strategies.options(strategy) === opts
         end
@@ -255,4 +249,6 @@ end
 
 end # module
 
-test_coverage_abstract_strategy() = TestCoverageAbstractStrategy.test_coverage_abstract_strategy()
+function test_coverage_abstract_strategy()
+    TestCoverageAbstractStrategy.test_coverage_abstract_strategy()
+end

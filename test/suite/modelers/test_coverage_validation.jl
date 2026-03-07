@@ -1,9 +1,9 @@
 module TestCoverageValidation
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Modelers
-import ADNLPModels
+using ADNLPModels: ADNLPModels
 
 # Fake ADBackend for testing (must be at top-level)
 struct FakeCoverageBackend <: ADNLPModels.ADBackend end
@@ -34,8 +34,12 @@ function test_coverage_validation()
             end
 
             # Invalid backend
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(:invalid)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(:foo)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(
+                :invalid
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(
+                :foo
+            )
         end
 
         # ====================================================================
@@ -52,9 +56,15 @@ function test_coverage_validation()
             Test.@test_nowarn Test.@inferred Modelers.validate_exa_base_type(Float64)
 
             # Invalid types
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Int)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(String)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Bool)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(
+                Int
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(
+                String
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(
+                Bool
+            )
         end
 
         # ====================================================================
@@ -70,8 +80,12 @@ function test_coverage_validation()
             Test.@test_nowarn Test.@inferred Modelers.validate_gpu_preference(:cuda)
 
             # Invalid preferences
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_gpu_preference(:invalid)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_gpu_preference(:metal)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_gpu_preference(
+                :invalid
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_gpu_preference(
+                :metal
+            )
         end
 
         # ====================================================================
@@ -89,8 +103,12 @@ function test_coverage_validation()
             Test.@test_logs (:info,) Modelers.validate_precision_mode(:mixed)
 
             # Invalid modes
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_precision_mode(:invalid)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_precision_mode(:ultra)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_precision_mode(
+                :invalid
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_precision_mode(
+                :ultra
+            )
         end
 
         # ====================================================================
@@ -156,17 +174,29 @@ function test_coverage_validation()
 
             Test.@test_nowarn Test.@inferred Modelers.validate_backend_override(nothing)
             # Valid overrides: Type{<:ADBackend}
-            Test.@test Modelers.validate_backend_override(FakeCoverageBackend) == FakeCoverageBackend
+            Test.@test Modelers.validate_backend_override(FakeCoverageBackend) ==
+                FakeCoverageBackend
             # Valid overrides: ADBackend instance
-            Test.@test Modelers.validate_backend_override(FakeCoverageBackend()) isa ADNLPModels.ADBackend
+            Test.@test Modelers.validate_backend_override(FakeCoverageBackend()) isa
+                ADNLPModels.ADBackend
 
             # Invalid overrides: non-ADBackend types
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(Float64)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(Int)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(
+                Float64
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(
+                Int
+            )
             # Invalid overrides: other values
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override("invalid")
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(123)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(:symbol)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(
+                "invalid"
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(
+                123
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(
+                :symbol
+            )
         end
     end
 end

@@ -1,6 +1,6 @@
 module TestResolvedBuilders
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Orchestration
 import CTSolvers.Strategies
@@ -23,15 +23,23 @@ end
 Strategies.id(::Type{RBDiscA}) = :rb_disc_a
 Strategies.id(::Type{RBModA}) = :rb_mod_a
 
-Strategies.metadata(::Type{RBDiscA}) = Strategies.StrategyMetadata(
-    Options.OptionDefinition(name=:grid_size, type=Int, default=10, description="Grid size")
-)
+function Strategies.metadata(::Type{RBDiscA})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(
+            name=:grid_size, type=Int, default=10, description="Grid size"
+        ),
+    )
+end
 
-Strategies.metadata(::Type{RBModA}) = Strategies.StrategyMetadata(
-    Options.OptionDefinition(name=:backend, type=Symbol, default=:dense, description="Backend")
-)
+function Strategies.metadata(::Type{RBModA})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(
+            name=:backend, type=Symbol, default=:dense, description="Backend"
+        ),
+    )
+end
 
-Strategies.options(s::Union{RBDiscA, RBModA}) = s.options
+Strategies.options(s::Union{RBDiscA,RBModA}) = s.options
 
 function RBDiscA(; mode::Symbol=:strict, kwargs...)
     opts = Strategies.build_strategy_options(RBDiscA; mode=mode, kwargs...)
@@ -44,14 +52,10 @@ function RBModA(; mode::Symbol=:strict, kwargs...)
 end
 
 const RB_REGISTRY = Strategies.create_registry(
-    RBDiscretizer => (RBDiscA,),
-    RBModeler => (RBModA,)
+    RBDiscretizer => (RBDiscA,), RBModeler => (RBModA,)
 )
 
-const RB_FAMILIES = (
-    discretizer = RBDiscretizer,
-    modeler = RBModeler,
-)
+const RB_FAMILIES = (discretizer=RBDiscretizer, modeler=RBModeler)
 
 const RB_METHOD = (:rb_disc_a, :rb_mod_a)
 

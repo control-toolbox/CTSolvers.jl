@@ -170,7 +170,9 @@ solver_permissive = Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
 See also: [`Ipopt`](@ref), [`build_ipopt_solver`](@ref)
 """
 function Solvers.Ipopt(; mode::Symbol=:strict, kwargs...)
-    return build_ipopt_solver(IpoptTag, Strategies._default_parameter(Solvers.Ipopt); mode=mode, kwargs...)
+    return build_ipopt_solver(
+        IpoptTag, Strategies._default_parameter(Solvers.Ipopt); mode=mode, kwargs...
+    )
 end
 
 """
@@ -215,13 +217,17 @@ Real implementation provided by the extension.
 
 See also: [`Ipopt`](@ref), [`Strategies.metadata`](@ref)
 """
-function build_ipopt_solver(::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...)
-    throw(Exceptions.ExtensionError(
-        :NLPModelsIpopt;
-        message="to create Ipopt, access options, and solve problems",
-        feature="Ipopt functionality",
-        context="Load NLPModelsIpopt extension first: using NLPModelsIpopt"
-    ))
+function build_ipopt_solver(
+    ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+)
+    throw(
+        Exceptions.ExtensionError(
+            :NLPModelsIpopt;
+            message="to create Ipopt, access options, and solve problems",
+            feature="Ipopt functionality",
+            context="Load NLPModelsIpopt extension first: using NLPModelsIpopt",
+        ),
+    )
 end
 
 """
@@ -239,12 +245,14 @@ See also: [`Ipopt`](@ref), [`Strategies.StrategyMetadata`](@ref)
 """
 function Strategies.metadata(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU}
     # Extension is missing
-    throw(Exceptions.ExtensionError(
-        :NLPModelsIpopt;
-        message="to access Ipopt{$P} options metadata",
-        feature="Ipopt metadata",
-        context="Load NLPModelsIpopt extension first: using NLPModelsIpopt"
-    ))
+    throw(
+        Exceptions.ExtensionError(
+            :NLPModelsIpopt;
+            message="to access Ipopt{$P} options metadata",
+            feature="Ipopt metadata",
+            context="Load NLPModelsIpopt extension first: using NLPModelsIpopt",
+        ),
+    )
 end
 
 """
@@ -268,4 +276,3 @@ See also: [`Ipopt`](@ref), [`Strategies.metadata`](@ref)
 function Strategies.metadata(::Type{Solvers.Ipopt})
     return Strategies.metadata(Solvers.Ipopt{Strategies._default_parameter(Solvers.Ipopt)})
 end
-

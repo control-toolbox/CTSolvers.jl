@@ -6,7 +6,7 @@ for creating disambiguated option values with strategy routing.
 """
 module TestDisambiguation
 
-import Test
+using Test: Test
 import CTSolvers.Strategies
 
 # Test options for verbose output
@@ -15,33 +15,33 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 
 function test_disambiguation()
     Test.@testset "Option Disambiguation" verbose=VERBOSE showtiming=SHOWTIMING begin
-        
+
         # ====================================================================
         # UNIT TESTS - RoutedOption Type
         # ====================================================================
-        
+
         Test.@testset "RoutedOption Type" begin
             # Create RoutedOption directly
             routes = (solver=100,)
             opt = Strategies.RoutedOption(routes)
             Test.@test opt isa Strategies.RoutedOption
             Test.@test collect(pairs(opt)) == collect(pairs(routes))
-            
+
             # Empty routes should throw
             Test.@test_throws Exception Strategies.RoutedOption(NamedTuple())
         end
-        
+
         # ====================================================================
         # UNIT TESTS - route_to() Basic Functionality
         # ====================================================================
-        
+
         Test.@testset "route_to() Single Strategy" begin
             result = Strategies.route_to(solver=100)
             Test.@test result isa Strategies.RoutedOption
             Test.@test length(result) == 1
             Test.@test result[:solver] == 100
         end
-        
+
         Test.@testset "route_to() Multiple Strategies" begin
             result = Strategies.route_to(solver=100, modeler=50)
             Test.@test result isa Strategies.RoutedOption
@@ -49,37 +49,37 @@ function test_disambiguation()
             Test.@test result[:solver] == 100
             Test.@test result[:modeler] == 50
         end
-        
+
         Test.@testset "route_to() No Arguments Error" begin
             Test.@test_throws Exception Strategies.route_to()
         end
-        
+
         # ====================================================================
         # UNIT TESTS - Different Value Types
         # ====================================================================
-        
+
         Test.@testset "Different Value Types" begin
             # Integer value
             result = Strategies.route_to(modeler=42)
             Test.@test result[:modeler] == 42
-            
+
             # Float value
             result = Strategies.route_to(solver=1.5e-6)
             Test.@test result[:solver] == 1.5e-6
-            
+
             # String value
             result = Strategies.route_to(optimizer="ipopt")
             Test.@test result[:optimizer] == "ipopt"
-            
+
             # Boolean value
             result = Strategies.route_to(solver=true)
             Test.@test result[:solver] == true
-            
+
             # Symbol value
             result = Strategies.route_to(modeler=:auto)
             Test.@test result[:modeler] == :auto
         end
-        
+
         Test.@testset "Different Strategy Identifiers" begin
             # Common strategy identifiers
             Test.@test Strategies.route_to(solver=100)[:solver] == 100
@@ -87,29 +87,29 @@ function test_disambiguation()
             Test.@test Strategies.route_to(optimizer=100)[:optimizer] == 100
             Test.@test Strategies.route_to(discretizer=100)[:discretizer] == 100
         end
-        
+
         # ====================================================================
         # UNIT TESTS - Complex Values
         # ====================================================================
-        
+
         Test.@testset "Complex Value Types" begin
             # Array value
             result = Strategies.route_to(solver=[1, 2, 3])
             Test.@test result[:solver] == [1, 2, 3]
-            
+
             # Tuple value
             result = Strategies.route_to(modeler=(1, 2))
             Test.@test result[:modeler] == (1, 2)
-            
+
             # NamedTuple value
             result = Strategies.route_to(solver=(a=1, b=2))
             Test.@test result[:solver] == (a=1, b=2)
         end
-        
+
         # ====================================================================
         # UNIT TESTS - Multiple Strategies Use Cases
         # ====================================================================
-        
+
         Test.@testset "Multiple Strategies with Same Option" begin
             # Different values for different strategies
             result = Strategies.route_to(solver=100, modeler=50, discretizer=200)
@@ -118,16 +118,16 @@ function test_disambiguation()
             Test.@test result[:modeler] == 50
             Test.@test result[:discretizer] == 200
         end
-        
+
         # ====================================================================
         # UNIT TESTS - Edge Cases
         # ====================================================================
-        
+
         Test.@testset "Edge Cases" begin
             # Nothing value
             result = Strategies.route_to(solver=nothing)
             Test.@test result[:solver] === nothing
-            
+
             # Missing value
             result = Strategies.route_to(solver=missing)
             Test.@test result[:solver] === missing

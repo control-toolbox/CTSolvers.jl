@@ -1,6 +1,6 @@
 module TestCoverageDisambiguation
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Orchestration
 import CTSolvers.Strategies
@@ -21,71 +21,65 @@ struct CovCollocation <: CovDiscretizer
     options::Strategies.StrategyOptions
 end
 Strategies.id(::Type{CovCollocation}) = :collocation
-Strategies.metadata(::Type{CovCollocation}) = Strategies.StrategyMetadata(
-    Options.OptionDefinition(
-        name = :grid_size,
-        type = Int,
-        default = 100,
-        description = "Grid size"
+function Strategies.metadata(::Type{CovCollocation})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(
+            name=:grid_size, type=Int, default=100, description="Grid size"
+        ),
     )
-)
+end
 
 struct CovADNLP <: CovModeler
     options::Strategies.StrategyOptions
 end
 Strategies.id(::Type{CovADNLP}) = :adnlp
-Strategies.metadata(::Type{CovADNLP}) = Strategies.StrategyMetadata(
-    Options.OptionDefinition(
-        name = :backend,
-        type = Symbol,
-        default = :dense,
-        description = "Backend type",
-        aliases = (:adnlp_backend,)
+function Strategies.metadata(::Type{CovADNLP})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(
+            name=:backend,
+            type=Symbol,
+            default=:dense,
+            description="Backend type",
+            aliases=(:adnlp_backend,),
+        ),
     )
-)
+end
 
 struct CovIpopt <: CovSolver
     options::Strategies.StrategyOptions
 end
 Strategies.id(::Type{CovIpopt}) = :ipopt
-Strategies.metadata(::Type{CovIpopt}) = Strategies.StrategyMetadata(
-    Options.OptionDefinition(
-        name = :max_iter,
-        type = Int,
-        default = 1000,
-        description = "Maximum iterations",
-        aliases = (:maxiter,)
-    ),
-    Options.OptionDefinition(
-        name = :backend,
-        type = Symbol,
-        default = :cpu,
-        description = "Solver backend",
-        aliases = (:ipopt_backend,)
+function Strategies.metadata(::Type{CovIpopt})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(
+            name=:max_iter,
+            type=Int,
+            default=1000,
+            description="Maximum iterations",
+            aliases=(:maxiter,),
+        ),
+        Options.OptionDefinition(
+            name=:backend,
+            type=Symbol,
+            default=:cpu,
+            description="Solver backend",
+            aliases=(:ipopt_backend,),
+        ),
     )
-)
+end
 
 const COV_REGISTRY = Strategies.create_registry(
-    CovDiscretizer => (CovCollocation,),
-    CovModeler => (CovADNLP,),
-    CovSolver => (CovIpopt,)
+    CovDiscretizer => (CovCollocation,), CovModeler => (CovADNLP,), CovSolver => (CovIpopt,)
 )
 
 const COV_METHOD = (:collocation, :adnlp, :ipopt)
 
-const COV_FAMILIES = (
-    discretizer = CovDiscretizer,
-    modeler = CovModeler,
-    solver = CovSolver
-)
+const COV_FAMILIES = (discretizer=CovDiscretizer, modeler=CovModeler, solver=CovSolver)
 
 const COV_ACTION_DEFS = [
-    Options.OptionDefinition(
-        name = :display,
-        type = Bool,
-        default = true,
-        description = "Display progress"
-    )
+    Options.OptionDefinition(;
+        name=:display, type=Bool, default=true, description="Display progress"
+    ),
 ]
 
 # ============================================================================
@@ -105,7 +99,7 @@ function test_coverage_disambiguation()
                 resolved, COV_FAMILIES, COV_REGISTRY
             )
 
-            Test.@test alias_map isa Dict{Symbol, Symbol}
+            Test.@test alias_map isa Dict{Symbol,Symbol}
             Test.@test alias_map[:adnlp_backend] == :backend
             Test.@test alias_map[:ipopt_backend] == :backend
             Test.@test alias_map[:maxiter] == :max_iter
@@ -119,9 +113,11 @@ function test_coverage_disambiguation()
 
         Test.@testset "route_all_options - auto-route unambiguous" begin
             result = Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
+                COV_METHOD,
+                COV_FAMILIES,
+                COV_ACTION_DEFS,
                 (; grid_size=200, max_iter=500, display=false),
-                COV_REGISTRY
+                COV_REGISTRY,
             )
 
             Test.@test Options.value(result.action.display) == false
@@ -131,9 +127,11 @@ function test_coverage_disambiguation()
 
         Test.@testset "route_all_options - disambiguated option" begin
             result = Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
+                COV_METHOD,
+                COV_FAMILIES,
+                COV_ACTION_DEFS,
                 (; backend=Strategies.route_to(adnlp=:sparse)),
-                COV_REGISTRY
+                COV_REGISTRY,
             )
 
             Test.@test result.strategies.modeler.backend == :sparse
@@ -141,9 +139,11 @@ function test_coverage_disambiguation()
 
         Test.@testset "route_all_options - multi-strategy disambiguation" begin
             result = Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
+                COV_METHOD,
+                COV_FAMILIES,
+                COV_ACTION_DEFS,
                 (; backend=Strategies.route_to(adnlp=:sparse, ipopt=:gpu)),
-                COV_REGISTRY
+                COV_REGISTRY,
             )
 
             Test.@test result.strategies.modeler.backend == :sparse
@@ -152,27 +152,33 @@ function test_coverage_disambiguation()
 
         Test.@testset "route_all_options - unknown option error" begin
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
+                COV_METHOD,
+                COV_FAMILIES,
+                COV_ACTION_DEFS,
                 (; totally_unknown=42),
-                COV_REGISTRY
+                COV_REGISTRY,
             )
         end
 
         Test.@testset "route_all_options - ambiguous option error (description mode)" begin
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
+                COV_METHOD,
+                COV_FAMILIES,
+                COV_ACTION_DEFS,
                 (; backend=:sparse),
                 COV_REGISTRY;
-                source_mode=:description
+                source_mode=:description,
             )
         end
 
         Test.@testset "route_all_options - ambiguous option error (explicit mode)" begin
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
+                COV_METHOD,
+                COV_FAMILIES,
+                COV_ACTION_DEFS,
                 (; backend=:sparse),
                 COV_REGISTRY;
-                source_mode=:explicit
+                source_mode=:explicit,
             )
         end
 
@@ -180,28 +186,34 @@ function test_coverage_disambiguation()
             # mode parameter no longer exists in route_all_options
             # invalid keyword arguments throw MethodError, not IncorrectArgument
             Test.@test_throws Exception Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
+                COV_METHOD,
+                COV_FAMILIES,
+                COV_ACTION_DEFS,
                 (;),
                 COV_REGISTRY;
-                mode=:invalid_mode
+                mode=:invalid_mode,
             )
         end
 
         Test.@testset "route_all_options - invalid routing target" begin
             # Route backend to discretizer (which doesn't own backend)
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
+                COV_METHOD,
+                COV_FAMILIES,
+                COV_ACTION_DEFS,
                 (; backend=Strategies.route_to(collocation=:sparse)),
-                COV_REGISTRY
+                COV_REGISTRY,
             )
         end
 
         Test.@testset "route_all_options - bypass unknown disambiguated" begin
             # Use bypass(val) to route unknown options
             result = Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
+                COV_METHOD,
+                COV_FAMILIES,
+                COV_ACTION_DEFS,
                 (; unknown_opt=Strategies.route_to(adnlp=Strategies.bypass(42))),
-                COV_REGISTRY
+                COV_REGISTRY,
             )
 
             bv = result.strategies.modeler[:unknown_opt]
@@ -212,17 +224,17 @@ function test_coverage_disambiguation()
         Test.@testset "route_all_options - strict mode unknown disambiguated" begin
             # Without bypass, unknown options always fail
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
+                COV_METHOD,
+                COV_FAMILIES,
+                COV_ACTION_DEFS,
                 (; unknown_opt=Strategies.route_to(adnlp=42)),
-                COV_REGISTRY
+                COV_REGISTRY,
             )
         end
 
         Test.@testset "route_all_options - empty kwargs" begin
             result = Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
-                (;),
-                COV_REGISTRY
+                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS, (;), COV_REGISTRY
             )
 
             Test.@test Options.value(result.action.display) == true
@@ -237,9 +249,7 @@ function test_coverage_disambiguation()
 
         Test.@testset "route_all_options - alias auto-route" begin
             result = Orchestration.route_all_options(
-                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS,
-                (; maxiter=500),
-                COV_REGISTRY
+                COV_METHOD, COV_FAMILIES, COV_ACTION_DEFS, (; maxiter=500), COV_REGISTRY
             )
 
             Test.@test result.strategies.solver.maxiter == 500

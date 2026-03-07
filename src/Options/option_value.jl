@@ -28,16 +28,18 @@ opt.source  # :user
 struct OptionValue{T}
     value::T
     source::Symbol
-    
-    function OptionValue(value::T, source::Symbol) where T
+
+    function OptionValue(value::T, source::Symbol) where {T}
         if source ∉ (:default, :user, :computed)
-            throw(Exceptions.IncorrectArgument(
-                "Invalid option source",
-                got="source=$source",
-                expected=":default, :user, or :computed",
-                suggestion="Use one of the valid source symbols: :default (tool default), :user (user-provided), or :computed (derived)",
-                context="OptionValue constructor - validating source provenance"
-            ))
+            throw(
+                Exceptions.IncorrectArgument(
+                    "Invalid option source";
+                    got="source=$source",
+                    expected=":default, :user, or :computed",
+                    suggestion="Use one of the valid source symbols: :default (tool default), :user (user-provided), or :computed (derived)",
+                    context="OptionValue constructor - validating source provenance",
+                ),
+            )
         end
         new{T}(value, source)
     end

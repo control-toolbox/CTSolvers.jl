@@ -1,6 +1,6 @@
 module TestParametersCoverage
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Strategies
 
@@ -31,30 +31,32 @@ Tests uncovered lines in parameters.jl:
 """
 function test_parameters_coverage()
     Test.@testset "Strategy Parameters Coverage" verbose=VERBOSE showtiming=SHOWTIMING begin
-        
+
         # ====================================================================
         # UNIT TESTS - id() for Built-in Parameters
         # ====================================================================
-        
+
         Test.@testset "id() for Built-in Parameters" begin
             # Test id() for CPU and GPU (covers parameters.jl:193-194)
             Test.@test Strategies.id(Strategies.CPU) === :cpu
             Test.@test Strategies.id(Strategies.GPU) === :gpu
         end
-        
+
         # ====================================================================
         # UNIT TESTS - validate_parameter_type Error Cases
         # ====================================================================
-        
+
         Test.@testset "validate_parameter_type - Non-Concrete Type" begin
             # Test validation with non-concrete type (covers parameters.jl:149)
             # TestAbstractParam is defined at module top-level
-            
+
             # Should throw IncorrectArgument for abstract type
             redirect_stderr(devnull) do
-                Test.@test_throws Exceptions.IncorrectArgument Strategies.validate_parameter_type(TestAbstractParam)
+                Test.@test_throws Exceptions.IncorrectArgument Strategies.validate_parameter_type(
+                    TestAbstractParam
+                )
             end
-            
+
             # Verify error message content
             err = try
                 Strategies.validate_parameter_type(TestAbstractParam)
@@ -64,16 +66,18 @@ function test_parameters_coverage()
             Test.@test err isa Exceptions.IncorrectArgument
             Test.@test occursin("concrete", string(err))
         end
-        
+
         Test.@testset "validate_parameter_type - Parameter with Fields" begin
             # Test validation with parameter that has fields
             # TestParamWithFields is defined at module top-level
-            
+
             # Should throw IncorrectArgument for non-singleton type
             redirect_stderr(devnull) do
-                Test.@test_throws Exceptions.IncorrectArgument Strategies.validate_parameter_type(TestParamWithFields)
+                Test.@test_throws Exceptions.IncorrectArgument Strategies.validate_parameter_type(
+                    TestParamWithFields
+                )
             end
-            
+
             # Verify error message content
             err = try
                 Strategies.validate_parameter_type(TestParamWithFields)
@@ -83,55 +87,59 @@ function test_parameters_coverage()
             Test.@test err isa Exceptions.IncorrectArgument
             Test.@test occursin("singleton", string(err))
         end
-        
+
         Test.@testset "validate_parameter_type - Valid Parameters" begin
             # Test validation with valid parameters
-            
+
             # CPU and GPU should validate successfully
             Test.@test_nowarn Strategies.validate_parameter_type(Strategies.CPU)
             Test.@test_nowarn Strategies.validate_parameter_type(Strategies.GPU)
-            
+
             # TestValidParam is defined at module top-level
             Test.@test_nowarn Strategies.validate_parameter_type(TestValidParam)
         end
-        
+
         # ====================================================================
         # UNIT TESTS - parameter_id() Alias
         # ====================================================================
-        
+
         Test.@testset "parameter_id() Alias" begin
             # Test parameter_id() as alias for id()
             Test.@test Strategies.parameter_id(Strategies.CPU) === :cpu
             Test.@test Strategies.parameter_id(Strategies.GPU) === :gpu
-            
+
             # Should be identical to id()
-            Test.@test Strategies.parameter_id(Strategies.CPU) === Strategies.id(Strategies.CPU)
-            Test.@test Strategies.parameter_id(Strategies.GPU) === Strategies.id(Strategies.GPU)
+            Test.@test Strategies.parameter_id(Strategies.CPU) ===
+                Strategies.id(Strategies.CPU)
+            Test.@test Strategies.parameter_id(Strategies.GPU) ===
+                Strategies.id(Strategies.GPU)
         end
-        
+
         # ====================================================================
         # UNIT TESTS - is_parameter_type() Predicate
         # ====================================================================
-        
+
         Test.@testset "is_parameter_type() Predicate" begin
             # Test is_parameter_type() predicate
             Test.@test Strategies.is_parameter_type(Strategies.CPU) === true
             Test.@test Strategies.is_parameter_type(Strategies.GPU) === true
             Test.@test Strategies.is_parameter_type(Int) === false
             Test.@test Strategies.is_parameter_type(String) === false
-            Test.@test Strategies.is_parameter_type(Strategies.AbstractStrategyParameter) === true
+            Test.@test Strategies.is_parameter_type(
+                Strategies.AbstractStrategyParameter
+            ) === true
         end
-        
+
         # ====================================================================
         # UNIT TESTS - NotImplemented Error for id()
         # ====================================================================
-        
+
         Test.@testset "id() NotImplemented Error" begin
             # Test that id() throws NotImplemented for types without implementation
             # TestParamNoId is defined at module top-level
-            
+
             Test.@test_throws Exceptions.NotImplemented Strategies.id(TestParamNoId)
-            
+
             # Verify error message content
             err = try
                 Strategies.id(TestParamNoId)

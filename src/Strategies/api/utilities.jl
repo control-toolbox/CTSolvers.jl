@@ -52,11 +52,7 @@ See also: [`filter_options(::NamedTuple, ::Symbol)`](@ref)
 """
 function filter_options(nt::NamedTuple, exclude::Tuple{Vararg{Symbol}})
     exclude_set = Set(exclude)
-    filtered_pairs = [
-        key => value
-        for (key, value) in pairs(nt)
-        if key ∉ exclude_set
-    ]
+    filtered_pairs = [key => value for (key, value) in pairs(nt) if key ∉ exclude_set]
     return NamedTuple(filtered_pairs)
 end
 
@@ -104,7 +100,7 @@ See also: [`options`](@ref), [`Options.extract_raw_options`](@ref)
 function options_dict(strategy::AbstractStrategy)
     opts = options(strategy)
     raw_opts = Options.extract_raw_options(_raw_options(opts))
-    return Dict{Symbol, Any}(pairs(raw_opts))
+    return Dict{Symbol,Any}(pairs(raw_opts))
 end
 
 """
@@ -142,9 +138,7 @@ This ensures that options with a close alias are suggested even if the primary n
 See also: [`resolve_alias`](@ref), [`levenshtein_distance`](@ref)
 """
 function suggest_options(
-    key::Symbol,
-    strategy_type::Type{<:AbstractStrategy};
-    max_suggestions::Int=3
+    key::Symbol, strategy_type::Type{<:AbstractStrategy}; max_suggestions::Int=3
 )
     meta = metadata(strategy_type)
     return suggest_options(key, meta; max_suggestions=max_suggestions)
@@ -157,15 +151,13 @@ Suggest similar option names from a `StrategyMetadata` using Levenshtein distanc
 
 See [`suggest_options(::Symbol, ::Type{<:AbstractStrategy})`](@ref) for details.
 """
-function suggest_options(
-    key::Symbol,
-    meta::StrategyMetadata;
-    max_suggestions::Int=3
-)
+function suggest_options(key::Symbol, meta::StrategyMetadata; max_suggestions::Int=3)
     key_str = string(key)
-    
+
     # For each option, compute min distance over primary name + aliases
-    results = NamedTuple{(:primary, :aliases, :distance), Tuple{Symbol, Tuple{Vararg{Symbol}}, Int}}[]
+    results = NamedTuple{
+        (:primary, :aliases, :distance),Tuple{Symbol,Tuple{Vararg{Symbol}},Int}
+    }[]
     for (primary_name, def) in pairs(meta)
         # Distance to primary name
         min_dist = levenshtein_distance(key_str, string(primary_name))
@@ -176,9 +168,9 @@ function suggest_options(
         end
         push!(results, (primary=primary_name, aliases=def.aliases, distance=min_dist))
     end
-    
+
     # Sort by distance, then take top suggestions
-    sort!(results, by=x -> x.distance)
+    sort!(results; by=x -> x.distance)
     n = min(max_suggestions, length(results))
     return results[1:n]
 end
@@ -237,29 +229,29 @@ See also: [`suggest_options`](@ref)
 function levenshtein_distance(s1::String, s2::String)
     m, n = length(s1), length(s2)
     d = zeros(Int, m + 1, n + 1)
-    
+
     # Initialize base cases
     for i in 0:m
-        d[i+1, 1] = i
+        d[i + 1, 1] = i
     end
     for j in 0:n
-        d[1, j+1] = j
+        d[1, j + 1] = j
     end
-    
+
     # Fill the matrix
     for j in 1:n
         for i in 1:m
             if s1[i] == s2[j]
-                d[i+1, j+1] = d[i, j]  # No operation needed
+                d[i + 1, j + 1] = d[i, j]  # No operation needed
             else
-                d[i+1, j+1] = min(
-                    d[i, j+1] + 1,    # deletion
-                    d[i+1, j] + 1,    # insertion
-                    d[i, j] + 1       # substitution
+                d[i + 1, j + 1] = min(
+                    d[i, j + 1] + 1,    # deletion
+                    d[i + 1, j] + 1,    # insertion
+                    d[i, j] + 1,       # substitution
                 )
             end
         end
     end
-    
-    return d[m+1, n+1]
+
+    return d[m + 1, n + 1]
 end

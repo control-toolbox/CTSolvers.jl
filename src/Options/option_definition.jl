@@ -64,26 +64,28 @@ struct OptionDefinition{T}
     default::T
     description::String
     aliases::Tuple{Vararg{Symbol}}
-    validator::Union{Function, Nothing}
-    
+    validator::Union{Function,Nothing}
+
     function OptionDefinition{T}(;
         name::Symbol,
         type::Type,
         default::T,
         description::String,
-        aliases::Tuple{Vararg{Symbol}} = (),
-        validator::Union{Function, Nothing} = nothing
-    ) where T
+        aliases::Tuple{Vararg{Symbol}}=(),
+        validator::Union{Function,Nothing}=nothing,
+    ) where {T}
         # Validate with custom validator if provided (skip for NotProvided)
         if validator !== nothing && !(default isa NotProvidedType)
             try
                 validator(default)
             catch e
-                @error "Validation failed for option $name with default value $default" exception=(e, catch_backtrace())
+                @error "Validation failed for option $name with default value $default" exception=(
+                    e, catch_backtrace()
+                )
                 rethrow()
             end
         end
-        
+
         new{T}(name, type, default, description, aliases, validator)
     end
 end
@@ -94,8 +96,8 @@ function OptionDefinition(;
     type::Type,
     default,
     description::String,
-    aliases::Tuple{Vararg{Symbol}} = (),
-    validator::Union{Function, Nothing} = nothing
+    aliases::Tuple{Vararg{Symbol}}=(),
+    validator::Union{Function,Nothing}=nothing,
 )
     # Handle nothing default specially
     if default === nothing
@@ -105,10 +107,10 @@ function OptionDefinition(;
             default=nothing,
             description=description,
             aliases=aliases,
-            validator=validator
+            validator=validator,
         )
     end
-    
+
     # Handle NotProvided default specially - it's always valid regardless of declared type
     if default isa NotProvidedType
         return OptionDefinition{NotProvidedType}(;
@@ -117,24 +119,26 @@ function OptionDefinition(;
             default=default,
             description=description,
             aliases=aliases,
-            validator=validator
+            validator=validator,
         )
     end
-    
+
     # Infer T from default value
     T = typeof(default)
-    
+
     # Check type compatibility
     if !isa(default, type)
-        throw(Exceptions.IncorrectArgument(
-            "Type mismatch in option definition",
-            got="default value $default of type $T",
-            expected="value of type $type",
-            suggestion="Ensure the default value matches the declared type, or adjust the type parameter",
-            context="OptionDefinition constructor - validating type compatibility"
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "Type mismatch in option definition";
+                got="default value $default of type $T",
+                expected="value of type $type",
+                suggestion="Ensure the default value matches the declared type, or adjust the type parameter",
+                context="OptionDefinition constructor - validating type compatibility",
+            ),
+        )
     end
-    
+
     # Create with inferred type
     return OptionDefinition{T}(;
         name=name,
@@ -142,7 +146,7 @@ function OptionDefinition(;
         default=default,
         description=description,
         aliases=aliases,
-        validator=validator
+        validator=validator,
     )
 end
 

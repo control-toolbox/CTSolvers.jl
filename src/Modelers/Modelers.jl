@@ -19,10 +19,10 @@ module Modelers
 # Imports
 import CTBase.Exceptions
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
-import SolverCore
-import ADNLPModels
-import ExaModels
-import KernelAbstractions
+using SolverCore: SolverCore
+using ADNLPModels: ADNLPModels
+using ExaModels: ExaModels
+using KernelAbstractions: KernelAbstractions
 
 # Internal CTSolvers API
 using ..Options

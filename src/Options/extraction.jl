@@ -50,41 +50,45 @@ function extract_option(kwargs::NamedTuple, def::OptionDefinition)
     for name in all_names(def)
         if haskey(kwargs, name)
             value = kwargs[name]
-            
+
             # Validate if validator provided
             if def.validator !== nothing
                 try
                     def.validator(value)
                 catch e
-                    @error "Validation failed for option $(def.name) with value $value" exception=(e, catch_backtrace())
+                    @error "Validation failed for option $(def.name) with value $value" exception=(
+                        e, catch_backtrace()
+                    )
                     rethrow()
                 end
             end
-            
+
             # Type check - strict validation with exceptions
             if !isa(value, def.type)
-                throw(Exceptions.IncorrectArgument(
-                    "Invalid option type",
-                    got="value $value of type $(typeof(value))",
-                    expected="$(def.type)",
-                    suggestion="Ensure the option value matches the expected type",
-                    context="Option extraction for $(def.name)"
-                ))
+                throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid option type";
+                        got="value $value of type $(typeof(value))",
+                        expected="$(def.type)",
+                        suggestion="Ensure the option value matches the expected type",
+                        context="Option extraction for $(def.name)",
+                    ),
+                )
             end
-            
+
             # Remove from kwargs
             remaining = NamedTuple(k => v for (k, v) in pairs(kwargs) if k != name)
-            
+
             return OptionValue(value, :user), remaining
         end
     end
-    
+
     # Not found - check if default is NotProvided
     if def.default isa NotProvidedType
         # No default and not provided by user - return NotStored to signal "don't store"
         return NotStored, kwargs
     end
-    
+
     # Not found, return default (including nothing if that's the default)
     return OptionValue(def.default, :default), kwargs
 end
@@ -131,9 +135,9 @@ remaining.max_iter         # 1000
 ```
 """
 function extract_options(kwargs::NamedTuple, defs::Vector{<:OptionDefinition})
-    extracted = Dict{Symbol, OptionValue}()
+    extracted = Dict{Symbol,OptionValue}()
     remaining = kwargs
-    
+
     for def in defs
         opt_value, remaining = extract_option(remaining, def)
         # Only store if not NotStored (NotProvided options that weren't provided return NotStored)
@@ -141,7 +145,7 @@ function extract_options(kwargs::NamedTuple, defs::Vector{<:OptionDefinition})
             extracted[def.name] = opt_value
         end
     end
-    
+
     return extracted, remaining
 end
 
@@ -186,9 +190,9 @@ remaining.max_iter       # 1000
 ```
 """
 function extract_options(kwargs::NamedTuple, defs::NamedTuple)
-    extracted_pairs = Pair{Symbol, OptionValue}[]
+    extracted_pairs = Pair{Symbol,OptionValue}[]
     remaining = kwargs
-    
+
     for (key, def) in pairs(defs)
         opt_value, remaining = extract_option(remaining, def)
         # Only store if not NotStored (NotProvided options that weren't provided return NotStored)
@@ -196,7 +200,7 @@ function extract_options(kwargs::NamedTuple, defs::NamedTuple)
             push!(extracted_pairs, key => opt_value)
         end
     end
-    
+
     extracted = NamedTuple(extracted_pairs)
     return extracted, remaining
 end
@@ -233,7 +237,7 @@ extract_raw_options(opts)
 See also: [`OptionValue`](@ref), [`extract_options`](@ref), [`NotProvided`](@ref)
 """
 function extract_raw_options(options::NamedTuple)
-    raw_opts_dict = Dict{Symbol, Any}()
+    raw_opts_dict = Dict{Symbol,Any}()
     for (k, v) in pairs(options)
         val = v isa OptionValue ? v.value : v
         # Filter out NotProvided values, but keep nothing values

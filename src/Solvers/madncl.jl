@@ -68,7 +68,7 @@ using MadNCL, MadNLP
 
 See also: [`AbstractNLPSolver`](@ref), [`MadNLP`](@ref), [`Ipopt`](@ref), [`CPU`](@ref), [`GPU`](@ref)
 """
-struct MadNCL{P<:Union{CPU, GPU}} <: AbstractNLPSolver
+struct MadNCL{P<:Union{CPU,GPU}} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -127,7 +127,9 @@ solver_permissive = Solvers.MadNCL(max_iter=1000, custom_option=123; mode=:permi
 See also: [`MadNCL`](@ref), [`build_madncl_solver`](@ref)
 """
 function Solvers.MadNCL(; mode::Symbol=:strict, kwargs...)
-    return build_madncl_solver(MadNCLTag, Strategies._default_parameter(Solvers.MadNCL); mode=mode, kwargs...)
+    return build_madncl_solver(
+        MadNCLTag, Strategies._default_parameter(Solvers.MadNCL); mode=mode, kwargs...
+    )
 end
 
 """
@@ -158,7 +160,9 @@ solver_gpu = Solvers.MadNCL{GPU}(max_iter=1000, tol=1e-6)  # requires CUDA.jl
 
 See also: [`MadNCL`](@ref), [`CPU`](@ref), [`GPU`](@ref)
 """
-function Solvers.MadNCL{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
+function Solvers.MadNCL{P}(;
+    mode::Symbol=:strict, kwargs...
+) where {P<:AbstractStrategyParameter}
     return build_madncl_solver(MadNCLTag, P; mode=mode, kwargs...)
 end
 
@@ -173,13 +177,18 @@ Real implementation provided by the extension.
 
 See also: [`MadNCL`](@ref), [`Strategies.metadata`](@ref)
 """
-function build_madncl_solver(::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...)
-    throw(Exceptions.ExtensionError(
-        :MadNCL, :MadNLP;
-        message="to create MadNCL, access options, and solve problems",
-        feature="MadNCL functionality",
-        context="Load MadNCL extension first: using MadNCL, MadNLP"
-    ))
+function build_madncl_solver(
+    ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+)
+    throw(
+        Exceptions.ExtensionError(
+            :MadNCL,
+            :MadNLP;
+            message="to create MadNCL, access options, and solve problems",
+            feature="MadNCL functionality",
+            context="Load MadNCL extension first: using MadNCL, MadNLP",
+        ),
+    )
 end
 
 """
@@ -195,13 +204,18 @@ This stub is for parameterized types `MadNCL{P}` where `P <: AbstractStrategyPar
 
 See also: [`MadNCL`](@ref), [`Strategies.StrategyMetadata`](@ref)
 """
-function Strategies.metadata(::Type{<:Solvers.MadNCL{P}}) where {P<:AbstractStrategyParameter}
-    throw(Exceptions.ExtensionError(
-        :MadNCL, :MadNLP;
-        message="to access MadNCL{$P} options metadata",
-        feature="MadNCL metadata",
-        context="Load MadNCL extension first: using MadNCL, MadNLP"
-    ))
+function Strategies.metadata(
+    ::Type{<:Solvers.MadNCL{P}}
+) where {P<:AbstractStrategyParameter}
+    throw(
+        Exceptions.ExtensionError(
+            :MadNCL,
+            :MadNLP;
+            message="to access MadNCL{$P} options metadata",
+            feature="MadNCL metadata",
+            context="Load MadNCL extension first: using MadNCL, MadNLP",
+        ),
+    )
 end
 
 """
@@ -223,5 +237,7 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 See also: [`MadNCL`](@ref), [`Strategies.metadata`](@ref)
 """
 function Strategies.metadata(::Type{Solvers.MadNCL})
-    return Strategies.metadata(Solvers.MadNCL{Strategies._default_parameter(Solvers.MadNCL)})
+    return Strategies.metadata(
+        Solvers.MadNCL{Strategies._default_parameter(Solvers.MadNCL)}
+    )
 end

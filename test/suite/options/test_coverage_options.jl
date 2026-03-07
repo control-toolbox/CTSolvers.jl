@@ -1,6 +1,6 @@
 module TestCoverageOptions
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Options
 import CTSolvers.Strategies
@@ -19,14 +19,13 @@ end
 
 Strategies.id(::Type{<:CovOptFakeStrategy}) = :cov_opt_fake
 
-Strategies.metadata(::Type{<:CovOptFakeStrategy}) = Strategies.StrategyMetadata(
-    Options.OptionDefinition(
-        name = :alpha,
-        type = Float64,
-        default = 1.0,
-        description = "Alpha parameter"
+function Strategies.metadata(::Type{<:CovOptFakeStrategy})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(
+            name=:alpha, type=Float64, default=1.0, description="Alpha parameter"
+        ),
     )
-)
+end
 
 function test_coverage_options()
     Test.@testset "Coverage: Options & StrategyOptions" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -57,39 +56,33 @@ function test_coverage_options()
         # ====================================================================
 
         Test.@testset "StrategyOptions - invalid value type" begin
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.StrategyOptions(
-                (bad_key = 42,)
-            )
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.StrategyOptions((
+                bad_key=42,
+            ))
         end
 
         Test.@testset "StrategyOptions - getproperty :options" begin
-            opts = Strategies.StrategyOptions(
-                alpha = Options.OptionValue(1.0, :default)
-            )
+            opts = Strategies.StrategyOptions(alpha=Options.OptionValue(1.0, :default))
             Test.@test opts.options isa NamedTuple
             Test.@test opts.alpha isa Options.OptionValue
             Test.@test Options.value(opts.alpha) == 1.0
         end
 
         Test.@testset "StrategyOptions - getindex" begin
-            opts = Strategies.StrategyOptions(
-                alpha = Options.OptionValue(2.0, :user)
-            )
+            opts = Strategies.StrategyOptions(alpha=Options.OptionValue(2.0, :user))
             Test.@test opts[:alpha] == 2.0
         end
 
         Test.@testset "StrategyOptions - get(Val)" begin
-            opts = Strategies.StrategyOptions(
-                alpha = Options.OptionValue(3.0, :computed)
-            )
+            opts = Strategies.StrategyOptions(alpha=Options.OptionValue(3.0, :computed))
             Test.@test get(opts, Val(:alpha)) == 3.0
         end
 
         Test.@testset "StrategyOptions - source helpers" begin
             opts = Strategies.StrategyOptions(
-                a = Options.OptionValue(1, :user),
-                b = Options.OptionValue(2, :default),
-                c = Options.OptionValue(3, :computed)
+                a=Options.OptionValue(1, :user),
+                b=Options.OptionValue(2, :default),
+                c=Options.OptionValue(3, :computed),
             )
             Test.@test Strategies.source(opts, :a) === :user
             Test.@test Strategies.source(opts, :b) === :default
@@ -103,9 +96,7 @@ function test_coverage_options()
         end
 
         Test.@testset "StrategyOptions - _raw_options" begin
-            opts = Strategies.StrategyOptions(
-                x = Options.OptionValue(10, :user)
-            )
+            opts = Strategies.StrategyOptions(x=Options.OptionValue(10, :user))
             raw = Strategies._raw_options(opts)
             Test.@test raw isa NamedTuple
             Test.@test raw.x isa Options.OptionValue
@@ -113,8 +104,7 @@ function test_coverage_options()
 
         Test.@testset "StrategyOptions - collection interface" begin
             opts = Strategies.StrategyOptions(
-                a = Options.OptionValue(1, :user),
-                b = Options.OptionValue(2, :default)
+                a=Options.OptionValue(1, :user), b=Options.OptionValue(2, :default)
             )
 
             # keys
@@ -153,8 +143,7 @@ function test_coverage_options()
 
         Test.@testset "StrategyOptions - display" begin
             opts = Strategies.StrategyOptions(
-                a = Options.OptionValue(1, :user),
-                b = Options.OptionValue(2, :default)
+                a=Options.OptionValue(1, :user), b=Options.OptionValue(2, :default)
             )
 
             # Pretty display
@@ -174,9 +163,7 @@ function test_coverage_options()
             Test.@test occursin("a=1", output2)
 
             # Single option (singular)
-            opts1 = Strategies.StrategyOptions(
-                x = Options.OptionValue(42, :default)
-            )
+            opts1 = Strategies.StrategyOptions(x=Options.OptionValue(42, :default))
             buf3 = IOBuffer()
             show(buf3, MIME("text/plain"), opts1)
             output3 = String(take!(buf3))
@@ -221,7 +208,7 @@ function test_coverage_options()
             # Duplicate family
             Test.@test_throws Exceptions.IncorrectArgument Strategies.create_registry(
                 Strategies.AbstractStrategy => (CovOptFakeStrategy,),
-                Strategies.AbstractStrategy => (CovOptFakeStrategy,)
+                Strategies.AbstractStrategy => (CovOptFakeStrategy,),
             )
 
             # Family not found in registry

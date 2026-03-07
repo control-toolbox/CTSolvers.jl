@@ -191,7 +191,7 @@ function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
             name=:show_time,
             type=Bool,
             default=Options.NotProvided,
-            description="Whether to show timing information while building the ADNLP model"
+            description="Whether to show timing information while building the ADNLP model",
         ),
         Strategies.OptionDefinition(;
             name=:backend,
@@ -199,23 +199,23 @@ function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
             default=__adnlp_model_backend(),
             description="Automatic differentiation backend used by ADNLPModels",
             validator=validate_adnlp_backend,
-            aliases=(:adnlp_backend,)
+            aliases=(:adnlp_backend,),
         ),
-        
+
         # === New High-Priority Options ===
         Strategies.OptionDefinition(;
             name=:matrix_free,
             type=Bool,
             default=Options.NotProvided,
             description="Enable matrix-free mode (avoids explicit Hessian/Jacobian matrices)",
-            validator=validate_matrix_free
+            validator=validate_matrix_free,
         ),
         Strategies.OptionDefinition(;
             name=:name,
             type=String,
             default=Options.NotProvided,
             description="Name of the optimization model for identification",
-            validator=validate_model_name
+            validator=validate_model_name,
         ),
         # NOTE: minimize option is commented out as it will be automatically set
         # when building the model based on the problem structure
@@ -226,58 +226,58 @@ function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
         #     description="Optimization direction (true for minimization, false for maximization)",
         #     validator=validate_optimization_direction
         # ),
-        
+
         # === Advanced Backend Overrides (expert users) ===
         Strategies.OptionDefinition(;
             name=:gradient_backend,
-            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for gradient computation (advanced users only)",
-            validator=validate_backend_override
+            validator=validate_backend_override,
         ),
         Strategies.OptionDefinition(;
             name=:hprod_backend,
-            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for Hessian-vector product (advanced users only)",
-            validator=validate_backend_override
+            validator=validate_backend_override,
         ),
         Strategies.OptionDefinition(;
             name=:jprod_backend,
-            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for Jacobian-vector product (advanced users only)",
-            validator=validate_backend_override
+            validator=validate_backend_override,
         ),
         Strategies.OptionDefinition(;
             name=:jtprod_backend,
-            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for transpose Jacobian-vector product (advanced users only)",
-            validator=validate_backend_override
+            validator=validate_backend_override,
         ),
         Strategies.OptionDefinition(;
             name=:jacobian_backend,
-            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for Jacobian matrix computation (advanced users only)",
-            validator=validate_backend_override
+            validator=validate_backend_override,
         ),
         Strategies.OptionDefinition(;
             name=:hessian_backend,
-            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for Hessian matrix computation (advanced users only)",
-            validator=validate_backend_override
+            validator=validate_backend_override,
         ),
         Strategies.OptionDefinition(;
             name=:ghjvprod_backend,
-            type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
+            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
             default=Options.NotProvided,
             description="Override backend for g^T ∇²c(x)v computation (advanced users only)",
-            validator=validate_backend_override
-        )
-        
+            validator=validate_backend_override,
+        ),
+
         # # === Advanced Backend Overrides for NLS (expert users) ===
         # Strategies.OptionDefinition(;
         #     name=:hprod_residual_backend,
@@ -319,7 +319,9 @@ end
 
 # Fallback metadata for non-parameterized type (delegates to CPU)
 function Strategies.metadata(::Type{Modelers.ADNLP})
-    return Strategies.metadata(Modelers.ADNLP{Strategies._default_parameter(Modelers.ADNLP)})
+    return Strategies.metadata(
+        Modelers.ADNLP{Strategies._default_parameter(Modelers.ADNLP)}
+    )
 end
 
 # Constructor with option validation
@@ -364,10 +366,8 @@ function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
     if haskey(kwargs, :adnlp_backend)
         @warn "adnlp_backend is deprecated, use backend instead" maxlog=1
     end
-    
-    opts = Strategies.build_strategy_options(
-        Modelers.ADNLP{CPU}; mode=mode, kwargs...
-    )
+
+    opts = Strategies.build_strategy_options(Modelers.ADNLP{CPU}; mode=mode, kwargs...)
     return Modelers.ADNLP{Strategies._default_parameter(Modelers.ADNLP)}(opts)
 end
 
@@ -377,10 +377,8 @@ function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
     if haskey(kwargs, :adnlp_backend)
         @warn "adnlp_backend is deprecated, use backend instead" maxlog=1
     end
-    
-    opts = Strategies.build_strategy_options(
-        Modelers.ADNLP{P}; mode=mode, kwargs...
-    )
+
+    opts = Strategies.build_strategy_options(Modelers.ADNLP{P}; mode=mode, kwargs...)
     return Modelers.ADNLP{P}(opts)
 end
 
@@ -420,15 +418,14 @@ stats = solve(nlp, solver)
 - [`ADNLPModels.ADNLPModel`](@ref): NLP model type
 """
 function (modeler::Modelers.ADNLP)(
-    prob::AbstractOptimizationProblem,
-    initial_guess
+    prob::AbstractOptimizationProblem, initial_guess
 )::ADNLPModels.ADNLPModel
     # Get the appropriate builder for this problem type
     builder = get_adnlp_model_builder(prob)
-    
+
     # Extract options as Dict
     options = Strategies.options_dict(modeler)
-    
+
     # Build the ADNLP model passing all options generically
     return builder(initial_guess; options...)
 end
@@ -465,8 +462,7 @@ solution = modeler(problem, stats)
 - [`solve`](@ref): Generic solve interface
 """
 function (modeler::Modelers.ADNLP)(
-    prob::AbstractOptimizationProblem,
-    nlp_solution::SolverCore.AbstractExecutionStats
+    prob::AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats
 )
     # Get the appropriate solution builder for this problem type
     builder = get_adnlp_solution_builder(prob)

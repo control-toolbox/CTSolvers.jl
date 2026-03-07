@@ -32,17 +32,15 @@ _error_unknown_options_strict((unknown_opt=123,), Solvers.Ipopt, meta)
 See also: [`build_strategy_options`](@ref), [`suggest_options`](@ref)
 """
 function _error_unknown_options_strict(
-    remaining::NamedTuple,
-    strategy_type::Type{<:AbstractStrategy},
-    meta::StrategyMetadata
+    remaining::NamedTuple, strategy_type::Type{<:AbstractStrategy}, meta::StrategyMetadata
 )
     unknown_keys = collect(keys(remaining))
     strategy_name = string(nameof(strategy_type))
-    
+
     # Build list of available options
     available_keys = sort(collect(keys(meta)))
     available_str = join(["  :$k" for k in available_keys], ", ")
-    
+
     # Generate suggestions for each unknown key
     suggestions_str = ""
     for key in unknown_keys
@@ -54,15 +52,15 @@ function _error_unknown_options_strict(
             end
         end
     end
-    
+
     # Build complete error message
     message = """
     Unknown options provided for $strategy_name
-    
+
     Unrecognized options: $unknown_keys
-    
+
     These options are not defined in the metadata of $strategy_name.
-    
+
     Available options:
     $available_str
     $suggestions_str
@@ -70,11 +68,12 @@ function _error_unknown_options_strict(
     use permissive mode:
       $strategy_name(...; mode=:permissive)
     """
-    
-    throw(Exceptions.IncorrectArgument(
-        message,
-        context="build_strategy_options - strict validation"
-    ))
+
+    throw(
+        Exceptions.IncorrectArgument(
+            message; context="build_strategy_options - strict validation"
+        ),
+    )
 end
 
 """
@@ -98,17 +97,16 @@ _warn_unknown_options_permissive((custom_opt=123,), Solvers.Ipopt)
 See also: [`build_strategy_options`](@ref), [`_error_unknown_options_strict`](@ref)
 """
 function _warn_unknown_options_permissive(
-    remaining::NamedTuple,
-    strategy_type::Type{<:AbstractStrategy}
+    remaining::NamedTuple, strategy_type::Type{<:AbstractStrategy}
 )
     unknown_keys = collect(keys(remaining))
     strategy_name = string(nameof(strategy_type))
-    
+
     @warn """
     Unrecognized options passed to backend
-    
+
     Unvalidated options: $unknown_keys
-    
+
     These options will be passed directly to the $strategy_name backend
     without validation by CTSolvers. Ensure they are correct.
     """

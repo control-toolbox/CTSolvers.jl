@@ -44,8 +44,8 @@ function build_strategy(
     id::Symbol,
     family::Type{<:AbstractStrategy},
     registry::StrategyRegistry;
-    mode::Symbol = :strict,
-    kwargs...
+    mode::Symbol=:strict,
+    kwargs...,
 )
     T = type_from_id(id, family, registry)
     return T(; mode=mode, kwargs...)
@@ -86,10 +86,10 @@ See also: [`strategy_ids`](@ref)
 function extract_id_from_method(
     method::Tuple{Vararg{Symbol}},
     family::Type{<:AbstractStrategy},
-    registry::StrategyRegistry
+    registry::StrategyRegistry,
 )
     allowed = strategy_ids(family, registry)
-    found::Union{Nothing, Symbol} = nothing
+    found::Union{Nothing,Symbol} = nothing
     n_hits::Int = 0
 
     for s in method
@@ -104,21 +104,25 @@ function extract_id_from_method(
     if n_hits == 1
         return (found::Symbol)
     elseif n_hits == 0
-        throw(Exceptions.IncorrectArgument(
-            "No strategy ID found for family in method",
-            got="family $family in method $method",
-            expected="family ID present in method tuple",
-            suggestion="Add the family ID to your method tuple, e.g., (:$family, ...)",
-            context="extract_id_from_method - validating method tuple contains family"
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "No strategy ID found for family in method";
+                got="family $family in method $method",
+                expected="family ID present in method tuple",
+                suggestion="Add the family ID to your method tuple, e.g., (:$family, ...)",
+                context="extract_id_from_method - validating method tuple contains family",
+            ),
+        )
     else
-        throw(Exceptions.IncorrectArgument(
-            "Multiple strategy IDs found for family in method",
-            got="family $family appears $n_hits times in method $method",
-            expected="exactly one ID per family in method tuple",
-            suggestion="Remove duplicate family IDs from method tuple, keep only one",
-            context="extract_id_from_method - validating unique family IDs"
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "Multiple strategy IDs found for family in method";
+                got="family $family appears $n_hits times in method $method",
+                expected="exactly one ID per family in method tuple",
+                suggestion="Remove duplicate family IDs from method tuple, keep only one",
+                context="extract_id_from_method - validating unique family IDs",
+            ),
+        )
     end
 end
 
@@ -170,9 +174,7 @@ present in the method tuple is compatible with all selected strategies.
 See also: [`extract_global_parameter_from_method`](@ref), [`get_parameter_type`](@ref)
 """
 function available_parameters(
-    strategy_id::Symbol,
-    family::Type{<:AbstractStrategy},
-    registry::StrategyRegistry
+    strategy_id::Symbol, family::Type{<:AbstractStrategy}, registry::StrategyRegistry
 )
     params = Type{<:AbstractStrategyParameter}[]
     for T in registry.families[family]
@@ -214,19 +216,20 @@ parameter token is required and must be supported by each parameterized strategy
 See also: [`available_parameters`](@ref), [`Strategies.AbstractStrategyParameter`](@ref)
 """
 function extract_global_parameter_from_method(
-    method::Tuple{Vararg{Symbol}},
-    registry::StrategyRegistry
+    method::Tuple{Vararg{Symbol}}, registry::StrategyRegistry
 )
     param_map = registry.parameters
     param_tokens = Symbol[s for s in method if haskey(param_map, s)]
     if length(param_tokens) > 1
-        throw(Exceptions.IncorrectArgument(
-            "Multiple parameters found in method",
-            got="method $method",
-            expected="at most one global parameter token",
-            suggestion="Remove extra parameter tokens; keep a single one like :cpu or :gpu",
-            context="extract_global_parameter_from_method - validating unique global parameter"
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "Multiple parameters found in method";
+                got="method $method",
+                expected="at most one global parameter token",
+                suggestion="Remove extra parameter tokens; keep a single one like :cpu or :gpu",
+                context="extract_global_parameter_from_method - validating unique global parameter",
+            ),
+        )
     end
     param = isempty(param_tokens) ? nothing : param_map[param_tokens[1]]
 
@@ -240,36 +243,42 @@ function extract_global_parameter_from_method(
             if !isempty(available)
                 any_parameterized = true
                 if param === nothing
-                    throw(Exceptions.IncorrectArgument(
-                        "Missing parameter in method",
-                        got="method $method",
-                        expected="a global parameter token for parameterized strategies",
-                        suggestion="Add :cpu or :gpu to your method tuple",
-                        context="extract_global_parameter_from_method - parameter required"
-                    ))
+                    throw(
+                        Exceptions.IncorrectArgument(
+                            "Missing parameter in method";
+                            got="method $method",
+                            expected="a global parameter token for parameterized strategies",
+                            suggestion="Add :cpu or :gpu to your method tuple",
+                            context="extract_global_parameter_from_method - parameter required",
+                        ),
+                    )
                 end
                 if !(param in available)
                     available_ids = Tuple(id(p) for p in available)
-                    throw(Exceptions.IncorrectArgument(
-                        "Unsupported parameter in method",
-                        got="strategy :$s_id with parameter $(id(param)) in method $method",
-                        expected="strategy :$s_id with one of: $available_ids",
-                        suggestion="Use one of: $available_ids",
-                        context="extract_global_parameter_from_method - validating parameter support"
-                    ))
+                    throw(
+                        Exceptions.IncorrectArgument(
+                            "Unsupported parameter in method";
+                            got="strategy :$s_id with parameter $(id(param)) in method $method",
+                            expected="strategy :$s_id with one of: $available_ids",
+                            suggestion="Use one of: $available_ids",
+                            context="extract_global_parameter_from_method - validating parameter support",
+                        ),
+                    )
                 end
             end
         end
     end
 
     if param !== nothing && !any_parameterized
-        throw(Exceptions.IncorrectArgument(
-            "Useless parameter in method",
-            got="method $method with parameter $(id(param))",
-            expected="parameter token to be accepted by at least one selected strategy",
-            suggestion="Remove the parameter token or select a strategy that accepts it",
-            context="extract_global_parameter_from_method - unused parameter"
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "Useless parameter in method";
+                got="method $method with parameter $(id(param))",
+                expected="parameter token to be accepted by at least one selected strategy",
+                suggestion="Remove the parameter token or select a strategy that accepts it",
+                context="extract_global_parameter_from_method - unused parameter",
+            ),
+        )
     end
 
     return param
@@ -315,8 +324,8 @@ function build_strategy(
     parameter::Type{<:AbstractStrategyParameter},
     family::Type{<:AbstractStrategy},
     registry::StrategyRegistry;
-    mode::Symbol = :strict,
-    kwargs...
+    mode::Symbol=:strict,
+    kwargs...,
 )
     T = type_from_id(id, family, registry; parameter=parameter)
     return T(; mode=mode, kwargs...)

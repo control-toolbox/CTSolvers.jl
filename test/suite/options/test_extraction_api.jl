@@ -1,6 +1,6 @@
 module TestOptionsExtractionAPI
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Options
 const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
@@ -14,30 +14,30 @@ const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING :
 positive_validator(x::Int) = x > 0 || throw(ArgumentError("$x must be positive"))
 
 # Range validator for testing
-range_validator(x::Int) = (1 <= x <= 100) || throw(ArgumentError("$x must be between 1 and 100"))
+function range_validator(x::Int)
+    (1 <= x <= 100) || throw(ArgumentError("$x must be between 1 and 100"))
+end
 
 # String validator for testing
-nonempty_validator(s::String) = !isempty(s) || throw(ArgumentError("String must not be empty"))
+function nonempty_validator(s::String)
+    !isempty(s) || throw(ArgumentError("String must not be empty"))
+end
 
 # ============================================================================
 # Test entry point
 # ============================================================================
 
 function test_extraction_api()
-    
-# ============================================================================
-# UNIT TESTS
-# ============================================================================
+
+    # ============================================================================
+    # UNIT TESTS
+    # ============================================================================
 
     Test.@testset "Extraction API" verbose = VERBOSE showtiming = SHOWTIMING begin
-
         Test.@testset "extract_option - Basic functionality" begin
             # Test with exact name match
             def = Options.OptionDefinition(
-                name=:grid_size,
-                type=Int,
-                default=100,
-                description="Grid size"
+                name=:grid_size, type=Int, default=100, description="Grid size"
             )
             kwargs = (grid_size=200, tol=1e-6)
 
@@ -55,7 +55,7 @@ function test_extraction_api()
                 type=Int,
                 default=100,
                 description="Grid size",
-                aliases=(:n, :size)
+                aliases=(:n, :size),
             )
             kwargs = (n=200, tol=1e-6)
 
@@ -77,10 +77,7 @@ function test_extraction_api()
         Test.@testset "extract_option - Default values" begin
             # Test when option not found
             def = Options.OptionDefinition(
-                name=:grid_size,
-                type=Int,
-                default=100,
-                description="Grid size"
+                name=:grid_size, type=Int, default=100, description="Grid size"
             )
             kwargs = (tol=1e-6, max_iter=1000)
 
@@ -98,7 +95,7 @@ function test_extraction_api()
                 type=Int,
                 default=100,
                 description="Grid size",
-                validator=x -> x > 0 || throw(ArgumentError("$x must be positive"))
+                validator=x -> x > 0 || throw(ArgumentError("$x must be positive")),
             )
             kwargs = (grid_size=200,)
 
@@ -117,21 +114,26 @@ function test_extraction_api()
         Test.@testset "extract_option - Type checking" begin
             # Test type mismatch (should throw IncorrectArgument)
             def = Options.OptionDefinition(
-                name=:grid_size,
-                type=Int,
-                default=100,
-                description="Grid size"
+                name=:grid_size, type=Int, default=100, description="Grid size"
             )
             kwargs = (grid_size="200",)  # String instead of Int
 
-            Test.@test_throws Exceptions.IncorrectArgument Options.extract_option(kwargs, def)
+            Test.@test_throws Exceptions.IncorrectArgument Options.extract_option(
+                kwargs, def
+            )
         end
 
         Test.@testset "extract_options - Vector version" begin
             defs = [
-                Options.OptionDefinition(name=:grid_size, type=Int, default=100, description="Grid size"),
-                Options.OptionDefinition(name=:tol, type=Float64, default=1e-6, description="Tolerance"),
-                Options.OptionDefinition(name=:max_iter, type=Int, default=1000, description="Max iterations")
+                Options.OptionDefinition(
+                    name=:grid_size, type=Int, default=100, description="Grid size"
+                ),
+                Options.OptionDefinition(
+                    name=:tol, type=Float64, default=1e-6, description="Tolerance"
+                ),
+                Options.OptionDefinition(
+                    name=:max_iter, type=Int, default=1000, description="Max iterations"
+                ),
             ]
             kwargs = (grid_size=200, tol=1e-8, other_option="ignored")
 
@@ -148,8 +150,12 @@ function test_extraction_api()
 
         Test.@testset "extract_options - NamedTuple version" begin
             defs = (
-                grid_size=Options.OptionDefinition(name=:grid_size, type=Int, default=100, description="Grid size"),
-                tol=Options.OptionDefinition(name=:tol, type=Float64, default=1e-6, description="Tolerance")
+                grid_size=Options.OptionDefinition(
+                    name=:grid_size, type=Int, default=100, description="Grid size"
+                ),
+                tol=Options.OptionDefinition(
+                    name=:tol, type=Float64, default=1e-6, description="Tolerance"
+                ),
             )
             kwargs = (grid_size=200, tol=1e-8, max_iter=1000)
 
@@ -164,9 +170,28 @@ function test_extraction_api()
 
         Test.@testset "extract_options - Complex scenario with aliases" begin
             defs = [
-                Options.OptionDefinition(name=:grid_size, type=Int, default=100, description="Grid size", aliases=(:n, :size), validator=positive_validator),
-                Options.OptionDefinition(name=:tolerance, type=Float64, default=1e-6, description="Tolerance", aliases=(:tol,)),
-                Options.OptionDefinition(name=:max_iterations, type=Int, default=1000, description="Max iterations", aliases=(:max_iter, :iterations))
+                Options.OptionDefinition(
+                    name=:grid_size,
+                    type=Int,
+                    default=100,
+                    description="Grid size",
+                    aliases=(:n, :size),
+                    validator=positive_validator,
+                ),
+                Options.OptionDefinition(
+                    name=:tolerance,
+                    type=Float64,
+                    default=1e-6,
+                    description="Tolerance",
+                    aliases=(:tol,),
+                ),
+                Options.OptionDefinition(
+                    name=:max_iterations,
+                    type=Int,
+                    default=1000,
+                    description="Max iterations",
+                    aliases=(:max_iter, :iterations),
+                ),
             ]
             kwargs = (n=50, tol=1e-8, iterations=500, unused="value")
 
@@ -183,7 +208,9 @@ function test_extraction_api()
 
         Test.@testset "Performance - Type stability" begin
             # Focus on functional correctness
-            def = Options.OptionDefinition(name=:test, type=Int, default=42, description="Test")
+            def = Options.OptionDefinition(
+                name=:test, type=Int, default=42, description="Test"
+            )
             kwargs = (test=100,)
 
             result = Options.extract_option(kwargs, def)
@@ -203,7 +230,7 @@ function test_extraction_api()
                 type=Int,
                 default=42,
                 description="Test",
-                validator=x -> x == 42 || throw(ArgumentError("$x must be 42"))
+                validator=x -> x == 42 || throw(ArgumentError("$x must be 42")),
             )
             kwargs = (test=100,)
 
@@ -214,14 +241,16 @@ function test_extraction_api()
 
             # Test with multiple definitions, one fails
             defs = [
-                Options.OptionDefinition(name=:good, type=Int, default=42, description="Good"),
+                Options.OptionDefinition(
+                    name=:good, type=Int, default=42, description="Good"
+                ),
                 Options.OptionDefinition(
                     name=:bad,
                     type=Int,
                     default=42,
                     description="Bad",
-                    validator=x -> x == 42 || throw(ArgumentError("$x must be 42"))
-                )
+                    validator=x -> x == 42 || throw(ArgumentError("$x must be 42")),
+                ),
             ]
             kwargs = (good=100, bad=200)
 
@@ -229,21 +258,34 @@ function test_extraction_api()
                 Options.extract_options(kwargs, defs)
             end
         end
-
     end # UNIT TESTS
 
-# ============================================================================
-# INTEGRATION TESTS
-# ============================================================================
+    # ============================================================================
+    # INTEGRATION TESTS
+    # ============================================================================
 
     Test.@testset "Extraction API Integration" verbose = VERBOSE showtiming = SHOWTIMING begin
-
         Test.@testset "Integration with OptionValue and OptionDefinition" begin
             # Test complete workflow
             defs = (
-                size=Options.OptionDefinition(name=:grid_size, type=Int, default=100, description="Grid size", aliases=(:n, :size), validator=positive_validator),
-                tolerance=Options.OptionDefinition(name=:tolerance, type=Float64, default=1e-6, description="Tolerance", aliases=(:tol,)),
-                verbose=Options.OptionDefinition(name=:verbose, type=Bool, default=false, description="Verbose")
+                size=Options.OptionDefinition(
+                    name=:grid_size,
+                    type=Int,
+                    default=100,
+                    description="Grid size",
+                    aliases=(:n, :size),
+                    validator=positive_validator,
+                ),
+                tolerance=Options.OptionDefinition(
+                    name=:tolerance,
+                    type=Float64,
+                    default=1e-6,
+                    description="Tolerance",
+                    aliases=(:tol,),
+                ),
+                verbose=Options.OptionDefinition(
+                    name=:verbose, type=Bool, default=false, description="Verbose"
+                ),
             )
 
             # Test with mixed aliases and validation
@@ -272,12 +314,44 @@ function test_extraction_api()
         Test.@testset "Realistic tool configuration scenario" begin
             # Simulate a realistic tool configuration
             tool_defs = [
-                Options.OptionDefinition(name=:grid_size, type=Int, default=100, description="Grid size", aliases=(:n, :size)),
-                Options.OptionDefinition(name=:tolerance, type=Float64, default=1e-6, description="Tolerance", aliases=(:tol,)),
-                Options.OptionDefinition(name=:max_iterations, type=Int, default=1000, description="Max iterations", aliases=(:max_iter, :iterations)),
-                Options.OptionDefinition(name=:solver, type=String, default="ipopt", description="Solver", aliases=(:algorithm,)),
-                Options.OptionDefinition(name=:verbose, type=Bool, default=false, description="Verbose"),
-                Options.OptionDefinition(name=:output_file, type=String, default=nothing, description="Output file", aliases=(:out, :output))
+                Options.OptionDefinition(
+                    name=:grid_size,
+                    type=Int,
+                    default=100,
+                    description="Grid size",
+                    aliases=(:n, :size),
+                ),
+                Options.OptionDefinition(
+                    name=:tolerance,
+                    type=Float64,
+                    default=1e-6,
+                    description="Tolerance",
+                    aliases=(:tol,),
+                ),
+                Options.OptionDefinition(
+                    name=:max_iterations,
+                    type=Int,
+                    default=1000,
+                    description="Max iterations",
+                    aliases=(:max_iter, :iterations),
+                ),
+                Options.OptionDefinition(
+                    name=:solver,
+                    type=String,
+                    default="ipopt",
+                    description="Solver",
+                    aliases=(:algorithm,),
+                ),
+                Options.OptionDefinition(
+                    name=:verbose, type=Bool, default=false, description="Verbose"
+                ),
+                Options.OptionDefinition(
+                    name=:output_file,
+                    type=String,
+                    default=nothing,
+                    description="Output file",
+                    aliases=(:out, :output),
+                ),
             ]
 
             # Test configuration with various options
@@ -288,7 +362,7 @@ function test_extraction_api()
                 algorithm="knitro",
                 verbose=true,
                 output="results.txt",
-                debug_mode=true  # Extra option not in schemas
+                debug_mode=true,  # Extra option not in schemas
             )
 
             extracted, remaining = Options.extract_options(config, tool_defs)
@@ -312,7 +386,9 @@ function test_extraction_api()
 
         Test.@testset "Edge cases and boundary conditions" begin
             # Test with empty kwargs
-            def = Options.OptionDefinition(name=:test, type=Int, default=42, description="Test")
+            def = Options.OptionDefinition(
+                name=:test, type=Int, default=42, description="Test"
+            )
             empty_kwargs = NamedTuple()
 
             opt_value, remaining = Options.extract_option(empty_kwargs, def)
@@ -329,16 +405,16 @@ function test_extraction_api()
             Test.@test remaining == kwargs
 
             # Test with nothing default
-            def_no_default = Options.OptionDefinition(name=:optional, type=String, default=nothing, description="Optional")
+            def_no_default = Options.OptionDefinition(
+                name=:optional, type=String, default=nothing, description="Optional"
+            )
             kwargs_no_match = (other="value",)
 
             opt_value, remaining = Options.extract_option(kwargs_no_match, def_no_default)
             Test.@test opt_value.value === nothing
             Test.@test opt_value.source == :default
         end
-
     end # INTEGRATION TESTS
-
 end # test_extraction_api()
 
 end # module
