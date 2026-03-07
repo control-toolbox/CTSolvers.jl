@@ -173,7 +173,8 @@ solver_permissive = Knitro(maxit=1000, custom_option=123; mode=:permissive)
 See also: [`Knitro`](@ref), [`build_knitro_solver`](@ref)
 """
 function Solvers.Knitro(; mode::Symbol=:strict, kwargs...)
-    return build_knitro_solver(KnitroTag, Strategies._default_parameter(Solvers.Knitro); mode=mode, kwargs...)
+    P = Strategies._default_parameter(Solvers.Knitro)
+    return Solvers.Knitro{P}(; mode=mode, kwargs...)
 end
 
 """

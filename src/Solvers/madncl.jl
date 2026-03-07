@@ -127,7 +127,8 @@ solver_permissive = Solvers.MadNCL(max_iter=1000, custom_option=123; mode=:permi
 See also: [`MadNCL`](@ref), [`build_madncl_solver`](@ref)
 """
 function Solvers.MadNCL(; mode::Symbol=:strict, kwargs...)
-    return build_madncl_solver(MadNCLTag, Strategies._default_parameter(Solvers.MadNCL); mode=mode, kwargs...)
+    P = Strategies._default_parameter(Solvers.MadNCL)
+    return Solvers.MadNCL{P}(; mode=mode, kwargs...)
 end
 
 """
