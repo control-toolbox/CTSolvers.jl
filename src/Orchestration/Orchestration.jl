@@ -9,6 +9,8 @@ disambiguation, and helper builders.
 - `route_all_options`: Strategy-aware option router with disambiguation support
 - `extract_strategy_ids`, `build_strategy_to_family_map`, `build_option_ownership_map`: Helpers used by the router
 - `build_strategy_from_resolved`, `option_names_from_resolved`: Builders based on resolved method information
+- `ResolvedMethod`: Struct containing resolved method information from disambiguation
+- `resolve_method`: Function that resolves method tokens to strategy families and IDs
 
 See also: [`Options`](@ref), [`Strategies`](@ref)
 """
@@ -31,5 +33,6 @@ include(joinpath(@__DIR__, "routing.jl"))
 export route_all_options
 export extract_strategy_ids, build_strategy_to_family_map, build_option_ownership_map
 export build_strategy_from_resolved, option_names_from_resolved
+export ResolvedMethod, resolve_method
 
 end # module Orchestration

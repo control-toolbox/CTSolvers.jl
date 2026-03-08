@@ -170,7 +170,8 @@ solver_permissive = Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
 See also: [`Ipopt`](@ref), [`build_ipopt_solver`](@ref)
 """
 function Solvers.Ipopt(; mode::Symbol=:strict, kwargs...)
-    return build_ipopt_solver(IpoptTag, Strategies._default_parameter(Solvers.Ipopt); mode=mode, kwargs...)
+    P = Strategies._default_parameter(Solvers.Ipopt)
+    return Solvers.Ipopt{P}(; mode=mode, kwargs...)
 end
 
 """

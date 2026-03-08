@@ -3,6 +3,17 @@
 # Implementation of `Modelers.ADNLP` using the `Strategies.AbstractStrategy`
 # contract.
 
+# ============================================================================
+# Tag dispatch infrastructure
+# ============================================================================
+
+"""
+$(TYPEDEF)
+
+Tag type for ADNLP-specific implementation dispatch.
+"""
+struct ADNLPTag <: AbstractTag end
+
 # Default option values
 """
 $(TYPEDSIGNATURES)
@@ -198,7 +209,7 @@ function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
             type=Symbol,
             default=__adnlp_model_backend(),
             description="Automatic differentiation backend used by ADNLPModels",
-            validator=validate_adnlp_backend,
+            validator=get_validate_adnlp_backend(ADNLPTag),
             aliases=(:adnlp_backend,)
         ),
         
@@ -322,11 +333,11 @@ function Strategies.metadata(::Type{Modelers.ADNLP})
     return Strategies.metadata(Modelers.ADNLP{Strategies._default_parameter(Modelers.ADNLP)})
 end
 
-# Constructor with option validation
+# Parameterized constructor
 """
 $(TYPEDSIGNATURES)
 
-Create an Modelers.ADNLP with validated options.
+Create a parameterized Modelers.ADNLP with validated options.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
@@ -335,43 +346,26 @@ Create an Modelers.ADNLP with validated options.
 - `kwargs...`: Modeler options (see [`Modelers.ADNLP`](@ref) documentation)
 
 # Returns
-- `Modelers.ADNLP`: Configured modeler instance
+- `Modelers.ADNLP{P}`: Configured modeler instance with specified parameter
 
 # Examples
 ```julia
-# Default modeler
-modeler = Modelers.ADNLP()
+# Explicit CPU modeler
+modeler = Modelers.ADNLP{CPU}()
 
 # With custom options
-modeler = Modelers.ADNLP(backend=:optimized, matrix_free=true)
+modeler = Modelers.ADNLP{CPU}(backend=:optimized, matrix_free=true)
 
 # With permissive mode
-modeler = Modelers.ADNLP(backend=:optimized, custom_option=123; mode=:permissive)
+modeler = Modelers.ADNLP{CPU}(backend=:optimized, custom_option=123; mode=:permissive)
 ```
 
 # Throws
-
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 - `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 
-# See also
-
-- [`Modelers.ADNLP`](@ref): Type documentation
-- [`Strategies.build_strategy_options`](@ref): Option validation function
+See also: [`Modelers.ADNLP`](@ref), [`Strategies.build_strategy_options`](@ref)
 """
-function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
-    # Check for deprecated aliases
-    if haskey(kwargs, :adnlp_backend)
-        @warn "adnlp_backend is deprecated, use backend instead" maxlog=1
-    end
-    
-    opts = Strategies.build_strategy_options(
-        Modelers.ADNLP{CPU}; mode=mode, kwargs...
-    )
-    return Modelers.ADNLP{Strategies._default_parameter(Modelers.ADNLP)}(opts)
-end
-
-# Parameterized constructor
 function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
     # Check for deprecated aliases
     if haskey(kwargs, :adnlp_backend)
@@ -384,8 +378,43 @@ function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
     return Modelers.ADNLP{P}(opts)
 end
 
-# Access to strategy options
-Strategies.options(m::Modelers.ADNLP) = m.options
+# Simple constructor
+"""
+$(TYPEDSIGNATURES)
+
+Create an Modelers.ADNLP with validated options (defaults to CPU).
+
+# Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+  - `:strict` (default): Rejects unknown options with detailed error message
+  - `:permissive`: Accepts unknown options with warning, stores with `:user` source
+- `kwargs...`: Modeler options (see [`Modelers.ADNLP`](@ref) documentation)
+
+# Returns
+- `Modelers.ADNLP{CPU}`: Configured modeler instance with CPU parameter
+
+# Examples
+```julia
+# Default modeler (CPU)
+modeler = Modelers.ADNLP()
+
+# With custom options
+modeler = Modelers.ADNLP(backend=:optimized, matrix_free=true)
+
+# With permissive mode
+modeler = Modelers.ADNLP(backend=:optimized, custom_option=123; mode=:permissive)
+```
+
+# Throws
+- `CTBase.Exceptions.IncorrectArgument`: If option validation fails
+- `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
+
+See also: [`Modelers.ADNLP`](@ref), [`Modelers.ADNLP{CPU}`](@ref), [`Strategies.build_strategy_options`](@ref)
+"""
+function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
+    P = Strategies._default_parameter(Modelers.ADNLP)
+    return Modelers.ADNLP{P}(; mode=mode, kwargs...)
+end
 
 # Model building interface
 """
@@ -471,4 +500,54 @@ function (modeler::Modelers.ADNLP)(
     # Get the appropriate solution builder for this problem type
     builder = get_adnlp_solution_builder(prob)
     return builder(nlp_solution)
+end
+
+# ============================================================================
+# Backend validation factory
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Factory function that returns a backend validator for the specified tag type.
+
+# Arguments
+- `T::Type{<:AbstractTag}`: Tag type for dispatch (e.g., ADNLPTag, DummyTag)
+
+# Returns
+- `Function`: Validator function that takes `backend::Symbol` and validates it
+
+# Examples
+```julia-repl
+julia> using CTSolvers.Modelers
+
+julia> # Get validator for ADNLP (with extensions loaded)
+julia> validator = get_validate_adnlp_backend(ADNLPTag)
+(::Symbol)->validate_adnlp_backend(#=method=#1, #=generic#=)
+
+julia> validator(:default)
+:default
+
+julia> validator(:enzyme)  # Works with CTSolversEnzyme extension
+:enzyme
+
+julia> # Get validator for dummy tag (no extensions)
+julia> dummy_validator = get_validate_adnlp_backend(DummyTag)
+(::Symbol)->validate_adnlp_backend(#=method=#1, #=generic#=)
+
+julia> dummy_validator(:enzyme)  # Throws ExtensionError
+ERROR: Control Toolbox Error
+❌ Error: CTBase.Exceptions.ExtensionError, to use Enzyme backend with ADNLP modeler
+```
+
+# Notes
+- Creates a closure that converts `Symbol` to `Val` for type-safe dispatch
+- Used by ADNLP metadata system for runtime validation
+- Extensions enable specific backends for their tag types
+- Default implementations throw `ExtensionError` for Enzyme/Zygote backends
+
+See also: [`validate_adnlp_backend`](@ref), [`ADNLPTag`](@ref), [`Modelers.ADNLP`](@ref)
+"""
+function get_validate_adnlp_backend(T::Type{<:AbstractTag})
+    return backend::Symbol -> validate_adnlp_backend(T(), Val(backend))
 end

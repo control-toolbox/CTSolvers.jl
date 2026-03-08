@@ -12,9 +12,9 @@ import SolverCore
 include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
 import .TestProblems
 
-# Default test options (can be overridden by Main.TestOptions if available)
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+# Default test options (can be overridden by Main.TestData if available)
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 """
     test_madncl_extract_solver_infos()

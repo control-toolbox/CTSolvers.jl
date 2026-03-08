@@ -133,7 +133,8 @@ solver_permissive = MadNLP(max_iter=1000, custom_option=123; mode=:permissive)
 See also: [`MadNLP`](@ref), [`build_madnlp_solver`](@ref)
 """
 function Solvers.MadNLP(; mode::Symbol=:strict, kwargs...)
-    return build_madnlp_solver(MadNLPTag, Strategies._default_parameter(Solvers.MadNLP); mode=mode, kwargs...)
+    P = Strategies._default_parameter(Solvers.MadNLP)
+    return Solvers.MadNLP{P}(; mode=mode, kwargs...)
 end
 
 """

@@ -53,13 +53,8 @@ using ..Options
 using ..Optimization
 using ..Modelers
 
-# Tag dispatch infrastructure
-"""
-    AbstractTag
-
-Abstract type for tag dispatch pattern used to handle extension-dependent implementations.
-"""
-abstract type AbstractTag end
+# Import from CTSolvers
+import CTSolvers: AbstractTag
 
 # Include submodules
 include(joinpath(@__DIR__, "abstract_solver.jl"))

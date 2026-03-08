@@ -54,6 +54,53 @@ end
 """
 $(TYPEDSIGNATURES)
 
+Build a parameterized strategy instance from ID, parameter, and options.
+
+This function creates a concrete parameterized strategy instance by:
+1. Looking up the parameterized strategy type from its ID and parameter
+2. Constructing the instance with the provided options
+
+# Arguments
+- `id::Symbol`: Strategy identifier (e.g., `:madnlp`)
+- `parameter::Type{<:AbstractStrategyParameter}`: Parameter type (e.g., `GPU`)
+- `family::Type{<:AbstractStrategy}`: Abstract family type to search within
+- `registry::StrategyRegistry`: Registry containing strategy mappings
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
+- `kwargs...`: Options to pass to the strategy constructor
+
+# Returns
+- Concrete parameterized strategy instance (e.g., `MadNLP{GPU}`)
+
+# Throws
+- `CTBase.Exceptions.IncorrectArgument`: If the strategy-parameter combination is not found
+
+# Example
+```julia-repl
+julia> registry = create_registry(
+           AbstractNLPSolver => ((MadNLP, [CPU, GPU]),)
+       )
+
+julia> solver = build_strategy(:madnlp, GPU, AbstractNLPSolver, registry; max_iter=1000)
+MadNLP{GPU}(options=StrategyOptions{...})
+```
+
+See also: [`build_strategy`](@ref)
+"""
+function build_strategy(
+    id::Symbol,
+    parameter::Type{<:AbstractStrategyParameter},
+    family::Type{<:AbstractStrategy},
+    registry::StrategyRegistry;
+    mode::Symbol = :strict,
+    kwargs...
+)
+    T = type_from_id(id, family, registry; parameter=parameter)
+    return T(; mode=mode, kwargs...)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
 Extract the strategy ID for a specific family from a method tuple.
 
 A method tuple contains multiple strategy IDs (e.g., `(:collocation, :adnlp, :ipopt)`).
@@ -273,51 +320,4 @@ function extract_global_parameter_from_method(
     end
 
     return param
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Build a parameterized strategy instance from ID, parameter, and options.
-
-This function creates a concrete parameterized strategy instance by:
-1. Looking up the parameterized strategy type from its ID and parameter
-2. Constructing the instance with the provided options
-
-# Arguments
-- `id::Symbol`: Strategy identifier (e.g., `:madnlp`)
-- `parameter::Type{<:AbstractStrategyParameter}`: Parameter type (e.g., `GPU`)
-- `family::Type{<:AbstractStrategy}`: Abstract family type to search within
-- `registry::StrategyRegistry`: Registry containing strategy mappings
-- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
-- `kwargs...`: Options to pass to the strategy constructor
-
-# Returns
-- Concrete parameterized strategy instance (e.g., `MadNLP{GPU}`)
-
-# Throws
-- `CTBase.Exceptions.IncorrectArgument`: If the strategy-parameter combination is not found
-
-# Example
-```julia-repl
-julia> registry = create_registry(
-           AbstractNLPSolver => ((MadNLP, [CPU, GPU]),)
-       )
-
-julia> solver = build_strategy(:madnlp, GPU, AbstractNLPSolver, registry; max_iter=1000)
-MadNLP{GPU}(options=StrategyOptions{...})
-```
-
-See also: [`build_strategy`](@ref)
-"""
-function build_strategy(
-    id::Symbol,
-    parameter::Type{<:AbstractStrategyParameter},
-    family::Type{<:AbstractStrategy},
-    registry::StrategyRegistry;
-    mode::Symbol = :strict,
-    kwargs...
-)
-    T = type_from_id(id, family, registry; parameter=parameter)
-    return T(; mode=mode, kwargs...)
 end

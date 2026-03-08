@@ -13,10 +13,18 @@ This type provides a comprehensive option definition that can be used for:
 # Fields
 - `name::Symbol`: Primary name of the option
 - `type::Type`: Expected Julia type for the option value
-- `default::Any`: Default value when the option is not provided (use `nothing` for no default)
+- `default::T`: Default value when the option is not provided (type parameter `T`)
 - `description::String`: Human-readable description of the option's purpose
 - `aliases::Tuple{Vararg{Symbol}}`: Alternative names for this option (default: empty tuple)
 - `validator::Union{Function, Nothing}`: Optional validation function (default: `nothing`)
+- `computed::Bool`: Whether the default value is computed from parameters (default: `false`)
+
+# Type Parameter `T`
+
+The type parameter `T` represents the type of the default value:
+- `T = Any` when `default = nothing` (explicit nothing default)
+- `T = NotProvidedType` when `default = NotProvided` (no default value)
+- `T = typeof(default)` for concrete default values
 
 # Validator Contract
 
@@ -33,8 +41,8 @@ The validator should:
 # Constructor Validation
 
 The constructor performs the following validations:
-1. Checks that `default` matches the specified `type` (unless `default` is `nothing`)
-2. Runs the `validator` on the `default` value (if both are provided)
+1. Checks that `default` matches the specified `type` (unless `default` is `nothing` or `NotProvided`)
+2. Runs the `validator` on the `default` value (if both are provided and `default` is not `NotProvided`)
 
 # Example
 ```julia
@@ -53,10 +61,10 @@ all_names(def) # (:max_iter, :max, :maxiter)
 ```
 
 # Throws
-- `CTBase.Exceptions.IncorrectArgument`: If the default value does not match the declared type
+- `CTModels.Exceptions.IncorrectArgument`: If the default value does not match the declared type
 - `Exception`: If the validator function fails when applied to the default value
 
-See also: [`all_names`](@ref), [`extract_option`](@ref), [`extract_options`](@ref)
+See also: [`all_names`](@ref), [`extract_option`](@ref), [`extract_options`](@ref), [`NotProvided`](@ref)
 """
 struct OptionDefinition{T}
     name::Symbol
@@ -65,6 +73,7 @@ struct OptionDefinition{T}
     description::String
     aliases::Tuple{Vararg{Symbol}}
     validator::Union{Function, Nothing}
+    computed::Bool
     
     function OptionDefinition{T}(;
         name::Symbol,
@@ -72,7 +81,8 @@ struct OptionDefinition{T}
         default::T,
         description::String,
         aliases::Tuple{Vararg{Symbol}} = (),
-        validator::Union{Function, Nothing} = nothing
+        validator::Union{Function, Nothing} = nothing,
+        computed::Bool = false
     ) where T
         # Validate with custom validator if provided (skip for NotProvided)
         if validator !== nothing && !(default isa NotProvidedType)
@@ -84,46 +94,262 @@ struct OptionDefinition{T}
             end
         end
         
-        new{T}(name, type, default, description, aliases, validator)
+        new{T}(name, type, default, description, aliases, validator, computed)
     end
 end
 
-# Convenience constructor that infers T from default value
+"""
+$(TYPEDSIGNATURES)
+
+Convenience constructor that infers the type parameter `T` from the default value.
+
+This constructor automatically determines the appropriate type parameter and
+delegates to specialized methods based on the type of `default`:
+- `nothing` → creates `OptionDefinition{Any}` with `type = Any`
+- `NotProvided` → creates `OptionDefinition{NotProvidedType}` with preserved `type`
+- concrete values → creates `OptionDefinition{T}` where `T = typeof(default)`
+
+# Arguments
+- `name::Symbol`: Primary name of the option
+- `type::Type`: Expected Julia type for the option value
+- `default`: Default value (type parameter `T` is inferred automatically)
+- `description::String`: Human-readable description of the option's purpose
+- `aliases::Tuple{Vararg{Symbol}}`: Alternative names (default: empty tuple)
+- `validator::Union{Function, Nothing}`: Optional validation function (default: `nothing`)
+- `computed::Bool`: Whether the default is computed from parameters (default: `false`)
+
+# Returns
+- `OptionDefinition{T}`: Option definition with inferred type parameter
+
+# Throws
+- `CTModels.Exceptions.IncorrectArgument`: If concrete `default` is not compatible with `type`
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> # Concrete default - infers Int
+julia> def1 = OptionDefinition(
+           name = :max_iter,
+           type = Int,
+           default = 100,
+           description = "Maximum iterations"
+       )
+OptionDefinition{Int}(...)
+
+julia> # Nothing default - creates Any
+julia> def2 = OptionDefinition(
+           name = :backend,
+           type = Union{Nothing, String},
+           default = nothing,
+           description = "Execution backend"
+       )
+OptionDefinition{Any}(...)
+
+julia> # No default - creates NotProvidedType
+julia> def3 = OptionDefinition(
+           name = :input_file,
+           type = String,
+           default = NotProvided,
+           description = "Input file path"
+       )
+OptionDefinition{NotProvidedType}(...)
+```
+
+# Notes
+- For `nothing` defaults, the `type` parameter is ignored and set to `Any`
+- For `NotProvided` defaults, the declared `type` is preserved for validation
+- For concrete defaults, type compatibility between `default` and `type` is enforced
+- The validator function is applied to the default value (except for `NotProvided`)
+
+See also: [`OptionDefinition{T}`](@ref), [`_construct_option_definition`](@ref), [`NotProvided`](@ref)
+"""
 function OptionDefinition(;
     name::Symbol,
     type::Type,
     default,
     description::String,
     aliases::Tuple{Vararg{Symbol}} = (),
-    validator::Union{Function, Nothing} = nothing
+    validator::Union{Function, Nothing} = nothing,
+    computed::Bool = false
 )
-    # Handle nothing default specially
-    if default === nothing
-        return OptionDefinition{Any}(;
-            name=name,
-            type=Any,
-            default=nothing,
-            description=description,
-            aliases=aliases,
-            validator=validator
-        )
-    end
-    
-    # Handle NotProvided default specially - it's always valid regardless of declared type
-    if default isa NotProvidedType
-        return OptionDefinition{NotProvidedType}(;
-            name=name,
-            type=type,
-            default=default,
-            description=description,
-            aliases=aliases,
-            validator=validator
-        )
-    end
-    
-    # Infer T from default value
-    T = typeof(default)
-    
+    return _construct_option_definition(name, type, default, description, aliases, validator, computed)
+end
+
+# Dispatch methods for different default types
+
+"""
+$(TYPEDSIGNATURES)
+
+Construct an `OptionDefinition` with a `nothing` default value.
+
+This method handles the special case where `default = nothing`, creating an
+`OptionDefinition{Any}` with `type = Any` since `nothing` can represent any type.
+
+# Arguments
+- `name::Symbol`: Primary name of the option
+- `type::Type`: Expected Julia type (ignored for `nothing` defaults)
+- `default::Nothing`: Must be `nothing`
+- `description::String`: Human-readable description
+- `aliases::Tuple{Vararg{Symbol}}`: Alternative names (default: empty tuple)
+- `validator::Union{Function, Nothing}`: Optional validation function (default: `nothing`)
+- `computed::Bool`: Whether the default is computed from parameters (default: `false`)
+
+# Returns
+- `OptionDefinition{Any}`: Option definition with `nothing` default
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = _construct_option_definition(
+           :backend,
+           Union{Nothing, String},
+           nothing,
+           "Execution backend",
+           (:be,)
+       )
+OptionDefinition{Any}(...)
+
+julia> default(def)
+nothing
+```
+
+See also: [`OptionDefinition`](@ref), [`NotProvided`](@ref)
+"""
+function _construct_option_definition(
+    name::Symbol, 
+    type::Type, 
+    default::Nothing, 
+    description::String, 
+    aliases::Tuple{Vararg{Symbol}}, 
+    validator::Union{Function, Nothing},
+    computed::Bool
+)
+    return OptionDefinition{Any}(;
+        name=name,
+        type=Any,
+        default=nothing,
+        description=description,
+        aliases=aliases,
+        validator=validator,
+        computed=computed
+    )
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Construct an `OptionDefinition` with a `NotProvided` default value.
+
+This method handles the special case where `default = NotProvided`, creating an
+`OptionDefinition{NotProvidedType}`. The declared `type` is preserved since
+`NotProvided` indicates the absence of a default value while maintaining type
+information for validation.
+
+# Arguments
+- `name::Symbol`: Primary name of the option
+- `type::Type`: Expected Julia type for user-provided values
+- `default::NotProvidedType`: Must be `NotProvided`
+- `description::String`: Human-readable description
+- `aliases::Tuple{Vararg{Symbol}}`: Alternative names (default: empty tuple)
+- `validator::Union{Function, Nothing}`: Optional validation function (default: `nothing`)
+- `computed::Bool`: Whether the default is computed from parameters (default: `false`)
+
+# Returns
+- `OptionDefinition{NotProvidedType}`: Option definition with no default value
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = _construct_option_definition(
+           :input_file,
+           String,
+           NotProvided,
+           "Input file path",
+           (:input,)
+       )
+OptionDefinition{NotProvidedType}(...)
+
+julia> is_required(def)
+true
+```
+
+See also: [`OptionDefinition`](@ref), [`NotProvided`](@ref), [`is_required`](@ref)
+"""
+function _construct_option_definition(
+    name::Symbol, 
+    type::Type, 
+    default::NotProvidedType, 
+    description::String, 
+    aliases::Tuple{Vararg{Symbol}}, 
+    validator::Union{Function, Nothing},
+    computed::Bool
+)
+    return OptionDefinition{NotProvidedType}(;
+        name=name,
+        type=type,
+        default=default,
+        description=description,
+        aliases=aliases,
+        validator=validator,
+        computed=computed
+    )
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Construct an `OptionDefinition` with a concrete default value.
+
+This method handles the general case where `default` is a concrete value.
+It infers the type parameter `T` from the default value and validates that
+the default value is compatible with the declared `type`.
+
+# Arguments
+- `name::Symbol`: Primary name of the option
+- `type::Type`: Expected Julia type for the option value
+- `default::T`: Default value (type `T` is inferred)
+- `description::String`: Human-readable description
+- `aliases::Tuple{Vararg{Symbol}}`: Alternative names (default: empty tuple)
+- `validator::Union{Function, Nothing}`: Optional validation function (default: `nothing`)
+- `computed::Bool`: Whether the default is computed from parameters (default: `false`)
+
+# Returns
+- `OptionDefinition{T}`: Option definition with concrete default value
+
+# Throws
+- `CTModels.Exceptions.IncorrectArgument`: If `default` is not compatible with `type`
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = _construct_option_definition(
+           :max_iter,
+           Int,
+           100,
+           "Maximum number of iterations",
+           (:max,)
+       )
+OptionDefinition{Int}(...)
+
+julia> default(def)
+100
+```
+
+See also: [`OptionDefinition`](@ref), [`Exceptions.IncorrectArgument`](@ref)
+"""
+function _construct_option_definition(
+    name::Symbol, 
+    type::Type, 
+    default::T, 
+    description::String, 
+    aliases::Tuple{Vararg{Symbol}}, 
+    validator::Union{Function, Nothing},
+    computed::Bool
+) where {T}
     # Check type compatibility
     if !isa(default, type)
         throw(Exceptions.IncorrectArgument(
@@ -142,7 +368,8 @@ function OptionDefinition(;
         default=default,
         description=description,
         aliases=aliases,
-        validator=validator
+        validator=validator,
+        computed=computed
     )
 end
 
@@ -157,10 +384,15 @@ Get the primary name of this option definition.
 - `Symbol`: The option name
 
 # Example
-```julia
-def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                      description="Maximum iterations")
-name(def)  # :max_iter
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                          description="Maximum iterations")
+OptionDefinition{Int}(...)
+
+julia> name(def)
+:max_iter
 ```
 
 See also: [`type`](@ref), [`default`](@ref), [`aliases`](@ref)
@@ -176,10 +408,15 @@ Get the expected type for this option definition.
 - `Type`: The expected type
 
 # Example
-```julia
-def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                      description="Maximum iterations")
-type(def)  # Int
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                          description="Maximum iterations")
+OptionDefinition{Int}(...)
+
+julia> type(def)
+Int
 ```
 
 See also: [`name`](@ref), [`default`](@ref)
@@ -195,10 +432,15 @@ Get the default value for this option definition.
 - The default value
 
 # Example
-```julia
-def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                      description="Maximum iterations")
-default(def)  # 100
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                          description="Maximum iterations")
+OptionDefinition{Int}(...)
+
+julia> default(def)
+100
 ```
 
 See also: [`name`](@ref), [`type`](@ref), [`is_required`](@ref)
@@ -214,10 +456,15 @@ Get the description for this option definition.
 - `String`: The option description
 
 # Example
-```julia
-def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                      description="Maximum iterations")
-description(def)  # "Maximum iterations"
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                          description="Maximum iterations")
+OptionDefinition{Int}(...)
+
+julia> description(def)
+"Maximum iterations"
 ```
 
 See also: [`name`](@ref), [`type`](@ref)
@@ -233,12 +480,18 @@ Get the validator function for this option definition.
 - `Union{Function, Nothing}`: The validator function or `nothing`
 
 # Example
-```julia
-validator_fn = x -> x > 0
-def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                      description="Maximum iterations",
-                      validator=validator_fn)
-validator(def) === validator_fn  # true
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> validator_fn = x -> x > 0
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                          description="Maximum iterations",
+                          validator=validator_fn)
+OptionDefinition{Int}(...)
+
+julia> validator(def) === validator_fn
+true
 ```
 
 See also: [`has_validator`](@ref), [`name`](@ref)
@@ -254,11 +507,16 @@ Get the aliases for this option definition.
 - `Tuple{Vararg{Symbol}}`: Tuple of alias names
 
 # Example
-```julia
-def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                      description="Maximum iterations",
-                      aliases=(:max, :maxiter))
-aliases(def)  # (:max, :maxiter)
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                          description="Maximum iterations",
+                          aliases=(:max, :maxiter))
+OptionDefinition{Int}(...)
+
+julia> aliases(def)
+(:max, :maxiter)
 ```
 
 See also: [`all_names`](@ref), [`name`](@ref)
@@ -276,10 +534,15 @@ Returns `true` when the default value is `NotProvided`.
 - `Bool`: `true` if the option is required
 
 # Example
-```julia
-def = OptionDefinition(name=:input, type=String, default=NotProvided,
-                      description="Input file")
-is_required(def)  # true
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:input, type=String, default=NotProvided,
+                          description="Input file")
+OptionDefinition{NotProvidedType}(...)
+
+julia> is_required(def)
+true
 ```
 
 See also: [`has_default`](@ref), [`default`](@ref)
@@ -297,10 +560,15 @@ Returns `false` when the default value is `NotProvided`.
 - `Bool`: `true` if a default value is defined
 
 # Example
-```julia
-def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                      description="Maximum iterations")
-has_default(def)  # true
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                          description="Maximum iterations")
+OptionDefinition{Int}(...)
+
+julia> has_default(def)
+true
 ```
 
 See also: [`is_required`](@ref), [`default`](@ref)
@@ -316,16 +584,57 @@ Check if this option definition has a validator function.
 - `Bool`: `true` if a validator is defined
 
 # Example
-```julia
-def = OptionDefinition(name=:max_iter, type=Int, default=100,
-                      description="Maximum iterations",
-                      validator=x -> x > 0)
-has_validator(def)  # true
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(name=:max_iter, type=Int, default=100,
+                          description="Maximum iterations",
+                          validator=x -> x > 0)
+OptionDefinition{Int}(...)
+
+julia> has_validator(def)
+true
 ```
 
 See also: [`validator`](@ref), [`name`](@ref)
 """
 has_validator(def::OptionDefinition) = def.validator !== nothing
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if this option definition has a computed default value.
+
+Returns `true` when the default value is computed from strategy parameters
+(e.g., `backend` in `Exa{GPU}` which depends on the `GPU` parameter).
+
+# Returns
+- `Bool`: `true` if the default is computed from parameters
+
+# Example
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> # Static default
+julia> def1 = OptionDefinition(name=:max_iter, type=Int, default=100,
+                          description="Maximum iterations")
+OptionDefinition{Int}(...)
+
+julia> is_computed(def1)
+false
+
+julia> # Computed default
+julia> def2 = OptionDefinition(name=:backend, type=Any, default=compute_backend(),
+                          description="Backend", computed=true)
+OptionDefinition{...}(...)
+
+julia> is_computed(def2)
+true
+```
+
+See also: [`has_default`](@ref), [`is_required`](@ref), [`OptionDefinition`](@ref)
+"""
+is_computed(def::OptionDefinition) = def.computed
 
 # Get all names (primary + aliases) for extraction
 """
@@ -343,15 +652,20 @@ using all possible names (primary name and all aliases).
 - `Tuple{Vararg{Symbol}}`: Tuple containing the primary name followed by all aliases
 
 # Example
-```julia
-def = OptionDefinition(
-    name = :grid_size,
-    type = Int,
-    default = 100,
-    description = "Grid size",
-    aliases = (:n, :size)
-)
-all_names(def)  # (:grid_size, :n, :size)
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(
+           name = :grid_size,
+           type = Int,
+           default = 100,
+           description = "Grid size",
+           aliases = (:n, :size)
+       )
+OptionDefinition{Int}(...)
+
+julia> all_names(def)
+(:grid_size, :n, :size)
 ```
 
 See also: [`OptionDefinition`](@ref), [`extract_option`](@ref)
@@ -372,18 +686,22 @@ they are shown in parentheses after the primary name.
 - `def::OptionDefinition`: The option definition to display
 
 # Example
-```julia
-def = OptionDefinition(
-    name = :max_iter,
-    type = Int,
-    default = 100,
-    description = "Maximum iterations",
-    aliases = (:max, :maxiter)
-)
-println(def)
-# max_iter (max, maxiter) :: Int64
-#   default: 100
-#   description: Maximum iterations
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> def = OptionDefinition(
+           name = :max_iter,
+           type = Int,
+           default = 100,
+           description = "Maximum iterations",
+           aliases = (:max, :maxiter)
+       )
+OptionDefinition{Int}(...)
+
+julia> println(def)
+max_iter (max, maxiter) :: Int64
+  default: 100
+  Maximum iterations
 ```
 
 See also: [`OptionDefinition`](@ref)
@@ -395,5 +713,11 @@ function Base.show(io::IO, def::OptionDefinition)
     else
         print(io, "$(def.name) ($(join(def.aliases, ", "))) :: $(def.type)")
     end
-    print(io, " (default: $(def.default))")
+    
+    # Show default with source indicator
+    if def.computed
+        print(io, " (default: $(def.default) [computed])")
+    else
+        print(io, " (default: $(def.default))")
+    end
 end

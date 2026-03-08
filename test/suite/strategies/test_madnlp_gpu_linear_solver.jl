@@ -7,8 +7,8 @@ import CTSolvers.Solvers
 # Import extensions to enable metadata testing
 import MadNLP, MadNCL, MadNLPGPU
 
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 function test_madnlp_gpu_linear_solver()
     Test.@testset "MadNLP/MadNCL Strategies.GPU Linear Solver Defaults" verbose=VERBOSE showtiming=SHOWTIMING begin

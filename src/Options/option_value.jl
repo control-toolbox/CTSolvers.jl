@@ -9,6 +9,11 @@ Represents an option value with its source provenance.
 - `value::T`: The actual option value.
 - `source::Symbol`: Where the value came from (`:default`, `:user`, `:computed`).
 
+# Constructor Validation
+
+The constructor validates the source symbol using Val dispatch for compile-time
+type safety and performance optimization. Invalid sources throw `Exceptions.IncorrectArgument`.
+
 # Notes
 The `source` field tracks the provenance of the option value:
 - `:default`: Value comes from the tool's default configuration
@@ -16,30 +21,53 @@ The `source` field tracks the provenance of the option value:
 - `:computed`: Value was computed/derived from other options
 
 # Example
-```julia
-opt = OptionValue(100, :user)
-opt.value  # 100
-opt.source  # :user
+```julia-repl
+julia> using CTSolvers.Options
+
+julia> opt = OptionValue(100, :user)
+OptionValue{Int64}(100, :user)
+
+julia> opt.value
+100
+
+julia> opt.source
+:user
 ```
 
 # Throws
-- `CTBase.Exceptions.IncorrectArgument`: If source is not one of `:default`, `:user`, or `:computed`
+- `Exceptions.IncorrectArgument`: If source is not one of `:default`, `:user`, or `:computed`
+
+See also: [`value`](@ref), [`source`](@ref), [`is_user`](@ref)
 """
 struct OptionValue{T}
     value::T
     source::Symbol
     
     function OptionValue(value::T, source::Symbol) where T
-        if source ∉ (:default, :user, :computed)
-            throw(Exceptions.IncorrectArgument(
-                "Invalid option source",
-                got="source=$source",
-                expected=":default, :user, or :computed",
-                suggestion="Use one of the valid source symbols: :default (tool default), :user (user-provided), or :computed (derived)",
-                context="OptionValue constructor - validating source provenance"
-            ))
-        end
-        new{T}(value, source)
+        _construct_option_value(value, Val(source))
+    end
+    
+    # Internal constructor dispatch functions
+    function _construct_option_value(value::T, ::Val{:default}) where T
+        return new{T}(value, :default)
+    end
+    
+    function _construct_option_value(value::T, ::Val{:user}) where T
+        return new{T}(value, :user)
+    end
+    
+    function _construct_option_value(value::T, ::Val{:computed}) where T
+        return new{T}(value, :computed)
+    end
+    
+    function _construct_option_value(value, source::Val)
+        throw(Exceptions.IncorrectArgument(
+            "Invalid option source",
+            got="source=$(typeof(source).parameters[1])",
+            expected=":default, :user, or :computed",
+            suggestion="Use one of the valid source symbols: :default (tool default), :user (user-provided), or :computed (derived)",
+            context="OptionValue constructor - validating source provenance"
+        ))
     end
 end
 

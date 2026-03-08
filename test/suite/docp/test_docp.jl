@@ -10,8 +10,11 @@ import NLPModels
 import SolverCore
 import ADNLPModels
 import ExaModels
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+using CTSolvers.DOCP  # For testing exported symbols
+
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
+const CurrentModule = TestDOCP
 
 
 # ============================================================================
@@ -75,11 +78,39 @@ function test_docp()
         # ====================================================================
 
         Test.@testset "Exports verification" begin
-            Test.@test isdefined(CTSolvers, :DOCP)
-            Test.@test isdefined(CTSolvers.DOCP, :DiscretizedModel)
-            Test.@test isdefined(CTSolvers.DOCP, :ocp_model)
-            Test.@test isdefined(CTSolvers.DOCP, :nlp_model)
-            Test.@test isdefined(CTSolvers.DOCP, :ocp_solution)
+            # Test that DOCP module is available
+            Test.@testset "DOCP Module" begin
+                Test.@test isdefined(CTSolvers, :DOCP)
+                Test.@test CTSolvers.DOCP isa Module
+            end
+            
+            # Test exported types
+            Test.@testset "Exported Types" begin
+                for T in (
+                    DiscretizedModel,
+                )
+                    Test.@testset "$(nameof(T))" begin
+                        Test.@test isdefined(DOCP, nameof(T))
+                        Test.@test isdefined(CurrentModule, nameof(T))
+                        Test.@test T isa DataType || T isa UnionAll
+                    end
+                end
+            end
+            
+            # Test exported functions
+            Test.@testset "Exported Functions" begin
+                for f in (
+                    :ocp_model,
+                    :nlp_model,
+                    :ocp_solution,
+                )
+                    Test.@testset "$f" begin
+                        Test.@test isdefined(DOCP, f)
+                        Test.@test isdefined(CurrentModule, f)
+                        Test.@test getfield(CurrentModule, f) isa Function
+                    end
+                end
+            end
         end
 
         # ====================================================================
