@@ -36,8 +36,8 @@ registry = CTSolvers.Strategies.create_registry(
     AbstractFakeModeler     =&gt; (FakeADNLP,),
     AbstractFakeSolver      =&gt; (FakeIpopt,),
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">StrategyRegistry with 3 families:
-├─ Main.AbstractFakeModeler =&gt; (:adnlp,)
 ├─ Main.AbstractFakeSolver =&gt; (:ipopt,)
+├─ Main.AbstractFakeModeler =&gt; (:adnlp,)
 └─ Main.AbstractFakeDiscretizer =&gt; (:collocation,)
 </code></pre><h2 id="The-Method-Tuple-Concept"><a class="docs-heading-anchor" href="#The-Method-Tuple-Concept">The Method Tuple Concept</a><a id="The-Method-Tuple-Concept-1"></a><a class="docs-heading-anchor-permalink" href="#The-Method-Tuple-Concept" title="Permalink"></a></h2><p>A <strong>method tuple</strong> identifies which concrete strategy to use for each role in the pipeline:</p><pre><code class="language-julia hljs">method = (:collocation, :adnlp, :ipopt)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(:collocation, :adnlp, :ipopt)</code></pre><p>Each symbol is a strategy <code>id</code> (returned by <code>Strategies.id(::Type)</code>). The <strong>families</strong> mapping associates each role with its abstract type:</p><pre><code class="language-julia hljs">families = (
     discretizer = AbstractFakeDiscretizer,
