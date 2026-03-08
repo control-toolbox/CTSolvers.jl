@@ -5,18 +5,122 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.3-beta (2026-03-07)
+
+**Breaking change:** Extension-based backend validation for ADNLP modelers.
+
+### Summary - v0.4.3-beta
+
+- Replaced fragile `isdefined(Main, :Enzyme)` checks with Julia's extension system
+- ADNLP backend validation now uses proper extension mechanism with tag dispatch
+- Missing extensions now throw `ExtensionError` instead of warnings
+- New extensions `CTSolversEnzyme` and `CTSolversZygote` required for AD backends
+
+### Breaking Changes - v0.4.3-beta
+
+#### 1. Extension-based backend validation
+
+**Before:** Backend validation used fragile runtime checks:
+
+```julia
+# Old approach (fragile)
+if isdefined(Main, :Enzyme)
+    # Use Enzyme backend
+else
+    @warn "Enzyme not loaded, using fallback"
+end
+```
+
+**After:** Backend validation uses Julia's extension system:
+
+```julia
+# New approach (robust)
+validate_adnlp_backend(Val(:enzyme))  # Throws ExtensionError if not loaded
+```
+
+#### 2. Required extensions for AD backends
+
+**Before:** AD backends worked if modules were loaded in Main scope.
+
+**After:** Explicit extensions must be loaded:
+
+```julia
+# For Enzyme backend
+using CTSolversEnzyme
+
+# For Zygote backend  
+using CTSolversZygote
+```
+
+#### 3. ExtensionError instead of warnings
+
+**Before:** Missing backends emitted warnings:
+
+```julia
+@warn "Enzyme not loaded, using fallback backend"
+```
+
+**After:** Missing extensions throw structured errors:
+
+```julia
+throw(CTBase.ExtensionError(
+    "Enzyme extension not loaded",
+    suggestion="using CTSolversEnzyme"
+))
+```
+
+### Migration - v0.4.3-beta
+
+**For ADNLP backend users:**
+
+```julia
+# Add explicit extension loading
+# Before
+using CTSolvers
+adnlp = ADNLP{CPU}()
+
+# After
+using CTSolvers
+using CTSolversEnzyme  # or CTSolversZygote
+adnlp = ADNLP{CPU}(backend=:enzyme)  # now works reliably
+```
+
+**For custom ADNLP extensions:**
+
+```julia
+# Use the new extension pattern
+module CTSolversMyBackend
+using CTSolvers
+import CTSolvers.Modelers: validate_adnlp_backend, ADNLPTag
+
+function validate_adnlp_backend(::Val{:mybackend})
+    # Your validation logic here
+    return true
+end
+end
+```
+
+### Benefits
+
+- **Robust detection**: Extension loading works regardless of module context
+- **Type safety**: Proper dispatch using Julia's multiple dispatch
+- **Clear errors**: Structured exceptions with actionable suggestions
+- **Consistency**: Matches existing CUDA and solver extension patterns
+
+---
+
 ## v0.4.0-beta (2026-03-04)
 
 **Breaking change:** Strategy parameter contract enforcement and mandatory parameterization.
 
-### Summary
+### Summary - v0.4.0-beta
 
 - All strategies must now explicitly implement parameter contract methods
 - Non-parameterized strategy construction is no longer allowed
 - Fallback implementations have been removed and now throw `NotImplemented`
 - Enhanced error messages with actionable implementation guidance
 
-### Breaking Changes
+### Breaking Changes - v0.4.0-beta
 
 #### 1. Mandatory strategy parameterization
 
@@ -75,7 +179,7 @@ Strategies._default_parameter(MyStrategy)     # → NotImplemented
 MyStrategy()  # → IncorrectArgument: "Strategy must be parameterized"
 ```
 
-### Migration
+### Migration - v0.4.0-beta
 
 **For existing strategy users:**
 
@@ -135,13 +239,13 @@ end
 
 **Breaking change:** Action option shadowing detection and `route_to` bypass behavior.
 
-### Summary
+### Summary - v0.3.7-beta
 
 - Action options that also exist in strategy families now trigger an `@info` warning
 - `route_to(strategy=val)` correctly bypasses action option extraction
 - Improved user guidance when action options shadow strategy options
 
-### Breaking Changes
+### Breaking Changes - v0.3.7-beta
 
 #### 1. Action option shadowing detection
 
@@ -167,7 +271,7 @@ solve(ocp; display=false)
 solve(ocp; display=route_to(solver=false))
 ```
 
-### Migration Guide
+### Migration Guide - v0.3.7-beta
 
 #### No code changes required
 
@@ -199,14 +303,14 @@ solve(ocp; display=route_to(solver=false))
 
 **Breaking change:** The routing and validation system has been refactored to simplify responsibilities and introduce a new bypass mechanism.
 
-### Summary
+### Summary - v0.3.6-beta
 
 - `route_all_options()` no longer accepts a `mode` parameter
 - `mode=:permissive` behavior is replaced by explicit `bypass(val)` wrapper
 - New `BypassValue{T}` type and `bypass(val)` function for validation bypass
 - Simplified separation of concerns: routing vs validation
 
-### Breaking Changes
+### Breaking Changes - v0.3.6-beta
 
 #### 1. Removed `mode` parameter from `route_all_options`
 
@@ -253,7 +357,7 @@ kwargs = (custom_opt = Strategies.route_to(my_solver=42),)
 kwargs = (custom_opt = Strategies.route_to(my_solver=Strategies.bypass(42)),)
 ```
 
-### Migration Guide
+### Migration Guide - v0.3.6-beta
 
 #### Replace `mode=:permissive` usage
 

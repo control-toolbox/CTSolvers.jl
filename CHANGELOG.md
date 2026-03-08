@@ -10,6 +10,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.4-beta] - 2026-03-08
+
+### Added
+
+- **DocumenterMermaid compatibility** - Added support for Mermaid diagrams in documentation
+
+### Changed
+
+- **Documentation updates** - Improved compatibility with latest Documenter.jl features
+
+## [0.4.3-beta] - 2026-03-07
+
+### Added
+
+- **Computed option source support** - New `ComputedSource` type for dynamic option computation
+- **MadNLP and MadNCL extensions** - New solver extensions for enhanced MadNLP/MadNCL support
+- **Force alias for bypass** - Added `force` as an alias for `bypass` function for more intuitive naming
+
+### Changed
+
+- **Option handling improvements** - Enhanced extraction and validation for computed sources
+- **Routing function refactoring** - Extracted 8 private helper functions for improved SRP
+- **Strategy constructor standardization** - Standardized solver constructor pattern across all solvers
+- **Extension-based backend validation** - Robust extension system for ADNLP backend validation using Julia's extension mechanism
+
+### Fixed
+
+- **Backend validation robustness** - Replaced fragile `isdefined(Main, :Enzyme)` checks with proper extension system
+- **Code duplication** - Eliminated duplication in ADNLP and Exa constructors
+- **Dispatch patterns** - Replaced if statements with proper dispatch on default types
+
+### Tests
+
+- **Comprehensive export tests** - Added 635 export tests covering all public API symbols across 7 modules
+- **Computed source tests** - Complete test coverage for new computed source functionality
+- **Extension validation tests** - 4-test strategy covering all extension scenarios
+
+## [0.4.2-beta] - 2026-03-06
+
+### Added
+
+- **Comprehensive export tests** - Added complete export verification for all modules (635 tests total)
+- **Internal function verification** - Tests to ensure private symbols stay private
+
+### Changed
+
+- **Test organization** - Consolidated and improved export testing patterns across all modules
+
+## [0.4.1-beta] - 2026-03-05
+
+### Added
+
+- **GPU support for Max1MinusX2** - Enabled GPU tests for maximization problems
+- **Shared suite functions** - Simplified MadNLP/MadNCL architecture with shared test functions
+- **Dispatch-based validation** - Implemented Exa GPU consistency checks with method dispatch
+
+### Changed
+
+- **Architecture simplification** - Refactored MadNLP/MadNCL consistency checks with dispatch-based validation
+- **Test references** - Fixed test references to use shared suite functions
+
 ## [0.4.0-beta] - 2026-03-04
 
 ### Breaking Changes
