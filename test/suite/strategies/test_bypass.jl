@@ -6,8 +6,8 @@ import CTSolvers.Strategies
 import CTSolvers.Orchestration
 import CTSolvers.Options
 
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 # ============================================================================
 # Mock strategy for testing
@@ -177,6 +177,30 @@ function test_bypass()
             strat2 = MockSolver(tol=Strategies.bypass(:flexible))
             Test.@test Strategies.option_value(strat2, :tol) === :flexible
             Test.@test Strategies.option_source(strat2, :tol) === :user
+        end
+
+        # ====================================================================
+        # UNIT TESTS - Force Alias
+        # ====================================================================
+
+        Test.@testset "Force Alias" begin
+            # Test that force and bypass are the same function
+            Test.@test Strategies.force === Strategies.bypass
+            
+            # Test that force and bypass produce identical results
+            Test.@test Strategies.force(42) == Strategies.bypass(42)
+            Test.@test Strategies.force("test") == Strategies.bypass("test")
+            Test.@test Strategies.force(:symbol) == Strategies.bypass(:symbol)
+            
+            # Test that force creates BypassValue
+            result = Strategies.force(123)
+            Test.@test result isa Strategies.BypassValue
+            Test.@test result.value == 123
+            
+            # Test that force works in strategy construction
+            strat = MockSolver(unknown_opt=Strategies.force(456))
+            Test.@test Strategies.option_value(strat, :unknown_opt) == 456
+            Test.@test Strategies.option_source(strat, :unknown_opt) === :user
         end
 
     end

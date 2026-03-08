@@ -7,8 +7,11 @@ import CTSolvers.Strategies
 import ADNLPModels
 import ExaModels
 import SolverCore
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+using CTSolvers.Modelers  # For testing exported symbols
+
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
+const CurrentModule = TestModelers
 
 """
     test_modelers_basic()
@@ -18,9 +21,48 @@ Test basic functionality and module structure.
 function test_modelers_basic()
     Test.@testset "Modelers Basic Tests" begin
         # Test module exports
-        Test.@test isdefined(CTSolvers, :AbstractNLPModeler)
-        Test.@test isdefined(CTSolvers, :ADNLP)
-        Test.@test isdefined(CTSolvers, :Exa)
+        Test.@testset "Exports verification" begin
+            # Test that Modelers module is available
+            Test.@testset "Modelers Module" begin
+                Test.@test isdefined(CTSolvers, :Modelers)
+                Test.@test CTSolvers.Modelers isa Module
+            end
+            
+            # Test exported types
+            Test.@testset "Exported Types" begin
+                for T in (
+                    AbstractNLPModeler,
+                    ADNLP,
+                    Exa,
+                )
+                    Test.@testset "$(nameof(T))" begin
+                        Test.@test isdefined(Modelers, nameof(T))
+                        Test.@test isdefined(CurrentModule, nameof(T))
+                        Test.@test T isa DataType || T isa UnionAll
+                    end
+                end
+            end
+            
+            # Test that internal functions are NOT exported
+            Test.@testset "Internal Functions (not exported)" begin
+                for f in (
+                    :validate_adnlp_backend,      # Validation functions
+                    :validate_exa_base_type,
+                    :validate_model_name,
+                    :validate_matrix_free,
+                    :validate_optimization_direction,
+                    :validate_backend_override,
+                    :__exa_model_backend,          # Private helper functions
+                    :__get_cuda_backend,
+                    :__consistent_backend,
+                )
+                    Test.@testset "$f" begin
+                        Test.@test isdefined(Modelers, f)
+                        Test.@test !isdefined(CurrentModule, f)
+                    end
+                end
+            end
+        end
         
         # Test type hierarchy
         Test.@test Modelers.AbstractNLPModeler <: Strategies.AbstractStrategy

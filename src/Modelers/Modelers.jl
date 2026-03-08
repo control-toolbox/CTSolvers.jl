@@ -29,6 +29,9 @@ using ..Options
 using ..Strategies
 using ..Optimization
 
+# Import from CTSolvers
+import CTSolvers: AbstractTag
+
 # Submodules
 include(joinpath(@__DIR__, "abstract_modeler.jl"))
 include(joinpath(@__DIR__, "validation.jl"))

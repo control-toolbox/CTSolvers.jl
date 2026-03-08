@@ -87,64 +87,50 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Extract strategy IDs from disambiguation syntax.
+Extract strategy IDs from a routed option.
 
-This function detects whether an option value uses disambiguation syntax to
-explicitly route the option to specific strategies. It supports the modern
-[`RoutedOption`](@ref) type created by [`route_to`](@ref).
-
-# Disambiguation Syntax
-
-**Recommended (RoutedOption)**:
-```julia
-value = route_to(solver=100)                    # Single strategy
-value = route_to(solver=100, modeler=50)        # Multiple strategies
-```
+This function processes a [`RoutedOption`](@ref) created by [`route_to`](@ref) and
+validates that all specified strategy IDs are present in the method tuple.
 
 # Arguments
-- `raw`: The raw option value to analyze
+- `raw::Strategies.RoutedOption`: The routed option to process
 - `resolved::ResolvedMethod`: Resolved method information (active strategy IDs)
 
 # Returns
-- `nothing` if no disambiguation syntax detected
-- `Vector{Tuple{Any, Symbol}}` of (value, strategy_id) pairs if disambiguated
+- `Vector{Tuple{Any, Symbol}}`: Vector of (value, strategy_id) pairs
 
 # Throws
-
-- `CTBase.Exceptions.IncorrectArgument`: If a strategy ID in the disambiguation syntax
+- `Exceptions.IncorrectArgument`: If a strategy ID in the routed option
   is not present in the method tuple
 
-# Examples
+# Example
 ```julia
 resolved = resolve_method(method, families, registry)
-ids = extract_strategy_ids(route_to(solver=100), resolved)
+routed = route_to(solver=100, modeler=50)
+ids = extract_strategy_ids(routed, resolved)
 ```
 
-See also: [`route_to`](@ref), [`RoutedOption`](@ref), [`route_all_options`](@ref)
+See also: [`route_to`](@ref), [`RoutedOption`](@ref), [`extract_strategy_ids(::Any, ::ResolvedMethod)`](@ref)
 """
 function extract_strategy_ids(
-    raw,
+    raw::Strategies.RoutedOption,
     resolved::ResolvedMethod
-)::Union{Nothing, Vector{Tuple{Any, Symbol}}}
-    if raw isa Strategies.RoutedOption
-        results = Tuple{Any, Symbol}[]
-        for (strategy_id, value) in pairs(raw)
-            if strategy_id in resolved.strategy_ids
-                push!(results, (value, strategy_id))
-            else
-                throw(Exceptions.IncorrectArgument(
-                    "Strategy ID not found in method tuple",
-                    got="strategy ID :$strategy_id",
-                    expected="one of available strategy IDs: $(resolved.tokens)",
-                    suggestion="Use a valid strategy ID from your method tuple",
-                    context="extract_strategy_ids - validating RoutedOption strategy ID"
-                ))
-            end
+)::Vector{Tuple{Any, Symbol}}
+    results = Tuple{Any, Symbol}[]
+    for (strategy_id, value) in pairs(raw)
+        if strategy_id in resolved.strategy_ids
+            push!(results, (value, strategy_id))
+        else
+            throw(Exceptions.IncorrectArgument(
+                "Strategy ID not found in method tuple",
+                got="strategy ID :$strategy_id",
+                expected="one of available strategy IDs: $(resolved.tokens)",
+                suggestion="Use a valid strategy ID from your method tuple",
+                context="extract_strategy_ids - validating RoutedOption strategy ID"
+            ))
         end
-        return results
     end
-
-    return nothing
+    return results
 end
 
 # Strategy-to-family mapping
@@ -244,6 +230,36 @@ function build_option_ownership_map(
     end
 
     return option_owners
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract strategy IDs from a non-routed option.
+
+This fallback method handles option values that do not use disambiguation syntax.
+It returns `nothing` to indicate that no routing information is present.
+
+# Arguments
+- `raw`: The raw option value to analyze (any type)
+- `resolved::ResolvedMethod`: Resolved method information (unused in this method)
+
+# Returns
+- `nothing`: Always returns `nothing` since no disambiguation syntax is detected
+
+# Example
+```julia
+resolved = resolve_method(method, families, registry)
+result = extract_strategy_ids(100, resolved)  # Returns nothing
+```
+
+See also: [`extract_strategy_ids(::Strategies.RoutedOption, ::ResolvedMethod)`](@ref), [`route_to`](@ref)
+"""
+function extract_strategy_ids(
+    raw,
+    resolved::ResolvedMethod
+)::Nothing
+    return nothing
 end
 
 """

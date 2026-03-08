@@ -5,16 +5,21 @@ using CTSolvers
 using CTSolvers.Modelers
 using CTSolvers.Strategies
 using CTBase.Exceptions
+using Enzyme
+using Zygote
 
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 # ============================================================================
-# Fake parameter type for testing (must be at module top-level)
+# Fake types for testing (must be at module top-level)
 # ============================================================================
 
 struct FakeParam <: AbstractStrategyParameter end
 Strategies.id(::Type{FakeParam}) = :fake
+
+# Dummy tag for testing extension behavior
+struct DummyTag <: Modelers.AbstractTag end
 
 # ============================================================================
 # Test function
@@ -26,6 +31,7 @@ Strategies.id(::Type{FakeParam}) = :fake
 Tests for ADNLP parameter validation.
 """
 function test_adnlp_parameter_validation()
+
     Test.@testset "ADNLP Parameter Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
         
         # ====================================================================
@@ -54,6 +60,46 @@ function test_adnlp_parameter_validation()
             Test.@test_nowarn Modelers.ADNLP{Strategies.CPU}(backend=:optimized)
             modeler_cpu = Modelers.ADNLP{Strategies.CPU}(backend=:optimized)
             Test.@test modeler_cpu isa Modelers.ADNLP{Strategies.CPU}
+            
+            # Test 1: ADNLP construction with enzyme backend works (Enzyme loaded)
+            Test.@test_nowarn Modelers.ADNLP(backend=:enzyme)
+            modeler_enzyme = Modelers.ADNLP(backend=:enzyme)
+            Test.@test modeler_enzyme isa Modelers.ADNLP{Strategies.CPU}
+            
+            # Verify backend is set correctly
+            opts_dict = Strategies.options_dict(modeler_enzyme)
+            Test.@test opts_dict[:backend] === :enzyme
+            
+            # Test with zygote backend also works
+            Test.@test_nowarn Modelers.ADNLP(backend=:zygote)
+            modeler_zygote = Modelers.ADNLP(backend=:zygote)
+            Test.@test modeler_zygote isa Modelers.ADNLP{Strategies.CPU}
+            opts_dict_zygote = Strategies.options_dict(modeler_zygote)
+            Test.@test opts_dict_zygote[:backend] === :zygote
+        end
+        
+        Test.@testset "Extension-based validation tests" begin
+            # Test 2: DummyTag throws ExtensionError for enzyme
+            dummy_validator = Modelers.get_validate_adnlp_backend(DummyTag)
+            Test.@test_throws Exceptions.ExtensionError dummy_validator(:enzyme)
+            Test.@test_throws Exceptions.ExtensionError dummy_validator(:zygote)
+            
+            # Test 3: ADNLPTag works for enzyme/zygote when extensions loaded
+            adnlp_validator = Modelers.get_validate_adnlp_backend(Modelers.ADNLPTag)
+            Test.@test_nowarn adnlp_validator(:enzyme)
+            Test.@test adnlp_validator(:enzyme) === :enzyme
+            Test.@test_nowarn adnlp_validator(:zygote)
+            Test.@test adnlp_validator(:zygote) === :zygote
+            
+            # Test 4: DummyTag throws IncorrectArgument for invalid backends
+            Test.@test_throws Exceptions.IncorrectArgument dummy_validator(:invalid_backend)
+            Test.@test_throws Exceptions.IncorrectArgument dummy_validator(:nonexistent)
+            
+            # Valid backends work for any tag
+            Test.@test dummy_validator(:default) === :default
+            Test.@test dummy_validator(:optimized) === :optimized
+            Test.@test dummy_validator(:generic) === :generic
+            Test.@test dummy_validator(:manual) === :manual
         end
         
         # ====================================================================

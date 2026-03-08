@@ -4,8 +4,8 @@ import Test
 import CTBase.Exceptions
 import CTSolvers.Strategies
 
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 # TOP-LEVEL: Define all test types here (never inside test functions)
 abstract type TestAbstractParam <: Strategies.AbstractStrategyParameter end

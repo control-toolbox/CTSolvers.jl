@@ -6,9 +6,9 @@ import SolverCore
 import NLPModels
 import ADNLPModels
 
-# Default test options (can be overridden by Main.TestOptions if available)
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+# Default test options (can be overridden by Main.TestData if available)
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 # TOP-LEVEL: Mock stats struct for testing generic extract_solver_infos
 mutable struct MockStats <: SolverCore.AbstractExecutionStats

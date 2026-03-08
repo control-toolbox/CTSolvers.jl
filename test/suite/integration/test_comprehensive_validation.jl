@@ -64,8 +64,8 @@ end
 const KNITRO_AVAILABLE = false
 
 # Test options for verbose output
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 # ============================================================================
 # Utility Functions
@@ -259,12 +259,20 @@ function test_option_recovery(
         # Test mode is NOT stored in options (correct behavior)
         Test.@test_throws Exception strategy.options.mode
         
-        # Test some default options (should be present with :default source)
+        # Test some default options (should be present with :default or :computed source)
         metadata_def = Strategies.metadata(typeof(strategy))
         for (name, definition) in pairs(metadata_def)
             if !(definition.default isa Options.NotProvidedType) && !haskey(known_options, name)
                 Test.@test Strategies.has_option(strategy, name)
-                Test.@test Strategies.option_source(strategy, name) == :default
+                # Source should be :default for static defaults or :computed for parameter-dependent defaults
+                source = Strategies.option_source(strategy, name)
+                Test.@test source in (:default, :computed)
+                # Verify consistency: if definition is marked as computed, source should be :computed
+                if Options.is_computed(definition)
+                    Test.@test source == :computed
+                else
+                    Test.@test source == :default
+                end
             end
         end
     end

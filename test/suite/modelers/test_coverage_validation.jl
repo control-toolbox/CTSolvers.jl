@@ -8,8 +8,15 @@ import ADNLPModels
 # Fake ADBackend for testing (must be at top-level)
 struct FakeCoverageBackend <: ADNLPModels.ADBackend end
 
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
+
+# ============================================================================
+# Fake types for testing (must be at module top-level)
+# ============================================================================
+
+# Dummy tag for testing extension behavior
+struct DummyTag <: Modelers.AbstractTag end
 
 function test_coverage_validation()
     Test.@testset "Coverage: Modelers Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -19,23 +26,22 @@ function test_coverage_validation()
         # ====================================================================
 
         Test.@testset "validate_adnlp_backend" begin
-            # Valid backends
-            Test.@test Modelers.validate_adnlp_backend(:default) == :default
-            Test.@test Modelers.validate_adnlp_backend(:optimized) == :optimized
-            Test.@test Modelers.validate_adnlp_backend(:generic) == :generic
-            Test.@test Modelers.validate_adnlp_backend(:manual) == :manual
+            # Valid backends with DummyTag (always available)
+            dummy_tag = DummyTag()
+            Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:default)) == :default
+            Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:optimized)) == :optimized
+            Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:generic)) == :generic
+            Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:manual)) == :manual
 
-            Test.@test_nowarn Test.@inferred Modelers.validate_adnlp_backend(:default)
+            Test.@test_nowarn Test.@inferred Modelers.validate_adnlp_backend(dummy_tag, Val(:default))
 
-            # Enzyme/Zygote warnings (packages not loaded) - capture to avoid console output
-            redirect_stderr(devnull) do
-                Test.@test_logs (:warn,) Modelers.validate_adnlp_backend(:enzyme)
-                Test.@test_logs (:warn,) Modelers.validate_adnlp_backend(:zygote)
-            end
+            # Enzyme/Zygote throw ExtensionError (extensions not loaded for DummyTag)
+            Test.@test_throws Exceptions.ExtensionError Modelers.validate_adnlp_backend(dummy_tag, Val(:enzyme))
+            Test.@test_throws Exceptions.ExtensionError Modelers.validate_adnlp_backend(dummy_tag, Val(:zygote))
 
             # Invalid backend
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(:invalid)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(:foo)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(dummy_tag, Val(:invalid))
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(dummy_tag, Val(:foo))
         end
 
         # ====================================================================
@@ -55,42 +61,7 @@ function test_coverage_validation()
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Int)
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(String)
             Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Bool)
-        end
-
-        # ====================================================================
-        # UNIT TESTS - validate_gpu_preference
-        # ====================================================================
-
-        Test.@testset "validate_gpu_preference" begin
-            # Valid preferences
-            Test.@test Modelers.validate_gpu_preference(:cuda) == :cuda
-            Test.@test Modelers.validate_gpu_preference(:rocm) == :rocm
-            Test.@test Modelers.validate_gpu_preference(:oneapi) == :oneapi
-
-            Test.@test_nowarn Test.@inferred Modelers.validate_gpu_preference(:cuda)
-
-            # Invalid preferences
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_gpu_preference(:invalid)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_gpu_preference(:metal)
-        end
-
-        # ====================================================================
-        # UNIT TESTS - validate_precision_mode
-        # ====================================================================
-
-        Test.@testset "validate_precision_mode" begin
-            # Valid modes
-            Test.@test Modelers.validate_precision_mode(:standard) == :standard
-
-            Test.@test_nowarn Test.@inferred Modelers.validate_precision_mode(:standard)
-
-            # :high and :mixed emit @info
-            Test.@test_logs (:info,) Modelers.validate_precision_mode(:high)
-            Test.@test_logs (:info,) Modelers.validate_precision_mode(:mixed)
-
-            # Invalid modes
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_precision_mode(:invalid)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_precision_mode(:ultra)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Function)
         end
 
         # ====================================================================

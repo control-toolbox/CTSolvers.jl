@@ -4,8 +4,8 @@ import Test
 import CTSolvers.Strategies
 import CTBase.Exceptions
 
-const VERBOSE = isdefined(Main, :TestOptions) ? Main.TestOptions.VERBOSE : true
-const SHOWTIMING = isdefined(Main, :TestOptions) ? Main.TestOptions.SHOWTIMING : true
+const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
+const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 # TOP-LEVEL: Define all structs here
 abstract type TestFamily <: Strategies.AbstractStrategy end

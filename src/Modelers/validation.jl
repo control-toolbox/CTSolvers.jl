@@ -2,55 +2,121 @@
 #
 # Validation helpers used by the `Modelers.ADNLP` and `Modelers.Exa` constructors.
 
+# ============================================================================
+# Tag dispatch infrastructure
+# ============================================================================
+
 """
 $(TYPEDSIGNATURES)
 
-Validate that the specified ADNLPModels backend is supported and available.
+Fallback method for invalid ADNLP backends using tag dispatch.
 
 # Arguments
-- `backend::Symbol`: The backend symbol to validate
+- `tag::AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
+- `backend::Val`: Backend type as Val for dispatch (invalid backend)
 
 # Throws
-- `CTBase.Exceptions.IncorrectArgument`: If the backend is not supported
+- `CTBase.Exceptions.IncorrectArgument`: Always thrown for invalid backends
 
-# Examples
-```julia
-validate_adnlp_backend(:optimized)
-validate_adnlp_backend(:default)
+# Notes
+- This method is called when no more specific method matches the backend
+- Provides comprehensive error message with valid backend options
+- Uses structured exception with got/expected/suggestion fields
 
-# Throws CTBase.Exceptions.IncorrectArgument
-validate_adnlp_backend(:invalid_backend)
-```
+See also: [`validate_adnlp_backend(::AbstractTag, ::Val{:default})`](@ref), [`get_validate_adnlp_backend`](@ref)
 """
-function validate_adnlp_backend(backend::Symbol)
-    valid_backends = (:default, :optimized, :generic, :enzyme, :zygote, :manual)
-    
-    if backend ∉ valid_backends
-        throw(Exceptions.IncorrectArgument(
-            "Invalid ADNLPModels backend",
-            got="backend=$backend",
-            expected="one of $(valid_backends)",
-            suggestion="Use :default for general purpose, :optimized for performance, or :enzyme/:zygote for specific AD backends",
-            context="Modelers.ADNLP backend validation"
-        ))
-    end
-    
-    # Check package availability with helpful warnings
-    if backend == :enzyme
-        if !isdefined(Main, :Enzyme)
-            @warn "Enzyme.jl not loaded. Enzyme backend will not work correctly. " *
-                  "Load with `using Enzyme` before creating the modeler."
-        end
-    end
-    
-    if backend == :zygote
-        if !isdefined(Main, :Zygote)
-            @warn "Zygote.jl not loaded. Zygote backend will not work correctly. " *
-                  "Load with `using Zygote` before creating the modeler."
-        end
-    end
-    
-    return backend
+function validate_adnlp_backend(tag::AbstractTag, backend::Val)
+    # This is the generic fallback - should never be reached
+    throw(Exceptions.IncorrectArgument(
+        "Invalid ADNLPModels backend",
+        got="backend=$(backend)",
+        expected="one of (:default, :optimized, :generic, :enzyme, :zygote, :manual)",
+        suggestion="Use :default for general purpose, :optimized for performance, or :enzyme/:zygote for specific AD backends",
+        context="Modelers.ADNLP backend validation"
+    ))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Validate always-available ADNLP backends using tag dispatch.
+
+# Arguments
+- `tag::AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
+- `backend::Val{:default}`: Default backend type
+- `backend::Val{:optimized}`: Optimized backend type
+- `backend::Val{:generic}`: Generic backend type
+- `backend::Val{:manual}`: Manual backend type
+
+# Returns
+- `Symbol`: Validated backend symbol (unchanged)
+
+# Notes
+- These methods handle backends that are always available regardless of extensions
+- Uses Julia's multiple dispatch for type-safe validation
+- Extensions can override these methods for tag-specific behavior
+
+See also: [`validate_adnlp_backend(::AbstractTag, ::Val{:enzyme})`](@ref), [`get_validate_adnlp_backend`](@ref)
+"""
+validate_adnlp_backend(tag::AbstractTag, ::Val{:default}) = :default
+validate_adnlp_backend(tag::AbstractTag, ::Val{:optimized}) = :optimized
+validate_adnlp_backend(tag::AbstractTag, ::Val{:generic}) = :generic
+validate_adnlp_backend(tag::AbstractTag, ::Val{:manual}) = :manual
+
+"""
+$(TYPEDSIGNATURES)
+
+Validate Enzyme backend using tag dispatch.
+
+# Arguments
+- `tag::AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
+- `backend::Val{:enzyme}`: Enzyme backend type
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: If CTSolversEnzyme extension is not loaded
+
+# Notes
+- Default implementation throws ExtensionError for all tags except ADNLPTag with extension
+- CTSolversEnzyme extension overrides this method for ADNLPTag when Enzyme is available
+- Provides clear error message directing users to load the extension
+
+See also: [`validate_adnlp_backend(::AbstractTag, ::Val{:zygote})`](@ref), [`get_validate_adnlp_backend`](@ref)
+"""
+function validate_adnlp_backend(tag::AbstractTag, ::Val{:enzyme})
+    throw(Exceptions.ExtensionError(
+        :Enzyme;
+        message="to use Enzyme backend with ADNLP modeler",
+        feature="Enzyme automatic differentiation",
+        context="Load Enzyme extension first: using Enzyme"
+    ))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Validate Zygote backend using tag dispatch.
+
+# Arguments
+- `tag::AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
+- `backend::Val{:zygote}`: Zygote backend type
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: If CTSolversZygote extension is not loaded
+
+# Notes
+- Default implementation throws ExtensionError for all tags except ADNLPTag with extension
+- CTSolversZygote extension overrides this method for ADNLPTag when Zygote is available
+- Provides clear error message directing users to load the extension
+
+See also: [`validate_adnlp_backend(::AbstractTag, ::Val{:enzyme})`](@ref), [`get_validate_adnlp_backend`](@ref)
+"""
+function validate_adnlp_backend(tag::AbstractTag, ::Val{:zygote})
+    throw(Exceptions.ExtensionError(
+        :Zygote;
+        message="to use Zygote backend with ADNLP modeler",
+        feature="Zygote automatic differentiation",
+        context="Load Zygote extension first: using Zygote"
+    ))
 end
 
 """
@@ -59,117 +125,64 @@ $(TYPEDSIGNATURES)
 Validate that the specified base type is appropriate for ExaModels.
 
 # Arguments
-- `T::Type`: The type to validate
+- `T::Type{<:AbstractFloat}`: The floating-point type to validate
 
-# Throws
-- `CTBase.Exceptions.IncorrectArgument`: If `T` is not a subtype of `AbstractFloat`
+# Returns
+- `Type{<:AbstractFloat}`: The validated type (unchanged)
+
+# Notes
+- Uses Julia's dispatch system for type-safe validation
+- Valid types include `Float64`, `Float32`, `Float16`, `BigFloat`
+- Invalid types throw `IncorrectArgument` with helpful error message
 
 # Examples
-```julia
-validate_exa_base_type(Float64)
-validate_exa_base_type(Float32)
+```julia-repl
+julia> using CTSolvers.Modelers
 
-# Throws CTBase.Exceptions.IncorrectArgument
-validate_exa_base_type(Int)
+julia> validate_exa_base_type(Float64)
+Float64
+
+julia> validate_exa_base_type(Float32)
+Float32
+
+# Throws IncorrectArgument for invalid types
+julia> validate_exa_base_type(Int)
+ERROR: Control Toolbox Error
+❌ Error: CTBase.Exceptions.IncorrectArgument, Invalid base type for Modelers.Exa
 ```
+
+See also: [`Modelers.Exa`](@ref)
 """
-function validate_exa_base_type(T::Type)
-    if !(T <: AbstractFloat)
-        throw(Exceptions.IncorrectArgument(
-            "Invalid base type for Modelers.Exa",
-            got="base_type=$T",
-            expected="subtype of AbstractFloat (e.g., Float64, Float32)",
-            suggestion="Use Float64 for standard precision or Float32 for GPU performance",
-            context="Modelers.Exa base type validation"
-        ))
-    end
-    
-    # # Performance recommendations
-    # if T == Float32
-    #     @info "Float32 is recommended for GPU backends for better performance and memory usage"
-    # elseif T == Float64
-    #     @info "Float64 provides higher precision but may be slower on GPU backends"
-    # end
-    
+function validate_exa_base_type(T::Type{<:AbstractFloat})
     return T
 end
 
 """
 $(TYPEDSIGNATURES)
 
-Validate the GPU backend preference.
+Fallback method for invalid base types in ExaModels validation.
 
 # Arguments
-- `preference::Symbol`: Preferred GPU backend
+- `T::Type`: The type to validate (not a subtype of AbstractFloat)
 
 # Throws
-- `CTBase.Exceptions.IncorrectArgument`: If the preference is invalid
+- `CTBase.Exceptions.IncorrectArgument`: Always thrown for invalid types
 
-# Examples
-```julia
-validate_gpu_preference(:cuda)
-validate_gpu_preference(:rocm)
+# Notes
+- This method is called when no more specific method matches
+- Provides clear error message with suggestions for valid types
+- Uses structured exception with got/expected/suggestion fields
 
-# Throws CTBase.Exceptions.IncorrectArgument
-validate_gpu_preference(:invalid)
-```
+See also: [`validate_exa_base_type(::Type{<:AbstractFloat})`](@ref)
 """
-function validate_gpu_preference(preference::Symbol)
-    valid_preferences = (:cuda, :rocm, :oneapi)
-    
-    if preference ∉ valid_preferences
-        throw(Exceptions.IncorrectArgument(
-            "Invalid GPU backend preference",
-            got="gpu_preference=$preference",
-            expected="one of $(valid_preferences)",
-            suggestion="Use :cuda for NVIDIA GPUs, :rocm for AMD GPUs, or :oneapi for Intel GPUs",
-            context="Modelers.Exa GPU preference validation"
-        ))
-    end
-    
-    return preference
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Validate the precision mode setting.
-
-# Arguments
-- `mode::Symbol`: Precision mode (:standard, :high, :mixed)
-
-# Throws
-- `CTBase.Exceptions.IncorrectArgument`: If the mode is invalid
-
-# Examples
-```julia
-validate_precision_mode(:standard)
-
-# Throws CTBase.Exceptions.IncorrectArgument
-validate_precision_mode(:invalid)
-```
-"""
-function validate_precision_mode(mode::Symbol)
-    valid_modes = (:standard, :high, :mixed)
-    
-    if mode ∉ valid_modes
-        throw(Exceptions.IncorrectArgument(
-            "Invalid precision mode",
-            got="precision_mode=$mode",
-            expected="one of $(valid_modes)",
-            suggestion="Use :standard for default precision, :high for maximum accuracy, or :mixed for performance",
-            context="Modelers.Exa precision mode validation"
-        ))
-    end
-    
-    # Provide guidance on precision modes
-    if mode == :high
-        @info "High precision mode may impact performance. Use for problems requiring high numerical accuracy."
-    elseif mode == :mixed
-        @info "Mixed precision mode can improve performance while maintaining accuracy for many problems."
-    end
-    
-    return mode
+function validate_exa_base_type(T)
+    throw(Exceptions.IncorrectArgument(
+        "Invalid base type for Modelers.Exa",
+        got="base_type=$T",
+        expected="subtype of AbstractFloat (e.g., Float64, Float32)",
+        suggestion="Use Float64 for standard precision or Float32 for GPU performance",
+        context="Modelers.Exa base type validation"
+    ))
 end
 
 """

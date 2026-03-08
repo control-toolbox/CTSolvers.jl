@@ -85,8 +85,10 @@ function extract_option(kwargs::NamedTuple, def::OptionDefinition)
         return NotStored, kwargs
     end
     
-    # Not found, return default (including nothing if that's the default)
-    return OptionValue(def.default, :default), kwargs
+    # Not found, return default with appropriate source
+    # Use :computed source if default is computed from parameters, otherwise :default
+    source = def.computed ? :computed : :default
+    return OptionValue(def.default, source), kwargs
 end
 
 """
