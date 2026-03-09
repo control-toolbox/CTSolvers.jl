@@ -1,6 +1,6 @@
 module TestParameterContractHelpers
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Strategies
 
@@ -42,7 +42,9 @@ function test_parameter_contract_helpers()
             Test.@test Strategies.validate_parameter_type(Strategies.CPU) === nothing
             Test.@test Strategies.validate_parameter_type(FakeParamOk) === nothing
 
-            Test.@test_throws Exceptions.IncorrectArgument Strategies.validate_parameter_type(FakeParamWithField)
+            Test.@test_throws Exceptions.IncorrectArgument Strategies.validate_parameter_type(
+                FakeParamWithField
+            )
         end
     end
 end
@@ -50,4 +52,6 @@ end
 end # module
 
 # Redefine in outer scope for TestRunner
-test_parameter_contract_helpers() = TestParameterContractHelpers.test_parameter_contract_helpers()
+function test_parameter_contract_helpers()
+    TestParameterContractHelpers.test_parameter_contract_helpers()
+end

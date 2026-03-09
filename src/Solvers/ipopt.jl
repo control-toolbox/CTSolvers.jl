@@ -216,13 +216,17 @@ Real implementation provided by the extension.
 
 See also: [`Ipopt`](@ref), [`Strategies.metadata`](@ref)
 """
-function build_ipopt_solver(::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...)
-    throw(Exceptions.ExtensionError(
-        :NLPModelsIpopt;
-        message="to create Ipopt, access options, and solve problems",
-        feature="Ipopt functionality",
-        context="Load NLPModelsIpopt extension first: using NLPModelsIpopt"
-    ))
+function build_ipopt_solver(
+    ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+)
+    throw(
+        Exceptions.ExtensionError(
+            :NLPModelsIpopt;
+            message="to create Ipopt, access options, and solve problems",
+            feature="Ipopt functionality",
+            context="Load NLPModelsIpopt extension first: using NLPModelsIpopt",
+        ),
+    )
 end
 
 """
@@ -240,12 +244,14 @@ See also: [`Ipopt`](@ref), [`Strategies.StrategyMetadata`](@ref)
 """
 function Strategies.metadata(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU}
     # Extension is missing
-    throw(Exceptions.ExtensionError(
-        :NLPModelsIpopt;
-        message="to access Ipopt{$P} options metadata",
-        feature="Ipopt metadata",
-        context="Load NLPModelsIpopt extension first: using NLPModelsIpopt"
-    ))
+    throw(
+        Exceptions.ExtensionError(
+            :NLPModelsIpopt;
+            message="to access Ipopt{$P} options metadata",
+            feature="Ipopt metadata",
+            context="Load NLPModelsIpopt extension first: using NLPModelsIpopt",
+        ),
+    )
 end
 
 """
@@ -269,4 +275,3 @@ See also: [`Ipopt`](@ref), [`Strategies.metadata`](@ref)
 function Strategies.metadata(::Type{Solvers.Ipopt})
     return Strategies.metadata(Solvers.Ipopt{Strategies._default_parameter(Solvers.Ipopt)})
 end
-

@@ -9,8 +9,8 @@ module CTSolversMadNLPGPU
 
 import CTSolvers.Solvers
 import CTSolvers.Strategies
-import MadNLPGPU
-import DocStringExtensions
+using MadNLPGPU: MadNLPGPU
+using DocStringExtensions: DocStringExtensions
 
 """
 $(DocStringExtensions.TYPEDSIGNATURES)
@@ -44,7 +44,9 @@ Check if CUDSSSolver is consistent with CPU parameter.
 - GPU linear solver should not be used with CPU parameter
 - Other linear solvers fall through to default implementation (returns true)
 """
-function Solvers.__madnlp_suite_consistent_linear_solver(::Type{Strategies.CPU}, linear_solver::Type{MadNLPGPU.CUDSSSolver})
+function Solvers.__madnlp_suite_consistent_linear_solver(
+    ::Type{Strategies.CPU}, linear_solver::Type{MadNLPGPU.CUDSSSolver}
+)
     return false
 end
 
@@ -64,7 +66,9 @@ Check if CUDSSSolver is consistent with GPU parameter.
 - CUDSSSolver is the recommended linear solver for GPU parameter
 - Other linear solvers fall through to default implementation (returns true)
 """
-function Solvers.__madnlp_suite_consistent_linear_solver(::Type{Strategies.GPU}, linear_solver::Type{MadNLPGPU.CUDSSSolver})
+function Solvers.__madnlp_suite_consistent_linear_solver(
+    ::Type{Strategies.GPU}, linear_solver::Type{MadNLPGPU.CUDSSSolver}
+)
     return true
 end
 

@@ -37,7 +37,7 @@ struct DiscretizedModel{
     TAMB<:AbstractModelBuilder,
     TEMB<:AbstractModelBuilder,
     TASB<:AbstractSolutionBuilder,
-    TESB<:AbstractSolutionBuilder
+    TESB<:AbstractSolutionBuilder,
 } <: AbstractOptimizationProblem
     optimal_control_problem::TO
     adnlp_model_builder::TAMB

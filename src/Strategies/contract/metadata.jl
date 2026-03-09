@@ -134,28 +134,30 @@ StrategyOptions(max_iter=200, tol=1.0e-8)
 
 See also: [`OptionDefinition`](@ref), [`AbstractStrategy`](@ref), [`build_strategy_options`](@ref)
 """
-struct StrategyMetadata{NT <: NamedTuple}
+struct StrategyMetadata{NT<:NamedTuple}
     specs::NT
-    
+
     function StrategyMetadata(defs::OptionDefinition...)
         # Check for duplicate names
         names = [Options.name(def) for def in defs]
         if length(names) != length(unique(names))
             duplicates = [n for n in names if count(==(n), names) > 1]
-            throw(Exceptions.IncorrectArgument(
-                "Duplicate option names detected",
-                got="duplicate names: $(unique(duplicates))",
-                expected="unique option names for each strategy",
-                suggestion="Check your OptionDefinition definitions and ensure each name is unique",
-                context="StrategyMetadata constructor - validating option name uniqueness"
-            ))
+            throw(
+                Exceptions.IncorrectArgument(
+                    "Duplicate option names detected";
+                    got="duplicate names: $(unique(duplicates))",
+                    expected="unique option names for each strategy",
+                    suggestion="Check your OptionDefinition definitions and ensure each name is unique",
+                    context="StrategyMetadata constructor - validating option name uniqueness",
+                ),
+            )
         end
-        
+
         # Convert to NamedTuple using names as keys
         names_tuple = Tuple(Options.name(def) for def in defs)
         specs_nt = NamedTuple{names_tuple}(defs)
         NT = typeof(specs_nt)
-        
+
         new{NT}(specs_nt)
     end
 end
@@ -348,7 +350,7 @@ function Base.show(io::IO, ::MIME"text/plain", meta::StrategyMetadata)
     for (i, (key, def)) in enumerate(items)
         is_last = i == length(items)
         prefix = is_last ? "└─ " : "├─ "
-        cont   = is_last ? "   " : "│  "
+        cont = is_last ? "   " : "│  "
         println(io, prefix, def)
         println(io, cont, "description: ", Options.description(def))
     end

@@ -37,7 +37,7 @@ Pkg.activate(docs_dir)
 println("📦 Adding CTSolvers as development dependency...")
 # Get the project root (parent of docs directory)
 project_root = dirname(docs_dir)
-Pkg.develop(path=project_root)
+Pkg.develop(; path=project_root)
 
 # Step 2: Generate documentation
 println("📚 Building documentation...")

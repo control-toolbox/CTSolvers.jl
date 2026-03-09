@@ -1,9 +1,9 @@
 module TestCoverageValidation
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Modelers
-import ADNLPModels
+using ADNLPModels: ADNLPModels
 
 # Fake ADBackend for testing (must be at top-level)
 struct FakeCoverageBackend <: ADNLPModels.ADBackend end
@@ -29,19 +29,30 @@ function test_coverage_validation()
             # Valid backends with DummyTag (always available)
             dummy_tag = DummyTag()
             Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:default)) == :default
-            Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:optimized)) == :optimized
+            Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:optimized)) ==
+                :optimized
             Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:generic)) == :generic
             Test.@test Modelers.validate_adnlp_backend(dummy_tag, Val(:manual)) == :manual
 
-            Test.@test_nowarn Test.@inferred Modelers.validate_adnlp_backend(dummy_tag, Val(:default))
+            Test.@test_nowarn Test.@inferred Modelers.validate_adnlp_backend(
+                dummy_tag, Val(:default)
+            )
 
             # Enzyme/Zygote throw ExtensionError (extensions not loaded for DummyTag)
-            Test.@test_throws Exceptions.ExtensionError Modelers.validate_adnlp_backend(dummy_tag, Val(:enzyme))
-            Test.@test_throws Exceptions.ExtensionError Modelers.validate_adnlp_backend(dummy_tag, Val(:zygote))
+            Test.@test_throws Exceptions.ExtensionError Modelers.validate_adnlp_backend(
+                dummy_tag, Val(:enzyme)
+            )
+            Test.@test_throws Exceptions.ExtensionError Modelers.validate_adnlp_backend(
+                dummy_tag, Val(:zygote)
+            )
 
             # Invalid backend
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(dummy_tag, Val(:invalid))
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(dummy_tag, Val(:foo))
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(
+                dummy_tag, Val(:invalid)
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_adnlp_backend(
+                dummy_tag, Val(:foo)
+            )
         end
 
         # ====================================================================
@@ -58,10 +69,18 @@ function test_coverage_validation()
             Test.@test_nowarn Test.@inferred Modelers.validate_exa_base_type(Float64)
 
             # Invalid types
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Int)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(String)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Bool)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(Function)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(
+                Int
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(
+                String
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(
+                Bool
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_exa_base_type(
+                Function
+            )
         end
 
         # ====================================================================
@@ -127,17 +146,29 @@ function test_coverage_validation()
 
             Test.@test_nowarn Test.@inferred Modelers.validate_backend_override(nothing)
             # Valid overrides: Type{<:ADBackend}
-            Test.@test Modelers.validate_backend_override(FakeCoverageBackend) == FakeCoverageBackend
+            Test.@test Modelers.validate_backend_override(FakeCoverageBackend) ==
+                FakeCoverageBackend
             # Valid overrides: ADBackend instance
-            Test.@test Modelers.validate_backend_override(FakeCoverageBackend()) isa ADNLPModels.ADBackend
+            Test.@test Modelers.validate_backend_override(FakeCoverageBackend()) isa
+                ADNLPModels.ADBackend
 
             # Invalid overrides: non-ADBackend types
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(Float64)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(Int)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(
+                Float64
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(
+                Int
+            )
             # Invalid overrides: other values
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override("invalid")
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(123)
-            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(:symbol)
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(
+                "invalid"
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(
+                123
+            )
+            Test.@test_throws Exceptions.IncorrectArgument Modelers.validate_backend_override(
+                :symbol
+            )
         end
     end
 end

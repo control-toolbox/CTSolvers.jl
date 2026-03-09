@@ -6,7 +6,7 @@ ensuring unknown options are handled correctly in both strict and permissive mod
 """
 module TestRoutingValidation
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Strategies
 import CTSolvers.Orchestration
@@ -41,155 +41,154 @@ function create_test_setup()
     registry = Strategies.create_registry(
         TestDiscretizerFamily => (MyDiscretizer,),
         TestModelerFamily => (MyModeler,),
-        TestSolverFamily => (MySolver,)
+        TestSolverFamily => (MySolver,),
     )
-    
+
     # Define families
     families = (
-        discretizer = TestDiscretizerFamily,
-        modeler = TestModelerFamily,
-        solver = TestSolverFamily
+        discretizer=TestDiscretizerFamily,
+        modeler=TestModelerFamily,
+        solver=TestSolverFamily,
     )
-    
+
     # Define action options
     action_defs = [
-        Options.OptionDefinition(
-            name = :display,
-            type = Bool,
-            default = true,
-            description = "Display progress"
-        )
+        Options.OptionDefinition(;
+            name=:display, type=Bool, default=true, description="Display progress"
+        ),
     ]
-    
+
     return registry, families, action_defs
 end
 
 function test_routing_validation()
     Test.@testset "Routing Validation Modes" verbose=VERBOSE showtiming=SHOWTIMING begin
-        
+
         # ====================================================================
         # UNIT TESTS - Mode Parameter Validation
         # ====================================================================
-        
+
         Test.@testset "Mode Parameter Validation" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
-            kwargs = (display = true,)
-            
+            kwargs = (display=true,)
+
             # route_all_options has no mode parameter; routing always works
             Test.@test_nowarn Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
         end
-        
+
         # ====================================================================
         # UNIT TESTS - Strict Mode (Default)
         # ====================================================================
-        
+
         Test.@testset "Strict Mode - Unknown Option Rejected" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
-            
+
             # Unknown option without disambiguation always fails
-            kwargs = (unknown_option = 123,)
-            
+            kwargs = (unknown_option=123,)
+
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
         end
-        
+
         Test.@testset "Strict Mode - Unknown Disambiguated Option Rejected" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
-            
+
             # Unknown option with disambiguation but no bypass always fails
-            kwargs = (unknown_option = Strategies.route_to(test_solver=123),)
-            
+            kwargs = (unknown_option=Strategies.route_to(test_solver=123),)
+
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
         end
-        
+
         # ====================================================================
         # UNIT TESTS - Permissive Mode
         # ====================================================================
-        
+
         Test.@testset "Bypass - Unknown Disambiguated Option Accepted" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
-            
+
             # Unknown option with bypass(val) is accepted and routed as BypassValue
-            kwargs = (custom_option = Strategies.route_to(test_solver=Strategies.bypass(123)),)
-            
+            kwargs = (
+                custom_option=Strategies.route_to(test_solver=Strategies.bypass(123)),
+            )
+
             result = Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
-            
+
             # BypassValue is preserved in routed options
             bv = result.strategies.solver[:custom_option]
             Test.@test bv isa Strategies.BypassValue
             Test.@test bv.value == 123
         end
-        
+
         Test.@testset "Bypass - Multiple Unknown Options" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
-            
+
             # Multiple unknown options with bypass
             kwargs = (
-                custom1 = Strategies.route_to(test_solver=Strategies.bypass(100)),
-                custom2 = Strategies.route_to(test_modeler=Strategies.bypass(200))
+                custom1=Strategies.route_to(test_solver=Strategies.bypass(100)),
+                custom2=Strategies.route_to(test_modeler=Strategies.bypass(200)),
             )
-            
+
             result = Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
-            
+
             Test.@test result.strategies.solver[:custom1].value == 100
             Test.@test result.strategies.modeler[:custom2].value == 200
         end
-        
+
         Test.@testset "Unknown Without Disambiguation Still Fails" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
-            
+
             # Unknown option without disambiguation always fails (no bypass possible)
-            kwargs = (unknown_option = 123,)
-            
+            kwargs = (unknown_option=123,)
+
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
         end
-        
+
         # ====================================================================
         # UNIT TESTS - Invalid Routing Detection
         # ====================================================================
-        
+
         Test.@testset "Invalid Routing - Wrong Strategy for Known Option" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
-            
+
             # Known option routed to wrong strategy always fails (even with bypass)
             # grid_size belongs to discretizer, not solver
-            kwargs = (display = true,)
+            kwargs = (display=true,)
             result = Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
-            
+
             Test.@test Options.value(result.action[:display]) == true
         end
-        
+
         # ====================================================================
         # UNIT TESTS - Default Mode is Strict
         # ====================================================================
-        
+
         Test.@testset "Default Mode is Strict" begin
             registry, families, action_defs = create_test_setup()
             method = (:test_discretizer, :test_modeler, :test_solver)
-            
+
             # Without mode parameter, should behave as strict
-            kwargs = (unknown_option = Strategies.route_to(test_solver=123),)
-            
+            kwargs = (unknown_option=Strategies.route_to(test_solver=123),)
+
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )

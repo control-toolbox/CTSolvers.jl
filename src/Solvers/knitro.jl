@@ -219,13 +219,17 @@ Real implementation provided by the extension.
 
 See also: [`Knitro`](@ref), [`Strategies.metadata`](@ref)
 """
-function build_knitro_solver(::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...)
-    throw(Exceptions.ExtensionError(
-        :NLPModelsKnitro;
-        message="to create Knitro, access options, and solve problems",
-        feature="Knitro functionality",
-        context="Load NLPModelsKnitro extension first: using NLPModelsKnitro"
-    ))
+function build_knitro_solver(
+    ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+)
+    throw(
+        Exceptions.ExtensionError(
+            :NLPModelsKnitro;
+            message="to create Knitro, access options, and solve problems",
+            feature="Knitro functionality",
+            context="Load NLPModelsKnitro extension first: using NLPModelsKnitro",
+        ),
+    )
 end
 
 """
@@ -243,12 +247,14 @@ See also: [`Knitro`](@ref), [`Strategies.StrategyMetadata`](@ref)
 """
 function Strategies.metadata(::Type{<:Solvers.Knitro{P}}) where {P<:CPU}
     # Extension is missing
-    throw(Exceptions.ExtensionError(
-        :NLPModelsKnitro;
-        message="to access Knitro{$P} options metadata",
-        feature="Knitro metadata",
-        context="Load NLPModelsKnitro extension first: using NLPModelsKnitro"
-    ))
+    throw(
+        Exceptions.ExtensionError(
+            :NLPModelsKnitro;
+            message="to access Knitro{$P} options metadata",
+            feature="Knitro metadata",
+            context="Load NLPModelsKnitro extension first: using NLPModelsKnitro",
+        ),
+    )
 end
 
 """
@@ -270,6 +276,7 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 See also: [`Knitro`](@ref), [`Strategies.metadata`](@ref)
 """
 function Strategies.metadata(::Type{Solvers.Knitro})
-    return Strategies.metadata(Solvers.Knitro{Strategies._default_parameter(Solvers.Knitro)})
+    return Strategies.metadata(
+        Solvers.Knitro{Strategies._default_parameter(Solvers.Knitro)}
+    )
 end
-

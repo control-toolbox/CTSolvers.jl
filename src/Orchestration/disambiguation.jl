@@ -22,12 +22,12 @@ then reused by routing and builder utilities.
 
 See also: [`resolve_method`](@ref), [`route_all_options`](@ref)
 """
-struct ResolvedMethod{T<:Tuple, I<:NamedTuple}
+struct ResolvedMethod{T<:Tuple,I<:NamedTuple}
     tokens::T
     ids_by_family::I
-    strategy_to_family::Dict{Symbol, Symbol}
+    strategy_to_family::Dict{Symbol,Symbol}
     strategy_ids::Tuple{Vararg{Symbol}}
-    parameter::Union{Nothing, Type{<:Strategies.AbstractStrategyParameter}}
+    parameter::Union{Nothing,Type{<:Strategies.AbstractStrategyParameter}}
 end
 
 """
@@ -60,28 +60,29 @@ See also: [`extract_strategy_ids`](@ref), [`build_strategy_to_family_map`](@ref)
 function resolve_method(
     method::Tuple{Vararg{Symbol}},
     families::NamedTuple,
-    registry::Strategies.StrategyRegistry
+    registry::Strategies.StrategyRegistry,
 )::ResolvedMethod
     ids_by_family = NamedTuple{keys(families)}(
         Tuple(
-            Strategies.extract_id_from_method(method, family_type, registry)
-            for (family_name, family_type) in pairs(families)
-        )
+            Strategies.extract_id_from_method(method, family_type, registry) for
+            (family_name, family_type) in pairs(families)
+        ),
     )
 
-    strategy_to_family = Dict{Symbol, Symbol}(
-        getfield(ids_by_family, family_name) => family_name
-        for family_name in keys(ids_by_family)
+    strategy_to_family = Dict{Symbol,Symbol}(
+        getfield(ids_by_family, family_name) => family_name for
+        family_name in keys(ids_by_family)
     )
 
     strategy_ids = Tuple(
-        getfield(ids_by_family, family_name)
-        for family_name in keys(ids_by_family)
+        getfield(ids_by_family, family_name) for family_name in keys(ids_by_family)
     )
 
     parameter = Strategies.extract_global_parameter_from_method(method, registry)
 
-    return ResolvedMethod(method, ids_by_family, strategy_to_family, strategy_ids, parameter)
+    return ResolvedMethod(
+        method, ids_by_family, strategy_to_family, strategy_ids, parameter
+    )
 end
 
 """
@@ -113,21 +114,22 @@ ids = extract_strategy_ids(routed, resolved)
 See also: [`route_to`](@ref), [`RoutedOption`](@ref), [`extract_strategy_ids(::Any, ::ResolvedMethod)`](@ref)
 """
 function extract_strategy_ids(
-    raw::Strategies.RoutedOption,
-    resolved::ResolvedMethod
-)::Vector{Tuple{Any, Symbol}}
-    results = Tuple{Any, Symbol}[]
+    raw::Strategies.RoutedOption, resolved::ResolvedMethod
+)::Vector{Tuple{Any,Symbol}}
+    results = Tuple{Any,Symbol}[]
     for (strategy_id, value) in pairs(raw)
         if strategy_id in resolved.strategy_ids
             push!(results, (value, strategy_id))
         else
-            throw(Exceptions.IncorrectArgument(
-                "Strategy ID not found in method tuple",
-                got="strategy ID :$strategy_id",
-                expected="one of available strategy IDs: $(resolved.tokens)",
-                suggestion="Use a valid strategy ID from your method tuple",
-                context="extract_strategy_ids - validating RoutedOption strategy ID"
-            ))
+            throw(
+                Exceptions.IncorrectArgument(
+                    "Strategy ID not found in method tuple";
+                    got="strategy ID :$strategy_id",
+                    expected="one of available strategy IDs: $(resolved.tokens)",
+                    suggestion="Use a valid strategy ID from your method tuple",
+                    context="extract_strategy_ids - validating RoutedOption strategy ID",
+                ),
+            )
         end
     end
     return results
@@ -161,10 +163,8 @@ map = build_strategy_to_family_map(resolved, families, registry)
 See also: [`build_option_ownership_map`](@ref), [`extract_strategy_ids`](@ref)
 """
 function build_strategy_to_family_map(
-    resolved::ResolvedMethod,
-    families::NamedTuple,
-    registry::Strategies.StrategyRegistry
-)::Dict{Symbol, Symbol}
+    resolved::ResolvedMethod, families::NamedTuple, registry::Strategies.StrategyRegistry
+)::Dict{Symbol,Symbol}
     return copy(resolved.strategy_to_family)
 end
 
@@ -203,11 +203,9 @@ map = build_option_ownership_map(resolved, families, registry)
 See also: [`build_strategy_to_family_map`](@ref), [`route_all_options`](@ref)
 """
 function build_option_ownership_map(
-    resolved::ResolvedMethod,
-    families::NamedTuple,
-    registry::Strategies.StrategyRegistry
-)::Dict{Symbol, Set{Symbol}}
-    option_owners = Dict{Symbol, Set{Symbol}}()
+    resolved::ResolvedMethod, families::NamedTuple, registry::Strategies.StrategyRegistry
+)::Dict{Symbol,Set{Symbol}}
+    option_owners = Dict{Symbol,Set{Symbol}}()
 
     for (family_name, family_type) in pairs(families)
         id = getfield(resolved.ids_by_family, family_name)
@@ -255,10 +253,7 @@ result = extract_strategy_ids(100, resolved)  # Returns nothing
 
 See also: [`extract_strategy_ids(::Strategies.RoutedOption, ::ResolvedMethod)`](@ref), [`route_to`](@ref)
 """
-function extract_strategy_ids(
-    raw,
-    resolved::ResolvedMethod
-)::Nothing
+function extract_strategy_ids(raw, resolved::ResolvedMethod)::Nothing
     return nothing
 end
 
@@ -285,24 +280,21 @@ See also: [`build_option_ownership_map`](@ref), [`resolve_method`](@ref)
 
 """
 function build_alias_to_primary_map(
-    resolved::ResolvedMethod,
-    families::NamedTuple,
-    registry::Strategies.StrategyRegistry
-)::Dict{Symbol, Symbol}
-    
-    alias_map = Dict{Symbol, Symbol}()
-    
+    resolved::ResolvedMethod, families::NamedTuple, registry::Strategies.StrategyRegistry
+)::Dict{Symbol,Symbol}
+    alias_map = Dict{Symbol,Symbol}()
+
     for (family_name, family_type) in pairs(families)
         id = getfield(resolved.ids_by_family, family_name)
         strategy_type = Strategies.type_from_id(id, family_type, registry)
         meta = Strategies.metadata(strategy_type)
-        
+
         for (primary_name, def) in pairs(meta)
             for alias in def.aliases
                 alias_map[alias] = primary_name
             end
         end
     end
-    
+
     return alias_map
 end

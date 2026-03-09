@@ -81,26 +81,30 @@ function route_all_options(
     action_defs::Vector{<:Options.OptionDefinition},
     kwargs::NamedTuple,
     registry::Strategies.StrategyRegistry;
-    source_mode::Symbol = :description,
+    source_mode::Symbol=:description,
 )
     # Step 1: Resolve method
     resolved = resolve_method(method, families, registry)
-    
+
     # Step 2: Separate action and strategy options
-    action_options, strategy_kwargs = _separate_action_and_strategy_options(kwargs, action_defs)
-    
+    action_options, strategy_kwargs = _separate_action_and_strategy_options(
+        kwargs, action_defs
+    )
+
     # Step 3: Build routing context
     context = _build_routing_context(resolved, families, registry)
-    
+
     # Step 4: Check for shadowing
     _check_action_option_shadowing(action_options, context.option_owners)
-    
+
     # Step 5: Route strategy options
     routed = _initialize_routing_dict(families)
     for (key, raw_val) in pairs(strategy_kwargs)
-        _route_single_option!(routed, key, raw_val, context, resolved, families, registry, source_mode)
+        _route_single_option!(
+            routed, key, raw_val, context, resolved, families, registry, source_mode
+        )
     end
-    
+
     # Step 6: Build final result
     return _build_routed_result(action_options, routed)
 end
@@ -127,8 +131,8 @@ passing multiple dictionaries around and improve performance.
 - Used internally by the routing helper functions
 """
 struct RoutingContext
-    strategy_to_family::Dict{Symbol, Symbol}
-    option_owners::Dict{Symbol, Set{Symbol}}
+    strategy_to_family::Dict{Symbol,Symbol}
+    option_owners::Dict{Symbol,Set{Symbol}}
 end
 
 """
@@ -154,24 +158,23 @@ definitions, and re-integrates RoutedOption values for strategy routing.
 - Strategy options remain in their original form for further processing
 """
 function _separate_action_and_strategy_options(
-    kwargs::NamedTuple,
-    action_defs::Vector{<:Options.OptionDefinition}
-)::Tuple{Dict, NamedTuple}
+    kwargs::NamedTuple, action_defs::Vector{<:Options.OptionDefinition}
+)::Tuple{Dict,NamedTuple}
     # Filter out RoutedOption values for action extraction
     action_kwargs = NamedTuple(
         k => v for (k, v) in pairs(kwargs) if !(v isa Strategies.RoutedOption)
     )
-    
+
     action_options, remaining_action_kwargs = Options.extract_options(
         action_kwargs, action_defs
     )
-    
+
     # Re-integrate RoutedOption values for strategy routing
     remaining_kwargs = merge(
         remaining_action_kwargs,
-        NamedTuple(k => v for (k, v) in pairs(kwargs) if v isa Strategies.RoutedOption)
+        NamedTuple(k => v for (k, v) in pairs(kwargs) if v isa Strategies.RoutedOption),
     )
-    
+
     return (action_options, remaining_kwargs)
 end
 
@@ -197,9 +200,7 @@ maps to optimize routing performance by avoiding repeated computations.
 - Option ownership mapping enables quick validation of option routing
 """
 function _build_routing_context(
-    resolved::ResolvedMethod,
-    families::NamedTuple,
-    registry::Strategies.StrategyRegistry
+    resolved::ResolvedMethod, families::NamedTuple, registry::Strategies.StrategyRegistry
 )::RoutingContext
     strategy_to_family = build_strategy_to_family_map(resolved, families, registry)
     option_owners = build_option_ownership_map(resolved, families, registry)
@@ -228,15 +229,16 @@ informational messages to help users understand the shadowing.
 - Uses @info to emit messages without interrupting execution
 """
 function _check_action_option_shadowing(
-    action_options::Dict,
-    option_owners::Dict{Symbol, Set{Symbol}}
+    action_options::Dict, option_owners::Dict{Symbol,Set{Symbol}}
 )::Nothing
     for (k, opt_val) in action_options
-        if opt_val.source === :user && haskey(option_owners, k) && !isempty(option_owners[k])
+        if opt_val.source === :user &&
+            haskey(option_owners, k) &&
+            !isempty(option_owners[k])
             owners_str = join(sort(collect(option_owners[k])), ", ")
             @info "Option `$(k)` was intercepted as a global action option. " *
-                  "It is also available for the following strategy families: $(owners_str). " *
-                  "To pass it specifically to a strategy, use `route_to($(k)=...)`."
+                "It is also available for the following strategy families: $(owners_str). " *
+                "To pass it specifically to a strategy, use `route_to($(k)=...)`."
         end
     end
     return nothing
@@ -261,10 +263,12 @@ routed options during the routing process.
 - The structure enables efficient accumulation of options per family
 - Used as the starting point for routing operations
 """
-function _initialize_routing_dict(families::NamedTuple)::Dict{Symbol, Vector{Pair{Symbol, Any}}}
-    routed = Dict{Symbol, Vector{Pair{Symbol, Any}}}()
+function _initialize_routing_dict(
+    families::NamedTuple
+)::Dict{Symbol,Vector{Pair{Symbol,Any}}}
+    routed = Dict{Symbol,Vector{Pair{Symbol,Any}}}()
     for family_name in keys(families)
-        routed[family_name] = Pair{Symbol, Any}[]
+        routed[family_name] = Pair{Symbol,Any}[]
     end
     return routed
 end
@@ -298,18 +302,18 @@ Validates that the target family owns the option or that bypass is used.
 - Provides helpful error messages for misrouted options
 """
 function _route_with_disambiguation!(
-    routed::Dict{Symbol, Vector{Pair{Symbol, Any}}},
+    routed::Dict{Symbol,Vector{Pair{Symbol,Any}}},
     key::Symbol,
-    disambiguations::Vector{Tuple{Any, Symbol}},
+    disambiguations::Vector{Tuple{Any,Symbol}},
     context::RoutingContext,
     resolved::ResolvedMethod,
     families::NamedTuple,
-    registry::Strategies.StrategyRegistry
+    registry::Strategies.StrategyRegistry,
 )::Nothing
     for (value, strategy_id) in disambiguations
         family_name = context.strategy_to_family[strategy_id]
         owners = get(context.option_owners, key, Set{Symbol}())
-        
+
         if family_name in owners || value isa Strategies.BypassValue
             # Known option → route normally
             # BypassValue → route without validation
@@ -324,13 +328,15 @@ function _route_with_disambiguation!(
             valid_strategies = [
                 id for (id, fam) in context.strategy_to_family if fam in owners
             ]
-            throw(Exceptions.IncorrectArgument(
-                "Invalid option routing",
-                got="option :$key to strategy :$strategy_id",
-                expected="option to be routed to one of: $valid_strategies",
-                suggestion="Check option ownership or use correct strategy identifier",
-                context="route_options - validating strategy-specific option routing"
-            ))
+            throw(
+                Exceptions.IncorrectArgument(
+                    "Invalid option routing";
+                    got="option :$key to strategy :$strategy_id",
+                    expected="option to be routed to one of: $valid_strategies",
+                    suggestion="Check option ownership or use correct strategy identifier",
+                    context="route_options - validating strategy-specific option routing",
+                ),
+            )
         end
     end
     return nothing
@@ -368,22 +374,20 @@ Handles options without explicit disambiguation by checking ownership:
 - Auto-routing only occurs when option has exactly one owner
 """
 function _route_auto!(
-    routed::Dict{Symbol, Vector{Pair{Symbol, Any}}},
+    routed::Dict{Symbol,Vector{Pair{Symbol,Any}}},
     key::Symbol,
     value::Any,
     context::RoutingContext,
     resolved::ResolvedMethod,
     families::NamedTuple,
     registry::Strategies.StrategyRegistry,
-    source_mode::Symbol
+    source_mode::Symbol,
 )::Nothing
     owners = get(context.option_owners, key, Set{Symbol}())
-    
+
     if isempty(owners)
         # Unknown option - provide helpful error
-        _error_unknown_option(
-            key, resolved, families, context.strategy_to_family, registry
-        )
+        _error_unknown_option(key, resolved, families, context.strategy_to_family, registry)
     elseif length(owners) == 1
         # Unambiguous - auto-route
         family_name = first(owners)
@@ -391,8 +395,14 @@ function _route_auto!(
     else
         # Ambiguous - need disambiguation
         _error_ambiguous_option(
-            key, value, owners, context.strategy_to_family, source_mode,
-            resolved, families, registry
+            key,
+            value,
+            owners,
+            context.strategy_to_family,
+            source_mode,
+            resolved,
+            families,
+            registry,
         )
     end
     return nothing
@@ -426,17 +436,17 @@ Acts as the main dispatcher for option routing logic.
 - Central point for all option routing decisions
 """
 function _route_single_option!(
-    routed::Dict{Symbol, Vector{Pair{Symbol, Any}}},
+    routed::Dict{Symbol,Vector{Pair{Symbol,Any}}},
     key::Symbol,
     raw_val::Any,
     context::RoutingContext,
     resolved::ResolvedMethod,
     families::NamedTuple,
     registry::Strategies.StrategyRegistry,
-    source_mode::Symbol
+    source_mode::Symbol,
 )::Nothing
     disambiguations = extract_strategy_ids(raw_val, resolved)
-    
+
     if disambiguations !== nothing
         _route_with_disambiguation!(
             routed, key, disambiguations, context, resolved, families, registry
@@ -473,16 +483,14 @@ expected by the routing system API.
 - This is the final step in the routing pipeline
 """
 function _build_routed_result(
-    action_options::Dict,
-    routed::Dict{Symbol, Vector{Pair{Symbol, Any}}}
+    action_options::Dict, routed::Dict{Symbol,Vector{Pair{Symbol,Any}}}
 )::NamedTuple
     strategy_options = NamedTuple(
-        family_name => NamedTuple(pairs)
-        for (family_name, pairs) in routed
+        family_name => NamedTuple(pairs) for (family_name, pairs) in routed
     )
-    
+
     action_nt = (; (k => v for (k, v) in action_options)...)
-    
+
     return (action=action_nt, strategies=strategy_options)
 end
 
@@ -500,21 +508,20 @@ function _error_unknown_option(
     key::Symbol,
     resolved::ResolvedMethod,
     families::NamedTuple,
-    strategy_to_family::Dict{Symbol, Symbol},
-    registry::Strategies.StrategyRegistry
+    strategy_to_family::Dict{Symbol,Symbol},
+    registry::Strategies.StrategyRegistry,
 )
     # Build helpful error message showing all available options
-    all_options = Dict{Symbol, Vector{Symbol}}()
+    all_options = Dict{Symbol,Vector{Symbol}}()
     for (family_name, family_type) in pairs(families)
         id = getfield(resolved.ids_by_family, family_name)
-        option_names = option_names_from_resolved(
-            resolved, family_name, families, registry
-        )
+        option_names = option_names_from_resolved(resolved, family_name, families, registry)
         all_options[id] = collect(option_names)
     end
 
-    msg = "Option :$key doesn't belong to any strategy in method $(resolved.tokens).\n\n" *
-          "Available options:\n"
+    msg =
+        "Option :$key doesn't belong to any strategy in method $(resolved.tokens).\n\n" *
+        "Available options:\n"
     for (id, option_names) in all_options
         family = strategy_to_family[id]
         msg *= "  $family (:$id): $(join(option_names, ", "))\n"
@@ -522,34 +529,42 @@ function _error_unknown_option(
 
     # Suggest closest options across all strategies (using primary names + aliases)
     suggestion_parts = String[]
-    
+
     # First, suggest similar options if any
     all_suggestions = _collect_suggestions_across_strategies(
         key, resolved, families, registry; max_suggestions=3
     )
     if !isempty(all_suggestions)
-        push!(suggestion_parts, "Did you mean?\n" *
-            join(["  - $(Strategies.format_suggestion(s))" for s in all_suggestions], "\n"))
+        push!(
+            suggestion_parts,
+            "Did you mean?\n" *
+            join(["  - $(Strategies.format_suggestion(s))" for s in all_suggestions], "\n"),
+        )
     end
-    
+
     # Then, suggest bypass if user is confident about the option
     if !isempty(all_suggestions)
         push!(suggestion_parts, "\n")
     end
-    push!(suggestion_parts, "If you're confident this option exists for a specific strategy, " *
+    push!(
+        suggestion_parts,
+        "If you're confident this option exists for a specific strategy, " *
         "use bypass() to skip validation:\n" *
-        "  custom_opt = route_to(<strategy_id>=bypass(<value>))")
-    
+        "  custom_opt = route_to(<strategy_id>=bypass(<value>))",
+    )
+
     # Combine all suggestions
     suggestion = join(suggestion_parts, "")
 
-    throw(Exceptions.IncorrectArgument(
-        "Unknown option provided",
-        got="option :$key in method $(resolved.tokens)",
-        expected="valid option name for one of the strategies",
-        suggestion=suggestion,
-        context="route_options - unknown option validation"
-    ))
+    throw(
+        Exceptions.IncorrectArgument(
+            "Unknown option provided";
+            got="option :$key in method $(resolved.tokens)",
+            expected="valid option name for one of the strategies",
+            suggestion=suggestion,
+            context="route_options - unknown option validation",
+        ),
+    )
 end
 
 """
@@ -563,14 +578,18 @@ function _collect_suggestions_across_strategies(
     resolved::ResolvedMethod,
     families::NamedTuple,
     registry::Strategies.StrategyRegistry;
-    max_suggestions::Int=3
+    max_suggestions::Int=3,
 )
     # Collect suggestions from all strategies, keeping best distance per primary name
-    best = Dict{Symbol, @NamedTuple{primary::Symbol, aliases::Tuple{Vararg{Symbol}}, distance::Int}}()
+    best = Dict{
+        Symbol,@NamedTuple{primary::Symbol,aliases::Tuple{Vararg{Symbol}},distance::Int}
+    }()
     for (family_name, family_type) in pairs(families)
         id = getfield(resolved.ids_by_family, family_name)
         strategy_type = Strategies.type_from_id(id, family_type, registry)
-        suggestions = Strategies.suggest_options(key, strategy_type; max_suggestions=typemax(Int))
+        suggestions = Strategies.suggest_options(
+            key, strategy_type; max_suggestions=typemax(Int)
+        )
         for s in suggestions
             if !haskey(best, s.primary) || s.distance < best[s.primary].distance
                 best[s.primary] = s
@@ -579,7 +598,7 @@ function _collect_suggestions_across_strategies(
     end
 
     # Sort by distance and take top suggestions
-    results = sort(collect(values(best)), by=x -> x.distance)
+    results = sort(collect(values(best)); by=x -> x.distance)
     n = min(max_suggestions, length(results))
     return results[1:n]
 end
@@ -594,16 +613,14 @@ function _error_ambiguous_option(
     key::Symbol,
     value::Any,
     owners::Set{Symbol},
-    strategy_to_family::Dict{Symbol, Symbol},
+    strategy_to_family::Dict{Symbol,Symbol},
     source_mode::Symbol,
     resolved::ResolvedMethod,
     families::NamedTuple,
-    registry::Strategies.StrategyRegistry
+    registry::Strategies.StrategyRegistry,
 )
     # Find which strategies own this option
-    strategies = [
-        id for (id, fam) in strategy_to_family if fam in owners
-    ]
+    strategies = [id for (id, fam) in strategy_to_family if fam in owners]
 
     # Collect aliases for this option from each strategy's metadata
     alias_info = String[]
@@ -627,39 +644,46 @@ function _error_ambiguous_option(
 
     if source_mode === :description
         # User-friendly error message with route_to() syntax
-        msg = "Option :$key is ambiguous between strategies: " *
-              "$(join(strategies, ", ")).\n\n" *
-              "Disambiguate using route_to():\n"
+        msg =
+            "Option :$key is ambiguous between strategies: " *
+            "$(join(strategies, ", ")).\n\n" *
+            "Disambiguate using route_to():\n"
         for id in strategies
             fam = strategy_to_family[id]
             msg *= "  $key = route_to($id=$value)    # Route to $fam\n"
         end
-        msg *= "\nOr set for multiple strategies:\n" *
-               "  $key = route_to(" *
-               join(["$id=$value" for id in strategies], ", ") *
-               ")"
+        msg *=
+            "\nOr set for multiple strategies:\n" *
+            "  $key = route_to(" *
+            join(["$id=$value" for id in strategies], ", ") *
+            ")"
         # Build suggestion with alias info
         suggestion = "Use route_to() like $key = route_to($(first(strategies))=$value) to specify target strategy"
         if !isempty(alias_info)
-            suggestion *= ". Or use strategy-specific aliases to avoid ambiguity:\n" *
-                         join(alias_info, "\n")
+            suggestion *=
+                ". Or use strategy-specific aliases to avoid ambiguity:\n" *
+                join(alias_info, "\n")
         end
-        throw(Exceptions.IncorrectArgument(
-            "Ambiguous option requires disambiguation",
-            got="option :$key between strategies: $(join(strategies, ", "))",
-            expected="strategy-specific routing using route_to()",
-            suggestion=suggestion,
-            context="route_options - ambiguous option resolution"
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "Ambiguous option requires disambiguation";
+                got="option :$key between strategies: $(join(strategies, ", "))",
+                expected="strategy-specific routing using route_to()",
+                suggestion=suggestion,
+                context="route_options - ambiguous option resolution",
+            ),
+        )
     else
         # Internal/developer error message
-        throw(Exceptions.IncorrectArgument(
-            "Ambiguous option in explicit mode",
-            got="option :$key between families: $owners",
-            expected="unambiguous option routing in explicit mode",
-            suggestion="Use route_to() for disambiguation or switch to description mode",
-            context="route_options - explicit mode ambiguity validation"
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "Ambiguous option in explicit mode";
+                got="option :$key between families: $owners",
+                expected="unambiguous option routing in explicit mode",
+                suggestion="Use route_to() for disambiguation or switch to description mode",
+                context="route_options - explicit mode ambiguity validation",
+            ),
+        )
     end
 end
 
@@ -669,15 +693,13 @@ $(TYPEDSIGNATURES)
 Helper to warn when an unknown option is routed in permissive mode.
 """
 function _warn_unknown_option_permissive(
-    key::Symbol,
-    strategy_id::Symbol,
-    family_name::Symbol
+    key::Symbol, strategy_id::Symbol, family_name::Symbol
 )
     @warn """
     Unknown option routed in permissive mode
-    
+
     Option :$key is not defined in the metadata of strategy :$strategy_id ($family_name).
-    
+
     This option will be passed directly to the strategy backend without validation.
     Ensure the option name and value are correct for the backend.
     """

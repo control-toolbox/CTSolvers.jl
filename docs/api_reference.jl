@@ -20,10 +20,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
     ext(files...) = [abspath(joinpath(ext_dir, f)) for f in files]
 
     # Symbols to exclude from documentation
-    EXCLUDE_SYMBOLS = Symbol[
-        :include,
-        :eval,
-    ]
+    EXCLUDE_SYMBOLS = Symbol[:include, :eval]
 
     pages = [
 
@@ -207,7 +204,6 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             title_in_menu="Strategies (API)",
             filename="strategies_api",
         ),
-
     ]
 
     # ───────────────────────────────────────────────────────────────────
@@ -219,9 +215,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             pages,
             CTBase.automatic_reference_documentation(;
                 subdirectory="api",
-                primary_modules=[
-                    CTSolversIpopt => ext("CTSolversIpopt.jl"),
-                ],
+                primary_modules=[CTSolversIpopt => ext("CTSolversIpopt.jl")],
                 external_modules_to_document=[CTSolvers],
                 exclude=EXCLUDE_SYMBOLS,
                 public=true,
@@ -242,9 +236,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             pages,
             CTBase.automatic_reference_documentation(;
                 subdirectory="api",
-                primary_modules=[
-                    CTSolversMadNLP => ext("CTSolversMadNLP.jl"),
-                ],
+                primary_modules=[CTSolversMadNLP => ext("CTSolversMadNLP.jl")],
                 external_modules_to_document=[CTSolvers],
                 exclude=EXCLUDE_SYMBOLS,
                 public=true,
@@ -265,9 +257,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             pages,
             CTBase.automatic_reference_documentation(;
                 subdirectory="api",
-                primary_modules=[
-                    CTSolversMadNCL => ext("CTSolversMadNCL.jl"),
-                ],
+                primary_modules=[CTSolversMadNCL => ext("CTSolversMadNCL.jl")],
                 external_modules_to_document=[CTSolvers],
                 exclude=EXCLUDE_SYMBOLS,
                 public=true,
@@ -288,9 +278,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             pages,
             CTBase.automatic_reference_documentation(;
                 subdirectory="api",
-                primary_modules=[
-                    CTSolversKnitro => ext("CTSolversKnitro.jl"),
-                ],
+                primary_modules=[CTSolversKnitro => ext("CTSolversKnitro.jl")],
                 external_modules_to_document=[CTSolvers],
                 exclude=EXCLUDE_SYMBOLS,
                 public=true,

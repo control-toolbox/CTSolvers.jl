@@ -1,8 +1,8 @@
 module TestStrategies
 
-import Test
+using Test: Test
 import CTBase.Exceptions
-import CTSolvers
+using CTSolvers: CTSolvers
 import CTSolvers.Strategies
 import CTSolvers.Options
 using CTSolvers.Strategies  # For testing exported symbols
@@ -40,14 +40,10 @@ function test_strategies()
                 Test.@test isdefined(CTSolvers, :Strategies)
                 Test.@test CTSolvers.Strategies isa Module
             end
-            
+
             # Test exported abstract types
             Test.@testset "Exported Abstract Types" begin
-                for T in (
-                    AbstractStrategy,
-                    StrategyRegistry,
-                    AbstractStrategyParameter,
-                )
+                for T in (AbstractStrategy, StrategyRegistry, AbstractStrategyParameter)
                     Test.@testset "$(nameof(T))" begin
                         Test.@test isdefined(Strategies, nameof(T))
                         Test.@test isdefined(CurrentModule, nameof(T))
@@ -55,7 +51,7 @@ function test_strategies()
                     end
                 end
             end
-            
+
             # Test exported concrete types
             Test.@testset "Exported Concrete Types" begin
                 for T in (
@@ -74,14 +70,10 @@ function test_strategies()
                     end
                 end
             end
-            
+
             # Test exported contract functions
             Test.@testset "Exported Contract Functions" begin
-                for f in (
-                    :id,
-                    :metadata,
-                    :options,
-                )
+                for f in (:id, :metadata, :options)
                     Test.@testset "$f" begin
                         Test.@test isdefined(Strategies, f)
                         Test.@test isdefined(CurrentModule, f)
@@ -89,15 +81,11 @@ function test_strategies()
                     end
                 end
             end
-            
+
             # Test exported registry functions
             Test.@testset "Exported Registry Functions" begin
-                for f in (
-                    :create_registry,
-                    :strategy_ids,
-                    :type_from_id,
-                    :get_parameter_type,
-                )
+                for f in
+                    (:create_registry, :strategy_ids, :type_from_id, :get_parameter_type)
                     Test.@testset "$f" begin
                         Test.@test isdefined(Strategies, f)
                         Test.@test isdefined(CurrentModule, f)
@@ -105,7 +93,7 @@ function test_strategies()
                     end
                 end
             end
-            
+
             # Test exported introspection functions
             Test.@testset "Exported Introspection Functions" begin
                 for f in (
@@ -128,14 +116,10 @@ function test_strategies()
                     end
                 end
             end
-            
+
             # Test exported builder functions
             Test.@testset "Exported Builder Functions" begin
-                for f in (
-                    :build_strategy,
-                    :extract_id_from_method,
-                    :available_parameters,
-                )
+                for f in (:build_strategy, :extract_id_from_method, :available_parameters)
                     Test.@testset "$f" begin
                         Test.@test isdefined(Strategies, f)
                         Test.@test isdefined(CurrentModule, f)
@@ -143,13 +127,10 @@ function test_strategies()
                     end
                 end
             end
-            
+
             # Test exported configuration functions
             Test.@testset "Exported Configuration Functions" begin
-                for f in (
-                    :build_strategy_options,
-                    :resolve_alias,
-                )
+                for f in (:build_strategy_options, :resolve_alias)
                     Test.@testset "$f" begin
                         Test.@test isdefined(Strategies, f)
                         Test.@test isdefined(CurrentModule, f)
@@ -157,7 +138,7 @@ function test_strategies()
                     end
                 end
             end
-            
+
             # Test exported utility functions
             Test.@testset "Exported Utility Functions" begin
                 for f in (
@@ -177,7 +158,7 @@ function test_strategies()
                     end
                 end
             end
-            
+
             # Test that internal symbols are NOT exported
             Test.@testset "Internal Functions (not exported)" begin
                 for f in (
@@ -205,7 +186,7 @@ function test_strategies()
                 Test.@test Strategies.StrategyRegistry <: Any
                 Test.@test Strategies.AbstractStrategyParameter <: Any
             end
-            
+
             Test.@testset "Parameter types" begin
                 Test.@test Strategies.CPU <: Strategies.AbstractStrategyParameter
                 Test.@test Strategies.GPU <: Strategies.AbstractStrategyParameter

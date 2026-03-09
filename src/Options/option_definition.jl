@@ -72,28 +72,30 @@ struct OptionDefinition{T}
     default::T
     description::String
     aliases::Tuple{Vararg{Symbol}}
-    validator::Union{Function, Nothing}
+    validator::Union{Function,Nothing}
     computed::Bool
-    
+
     function OptionDefinition{T}(;
         name::Symbol,
         type::Type,
         default::T,
         description::String,
-        aliases::Tuple{Vararg{Symbol}} = (),
-        validator::Union{Function, Nothing} = nothing,
-        computed::Bool = false
-    ) where T
+        aliases::Tuple{Vararg{Symbol}}=(),
+        validator::Union{Function,Nothing}=nothing,
+        computed::Bool=false,
+    ) where {T}
         # Validate with custom validator if provided (skip for NotProvided)
         if validator !== nothing && !(default isa NotProvidedType)
             try
                 validator(default)
             catch e
-                @error "Validation failed for option $name with default value $default" exception=(e, catch_backtrace())
+                @error "Validation failed for option $name with default value $default" exception=(
+                    e, catch_backtrace()
+                )
                 rethrow()
             end
         end
-        
+
         new{T}(name, type, default, description, aliases, validator, computed)
     end
 end
@@ -169,11 +171,13 @@ function OptionDefinition(;
     type::Type,
     default,
     description::String,
-    aliases::Tuple{Vararg{Symbol}} = (),
-    validator::Union{Function, Nothing} = nothing,
-    computed::Bool = false
+    aliases::Tuple{Vararg{Symbol}}=(),
+    validator::Union{Function,Nothing}=nothing,
+    computed::Bool=false,
 )
-    return _construct_option_definition(name, type, default, description, aliases, validator, computed)
+    return _construct_option_definition(
+        name, type, default, description, aliases, validator, computed
+    )
 end
 
 # Dispatch methods for different default types
@@ -218,13 +222,13 @@ nothing
 See also: [`OptionDefinition`](@ref), [`NotProvided`](@ref)
 """
 function _construct_option_definition(
-    name::Symbol, 
-    type::Type, 
-    default::Nothing, 
-    description::String, 
-    aliases::Tuple{Vararg{Symbol}}, 
-    validator::Union{Function, Nothing},
-    computed::Bool
+    name::Symbol,
+    type::Type,
+    default::Nothing,
+    description::String,
+    aliases::Tuple{Vararg{Symbol}},
+    validator::Union{Function,Nothing},
+    computed::Bool,
 )
     return OptionDefinition{Any}(;
         name=name,
@@ -233,7 +237,7 @@ function _construct_option_definition(
         description=description,
         aliases=aliases,
         validator=validator,
-        computed=computed
+        computed=computed,
     )
 end
 
@@ -279,13 +283,13 @@ true
 See also: [`OptionDefinition`](@ref), [`NotProvided`](@ref), [`is_required`](@ref)
 """
 function _construct_option_definition(
-    name::Symbol, 
-    type::Type, 
-    default::NotProvidedType, 
-    description::String, 
-    aliases::Tuple{Vararg{Symbol}}, 
-    validator::Union{Function, Nothing},
-    computed::Bool
+    name::Symbol,
+    type::Type,
+    default::NotProvidedType,
+    description::String,
+    aliases::Tuple{Vararg{Symbol}},
+    validator::Union{Function,Nothing},
+    computed::Bool,
 )
     return OptionDefinition{NotProvidedType}(;
         name=name,
@@ -294,7 +298,7 @@ function _construct_option_definition(
         description=description,
         aliases=aliases,
         validator=validator,
-        computed=computed
+        computed=computed,
     )
 end
 
@@ -342,25 +346,27 @@ julia> default(def)
 See also: [`OptionDefinition`](@ref), [`Exceptions.IncorrectArgument`](@ref)
 """
 function _construct_option_definition(
-    name::Symbol, 
-    type::Type, 
-    default::T, 
-    description::String, 
-    aliases::Tuple{Vararg{Symbol}}, 
-    validator::Union{Function, Nothing},
-    computed::Bool
+    name::Symbol,
+    type::Type,
+    default::T,
+    description::String,
+    aliases::Tuple{Vararg{Symbol}},
+    validator::Union{Function,Nothing},
+    computed::Bool,
 ) where {T}
     # Check type compatibility
     if !isa(default, type)
-        throw(Exceptions.IncorrectArgument(
-            "Type mismatch in option definition",
-            got="default value $default of type $T",
-            expected="value of type $type",
-            suggestion="Ensure the default value matches the declared type, or adjust the type parameter",
-            context="OptionDefinition constructor - validating type compatibility"
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "Type mismatch in option definition";
+                got="default value $default of type $T",
+                expected="value of type $type",
+                suggestion="Ensure the default value matches the declared type, or adjust the type parameter",
+                context="OptionDefinition constructor - validating type compatibility",
+            ),
+        )
     end
-    
+
     # Create with inferred type
     return OptionDefinition{T}(;
         name=name,
@@ -369,7 +375,7 @@ function _construct_option_definition(
         description=description,
         aliases=aliases,
         validator=validator,
-        computed=computed
+        computed=computed,
     )
 end
 
@@ -713,7 +719,7 @@ function Base.show(io::IO, def::OptionDefinition)
     else
         print(io, "$(def.name) ($(join(def.aliases, ", "))) :: $(def.type)")
     end
-    
+
     # Show default with source indicator
     if def.computed
         print(io, " (default: $(def.default) [computed])")

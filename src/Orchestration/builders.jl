@@ -44,13 +44,19 @@ function option_names_from_resolved(
     strategy_type = if isempty(available)
         Strategies.type_from_id(s_id, family_type, registry)
     else
-        p = param === nothing ? throw(Exceptions.IncorrectArgument(
-            "Missing parameter in resolved method",
-            got="strategy :$s_id in resolved method with parameter=nothing",
-            expected="a parameter type for parameterized strategies",
-            suggestion="Ensure resolve_method validated a parameter token for the method",
-            context="option_names_from_resolved - parameter required"
-        )) : (param::Type{<:Strategies.AbstractStrategyParameter})
+        p = if param === nothing
+            throw(
+            Exceptions.IncorrectArgument(
+                "Missing parameter in resolved method";
+                got="strategy :$s_id in resolved method with parameter=nothing",
+                expected="a parameter type for parameterized strategies",
+                suggestion="Ensure resolve_method validated a parameter token for the method",
+                context="option_names_from_resolved - parameter required",
+            ),
+        )
+        else
+            (param::Type{<:Strategies.AbstractStrategyParameter})
+        end
         Strategies.type_from_id(s_id, family_type, registry; parameter=p)
     end
 
@@ -94,8 +100,8 @@ function build_strategy_from_resolved(
     family_name::Symbol,
     families::NamedTuple,
     registry::Strategies.StrategyRegistry;
-    mode::Symbol = :strict,
-    kwargs...
+    mode::Symbol=:strict,
+    kwargs...,
 )
     family_type = getfield(families, family_name)
     s_id = getfield(resolved.ids_by_family, family_name)
@@ -106,20 +112,19 @@ function build_strategy_from_resolved(
         return Strategies.build_strategy(s_id, family_type, registry; mode=mode, kwargs...)
     end
 
-    p = param === nothing ? throw(Exceptions.IncorrectArgument(
-        "Missing parameter in resolved method",
-        got="strategy :$s_id in resolved method with parameter=nothing",
-        expected="a parameter type for parameterized strategies",
-        suggestion="Ensure resolve_method validated a parameter token for the method",
-        context="build_strategy_from_resolved - parameter required"
-    )) : (param::Type{<:Strategies.AbstractStrategyParameter})
-
-    return Strategies.build_strategy(
-        s_id,
-        p,
-        family_type,
-        registry;
-        mode=mode,
-        kwargs...
+    p = if param === nothing
+        throw(
+        Exceptions.IncorrectArgument(
+            "Missing parameter in resolved method";
+            got="strategy :$s_id in resolved method with parameter=nothing",
+            expected="a parameter type for parameterized strategies",
+            suggestion="Ensure resolve_method validated a parameter token for the method",
+            context="build_strategy_from_resolved - parameter required",
+        ),
     )
+    else
+        (param::Type{<:Strategies.AbstractStrategyParameter})
+    end
+
+    return Strategies.build_strategy(s_id, p, family_type, registry; mode=mode, kwargs...)
 end

@@ -9,8 +9,8 @@ module CTSolversCUDA
 
 import CTSolvers.Modelers
 import CTSolvers.Strategies
-import CUDA
-import DocStringExtensions
+using CUDA: CUDA
+using DocStringExtensions: DocStringExtensions
 
 """
 $(DocStringExtensions.TYPEDSIGNATURES)
