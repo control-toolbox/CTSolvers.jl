@@ -23,7 +23,7 @@ julia> filter_options(opts, :debug)
 (max_iter = 100, tol = 1.0e-6)
 ```
 
-See also: [`filter_options(::NamedTuple, ::Tuple)`](@ref)
+See also: `filter_options(::NamedTuple, ::Tuple)`
 """
 function filter_options(nt::NamedTuple, exclude::Symbol)
     return filter_options(nt, (exclude,))
@@ -48,7 +48,7 @@ julia> filter_options(opts, (:debug, :tol))
 (max_iter = 100,)
 ```
 
-See also: [`filter_options(::NamedTuple, ::Symbol)`](@ref)
+See also: `filter_options(::NamedTuple, ::Symbol)`
 """
 function filter_options(nt::NamedTuple, exclude::Tuple{Vararg{Symbol}})
     exclude_set = Set(exclude)
@@ -95,7 +95,7 @@ This function is particularly useful in solver extensions and modelers where
 you need to extract options and potentially modify them before passing to
 backend solvers or model builders.
 
-See also: [`options`](@ref), [`Options.extract_raw_options`](@ref)
+See also: `options`, `Options.extract_raw_options`
 """
 function options_dict(strategy::AbstractStrategy)
     opts = options(strategy)
@@ -135,7 +135,7 @@ julia> suggest_options(:adnlp_backen, MyStrategy)
 The distance of an option to the key is `min(dist(key, primary), dist(key, alias1), ...)`.
 This ensures that options with a close alias are suggested even if the primary name is far.
 
-See also: [`resolve_alias`](@ref), [`levenshtein_distance`](@ref)
+See also: `resolve_alias`, `levenshtein_distance`
 """
 function suggest_options(
     key::Symbol, strategy_type::Type{<:AbstractStrategy}; max_suggestions::Int=3
@@ -149,7 +149,7 @@ $(TYPEDSIGNATURES)
 
 Suggest similar option names from a `StrategyMetadata` using Levenshtein distance.
 
-See [`suggest_options(::Symbol, ::Type{<:AbstractStrategy})`](@ref) for details.
+See `suggest_options(::Symbol, ::Type{<:AbstractStrategy})` for details.
 """
 function suggest_options(key::Symbol, meta::StrategyMetadata; max_suggestions::Int=3)
     key_str = string(key)
@@ -224,7 +224,7 @@ julia> levenshtein_distance("max_iter", "max_it")
 Uses dynamic programming with O(m*n) time and space complexity,
 where m and n are the lengths of the input strings.
 
-See also: [`suggest_options`](@ref)
+See also: `suggest_options`
 """
 function levenshtein_distance(s1::String, s2::String)
     m, n = length(s1), length(s2)

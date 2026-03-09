@@ -36,7 +36,7 @@ using CommonSolve
 stats = solve(nlp, solver, display=false)
 ```
 
-See also: [`AbstractNLPSolver`](@ref), [`Solvers.Ipopt`](@ref)
+See also: `AbstractNLPSolver`, `Solvers.Ipopt`
 """
 module Solvers
 

@@ -7,7 +7,7 @@
 """
 $(TYPEDSIGNATURES)
 
-Return the default floating-point type for [`Modelers.Exa`](@ref).
+Return the default floating-point type for `Modelers.Exa`.
 
 Default is `Float64`.
 """
@@ -16,7 +16,7 @@ __exa_model_base_type() = Float64
 """
 $(TYPEDSIGNATURES)
 
-Return the default execution backend for [`Modelers.Exa`](@ref).
+Return the default execution backend for `Modelers.Exa`.
 
 Default is `nothing` (CPU).
 """
@@ -195,10 +195,10 @@ modeler = Modelers.Exa{GPU}(
 
 # See also
 
-- [`Modelers.ADNLP`](@ref): Alternative modeler using ADNLPModels
-- [`build_model`](@ref): Build model from problem and modeler
-- [`solve!`](@ref): Solve optimization problem
-- [`CPU`](@ref), [`GPU`](@ref): Strategy parameters
+- `Modelers.ADNLP`: Alternative modeler using ADNLPModels
+- `build_model`: Build model from problem and modeler
+- `solve!`: Solve optimization problem
+- `CPU`, `GPU`: Strategy parameters
 
 # Notes
 
@@ -232,7 +232,7 @@ Returns `CPU` as the default execution parameter.
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: [`Exa`](@ref), [`CPU`](@ref)
+See also: `Exa`, `CPU`
 """
 Strategies._default_parameter(::Type{<:Modelers.Exa}) = CPU
 
@@ -292,7 +292,7 @@ Create a parameterized Modelers.Exa with validated options.
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Modeler options (see [`Modelers.Exa`](@ref) documentation)
+- `kwargs...`: Modeler options (see `Modelers.Exa` documentation)
 
 # Returns
 - `Modelers.Exa{P}`: Configured modeler instance with specified parameter
@@ -317,7 +317,7 @@ modeler = Modelers.Exa{GPU}(base_type=Float64, custom_option=123; mode=:permissi
 - `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 - `CTBase.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
 
-See also: [`Modelers.Exa`](@ref), [`Strategies.build_strategy_options`](@ref)
+See also: `Modelers.Exa`, `Strategies.build_strategy_options`
 """
 function Modelers.Exa{P}(;
     mode::Symbol=:strict, kwargs...
@@ -341,7 +341,7 @@ Create an Modelers.Exa with validated options (defaults to CPU).
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Modeler options (see [`Modelers.Exa`](@ref) documentation)
+- `kwargs...`: Modeler options (see `Modelers.Exa` documentation)
 
 # Returns
 - `Modelers.Exa{CPU}`: Configured modeler instance with CPU parameter
@@ -362,7 +362,7 @@ modeler = Modelers.Exa(base_type=Float64, custom_option=123; mode=:permissive)
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 - `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 
-See also: [`Modelers.Exa`](@ref), [`Modelers.Exa{CPU}`](@ref), [`Modelers.Exa{GPU}`](@ref), [`Strategies.build_strategy_options`](@ref)
+See also: `Modelers.Exa`, `Modelers.Exa{CPU}`, `Modelers.Exa{GPU}`, `Strategies.build_strategy_options`
 """
 function Modelers.Exa(; mode::Symbol=:strict, kwargs...)
     P = Strategies._default_parameter(Modelers.Exa)
@@ -397,9 +397,9 @@ stats = solve(nlp, solver)
 
 # See also
 
-- [`Modelers.Exa`](@ref): Type documentation
-- [`build_model`](@ref): Generic model building interface
-- [`ExaModels.ExaModel`](@ref): NLP model type
+- `Modelers.Exa`: Type documentation
+- `build_model`: Generic model building interface
+- `ExaModels.ExaModel`: NLP model type
 """
 function (modeler::Modelers.Exa{P})(
     prob::AbstractOptimizationProblem, initial_guess
@@ -445,9 +445,9 @@ solution = modeler(problem, stats)
 
 # See also
 
-- [`Modelers.Exa`](@ref): Type documentation
-- [`SolverCore.AbstractExecutionStats`](@ref): Solver statistics type
-- [`solve`](@ref): Generic solve interface
+- `Modelers.Exa`: Type documentation
+- `SolverCore.AbstractExecutionStats`: Solver statistics type
+- `solve`: Generic solve interface
 """
 function (modeler::Modelers.Exa{P})(
     prob::AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats

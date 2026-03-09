@@ -107,7 +107,7 @@ using NLPModelsKnitro
 - `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
 
-See also: [`CPU`](@ref), [`AbstractNLPSolver`](@ref), [`Ipopt`](@ref), [`MadNLP`](@ref)
+See also: `CPU`, `AbstractNLPSolver`, `Ipopt`, `MadNLP`
 """
 struct Knitro{P<:CPU} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
@@ -137,7 +137,7 @@ Returns `CPU` as the default execution parameter.
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: [`Knitro`](@ref), [`CPU`](@ref)
+See also: `Knitro`, `CPU`
 """
 Strategies._default_parameter(::Type{<:Solvers.Knitro}) = CPU
 
@@ -170,7 +170,7 @@ solver_permissive = Knitro(maxit=1000, custom_option=123; mode=:permissive)
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
 
-See also: [`Knitro`](@ref), [`build_knitro_solver`](@ref)
+See also: `Knitro`, `build_knitro_solver`
 """
 function Solvers.Knitro(; mode::Symbol=:strict, kwargs...)
     P = Strategies._default_parameter(Solvers.Knitro)
@@ -202,7 +202,7 @@ solver_cpu = Solvers.Knitro{CPU}(maxit=1000, outlev=2)
 - `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
 
-See also: [`Knitro`](@ref), [`CPU`](@ref)
+See also: `Knitro`, `CPU`
 """
 function Solvers.Knitro{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
     return build_knitro_solver(KnitroTag, P; mode=mode, kwargs...)
@@ -217,7 +217,7 @@ Real implementation provided by the extension.
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
 
-See also: [`Knitro`](@ref), [`Strategies.metadata`](@ref)
+See also: `Knitro`, `Strategies.metadata`
 """
 function build_knitro_solver(
     ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
@@ -243,7 +243,7 @@ This stub is for parameterized types `Knitro{P}` where `P <: AbstractStrategyPar
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
 
-See also: [`Knitro`](@ref), [`Strategies.StrategyMetadata`](@ref)
+See also: `Knitro`, `Strategies.StrategyMetadata`
 """
 function Strategies.metadata(::Type{<:Solvers.Knitro{P}}) where {P<:CPU}
     # Extension is missing
@@ -273,7 +273,7 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If extension not loaded (via delegation)
 
-See also: [`Knitro`](@ref), [`Strategies.metadata`](@ref)
+See also: `Knitro`, `Strategies.metadata`
 """
 function Strategies.metadata(::Type{Solvers.Knitro})
     return Strategies.metadata(

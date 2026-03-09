@@ -10,7 +10,7 @@ It avoids re-parsing the method tuple by using `resolved.ids_by_family` and the
 global `resolved.parameter`.
 
 # Arguments
-- `resolved::ResolvedMethod`: Output of [`resolve_method`](@ref)
+- `resolved::ResolvedMethod`: Output of `resolve_method`
 - `family_name::Symbol`: Family key in `families` (e.g. `:solver`, `:modeler`)
 - `families::NamedTuple`: Mapping `family_name => family_type` used for resolution
 - `registry::Strategies.StrategyRegistry`: Strategy registry
@@ -28,7 +28,7 @@ resolved = resolve_method(method, families, registry)
 names = option_names_from_resolved(resolved, :solver, families, registry)
 ```
 
-See also: [`resolve_method`](@ref), [`build_strategy_from_resolved`](@ref), [`Strategies.option_names`](@ref)
+See also: `resolve_method`, `build_strategy_from_resolved`, `Strategies.option_names`
 """
 function option_names_from_resolved(
     resolved::ResolvedMethod,
@@ -70,10 +70,10 @@ Build the active strategy instance of a given family from a resolved method.
 
 This function is the resolved-method counterpart of strategy construction. It is
 intended to be used after option routing, where the method tuple has already been
-validated and resolved by [`resolve_method`](@ref).
+validated and resolved by `resolve_method`.
 
 # Arguments
-- `resolved::ResolvedMethod`: Output of [`resolve_method`](@ref)
+- `resolved::ResolvedMethod`: Output of `resolve_method`
 - `family_name::Symbol`: Family key in `families` (e.g. `:solver`, `:modeler`)
 - `families::NamedTuple`: Mapping `family_name => family_type` used for resolution
 - `registry::Strategies.StrategyRegistry`: Strategy registry
@@ -93,7 +93,7 @@ resolved = resolve_method(method, families, registry)
 solver = build_strategy_from_resolved(resolved, :solver, families, registry; mode=:strict, kwargs...)
 ```
 
-See also: [`resolve_method`](@ref), [`Strategies.build_strategy`](@ref), [`option_names_from_resolved`](@ref)
+See also: `resolve_method`, `Strategies.build_strategy`, `option_names_from_resolved`
 """
 function build_strategy_from_resolved(
     resolved::ResolvedMethod,

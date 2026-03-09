@@ -560,7 +560,7 @@ solver = build_ipopt_solver(IpoptTag; max_iter=1000)
 solver_permissive = build_ipopt_solver(IpoptTag; max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
-See also: [`Solvers.Ipopt`](@ref), [`Strategies.build_strategy_options`](@ref)
+See also: `Solvers.Ipopt`, `Strategies.build_strategy_options`
 """
 function Solvers.build_ipopt_solver(
     ::Type{Solvers.IpoptTag},
@@ -614,7 +614,7 @@ Solves the NLP problem using NLPModelsIpopt backend.
 # Returns
 - `SolverCore.GenericExecutionStats`: Solver execution statistics
 
-See also: [`Solvers.Ipopt`](@ref), [`NLPModelsIpopt.ipopt`](@ref)
+See also: `Solvers.Ipopt`, `NLPModelsIpopt.ipopt`
 """
 function solve_with_ipopt(
     nlp::NLPModels.AbstractNLPModel; kwargs...

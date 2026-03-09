@@ -38,7 +38,7 @@ julia> modeler = build_strategy(:adnlp, AbstractNLPModeler, registry;
 Modelers.ADNLP(options=StrategyOptions{...})
 ```
 
-See also: [`type_from_id`](@ref)
+See also: `type_from_id`
 """
 function build_strategy(
     id::Symbol,
@@ -84,7 +84,7 @@ julia> solver = build_strategy(:madnlp, GPU, AbstractNLPSolver, registry; max_it
 MadNLP{GPU}(options=StrategyOptions{...})
 ```
 
-See also: [`build_strategy`](@ref)
+See also: `build_strategy`
 """
 function build_strategy(
     id::Symbol,
@@ -128,7 +128,7 @@ julia> extract_id_from_method(method, AbstractNLPSolver, registry)
 :ipopt
 ```
 
-See also: [`strategy_ids`](@ref)
+See also: `strategy_ids`
 """
 function extract_id_from_method(
     method::Tuple{Vararg{Symbol}},
@@ -218,7 +218,7 @@ present in the method tuple is compatible with all selected strategies.
 - `Vector{Type{<:AbstractStrategyParameter}}`: Supported parameter types. Returns
   an empty vector if the strategy is not parameterized.
 
-See also: [`extract_global_parameter_from_method`](@ref), [`get_parameter_type`](@ref)
+See also: `extract_global_parameter_from_method`, `get_parameter_type`
 """
 function available_parameters(
     strategy_id::Symbol, family::Type{<:AbstractStrategy}, registry::StrategyRegistry
@@ -260,7 +260,7 @@ parameter token is required and must be supported by each parameterized strategy
   if a parameter is missing but required, if a parameter is unsupported, or if a
   parameter token is provided but no selected strategy is parameterized.
 
-See also: [`available_parameters`](@ref), [`Strategies.AbstractStrategyParameter`](@ref)
+See also: `available_parameters`, `Strategies.AbstractStrategyParameter`
 """
 function extract_global_parameter_from_method(
     method::Tuple{Vararg{Symbol}}, registry::StrategyRegistry

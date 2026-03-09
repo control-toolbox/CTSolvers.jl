@@ -35,7 +35,7 @@ function (modeler::MyModeler)(
 end
 ```
 
-See also: [`Strategies.AbstractStrategy`](@ref), [`Optimization.build_model`](@ref), [`Optimization.build_solution`](@ref)
+See also: `Strategies.AbstractStrategy`, `Optimization.build_model`, `Optimization.build_solution`
 """
 abstract type AbstractNLPModeler <: Strategies.AbstractStrategy end
 

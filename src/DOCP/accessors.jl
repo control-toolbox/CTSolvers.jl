@@ -18,6 +18,6 @@ Extract the original optimal control problem from a discretized problem.
 ocp = ocp_model(docp)
 ```
 
-See also: [`DiscretizedModel`](@ref)
+See also: `DiscretizedModel`
 """
 ocp_model(docp::DiscretizedModel) = docp.optimal_control_problem

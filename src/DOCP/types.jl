@@ -30,7 +30,7 @@ docp = DiscretizedModel(
 )
 ```
 
-See also: [`ocp_model`](@ref), [`nlp_model`](@ref), [`ocp_solution`](@ref)
+See also: `ocp_model`, `nlp_model`, `ocp_solution`
 """
 struct DiscretizedModel{
     TO<:CTModels.AbstractModel,

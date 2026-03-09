@@ -72,7 +72,7 @@ using MadNLP
 - Default backend is automatically selected based on the parameter type
 - **GPU linear solver**: When using `MadNLP{GPU}`, the linear solver automatically defaults to `MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`. This ensures compatibility with GPU execution and avoids attempting to use CPU-only solvers on CUDA backends.
 
-See also: [`AbstractNLPSolver`](@ref), [`Ipopt`](@ref), [`Solvers.MadNCL`](@ref), [`CPU`](@ref), [`GPU`](@ref)
+See also: `AbstractNLPSolver`, `Ipopt`, `Solvers.MadNCL`, `CPU`, `GPU`
 """
 struct MadNLP{P<:Union{CPU,GPU}} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
@@ -97,7 +97,7 @@ Default parameter type for MadNLP when not explicitly specified.
 
 Returns `CPU` as the default execution parameter.
 
-See also: [`MadNLP`](@ref), [`CPU`](@ref)
+See also: `MadNLP`, `CPU`
 """
 Strategies._default_parameter(::Type{<:Solvers.MadNLP}) = CPU
 
@@ -130,7 +130,7 @@ solver_permissive = MadNLP(max_iter=1000, custom_option=123; mode=:permissive)
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
 
-See also: [`MadNLP`](@ref), [`build_madnlp_solver`](@ref)
+See also: `MadNLP`, `build_madnlp_solver`
 """
 function Solvers.MadNLP(; mode::Symbol=:strict, kwargs...)
     P = Strategies._default_parameter(Solvers.MadNLP)
@@ -163,7 +163,7 @@ solver_gpu = MadNLP{GPU}(max_iter=1000, tol=1e-6)  # requires CUDA.jl
 - `CTBase.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
 - `CTBase.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
 
-See also: [`MadNLP`](@ref), [`CPU`](@ref), [`GPU`](@ref)
+See also: `MadNLP`, `CPU`, `GPU`
 """
 function Solvers.MadNLP{P}(;
     mode::Symbol=:strict, kwargs...
@@ -180,7 +180,7 @@ Real implementation provided by the extension.
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
 
-See also: [`MadNLP`](@ref), [`Strategies.metadata`](@ref)
+See also: `MadNLP`, `Strategies.metadata`
 """
 function build_madnlp_solver(
     ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
@@ -206,7 +206,7 @@ This stub is for parameterized types `MadNLP{P}` where `P <: AbstractStrategyPar
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
 
-See also: [`MadNLP`](@ref), [`Strategies.StrategyMetadata`](@ref)
+See also: `MadNLP`, `Strategies.StrategyMetadata`
 """
 function Strategies.metadata(
     ::Type{<:Solvers.MadNLP{P}}
@@ -237,7 +237,7 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If extension not loaded (via delegation)
 
-See also: [`MadNLP`](@ref), [`Strategies.metadata`](@ref)
+See also: `MadNLP`, `Strategies.metadata`
 """
 function Strategies.metadata(::Type{Solvers.MadNLP})
     return Strategies.metadata(

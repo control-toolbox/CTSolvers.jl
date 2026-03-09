@@ -23,7 +23,7 @@ Fallback method for invalid ADNLP backends using tag dispatch.
 - Provides comprehensive error message with valid backend options
 - Uses structured exception with got/expected/suggestion fields
 
-See also: [`validate_adnlp_backend(::AbstractTag, ::Val{:default})`](@ref), [`get_validate_adnlp_backend`](@ref)
+See also: `validate_adnlp_backend(::AbstractTag, ::Val{:default})`, `get_validate_adnlp_backend`
 """
 function validate_adnlp_backend(tag::AbstractTag, backend::Val)
     # This is the generic fallback - should never be reached
@@ -58,7 +58,7 @@ Validate always-available ADNLP backends using tag dispatch.
 - Uses Julia's multiple dispatch for type-safe validation
 - Extensions can override these methods for tag-specific behavior
 
-See also: [`validate_adnlp_backend(::AbstractTag, ::Val{:enzyme})`](@ref), [`get_validate_adnlp_backend`](@ref)
+See also: `validate_adnlp_backend(::AbstractTag, ::Val{:enzyme})`, `get_validate_adnlp_backend`
 """
 validate_adnlp_backend(tag::AbstractTag, ::Val{:default}) = :default
 validate_adnlp_backend(tag::AbstractTag, ::Val{:optimized}) = :optimized
@@ -82,7 +82,7 @@ Validate Enzyme backend using tag dispatch.
 - CTSolversEnzyme extension overrides this method for ADNLPTag when Enzyme is available
 - Provides clear error message directing users to load the extension
 
-See also: [`validate_adnlp_backend(::AbstractTag, ::Val{:zygote})`](@ref), [`get_validate_adnlp_backend`](@ref)
+See also: `validate_adnlp_backend(::AbstractTag, ::Val{:zygote})`, `get_validate_adnlp_backend`
 """
 function validate_adnlp_backend(tag::AbstractTag, ::Val{:enzyme})
     throw(
@@ -112,7 +112,7 @@ Validate Zygote backend using tag dispatch.
 - CTSolversZygote extension overrides this method for ADNLPTag when Zygote is available
 - Provides clear error message directing users to load the extension
 
-See also: [`validate_adnlp_backend(::AbstractTag, ::Val{:enzyme})`](@ref), [`get_validate_adnlp_backend`](@ref)
+See also: `validate_adnlp_backend(::AbstractTag, ::Val{:enzyme})`, `get_validate_adnlp_backend`
 """
 function validate_adnlp_backend(tag::AbstractTag, ::Val{:zygote})
     throw(
@@ -157,7 +157,7 @@ ERROR: Control Toolbox Error
 ❌ Error: CTBase.Exceptions.IncorrectArgument, Invalid base type for Modelers.Exa
 ```
 
-See also: [`Modelers.Exa`](@ref)
+See also: `Modelers.Exa`
 """
 function validate_exa_base_type(T::Type{<:AbstractFloat})
     return T
@@ -179,7 +179,7 @@ Fallback method for invalid base types in ExaModels validation.
 - Provides clear error message with suggestions for valid types
 - Uses structured exception with got/expected/suggestion fields
 
-See also: [`validate_exa_base_type(::Type{<:AbstractFloat})`](@ref)
+See also: `validate_exa_base_type(::Type{<:AbstractFloat})`
 """
 function validate_exa_base_type(T)
     throw(

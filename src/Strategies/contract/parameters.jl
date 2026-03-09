@@ -85,7 +85,7 @@ julia> Strategies.is_parameter_type(Int)
 false
 ```
 
-See also: [`AbstractStrategyParameter`](@ref), [`validate_parameter_type`](@ref)
+See also: `AbstractStrategyParameter`, `validate_parameter_type`
 """
 is_parameter_type(::Type{T}) where {T} = T <: AbstractStrategyParameter
 
@@ -94,7 +94,7 @@ $(TYPEDSIGNATURES)
 
 Get the identifier of a strategy parameter type.
 
-This is an explicit alias for [`id`](@ref) to make code using parameter IDs
+This is an explicit alias for `id` to make code using parameter IDs
 more self-documenting.
 
 # Arguments
@@ -109,7 +109,7 @@ julia> Strategies.parameter_id(Strategies.CPU)
 :cpu
 ```
 
-See also: [`id`](@ref), [`AbstractStrategyParameter`](@ref)
+See also: `id`, `AbstractStrategyParameter`
 """
 parameter_id(parameter_type::Type{<:AbstractStrategyParameter}) = id(parameter_type)
 
@@ -121,7 +121,7 @@ Validate that a parameter type satisfies the `AbstractStrategyParameter` contrac
 This function performs lightweight structural checks:
 - the parameter type must be concrete
 - the parameter type must be a singleton type (no fields)
-- the parameter type must implement [`id`](@ref)
+- the parameter type must implement `id`
 
 # Arguments
 - `parameter_type::Type{<:AbstractStrategyParameter}`: The parameter type to validate
@@ -144,7 +144,7 @@ Strategies.validate_parameter_type(MyParam)  # returns nothing
 # Notes
 - This function does not validate global ID uniqueness; that is handled by registry construction.
 
-See also: [`id`](@ref), [`parameter_id`](@ref), [`is_parameter_type`](@ref)
+See also: `id`, `parameter_id`, `is_parameter_type`
 """
 function validate_parameter_type(parameter_type::Type{<:AbstractStrategyParameter})
     if !isconcretetype(parameter_type)
@@ -230,7 +230,7 @@ _default_parameter(::Type{<:MyStrategy}) = CPU
 _default_parameter(::Type{<:MyOtherStrategy}) = GPU
 ```
 
-See also: [`CPU`](@ref), [`GPU`](@ref)
+See also: `CPU`, `GPU`
 """
 function _default_parameter(::Type{<:AbstractStrategy})
     throw(

@@ -104,7 +104,7 @@ using NLPModelsIpopt
 - `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
 
-See also: [`CPU`](@ref), [`AbstractNLPSolver`](@ref), [`MadNLP`](@ref), [`Knitro`](@ref)
+See also: `CPU`, `AbstractNLPSolver`, `MadNLP`, `Knitro`
 """
 struct Ipopt{P<:CPU} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
@@ -134,7 +134,7 @@ Returns `CPU` as the default execution parameter.
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: [`Ipopt`](@ref), [`CPU`](@ref)
+See also: `Ipopt`, `CPU`
 """
 Strategies._default_parameter(::Type{<:Solvers.Ipopt}) = CPU
 
@@ -167,7 +167,7 @@ solver_permissive = Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
 
-See also: [`Ipopt`](@ref), [`build_ipopt_solver`](@ref)
+See also: `Ipopt`, `build_ipopt_solver`
 """
 function Solvers.Ipopt(; mode::Symbol=:strict, kwargs...)
     P = Strategies._default_parameter(Solvers.Ipopt)
@@ -199,7 +199,7 @@ solver_cpu = Solvers.Ipopt{CPU}(max_iter=1000, tol=1e-6)
 - `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
 
-See also: [`Ipopt`](@ref), [`CPU`](@ref)
+See also: `Ipopt`, `CPU`
 """
 function Solvers.Ipopt{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
     return build_ipopt_solver(IpoptTag, P; mode=mode, kwargs...)
@@ -214,7 +214,7 @@ Real implementation provided by the extension.
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
 
-See also: [`Ipopt`](@ref), [`Strategies.metadata`](@ref)
+See also: `Ipopt`, `Strategies.metadata`
 """
 function build_ipopt_solver(
     ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
@@ -240,7 +240,7 @@ This stub is for parameterized types `Ipopt{P}` where `P <: AbstractStrategyPara
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
 
-See also: [`Ipopt`](@ref), [`Strategies.StrategyMetadata`](@ref)
+See also: `Ipopt`, `Strategies.StrategyMetadata`
 """
 function Strategies.metadata(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU}
     # Extension is missing
@@ -270,7 +270,7 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If extension not loaded (via delegation)
 
-See also: [`Ipopt`](@ref), [`Strategies.metadata`](@ref)
+See also: `Ipopt`, `Strategies.metadata`
 """
 function Strategies.metadata(::Type{Solvers.Ipopt})
     return Strategies.metadata(Solvers.Ipopt{Strategies._default_parameter(Solvers.Ipopt)})

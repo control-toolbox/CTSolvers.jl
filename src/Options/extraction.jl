@@ -120,7 +120,7 @@ options from the kwargs.
 # Throws
 - Any exception raised by validators in the definitions
 
-See also: [`extract_option`](@ref), [`OptionDefinition`](@ref), [`OptionValue`](@ref)
+See also: `extract_option`, `OptionDefinition`, `OptionValue`
 
 # Example
 ```julia
@@ -175,7 +175,7 @@ of a Dict for convenience when the definition structure is known at compile time
 # Throws
 - Any exception raised by validators in the definitions
 
-See also: [`extract_option`](@ref), [`OptionDefinition`](@ref), [`OptionValue`](@ref)
+See also: `extract_option`, `OptionDefinition`, `OptionValue`
 
 # Example
 ```julia
@@ -236,7 +236,7 @@ extract_raw_options(opts)
 # (backend = :optimized, show_time = false, minimize = nothing)
 ```
 
-See also: [`OptionValue`](@ref), [`extract_options`](@ref), [`NotProvided`](@ref)
+See also: `OptionValue`, `extract_options`, `NotProvided`
 """
 function extract_raw_options(options::NamedTuple)
     raw_opts_dict = Dict{Symbol,Any}()

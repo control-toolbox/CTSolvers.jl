@@ -28,7 +28,7 @@ nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
 stats = solver(nlp, display=true)
 ```
 
-See also: [`Solvers.Ipopt`](@ref), [`Solvers.MadNLP`](@ref), [`Solvers.MadNCL`](@ref), [`Solvers.Knitro`](@ref)
+See also: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`
 """
 abstract type AbstractNLPSolver <: Strategies.AbstractStrategy end
 
@@ -60,7 +60,7 @@ nlp = ADNLPModel(x -> sum(x.^2), zeros(5))
 stats = solver(nlp, display=false)
 ```
 
-See also: [`AbstractNLPSolver`](@ref), [`CommonSolve.solve`](@ref)
+See also: `AbstractNLPSolver`, `CommonSolve.solve`
 """
 function (solver::AbstractNLPSolver)(nlp; display::Bool=true)
     throw(

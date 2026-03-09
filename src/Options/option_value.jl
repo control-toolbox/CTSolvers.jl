@@ -37,7 +37,7 @@ julia> opt.source
 # Throws
 - `Exceptions.IncorrectArgument`: If source is not one of `:default`, `:user`, or `:computed`
 
-See also: [`value`](@ref), [`source`](@ref), [`is_user`](@ref)
+See also: `value`, `source`, `is_user`
 """
 struct OptionValue{T}
     value::T
@@ -107,7 +107,7 @@ opt = OptionValue(100, :user)
 value(opt)  # 100
 ```
 
-See also: [`source`](@ref), [`is_user`](@ref)
+See also: `source`, `is_user`
 """
 value(opt::OptionValue) = opt.value
 
@@ -125,7 +125,7 @@ opt = OptionValue(100, :user)
 source(opt)  # :user
 ```
 
-See also: [`value`](@ref), [`is_user`](@ref)
+See also: `value`, `is_user`
 """
 source(opt::OptionValue) = opt.source
 
@@ -143,7 +143,7 @@ opt = OptionValue(100, :user)
 is_user(opt)  # true
 ```
 
-See also: [`is_default`](@ref), [`is_computed`](@ref), [`source`](@ref)
+See also: `is_default`, `is_computed`, `source`
 """
 is_user(opt::OptionValue) = opt.source === :user
 
@@ -161,7 +161,7 @@ opt = OptionValue(100, :default)
 is_default(opt)  # true
 ```
 
-See also: [`is_user`](@ref), [`is_computed`](@ref), [`source`](@ref)
+See also: `is_user`, `is_computed`, `source`
 """
 is_default(opt::OptionValue) = opt.source === :default
 
@@ -179,7 +179,7 @@ opt = OptionValue(100, :computed)
 is_computed(opt)  # true
 ```
 
-See also: [`is_user`](@ref), [`is_default`](@ref), [`source`](@ref)
+See also: `is_user`, `is_default`, `source`
 """
 is_computed(opt::OptionValue) = opt.source === :computed
 

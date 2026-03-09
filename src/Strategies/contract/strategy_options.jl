@@ -83,7 +83,7 @@ julia> for (name, value) in opts
        end
 ```
 
-See also: [`OptionValue`](@ref), [`source`](@ref), [`is_user`](@ref), [`is_default`](@ref), [`is_computed`](@ref)
+See also: `OptionValue`, `source`, `is_user`, `is_default`, `is_computed`
 """
 struct StrategyOptions{NT<:NamedTuple}
     options::NT
@@ -137,7 +137,7 @@ julia> get(opts, Val(:max_iter))  # Type-stable
 200
 ```
 
-See also: [`Base.getproperty`](@ref), [`source`](@ref), [`get(::StrategyOptions, ::Val)`](@ref)
+See also: `Base.getproperty`, `source`, `get(::StrategyOptions, ::Val)`
 """
 Base.getindex(opts::StrategyOptions, key::Symbol) = Options.value(option(opts, key))
 
@@ -159,7 +159,7 @@ julia> get(opts, Val(:max_iter))
 200
 ```
 
-See also: [`Base.getindex`](@ref), [`Base.getproperty`](@ref)
+See also: `Base.getindex`, `Base.getproperty`
 """
 function Base.get(opts::StrategyOptions{NT}, ::Val{key}) where {NT<:NamedTuple,key}
     return Options.value(option(opts, key))
@@ -189,7 +189,7 @@ julia> opts.max_iter.source
 :user
 ```
 
-See also: [`Base.getindex`](@ref), [`source`](@ref)
+See also: `Base.getindex`, `source`
 """
 function Base.getproperty(opts::StrategyOptions, key::Symbol)
     key === :options ? _raw_options(opts) : _raw_options(opts)[key]
@@ -218,7 +218,7 @@ julia> Options.value(opt)
 200
 ```
 
-See also: [`Base.getproperty`](@ref), [`Options.source`](@ref)
+See also: `Base.getproperty`, `Options.source`
 """
 option(opts::StrategyOptions, key::Symbol) = _raw_options(opts)[key]
 
@@ -243,7 +243,7 @@ julia> Options.value(opts, :max_iter)
 200
 ```
 
-See also: [`Options.is_user`](@ref), [`Options.is_default`](@ref), [`Options.is_computed`](@ref)
+See also: `Options.is_user`, `Options.is_default`, `Options.is_computed`
 """
 function Options.value(opts::StrategyOptions, key::Symbol)
     return Options.value(option(opts, key))
@@ -267,7 +267,7 @@ julia> Options.source(opts, :max_iter)
 :user
 ```
 
-See also: [`Options.is_user`](@ref), [`Options.is_default`](@ref), [`Options.is_computed`](@ref)
+See also: `Options.is_user`, `Options.is_default`, `Options.is_computed`
 """
 function Options.source(opts::StrategyOptions, key::Symbol)
     return Options.source(option(opts, key))
@@ -291,7 +291,7 @@ julia> Options.is_user(opts, :max_iter)
 true
 ```
 
-See also: [`Options.source`](@ref), [`Options.is_default`](@ref), [`Options.is_computed`](@ref)
+See also: `Options.source`, `Options.is_default`, `Options.is_computed`
 """
 function Options.is_user(opts::StrategyOptions, key::Symbol)
     return Options.is_user(option(opts, key))
@@ -315,7 +315,7 @@ julia> Options.is_default(opts, :tol)
 true
 ```
 
-See also: [`Options.source`](@ref), [`Options.is_user`](@ref), [`Options.is_computed`](@ref)
+See also: `Options.source`, `Options.is_user`, `Options.is_computed`
 """
 function Options.is_default(opts::StrategyOptions, key::Symbol)
     return Options.is_default(option(opts, key))
@@ -339,7 +339,7 @@ julia> Options.is_computed(opts, :step)
 true
 ```
 
-See also: [`Options.source`](@ref), [`Options.is_user`](@ref), [`Options.is_default`](@ref)
+See also: `Options.source`, `Options.is_user`, `Options.is_default`
 """
 function Options.is_computed(opts::StrategyOptions, key::Symbol)
     return Options.is_computed(option(opts, key))
@@ -388,7 +388,7 @@ julia> collect(keys(opts))
 [:max_iter, :tol]
 ```
 
-See also: [`Base.values`](@ref), [`Base.pairs`](@ref)
+See also: `Base.values`, `Base.pairs`
 """
 Base.keys(opts::StrategyOptions) = keys(_raw_options(opts))
 """
@@ -408,7 +408,7 @@ julia> collect(values(opts))
 [200, 1.0e-6]
 ```
 
-See also: [`Base.keys`](@ref), [`Base.pairs`](@ref)
+See also: `Base.keys`, `Base.pairs`
 """
 function Base.values(opts::StrategyOptions)
     (Options.value(opt) for opt in values(_raw_options(opts)))
@@ -430,7 +430,7 @@ julia> collect(pairs(opts))
 [:max_iter => 200, :tol => 1.0e-6]
 ```
 
-See also: [`Base.keys`](@ref), [`Base.values`](@ref)
+See also: `Base.keys`, `Base.values`
 """
 function Base.pairs(opts::StrategyOptions)
     (k => Options.value(v) for (k, v) in pairs(_raw_options(opts)))
@@ -457,7 +457,7 @@ julia> for value in opts
 1.0e-6
 ```
 
-See also: [`Base.keys`](@ref), [`Base.values`](@ref), [`Base.pairs`](@ref)
+See also: `Base.keys`, `Base.values`, `Base.pairs`
 """
 function Base.iterate(opts::StrategyOptions, state...)
     result = iterate(values(_raw_options(opts)), state...)
@@ -483,7 +483,7 @@ julia> length(opts)
 2
 ```
 
-See also: [`Base.isempty`](@ref), [`Base.haskey`](@ref)
+See also: `Base.isempty`, `Base.haskey`
 """
 Base.length(opts::StrategyOptions) = length(_raw_options(opts))
 """
@@ -503,7 +503,7 @@ julia> isempty(opts)
 false
 ```
 
-See also: [`Base.length`](@ref), [`Base.haskey`](@ref)
+See also: `Base.length`, `Base.haskey`
 """
 Base.isempty(opts::StrategyOptions) = isempty(_raw_options(opts))
 """
@@ -527,7 +527,7 @@ julia> haskey(opts, :nonexistent)
 false
 ```
 
-See also: [`Base.length`](@ref), [`Base.isempty`](@ref)
+See also: `Base.length`, `Base.isempty`
 """
 Base.haskey(opts::StrategyOptions, key::Symbol) = haskey(_raw_options(opts), key)
 
@@ -556,7 +556,7 @@ StrategyOptions with 2 options:
   tol = 1.0e-6  [default]
 ```
 
-See also: [`Base.show`](@ref)
+See also: `Base.show`
 """
 function Base.show(io::IO, ::MIME"text/plain", opts::StrategyOptions)
     n = length(opts)
@@ -584,7 +584,7 @@ julia> print(opts)
 StrategyOptions(max_iter=200, tol=1.0e-6)
 ```
 
-See also: [`Base.show(::IO, ::MIME"text/plain", ::StrategyOptions)`](@ref)
+See also: `Base.show(::IO, ::MIME"text/plain", ::StrategyOptions)`
 """
 function Base.show(io::IO, opts::StrategyOptions)
     print(io, "StrategyOptions(")

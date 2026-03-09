@@ -268,5 +268,5 @@ __default_tolerance(::Type{Float64Precision}) = 1e-12
 
 - [Implementing a Strategy](@ref) — Strategy contract and metadata
 - [Orchestration and Routing](@ref) — How parameters integrate with routing
-- [`Strategies.AbstractStrategyParameter`](@ref) — API reference
-- [`Solvers.MadNLP`](@ref) — Real-world example with CPU/GPU parameters
+- `Strategies.AbstractStrategyParameter` — API reference
+- `Solvers.MadNLP` — Real-world example with CPU/GPU parameters

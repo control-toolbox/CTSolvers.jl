@@ -18,7 +18,7 @@ struct ADNLPTag <: AbstractTag end
 """
 $(TYPEDSIGNATURES)
 
-Return the default automatic differentiation backend for [`Modelers.ADNLP`](@ref).
+Return the default automatic differentiation backend for `Modelers.ADNLP`.
 
 Default is `:optimized`.
 """
@@ -153,10 +153,10 @@ modeler = Modelers.ADNLP(
 
 # See also
 
-- [`CPU`](@ref): CPU parameter type
-- [`Modelers.Exa`](@ref): Alternative modeler using ExaModels (supports GPU)
-- [`Optimization.build_model`](@ref): Build a backend NLP model from a problem and a modeler
-- [`Optimization.build_solution`](@ref): Build a problem-level solution from execution statistics
+- `CPU`: CPU parameter type
+- `Modelers.Exa`: Alternative modeler using ExaModels (supports GPU)
+- `Optimization.build_model`: Build a backend NLP model from a problem and a modeler
+- `Optimization.build_solution`: Build a problem-level solution from execution statistics
 
 # Notes
 
@@ -190,7 +190,7 @@ Returns `CPU` as the default execution parameter.
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: [`ADNLP`](@ref), [`CPU`](@ref)
+See also: `ADNLP`, `CPU`
 """
 Strategies._default_parameter(::Type{<:Modelers.ADNLP}) = CPU
 
@@ -345,7 +345,7 @@ Create a parameterized Modelers.ADNLP with validated options.
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Modeler options (see [`Modelers.ADNLP`](@ref) documentation)
+- `kwargs...`: Modeler options (see `Modelers.ADNLP` documentation)
 
 # Returns
 - `Modelers.ADNLP{P}`: Configured modeler instance with specified parameter
@@ -366,7 +366,7 @@ modeler = Modelers.ADNLP{CPU}(backend=:optimized, custom_option=123; mode=:permi
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 - `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 
-See also: [`Modelers.ADNLP`](@ref), [`Strategies.build_strategy_options`](@ref)
+See also: `Modelers.ADNLP`, `Strategies.build_strategy_options`
 """
 function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
     # Check for deprecated aliases
@@ -388,7 +388,7 @@ Create an Modelers.ADNLP with validated options (defaults to CPU).
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
-- `kwargs...`: Modeler options (see [`Modelers.ADNLP`](@ref) documentation)
+- `kwargs...`: Modeler options (see `Modelers.ADNLP` documentation)
 
 # Returns
 - `Modelers.ADNLP{CPU}`: Configured modeler instance with CPU parameter
@@ -409,7 +409,7 @@ modeler = Modelers.ADNLP(backend=:optimized, custom_option=123; mode=:permissive
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 - `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 
-See also: [`Modelers.ADNLP`](@ref), [`Modelers.ADNLP{CPU}`](@ref), [`Strategies.build_strategy_options`](@ref)
+See also: `Modelers.ADNLP`, `Modelers.ADNLP{CPU}`, `Strategies.build_strategy_options`
 """
 function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
     P = Strategies._default_parameter(Modelers.ADNLP)
@@ -444,9 +444,9 @@ stats = solve(nlp, solver)
 
 # See also
 
-- [`Modelers.ADNLP`](@ref): Type documentation
-- [`build_model`](@ref): Generic model building interface
-- [`ADNLPModels.ADNLPModel`](@ref): NLP model type
+- `Modelers.ADNLP`: Type documentation
+- `build_model`: Generic model building interface
+- `ADNLPModels.ADNLPModel`: NLP model type
 """
 function (modeler::Modelers.ADNLP)(
     prob::AbstractOptimizationProblem, initial_guess
@@ -488,9 +488,9 @@ solution = modeler(problem, stats)
 
 # See also
 
-- [`Modelers.ADNLP`](@ref): Type documentation
-- [`SolverCore.AbstractExecutionStats`](@ref): Solver statistics type
-- [`solve`](@ref): Generic solve interface
+- `Modelers.ADNLP`: Type documentation
+- `SolverCore.AbstractExecutionStats`: Solver statistics type
+- `solve`: Generic solve interface
 """
 function (modeler::Modelers.ADNLP)(
     prob::AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats
@@ -544,7 +544,7 @@ ERROR: Control Toolbox Error
 - Extensions enable specific backends for their tag types
 - Default implementations throw `ExtensionError` for Enzyme/Zygote backends
 
-See also: [`validate_adnlp_backend`](@ref), [`ADNLPTag`](@ref), [`Modelers.ADNLP`](@ref)
+See also: `validate_adnlp_backend`, `ADNLPTag`, `Modelers.ADNLP`
 """
 function get_validate_adnlp_backend(T::Type{<:AbstractTag})
     return backend::Symbol -> validate_adnlp_backend(T(), Val(backend))

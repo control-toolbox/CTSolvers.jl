@@ -67,7 +67,7 @@ StrategyOptions with 2 options:
 - Unknown options in permissive mode are stored with source `:user` but bypass validation
 - Use permissive mode only when you need to pass backend-specific options not defined in CTSolvers metadata
 
-See also: [`StrategyOptions`](@ref), [`metadata`](@ref), [`Options.extract_options`](@ref)
+See also: `StrategyOptions`, `metadata`, `Options.extract_options`
 """
 function build_strategy_options(
     strategy_type::Type{<:AbstractStrategy}; mode::Symbol=:strict, kwargs...
@@ -160,7 +160,7 @@ julia> resolve_alias(meta, :unknown)  # Not found
 nothing
 ```
 
-See also: [`StrategyMetadata`](@ref), [`OptionDefinition`](@ref)
+See also: `StrategyMetadata`, `OptionDefinition`
 """
 function resolve_alias(meta::StrategyMetadata, key::Symbol)
     # Check if key is a primary name

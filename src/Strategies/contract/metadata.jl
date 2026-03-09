@@ -132,7 +132,7 @@ StrategyOptions(max_iter=200, tol=1.0e-8)
 # Throws
 - `Exceptions.IncorrectArgument`: If duplicate option names are provided
 
-See also: [`OptionDefinition`](@ref), [`AbstractStrategy`](@ref), [`build_strategy_options`](@ref)
+See also: `OptionDefinition`, `AbstractStrategy`, `build_strategy_options`
 """
 struct StrategyMetadata{NT<:NamedTuple}
     specs::NT
@@ -194,7 +194,7 @@ julia> meta[:max_iter].default
 100
 ```
 
-See also: [`Base.keys`](@ref), [`Base.values`](@ref), [`Base.haskey`](@ref)
+See also: `Base.keys`, `Base.values`, `Base.haskey`
 """
 Base.getindex(meta::StrategyMetadata, key::Symbol) = meta.specs[key]
 
@@ -217,7 +217,7 @@ julia> collect(keys(meta))
  :tol
 ```
 
-See also: [`Base.values`](@ref), [`Base.pairs`](@ref)
+See also: `Base.values`, `Base.pairs`
 """
 Base.keys(meta::StrategyMetadata) = keys(meta.specs)
 
@@ -241,7 +241,7 @@ max_iter: Maximum iterations
 tol: Convergence tolerance
 ```
 
-See also: [`Base.keys`](@ref), [`Base.pairs`](@ref)
+See also: `Base.keys`, `Base.pairs`
 """
 Base.values(meta::StrategyMetadata) = values(meta.specs)
 
@@ -265,7 +265,7 @@ max_iter => Int64
 tol => Float64
 ```
 
-See also: [`Base.keys`](@ref), [`Base.values`](@ref)
+See also: `Base.keys`, `Base.values`
 """
 Base.pairs(meta::StrategyMetadata) = pairs(meta.specs)
 
@@ -292,7 +292,7 @@ max_iter: Maximum iterations
 tol: Convergence tolerance
 ```
 
-See also: [`Base.pairs`](@ref), [`Base.keys`](@ref)
+See also: `Base.pairs`, `Base.keys`
 """
 Base.iterate(meta::StrategyMetadata, state...) = iterate(pairs(meta.specs), state...)
 
@@ -313,7 +313,7 @@ julia> length(meta)
 2
 ```
 
-See also: [`Base.isempty`](@ref), [`Base.haskey`](@ref)
+See also: `Base.isempty`, `Base.haskey`
 """
 Base.length(meta::StrategyMetadata) = length(meta.specs)
 
@@ -338,7 +338,7 @@ julia> haskey(meta, :nonexistent)
 false
 ```
 
-See also: [`Base.getindex`](@ref), [`Base.keys`](@ref)
+See also: `Base.getindex`, `Base.keys`
 """
 Base.haskey(meta::StrategyMetadata, key::Symbol) = haskey(meta.specs, key)
 

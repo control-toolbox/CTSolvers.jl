@@ -66,7 +66,7 @@ using MadNCL, MadNLP
 - Default backend is automatically selected based on the parameter type
 - **GPU linear solver**: When using `MadNCL{GPU}`, the linear solver automatically defaults to `MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`. This ensures compatibility with GPU execution and avoids attempting to use CPU-only solvers on CUDA backends.
 
-See also: [`AbstractNLPSolver`](@ref), [`MadNLP`](@ref), [`Ipopt`](@ref), [`CPU`](@ref), [`GPU`](@ref)
+See also: `AbstractNLPSolver`, `MadNLP`, `Ipopt`, `CPU`, `GPU`
 """
 struct MadNCL{P<:Union{CPU,GPU}} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
@@ -91,7 +91,7 @@ Default parameter type for MadNCL when not explicitly specified.
 
 Returns `CPU` as the default execution parameter.
 
-See also: [`MadNCL`](@ref), [`CPU`](@ref)
+See also: `MadNCL`, `CPU`
 """
 Strategies._default_parameter(::Type{<:Solvers.MadNCL}) = CPU
 
@@ -124,7 +124,7 @@ solver_permissive = Solvers.MadNCL(max_iter=1000, custom_option=123; mode=:permi
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the MadNCL extension is not loaded
 
-See also: [`MadNCL`](@ref), [`build_madncl_solver`](@ref)
+See also: `MadNCL`, `build_madncl_solver`
 """
 function Solvers.MadNCL(; mode::Symbol=:strict, kwargs...)
     P = Strategies._default_parameter(Solvers.MadNCL)
@@ -157,7 +157,7 @@ solver_gpu = Solvers.MadNCL{GPU}(max_iter=1000, tol=1e-6)  # requires CUDA.jl
 - `CTBase.Exceptions.ExtensionError`: If the MadNCL extension is not loaded
 - `CTBase.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
 
-See also: [`MadNCL`](@ref), [`CPU`](@ref), [`GPU`](@ref)
+See also: `MadNCL`, `CPU`, `GPU`
 """
 function Solvers.MadNCL{P}(;
     mode::Symbol=:strict, kwargs...
@@ -174,7 +174,7 @@ Real implementation provided by the extension.
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
 
-See also: [`MadNCL`](@ref), [`Strategies.metadata`](@ref)
+See also: `MadNCL`, `Strategies.metadata`
 """
 function build_madncl_solver(
     ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
@@ -201,7 +201,7 @@ This stub is for parameterized types `MadNCL{P}` where `P <: AbstractStrategyPar
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
 
-See also: [`MadNCL`](@ref), [`Strategies.StrategyMetadata`](@ref)
+See also: `MadNCL`, `Strategies.StrategyMetadata`
 """
 function Strategies.metadata(
     ::Type{<:Solvers.MadNCL{P}}
@@ -233,7 +233,7 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If extension not loaded (via delegation)
 
-See also: [`MadNCL`](@ref), [`Strategies.metadata`](@ref)
+See also: `MadNCL`, `Strategies.metadata`
 """
 function Strategies.metadata(::Type{Solvers.MadNCL})
     return Strategies.metadata(

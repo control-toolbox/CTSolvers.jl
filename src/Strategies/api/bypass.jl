@@ -20,7 +20,7 @@ julia> val = bypass(42)
 BypassValue(42)
 ```
 
-See also: [`bypass`](@ref)
+See also: `bypass`
 """
 struct BypassValue{T}
     value::T
@@ -31,11 +31,11 @@ $(TYPEDSIGNATURES)
 
 Mark an option value to bypass validation.
 
-This function creates a [`BypassValue`](@ref) wrapper around the provided value.
+This function creates a `BypassValue` wrapper around the provided value.
 When passed to a strategy constructor, this value will be accepted even if the
 option name is unknown (not in metadata) or if validation would otherwise fail.
 
-This can be combined with [`route_to`](@ref) to bypass validation for specific
+This can be combined with `route_to` to bypass validation for specific
 strategies when routing ambiguous options.
 
 # Arguments
@@ -75,7 +75,7 @@ julia> solve(ocp, method;
 - Can be combined with `route_to` for strategy-specific bypassing
 - `force` is an alias for `bypass` - they are identical functions
 
-See also: [`BypassValue`](@ref), [`route_to`](@ref), [`force`](@ref)
+See also: `BypassValue`, `route_to`, `force`
 """
 bypass(val) = BypassValue(val)
 
@@ -84,7 +84,7 @@ $(TYPEDSIGNATURES)
 
 Force an option value to bypass validation.
 
-This function is an alias for [`bypass`](@ref) and provides identical functionality.
+This function is an alias for `bypass` and provides identical functionality.
 The name `force` may be more intuitive for users who prefer "force" semantics
 when bypassing validation.
 
@@ -116,6 +116,6 @@ true
 - Both functions create `BypassValue` wrappers
 - Use with caution for the same reasons as `bypass`
 
-See also: [`BypassValue`](@ref), [`bypass`](@ref), [`route_to`](@ref)
+See also: `BypassValue`, `bypass`, `route_to`
 """
 const force = bypass

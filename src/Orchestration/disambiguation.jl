@@ -6,7 +6,7 @@ $(TYPEDEF)
 Resolved representation of a method tuple for strategy-aware option routing.
 
 `ResolvedMethod` contains precomputed lookups derived from a `method` tuple and a
-set of `families`. It is intended to be created via [`resolve_method`](@ref) and
+set of `families`. It is intended to be created via `resolve_method` and
 then reused by routing and builder utilities.
 
 # Fields
@@ -20,7 +20,7 @@ then reused by routing and builder utilities.
 # Notes
 - This type is internal to `CTSolvers.Orchestration`.
 
-See also: [`resolve_method`](@ref), [`route_all_options`](@ref)
+See also: `resolve_method`, `route_all_options`
 """
 struct ResolvedMethod{T<:Tuple,I<:NamedTuple}
     tokens::T
@@ -33,7 +33,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Resolve a method tuple into a [`ResolvedMethod`](@ref) for routing and builders.
+Resolve a method tuple into a `ResolvedMethod` for routing and builders.
 
 This function extracts one strategy ID per family (using the `Strategies` contract),
 builds reverse lookup maps, and extracts a global strategy parameter (if present).
@@ -55,7 +55,7 @@ resolved = resolve_method(method, families, registry)
 resolved.strategy_ids
 ```
 
-See also: [`extract_strategy_ids`](@ref), [`build_strategy_to_family_map`](@ref)
+See also: `extract_strategy_ids`, `build_strategy_to_family_map`
 """
 function resolve_method(
     method::Tuple{Vararg{Symbol}},
@@ -90,7 +90,7 @@ $(TYPEDSIGNATURES)
 
 Extract strategy IDs from a routed option.
 
-This function processes a [`RoutedOption`](@ref) created by [`route_to`](@ref) and
+This function processes a `RoutedOption` created by `route_to` and
 validates that all specified strategy IDs are present in the method tuple.
 
 # Arguments
@@ -111,7 +111,7 @@ routed = route_to(solver=100, modeler=50)
 ids = extract_strategy_ids(routed, resolved)
 ```
 
-See also: [`route_to`](@ref), [`RoutedOption`](@ref), [`extract_strategy_ids(::Any, ::ResolvedMethod)`](@ref)
+See also: `route_to`, `RoutedOption`, `extract_strategy_ids(::Any, ::ResolvedMethod)`
 """
 function extract_strategy_ids(
     raw::Strategies.RoutedOption, resolved::ResolvedMethod
@@ -160,7 +160,7 @@ resolved = resolve_method(method, families, registry)
 map = build_strategy_to_family_map(resolved, families, registry)
 ```
 
-See also: [`build_option_ownership_map`](@ref), [`extract_strategy_ids`](@ref)
+See also: `build_option_ownership_map`, `extract_strategy_ids`
 """
 function build_strategy_to_family_map(
     resolved::ResolvedMethod, families::NamedTuple, registry::Strategies.StrategyRegistry
@@ -200,7 +200,7 @@ map = build_option_ownership_map(resolved, families, registry)
 - Options appearing in multiple families require disambiguation syntax
 - Options not appearing in any family will trigger an error during routing
 
-See also: [`build_strategy_to_family_map`](@ref), [`route_all_options`](@ref)
+See also: `build_strategy_to_family_map`, `route_all_options`
 """
 function build_option_ownership_map(
     resolved::ResolvedMethod, families::NamedTuple, registry::Strategies.StrategyRegistry
@@ -251,7 +251,7 @@ resolved = resolve_method(method, families, registry)
 result = extract_strategy_ids(100, resolved)  # Returns nothing
 ```
 
-See also: [`extract_strategy_ids(::Strategies.RoutedOption, ::ResolvedMethod)`](@ref), [`route_to`](@ref)
+See also: `extract_strategy_ids(::Strategies.RoutedOption, ::ResolvedMethod)`, `route_to`
 """
 function extract_strategy_ids(raw, resolved::ResolvedMethod)::Nothing
     return nothing
@@ -276,7 +276,7 @@ resolved = resolve_method(method, families, registry)
 alias_map = build_alias_to_primary_map(resolved, families, registry)
 ```
 
-See also: [`build_option_ownership_map`](@ref), [`resolve_method`](@ref)
+See also: `build_option_ownership_map`, `resolve_method`
 
 """
 function build_alias_to_primary_map(

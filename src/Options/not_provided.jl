@@ -30,16 +30,16 @@ opt2 = OptionDefinition(
 )
 ```
 
-See also: [`OptionDefinition`](@ref), [`extract_options`](@ref)
+See also: `OptionDefinition`, `extract_options`
 """
 struct NotProvidedType end
 
 """
     NotProvided
 
-Singleton instance of [`NotProvidedType`](@ref).
+Singleton instance of `NotProvidedType`.
 
-Use this as the default value in [`OptionDefinition`](@ref) to indicate
+Use this as the default value in `OptionDefinition` to indicate
 that an option has no default value and should not be stored if not provided
 by the user.
 
@@ -71,26 +71,26 @@ $(TYPEDEF)
 Internal sentinel type used by the option extraction system to signal that an option
 should not be stored in the instance.
 
-This is returned by [`extract_option`](@ref) when an option has `NotProvided` as its
+This is returned by `extract_option` when an option has `NotProvided` as its
 default and was not provided by the user.
 
 # Note
 This type is internal to the Options module and should not be used directly by users.
-Use [`NotProvided`](@ref) instead.
+Use `NotProvided` instead.
 
-See also: [`NotProvided`](@ref), [`extract_option`](@ref)
+See also: `NotProvided`, `extract_option`
 """
 struct NotStoredType end
 
 """
     NotStored
 
-Internal singleton instance of [`NotStoredType`](@ref).
+Internal singleton instance of `NotStoredType`.
 
 Used internally by the option extraction system to signal that an option should not
 be stored. This is distinct from `nothing` which is a valid option value.
 
-See also: [`NotProvided`](@ref), [`extract_option`](@ref)
+See also: `NotProvided`, `extract_option`
 """
 const NotStored = NotStoredType()
 

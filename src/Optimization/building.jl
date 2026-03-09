@@ -24,7 +24,7 @@ modeler = Modelers.ADNLP(show_time=false)
 nlp = build_model(prob, initial_guess, modeler)
 ```
 
-See also: [`build_solution`](@ref)
+See also: `build_solution`
 """
 function build_model(prob, initial_guess, modeler)
     return modeler(prob, initial_guess)
@@ -51,7 +51,7 @@ The modeler handles the conversion from NLP solution to problem-specific solutio
 sol = build_solution(prob, nlp_stats, modeler)
 ```
 
-See also: [`build_model`](@ref)
+See also: `build_model`
 """
 function build_solution(prob, model_solution, modeler)
     return modeler(prob, model_solution)

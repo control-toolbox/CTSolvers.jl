@@ -40,7 +40,7 @@ High-level solve: Build NLP model, solve it, and build solution.
 # solution = solve(problem, x0, modeler, solver, display=true)
 ```
 
-See also: [`Optimization.build_model`](@ref), [`Optimization.build_solution`](@ref)
+See also: `Optimization.build_model`, `Optimization.build_solution`
 """
 function CommonSolve.solve(
     problem::Optimization.AbstractOptimizationProblem,
@@ -82,7 +82,7 @@ Mid-level solve: Solve NLP problem directly.
 # stats = solve(nlp, solver, display=false)
 ```
 
-See also: [`AbstractNLPSolver`](@ref)
+See also: `AbstractNLPSolver`
 """
 function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::AbstractNLPSolver; display::Bool=__display()
@@ -106,7 +106,7 @@ that may be compatible with the solver's callable interface.
 # Returns
 - Result from solver (type depends on solver implementation)
 
-See also: [`CommonSolve.solve`](@ref), [`AbstractNLPSolver`](@ref)
+See also: `CommonSolve.solve`, `AbstractNLPSolver`
 """
 function CommonSolve.solve(nlp, solver::AbstractNLPSolver; display::Bool=__display())
     return solver(nlp; display=display)

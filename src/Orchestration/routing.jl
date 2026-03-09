@@ -27,7 +27,7 @@ NamedTuple with two fields:
 - `action::NamedTuple`: NamedTuple of action options (with `OptionValue`
   wrappers)
 - `strategies::NamedTuple`: NamedTuple of strategy options per family (raw
-  values, may contain [`BypassValue`](@ref) wrappers for bypassed options)
+  values, may contain `BypassValue` wrappers for bypassed options)
 
 # Disambiguation Syntax
 
@@ -73,7 +73,7 @@ kwargs = (grid_size=100, backend=Strategies.route_to(adnlp=:sparse))
 routed = route_all_options(method, families, action_defs, kwargs, registry)
 ```
 
-See also: [`extract_strategy_ids`](@ref), [`build_strategy_to_family_map`](@ref), [`build_option_ownership_map`](@ref)
+See also: `extract_strategy_ids`, `build_strategy_to_family_map`, `build_option_ownership_map`
 """
 function route_all_options(
     method::Tuple{Vararg{Symbol}},

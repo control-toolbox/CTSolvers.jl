@@ -64,7 +64,7 @@ all_names(def) # (:max_iter, :max, :maxiter)
 - `CTModels.Exceptions.IncorrectArgument`: If the default value does not match the declared type
 - `Exception`: If the validator function fails when applied to the default value
 
-See also: [`all_names`](@ref), [`extract_option`](@ref), [`extract_options`](@ref), [`NotProvided`](@ref)
+See also: `all_names`, `extract_option`, `extract_options`, `NotProvided`
 """
 struct OptionDefinition{T}
     name::Symbol
@@ -164,7 +164,7 @@ OptionDefinition{NotProvidedType}(...)
 - For concrete defaults, type compatibility between `default` and `type` is enforced
 - The validator function is applied to the default value (except for `NotProvided`)
 
-See also: [`OptionDefinition{T}`](@ref), [`_construct_option_definition`](@ref), [`NotProvided`](@ref)
+See also: `OptionDefinition{T}`, `_construct_option_definition`, `NotProvided`
 """
 function OptionDefinition(;
     name::Symbol,
@@ -219,7 +219,7 @@ julia> default(def)
 nothing
 ```
 
-See also: [`OptionDefinition`](@ref), [`NotProvided`](@ref)
+See also: `OptionDefinition`, `NotProvided`
 """
 function _construct_option_definition(
     name::Symbol,
@@ -280,7 +280,7 @@ julia> is_required(def)
 true
 ```
 
-See also: [`OptionDefinition`](@ref), [`NotProvided`](@ref), [`is_required`](@ref)
+See also: `OptionDefinition`, `NotProvided`, `is_required`
 """
 function _construct_option_definition(
     name::Symbol,
@@ -343,7 +343,7 @@ julia> default(def)
 100
 ```
 
-See also: [`OptionDefinition`](@ref), [`Exceptions.IncorrectArgument`](@ref)
+See also: `OptionDefinition`, `Exceptions.IncorrectArgument`
 """
 function _construct_option_definition(
     name::Symbol,
@@ -401,7 +401,7 @@ julia> name(def)
 :max_iter
 ```
 
-See also: [`type`](@ref), [`default`](@ref), [`aliases`](@ref)
+See also: `type`, `default`, `aliases`
 """
 name(def::OptionDefinition) = def.name
 
@@ -425,7 +425,7 @@ julia> type(def)
 Int
 ```
 
-See also: [`name`](@ref), [`default`](@ref)
+See also: `name`, `default`
 """
 type(def::OptionDefinition) = def.type
 
@@ -449,7 +449,7 @@ julia> default(def)
 100
 ```
 
-See also: [`name`](@ref), [`type`](@ref), [`is_required`](@ref)
+See also: `name`, `type`, `is_required`
 """
 default(def::OptionDefinition) = def.default
 
@@ -473,7 +473,7 @@ julia> description(def)
 "Maximum iterations"
 ```
 
-See also: [`name`](@ref), [`type`](@ref)
+See also: `name`, `type`
 """
 description(def::OptionDefinition) = def.description
 
@@ -500,7 +500,7 @@ julia> validator(def) === validator_fn
 true
 ```
 
-See also: [`has_validator`](@ref), [`name`](@ref)
+See also: `has_validator`, `name`
 """
 validator(def::OptionDefinition) = def.validator
 
@@ -525,7 +525,7 @@ julia> aliases(def)
 (:max, :maxiter)
 ```
 
-See also: [`all_names`](@ref), [`name`](@ref)
+See also: `all_names`, `name`
 """
 aliases(def::OptionDefinition) = def.aliases
 
@@ -551,7 +551,7 @@ julia> is_required(def)
 true
 ```
 
-See also: [`has_default`](@ref), [`default`](@ref)
+See also: `has_default`, `default`
 """
 is_required(def::OptionDefinition) = def.default isa NotProvidedType
 
@@ -577,7 +577,7 @@ julia> has_default(def)
 true
 ```
 
-See also: [`is_required`](@ref), [`default`](@ref)
+See also: `is_required`, `default`
 """
 has_default(def::OptionDefinition) = !(def.default isa NotProvidedType)
 
@@ -602,7 +602,7 @@ julia> has_validator(def)
 true
 ```
 
-See also: [`validator`](@ref), [`name`](@ref)
+See also: `validator`, `name`
 """
 has_validator(def::OptionDefinition) = def.validator !== nothing
 
@@ -638,7 +638,7 @@ julia> is_computed(def2)
 true
 ```
 
-See also: [`has_default`](@ref), [`is_required`](@ref), [`OptionDefinition`](@ref)
+See also: `has_default`, `is_required`, `OptionDefinition`
 """
 is_computed(def::OptionDefinition) = def.computed
 
@@ -674,7 +674,7 @@ julia> all_names(def)
 (:grid_size, :n, :size)
 ```
 
-See also: [`OptionDefinition`](@ref), [`extract_option`](@ref)
+See also: `OptionDefinition`, `extract_option`
 """
 all_names(def::OptionDefinition) = (def.name, def.aliases...)
 
@@ -710,7 +710,7 @@ max_iter (max, maxiter) :: Int64
   Maximum iterations
 ```
 
-See also: [`OptionDefinition`](@ref)
+See also: `OptionDefinition`
 """
 function Base.show(io::IO, def::OptionDefinition)
     # Show primary name with aliases if present

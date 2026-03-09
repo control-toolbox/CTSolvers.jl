@@ -12,7 +12,7 @@ disambiguation, and helper builders.
 - `ResolvedMethod`: Struct containing resolved method information from disambiguation
 - `resolve_method`: Function that resolves method tokens to strategy families and IDs
 
-See also: [`Options`](@ref), [`Strategies`](@ref)
+See also: `Options`, `Strategies`
 """
 module Orchestration
 

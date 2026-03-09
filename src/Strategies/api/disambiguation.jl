@@ -11,7 +11,7 @@ $(TYPEDEF)
 
 Routed option value with explicit strategy targeting.
 
-This type is created by [`route_to`](@ref) to disambiguate options that exist
+This type is created by `route_to` to disambiguate options that exist
 in multiple strategies. It wraps one or more (strategy_id => value) pairs,
 allowing the orchestration layer to route each value to its intended strategy.
 
@@ -48,7 +48,7 @@ solver => 100
 modeler => 50
 ```
 
-See also: [`route_to`](@ref)
+See also: `route_to`
 """
 struct RoutedOption
     routes::NamedTuple
@@ -75,7 +75,7 @@ Create a disambiguated option value by explicitly routing it to specific strateg
 
 This function resolves ambiguity when the same option name exists in multiple
 strategies (e.g., both modeler and solver have `max_iter`). It creates a
-[`RoutedOption`](@ref) that tells the orchestration layer exactly which strategy
+`RoutedOption` that tells the orchestration layer exactly which strategy
 should receive which value.
 
 # Arguments
@@ -122,7 +122,7 @@ solve(ocp, method;
 - This is the recommended way to disambiguate options
 - The orchestration layer will validate that the strategy IDs exist
 
-See also: [`RoutedOption`](@ref), [`route_all_options`](@ref)
+See also: `RoutedOption`, `route_all_options`
 """
 function route_to(; kwargs...)
     if isempty(kwargs)

@@ -22,7 +22,7 @@ builder = Optimization.get_adnlp_model_builder(docp)
 nlp = builder(initial_guess)
 ```
 
-See also: [`Optimization.get_exa_model_builder`](@ref)
+See also: `Optimization.get_exa_model_builder`
 """
 function Optimization.get_adnlp_model_builder(prob::DiscretizedModel)
     return prob.adnlp_model_builder
@@ -47,7 +47,7 @@ builder = Optimization.get_exa_model_builder(docp)
 nlp = builder(Float64, initial_guess)
 ```
 
-See also: [`Optimization.get_adnlp_model_builder`](@ref)
+See also: `Optimization.get_adnlp_model_builder`
 """
 function Optimization.get_exa_model_builder(prob::DiscretizedModel)
     return prob.exa_model_builder
@@ -72,7 +72,7 @@ builder = Optimization.get_adnlp_solution_builder(docp)
 sol = builder(nlp_stats)
 ```
 
-See also: [`Optimization.get_exa_solution_builder`](@ref)
+See also: `Optimization.get_exa_solution_builder`
 """
 function Optimization.get_adnlp_solution_builder(prob::DiscretizedModel)
     return prob.adnlp_solution_builder
@@ -97,7 +97,7 @@ builder = Optimization.get_exa_solution_builder(docp)
 sol = builder(nlp_stats)
 ```
 
-See also: [`Optimization.get_adnlp_solution_builder`](@ref)
+See also: `Optimization.get_adnlp_solution_builder`
 """
 function Optimization.get_exa_solution_builder(prob::DiscretizedModel)
     return prob.exa_solution_builder

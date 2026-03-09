@@ -294,7 +294,7 @@ Modelers.ADNLP (instance)
 Tip: use describe(Modelers.ADNLP) to see all available options.
 ```
 
-See also: [`describe`](@ref), [`options`](@ref)
+See also: `describe`, `options`
 """
 function Base.show(io::IO, ::MIME"text/plain", strategy::T) where {T<:AbstractStrategy}
     type_name = nameof(T)
@@ -345,7 +345,7 @@ julia> print(Modelers.ADNLP())
 Modelers.ADNLP(matrix_free=false, show_time=false, name=CTSolvers-ADNLP, backend=optimized)
 ```
 
-See also: [`Base.show(::IO, ::MIME"text/plain", ::AbstractStrategy)`](@ref)
+See also: `Base.show(::IO, ::MIME"text/plain", ::AbstractStrategy)`
 """
 function Base.show(io::IO, strategy::T) where {T<:AbstractStrategy}
     type_name = nameof(T)
@@ -393,7 +393,7 @@ Modelers.ADNLP (strategy type)
       description: Enable matrix-free mode
 ```
 
-See also: [`metadata`](@ref), [`id`](@ref), [`options`](@ref)
+See also: `metadata`, `id`, `options`
 """
 function describe end
 

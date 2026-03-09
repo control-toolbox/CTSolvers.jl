@@ -24,7 +24,7 @@ typing for `DiscretizedModel`.
 nlp = nlp_model(docp, initial_guess, modeler)
 ```
 
-See also: [`ocp_solution`](@ref), [`Optimization.build_model`](@ref)
+See also: `ocp_solution`, `Optimization.build_model`
 """
 function nlp_model(
     prob::DiscretizedModel, initial_guess, modeler::Modelers.AbstractNLPModeler
@@ -54,7 +54,7 @@ is an optimal control solution.
 sol = ocp_solution(docp, nlp_stats, modeler)
 ```
 
-See also: [`nlp_model`](@ref), [`Optimization.build_solution`](@ref)
+See also: `nlp_model`, `Optimization.build_solution`
 """
 function ocp_solution(
     docp::DiscretizedModel,
