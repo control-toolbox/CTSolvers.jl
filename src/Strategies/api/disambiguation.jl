@@ -52,15 +52,17 @@ See also: [`route_to`](@ref)
 """
 struct RoutedOption
     routes::NamedTuple
-    
+
     function RoutedOption(routes::NamedTuple)
         if isempty(routes)
-            throw(Exceptions.PreconditionError(
-                "RoutedOption requires at least one route",
-                reason="empty routes NamedTuple provided",
-                suggestion="Use route_to(strategy=value) to create a routed option",
-                context="RoutedOption constructor precondition"
-            ))
+            throw(
+                Exceptions.PreconditionError(
+                    "RoutedOption requires at least one route";
+                    reason="empty routes NamedTuple provided",
+                    suggestion="Use route_to(strategy=value) to create a routed option",
+                    context="RoutedOption constructor precondition",
+                ),
+            )
         end
         new(routes)
     end
@@ -124,14 +126,16 @@ See also: [`RoutedOption`](@ref), [`route_all_options`](@ref)
 """
 function route_to(; kwargs...)
     if isempty(kwargs)
-        throw(Exceptions.PreconditionError(
-            "route_to requires at least one strategy argument",
-            reason="no strategy arguments provided",
-            suggestion="Use route_to(solver=100) or route_to(solver=100, modeler=50)",
-            context="route_to - function call precondition"
-        ))
+        throw(
+            Exceptions.PreconditionError(
+                "route_to requires at least one strategy argument";
+                reason="no strategy arguments provided",
+                suggestion="Use route_to(solver=100) or route_to(solver=100, modeler=50)",
+                context="route_to - function call precondition",
+            ),
+        )
     end
-    
+
     # Convert Base.Pairs to NamedTuple - super clean!
     return RoutedOption(NamedTuple(kwargs))
 end
@@ -253,4 +257,3 @@ julia> opt[:modeler]
 ```
 """
 Base.getindex(r::RoutedOption, key::Symbol) = r.routes[key]
-

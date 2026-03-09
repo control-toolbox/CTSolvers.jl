@@ -61,12 +61,14 @@ and returns an appropriate CUDA backend.
 - Uses CUDA.CUDABackend() for GPU execution
 """
 function __get_cuda_backend(::Type{<:GPU})
-    throw(Exceptions.ExtensionError(
-        :CUDA;
-        message="to use GPU backend with Exa modeler",
-        feature="GPU computation with ExaModels",
-        context="Load CUDA extension first: using CUDA"
-    ))
+    throw(
+        Exceptions.ExtensionError(
+            :CUDA;
+            message="to use GPU backend with Exa modeler",
+            feature="GPU computation with ExaModels",
+            context="Load CUDA extension first: using CUDA",
+        ),
+    )
 end
 
 """
@@ -211,7 +213,7 @@ modeler = Modelers.Exa{GPU}(
 - ExaModels.jl: [https://github.com/JuliaSmoothOptimizers/ExaModels.jl](https://github.com/JuliaSmoothOptimizers/ExaModels.jl)
 - KernelAbstractions.jl: [https://github.com/JuliaGPU/KernelAbstractions.jl](https://github.com/JuliaGPU/KernelAbstractions.jl)
 """
-struct Exa{P<:Union{CPU, GPU}} <: AbstractNLPModeler
+struct Exa{P<:Union{CPU,GPU}} <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 
@@ -235,7 +237,7 @@ See also: [`Exa`](@ref), [`CPU`](@ref)
 Strategies._default_parameter(::Type{<:Modelers.Exa}) = CPU
 
 # Strategy metadata with option definitions (parameterized)
-function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU, GPU}}
+function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU,GPU}}
     return Strategies.StrategyMetadata(
         # === Existing Options (enhanced) ===
         Strategies.OptionDefinition(;
@@ -243,24 +245,25 @@ function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU, GPU
             type=DataType,
             default=__exa_model_base_type(),
             description="Base floating-point type used by ExaModels",
-            validator=validate_exa_base_type
+            validator=validate_exa_base_type,
         ),
         Strategies.OptionDefinition(;
             name=:backend,
-            type=Union{Nothing, KernelAbstractions.Backend},  # More permissive for various backend types
+            type=Union{Nothing,KernelAbstractions.Backend},  # More permissive for various backend types
             default=__exa_model_backend(P),
             description="Execution backend for ExaModels (CPU, GPU, etc.)",
             computed=true,  # Default is computed from parameter P
             aliases=(:exa_backend,),
-            validator=function(backend)
+            validator=function (backend)
                 if !__consistent_backend(P, backend)
                     param_str = P == CPU ? "CPU" : "GPU"
-                    backend_str = backend === nothing ? "no backend" : string(typeof(backend))
+                    backend_str =
+                        backend === nothing ? "no backend" : string(typeof(backend))
                     @warn "Inconsistent backend ($backend_str) for $param_str parameter" maxlog=1
                 end
                 return backend
-            end
-        )
+            end,
+        ),
     )
 end
 
@@ -316,15 +319,15 @@ modeler = Modelers.Exa{GPU}(base_type=Float64, custom_option=123; mode=:permissi
 
 See also: [`Modelers.Exa`](@ref), [`Strategies.build_strategy_options`](@ref)
 """
-function Modelers.Exa{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
+function Modelers.Exa{P}(;
+    mode::Symbol=:strict, kwargs...
+) where {P<:AbstractStrategyParameter}
     # Check for deprecated aliases
     if haskey(kwargs, :exa_backend)
         @warn "exa_backend is deprecated, use backend instead" maxlog=1
     end
-    
-    opts = Strategies.build_strategy_options(
-        Modelers.Exa{P}; mode=mode, kwargs...
-    )
+
+    opts = Strategies.build_strategy_options(Modelers.Exa{P}; mode=mode, kwargs...)
     return Modelers.Exa{P}(opts)
 end
 
@@ -399,19 +402,18 @@ stats = solve(nlp, solver)
 - [`ExaModels.ExaModel`](@ref): NLP model type
 """
 function (modeler::Modelers.Exa{P})(
-    prob::AbstractOptimizationProblem,
-    initial_guess
+    prob::AbstractOptimizationProblem, initial_guess
 )::ExaModels.ExaModel where {P<:AbstractStrategyParameter}
     # Get the appropriate builder for this problem type
     builder = get_exa_model_builder(prob)
-    
+
     # Extract options as Dict
     options = Strategies.options_dict(modeler)
-    
+
     # Extract BaseType and remove it from options to avoid passing it as named argument
     BaseType = options[:base_type]
     delete!(options, :base_type)
-    
+
     # Build the ExaModel passing BaseType as first argument and remaining options as named arguments
     return builder(BaseType, initial_guess; options...)
 end
@@ -448,8 +450,7 @@ solution = modeler(problem, stats)
 - [`solve`](@ref): Generic solve interface
 """
 function (modeler::Modelers.Exa{P})(
-    prob::AbstractOptimizationProblem,
-    nlp_solution::SolverCore.AbstractExecutionStats
+    prob::AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats
 ) where {P<:AbstractStrategyParameter}
     # Get the appropriate solution builder for this problem type
     builder = get_exa_solution_builder(prob)

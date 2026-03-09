@@ -56,12 +56,11 @@ options handling, display flag, and problem solving (requires Knitro license).
 """
 function test_knitro_extension()
     Test.@testset "Knitro Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
-        
-        
+
         # ====================================================================
         # UNIT TESTS - Metadata and Options
         # ====================================================================
-        
+
         # Commented out due to license requirement
         # Test.@testset "Metadata" begin
         #     meta = Strategies.metadata(Solvers.Knitro)
@@ -88,11 +87,11 @@ function test_knitro_extension()
         #     Test.@test meta[:maxtime].default isa Real
         #     Test.@test meta[:feastol_abs].default isa Real
         # end
-        
+
         # ====================================================================
         # UNIT TESTS - Constructor
         # ====================================================================
-        
+
         # Commented out due to license requirement
         # Test.@testset "Constructor" begin
         #     # Default constructor
@@ -108,11 +107,11 @@ function test_knitro_extension()
         #     opts = Strategies.options(solver)
         #     Test.@test opts isa Strategies.StrategyOptions
         # end
-        
+
         # ====================================================================
         # UNIT TESTS - Options Extraction
         # ====================================================================
-        
+
         # Commented out due to license requirement
         # Test.@testset "Options Extraction" begin
         #     solver = Solvers.Knitro(maxit=500, feastol_abs=1e-8)
@@ -130,11 +129,11 @@ function test_knitro_extension()
         #     Test.@test raw_opts[:feastol_abs] == 1e-8
         #     Test.@test raw_opts[:outlev] == 2  # Default value
         # end
-        
+
         # ====================================================================
         # UNIT TESTS - Display Flag Handling
         # ====================================================================
-        
+
         # Commented out due to license requirement
         # Test.@testset "Display Flag" begin
         #     # Create a simple problem
@@ -152,11 +151,11 @@ function test_knitro_extension()
         #     opts = Strategies.options(solver_verbose)
         #     Test.@test opts isa Strategies.StrategyOptions
         # end
-        
+
         # ====================================================================
         # INTEGRATION TESTS - Solving Problems (if license available)
         # ====================================================================
-        
+
         # Commented out due to license requirement
         # Test.@testset "Rosenbrock Problem - ADNLPModels" begin
         #     ros = TestProblems.Rosenbrock()
@@ -192,7 +191,7 @@ function test_knitro_extension()
         #         end
         #     end
         # end
-        
+
         # Commented out due to license requirement
         # Test.@testset "Elec Problem - ADNLPModels" begin
         #     elec = TestProblems.Elec()
@@ -224,11 +223,11 @@ function test_knitro_extension()
         #         end
         #     end
         # end
-        
+
         # ====================================================================
         # INTEGRATION TESTS - Option Aliases
         # ====================================================================
-        
+
         # Commented out due to license requirement
         # Test.@testset "Option Aliases" begin
         #     # Test that aliases work
@@ -245,11 +244,11 @@ function test_knitro_extension()
         #     Test.@test raw1[:maxit] == 100
         #     Test.@test raw2[:maxit] == 100
         # end
-        
+
         # ====================================================================
         # INTEGRATION TESTS - Initial Guess (maxit=0) - Requires License
         # ====================================================================
-        
+
         # Commented out due to license requirement
         # Test.@testset "Initial Guess - maxit=0" begin
         #     if !check_knitro_license()
@@ -288,11 +287,11 @@ function test_knitro_extension()
         #         end
         #     end
         # end
-        
+
         # ====================================================================
         # INTEGRATION TESTS - solve_with_knitro - Requires License
         # ====================================================================
-        
+
         # Commented out due to license requirement
         # Test.@testset "solve_with_knitro Function" begin
         #     if !check_knitro_license()
@@ -333,11 +332,11 @@ function test_knitro_extension()
         #         end
         #     end
         # end
-        
+
         # ====================================================================
         # INTEGRATION TESTS - CommonSolve.solve - Requires License
         # ====================================================================
-        
+
         # Commented out due to license requirement
         # Test.@testset "CommonSolve.solve with Knitro" begin
         #     if !check_knitro_license()

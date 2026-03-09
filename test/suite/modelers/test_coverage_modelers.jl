@@ -1,12 +1,12 @@
 module TestCoverageModelers
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Modelers
 import CTSolvers.Strategies
 import CTSolvers.Options
 import CTSolvers.Optimization
-import SolverCore
+using SolverCore: SolverCore
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
@@ -98,7 +98,9 @@ function test_coverage_modelers()
 
         Test.@testset "Modelers.ADNLP - unknown option strict mode" begin
             redirect_stderr(devnull) do
-                Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(unknown_opt=42)
+                Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(
+                    unknown_opt=42
+                )
             end
         end
 

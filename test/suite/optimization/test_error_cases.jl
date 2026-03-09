@@ -1,11 +1,11 @@
 module TestOptimizationErrorCases
 
-import Test
+using Test: Test
 import CTBase.Exceptions
-import NLPModels
-import SolverCore
-import ADNLPModels
-import ExaModels
+using NLPModels: NLPModels
+using SolverCore: SolverCore
+using ADNLPModels: ADNLPModels
+using ExaModels: ExaModels
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
@@ -27,7 +27,9 @@ Problem with only partial contract implementation.
 struct PartialProblem <: Optimization.AbstractOptimizationProblem end
 
 # Implement only ADNLP builder
-Optimization.get_adnlp_model_builder(::PartialProblem) = Optimization.ADNLPModelBuilder(x -> ADNLPModels.ADNLPModel(z -> sum(z.^2), x))
+function Optimization.get_adnlp_model_builder(::PartialProblem)
+    Optimization.ADNLPModelBuilder(x -> ADNLPModels.ADNLPModel(z -> sum(z .^ 2), x))
+end
 
 """
 Mock stats for testing.
@@ -72,77 +74,97 @@ function test_error_cases()
         # ====================================================================
         # CONTRACT NOT IMPLEMENTED ERRORS
         # ====================================================================
-        
+
         Test.@testset "NotImplemented Errors" begin
             prob = MinimalProblemForErrors()
-            
+
             Test.@testset "get_adnlp_model_builder - NotImplemented" begin
-                Test.@test_throws Exceptions.NotImplemented Optimization.get_adnlp_model_builder(prob)
+                Test.@test_throws Exceptions.NotImplemented Optimization.get_adnlp_model_builder(
+                    prob
+                )
             end
-            
+
             Test.@testset "get_exa_model_builder - NotImplemented" begin
-                Test.@test_throws Exceptions.NotImplemented Optimization.get_exa_model_builder(prob)
+                Test.@test_throws Exceptions.NotImplemented Optimization.get_exa_model_builder(
+                    prob
+                )
             end
-            
+
             Test.@testset "get_adnlp_solution_builder - NotImplemented" begin
-                Test.@test_throws Exceptions.NotImplemented Optimization.get_adnlp_solution_builder(prob)
+                Test.@test_throws Exceptions.NotImplemented Optimization.get_adnlp_solution_builder(
+                    prob
+                )
             end
-            
+
             Test.@testset "get_exa_solution_builder - NotImplemented" begin
-                Test.@test_throws Exceptions.NotImplemented Optimization.get_exa_solution_builder(prob)
+                Test.@test_throws Exceptions.NotImplemented Optimization.get_exa_solution_builder(
+                    prob
+                )
             end
         end
 
         # ====================================================================
         # PARTIAL CONTRACT IMPLEMENTATION
         # ====================================================================
-        
+
         Test.@testset "Partial Contract Implementation" begin
             prob = PartialProblem()
-            
+
             Test.@testset "Implemented builder works" begin
                 builder = Optimization.get_adnlp_model_builder(prob)
                 Test.@test builder isa Optimization.ADNLPModelBuilder
-                
+
                 # Can build model with implemented builder
                 x0 = [1.0, 2.0]
                 nlp = builder(x0)
                 Test.@test nlp isa ADNLPModels.ADNLPModel
             end
-            
+
             Test.@testset "Non-implemented builders throw NotImplemented" begin
-                Test.@test_throws Exceptions.NotImplemented Optimization.get_exa_model_builder(prob)
-                Test.@test_throws Exceptions.NotImplemented Optimization.get_adnlp_solution_builder(prob)
-                Test.@test_throws Exceptions.NotImplemented Optimization.get_exa_solution_builder(prob)
+                Test.@test_throws Exceptions.NotImplemented Optimization.get_exa_model_builder(
+                    prob
+                )
+                Test.@test_throws Exceptions.NotImplemented Optimization.get_adnlp_solution_builder(
+                    prob
+                )
+                Test.@test_throws Exceptions.NotImplemented Optimization.get_exa_solution_builder(
+                    prob
+                )
             end
         end
 
         # ====================================================================
         # BUILDER ERRORS
         # ====================================================================
-        
+
         Test.@testset "Builder Errors" begin
             Test.@testset "ADNLPModelBuilder with failing function" begin
                 # Builder that throws an error
-                failing_builder = Optimization.ADNLPModelBuilder(x -> error("Intentional error"))
-                
+                failing_builder = Optimization.ADNLPModelBuilder(
+                    x -> error("Intentional error")
+                )
+
                 Test.@test_throws ErrorException failing_builder([1.0, 2.0])
             end
-            
+
             Test.@testset "ExaModelBuilder with failing function" begin
                 # Builder that throws an error
-                failing_builder = Optimization.ExaModelBuilder((T, x) -> error("Intentional error"))
-                
+                failing_builder = Optimization.ExaModelBuilder(
+                    (T, x) -> error("Intentional error")
+                )
+
                 Test.@test_throws ErrorException failing_builder(Float64, [1.0, 2.0])
             end
-            
+
             Test.@testset "ADNLPSolutionBuilder with failing function" begin
                 # Builder that throws an error
-                failing_builder = Optimization.ADNLPSolutionBuilder(s -> error("Intentional error"))
-                
+                failing_builder = Optimization.ADNLPSolutionBuilder(
+                    s -> error("Intentional error")
+                )
+
                 # Mock stats
                 stats = MockStats(1.0)
-                
+
                 Test.@test_throws ErrorException failing_builder(stats)
             end
         end
@@ -150,45 +172,51 @@ function test_error_cases()
         # ====================================================================
         # EDGE CASES
         # ====================================================================
-        
+
         Test.@testset "Edge Cases" begin
             # Note: Empty initial guess (nvar=0) is not supported by ADNLPModels
             # ADNLPModels requires nvar > 0, so we skip this edge case
-            
+
             Test.@testset "Single variable problem" begin
-                builder = Optimization.ADNLPModelBuilder(x -> ADNLPModels.ADNLPModel(z -> z[1]^2, x))
-                
+                builder = Optimization.ADNLPModelBuilder(
+                    x -> ADNLPModels.ADNLPModel(z -> z[1]^2, x)
+                )
+
                 x0 = [1.0]
                 nlp = builder(x0)
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 Test.@test nlp.meta.nvar == 1
                 Test.@test NLPModels.obj(nlp, x0) ≈ 1.0
             end
-            
+
             Test.@testset "Large dimension problem" begin
                 n = 1000
-                builder = Optimization.ADNLPModelBuilder(x -> ADNLPModels.ADNLPModel(z -> sum(z.^2), x))
-                
+                builder = Optimization.ADNLPModelBuilder(
+                    x -> ADNLPModels.ADNLPModel(z -> sum(z .^ 2), x)
+                )
+
                 x0 = ones(n)
                 nlp = builder(x0)
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 Test.@test nlp.meta.nvar == n
             end
-            
+
             Test.@testset "Different numeric types" begin
                 # Float32
-                builder32 = Optimization.ExaModelBuilder((T, x) -> begin
-                    m = ExaModels.ExaCore(T)
-                    x_var = ExaModels.variable(m, length(x); start=x)
-                    ExaModels.objective(m, sum(x_var[i]^2 for i=1:length(x)))
-                    ExaModels.ExaModel(m)
-                end)
-                
+                builder32 = Optimization.ExaModelBuilder(
+                    (T, x) -> begin
+                        m = ExaModels.ExaCore(T)
+                        x_var = ExaModels.variable(m, length(x); start=x)
+                        ExaModels.objective(m, sum(x_var[i]^2 for i in 1:length(x)))
+                        ExaModels.ExaModel(m)
+                    end
+                )
+
                 x0_32 = Float32[1.0, 2.0]
                 nlp32 = builder32(Float32, x0_32)
                 Test.@test nlp32 isa ExaModels.ExaModel{Float32}
                 Test.@test eltype(nlp32.meta.x0) == Float32
-                
+
                 # Float64
                 x0_64 = Float64[1.0, 2.0]
                 nlp64 = builder32(Float64, x0_64)
@@ -200,36 +228,44 @@ function test_error_cases()
         # ====================================================================
         # SOLVER INFO EDGE CASES
         # ====================================================================
-        
+
         Test.@testset "Solver Info Edge Cases" begin
             Test.@testset "Zero iterations" begin
                 stats = EdgeCaseStats(0.0, 0, 0.0, :first_order)
-                
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
+
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
+                    stats
+                )
                 Test.@test iter == 0
                 Test.@test success == true
             end
-            
+
             Test.@testset "Very large objective" begin
                 stats = EdgeCaseStats(1e100, 10, 1e-6, :first_order)
-                
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
+
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
+                    stats
+                )
                 Test.@test obj ≈ 1e100
                 Test.@test success == true
             end
-            
+
             Test.@testset "Very small constraint violation" begin
                 stats = EdgeCaseStats(1.0, 10, 1e-15, :first_order)
-                
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
+
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
+                    stats
+                )
                 Test.@test viol ≈ 1e-15
                 Test.@test success == true
             end
-            
+
             Test.@testset "Unknown status" begin
                 stats = EdgeCaseStats(1.0, 10, 1e-6, :unknown_status)
-                
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(stats)
+
+                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
+                    stats
+                )
                 Test.@test status == :unknown_status
                 Test.@test success == false  # Not :first_order or :acceptable
             end
@@ -238,22 +274,26 @@ function test_error_cases()
         # ====================================================================
         # TYPE STABILITY TESTS
         # ====================================================================
-        
+
         Test.@testset "Type Stability" begin
             Test.@testset "Builder return types" begin
-                adnlp_builder = Optimization.ADNLPModelBuilder(x -> ADNLPModels.ADNLPModel(z -> sum(z.^2), x))
+                adnlp_builder = Optimization.ADNLPModelBuilder(
+                    x -> ADNLPModels.ADNLPModel(z -> sum(z .^ 2), x)
+                )
                 x0 = [1.0, 2.0]
-                
+
                 nlp = adnlp_builder(x0)
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 Test.@test typeof(nlp) <: ADNLPModels.ADNLPModel
             end
-            
+
             Test.@testset "Solution builder return types" begin
-                sol_builder = Optimization.ADNLPSolutionBuilder(s -> (obj=s.objective, status=s.status))
-                
+                sol_builder = Optimization.ADNLPSolutionBuilder(
+                    s -> (obj=s.objective, status=s.status)
+                )
+
                 stats = TypeTestStats(1.0, :first_order)
-                
+
                 sol = sol_builder(stats)
                 Test.@test sol isa NamedTuple
                 Test.@test haskey(sol, :obj)

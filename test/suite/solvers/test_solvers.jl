@@ -1,8 +1,8 @@
 module TestSolvers
 
-import Test
+using Test: Test
 import CTBase.Exceptions
-import CTSolvers
+using CTSolvers: CTSolvers
 import CTSolvers.Solvers
 import CTSolvers.Strategies
 using CTSolvers.Solvers  # For testing exported symbols
@@ -34,12 +34,10 @@ function test_solvers()
                 Test.@test isdefined(CTSolvers, :Solvers)
                 Test.@test CTSolvers.Solvers isa Module
             end
-            
+
             # Test exported abstract types
             Test.@testset "Exported Abstract Types" begin
-                for T in (
-                    AbstractNLPSolver,
-                )
+                for T in (AbstractNLPSolver,)
                     Test.@testset "$(nameof(T))" begin
                         Test.@test isdefined(Solvers, nameof(T))
                         Test.@test isdefined(CurrentModule, nameof(T))
@@ -47,15 +45,10 @@ function test_solvers()
                     end
                 end
             end
-            
+
             # Test exported concrete types
             Test.@testset "Exported Concrete Types" begin
-                for T in (
-                    Ipopt,
-                    MadNLP,
-                    MadNCL,
-                    Knitro,
-                )
+                for T in (Ipopt, MadNLP, MadNCL, Knitro)
                     Test.@testset "$(nameof(T))" begin
                         Test.@test isdefined(Solvers, nameof(T))
                         Test.@test isdefined(CurrentModule, nameof(T))
@@ -63,7 +56,7 @@ function test_solvers()
                     end
                 end
             end
-            
+
             # Test that internal symbols are NOT exported
             Test.@testset "Internal Functions (not exported)" begin
                 for f in (
@@ -96,7 +89,7 @@ function test_solvers()
                 Test.@test Solvers.MadNLP <: Solvers.AbstractNLPSolver
                 Test.@test Solvers.MadNCL <: Solvers.AbstractNLPSolver
                 Test.@test Solvers.Knitro <: Solvers.AbstractNLPSolver
-                
+
                 # Test that they all implement AbstractStrategy through inheritance
                 Test.@test Solvers.Ipopt <: Strategies.AbstractStrategy
                 Test.@test Solvers.MadNLP <: Strategies.AbstractStrategy

@@ -1,8 +1,8 @@
 module TestOrchestration
 
-import Test
+using Test: Test
 import CTBase.Exceptions
-import CTSolvers
+using CTSolvers: CTSolvers
 import CTSolvers.Orchestration
 import CTSolvers.Strategies
 import CTSolvers.Options
@@ -35,12 +35,10 @@ function test_orchestration()
                 Test.@test isdefined(CTSolvers, :Orchestration)
                 Test.@test CTSolvers.Orchestration isa Module
             end
-            
+
             # Test exported types
             Test.@testset "Exported Types" begin
-                for T in (
-                    ResolvedMethod,
-                )
+                for T in (ResolvedMethod,)
                     Test.@testset "$(nameof(T))" begin
                         Test.@test isdefined(Orchestration, nameof(T))
                         Test.@test isdefined(CurrentModule, nameof(T))
@@ -48,7 +46,7 @@ function test_orchestration()
                     end
                 end
             end
-            
+
             # Test exported functions
             Test.@testset "Exported Functions" begin
                 for f in (
@@ -67,19 +65,17 @@ function test_orchestration()
                     end
                 end
             end
-            
+
             # Test that internal symbols are NOT exported
             Test.@testset "Internal Types (not exported)" begin
-                for T in (
-                    :RoutingContext,
-                )
+                for T in (:RoutingContext,)
                     Test.@testset "$T" begin
                         Test.@test isdefined(Orchestration, T)
                         Test.@test !isdefined(CurrentModule, T)
                     end
                 end
             end
-            
+
             Test.@testset "Internal Functions (not exported)" begin
                 for f in (
                     :build_alias_to_primary_map,  # Internal helper function

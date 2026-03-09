@@ -12,10 +12,10 @@ import CTSolvers.Strategies
 import CTSolvers.Options
 import CTSolvers.Optimization
 import CTBase.Exceptions
-import MadNCL
-import MadNLP
-import NLPModels
-import SolverCore
+using MadNCL: MadNCL
+using MadNLP: MadNLP
+using NLPModels: NLPModels
+using SolverCore: SolverCore
 
 # Import parameter types
 using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter
@@ -52,32 +52,38 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             default=1000,
             description="Maximum number of augmented Lagrangian iterations",
             aliases=(:maxiter,),
-            validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid max_iter value",
-                got="max_iter=$x",
-                expected="non-negative integer (>= 0)",
-                suggestion="Provide a non-negative value for maximum iterations",
-                context="MadNCL max_iter validation"
-            ))
+            validator=x ->
+                x >= 0 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid max_iter value";
+                        got="max_iter=$x",
+                        expected="non-negative integer (>= 0)",
+                        suggestion="Provide a non-negative value for maximum iterations",
+                        context="MadNCL max_iter validation",
+                    ),
+                ),
         ),
         Strategies.OptionDefinition(;
             name=:tol,
             type=Real,
             default=1e-8,
             description="Optimality tolerance",
-            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid tolerance value",
-                got="tol=$x",
-                expected="positive real number (> 0)",
-                suggestion="Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
-                context="MadNCL tol validation"
-            ))
+            validator=x ->
+                x > 0 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid tolerance value";
+                        got="tol=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
+                        context="MadNCL tol validation",
+                    ),
+                ),
         ),
         Strategies.OptionDefinition(;
             name=:print_level,
             type=MadNLP.LogLevels,
             default=MadNLP.INFO,
-            description="MadNCL/MadNLP logging level"
+            description="MadNCL/MadNLP logging level",
         ),
         Strategies.OptionDefinition(;
             name=:linear_solver,
@@ -85,13 +91,13 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             default=Solvers.__madnlp_suite_default_linear_solver(P),
             description="Linear solver implementation used inside MadNCL. Default is MadNLP.MumpsSolver for CPU, MadNLPGPU.CUDSSSolver for GPU.",
             computed=true,  # Default is computed from parameter P
-            validator=function(linear_solver)
+            validator=function (linear_solver)
                 if !Solvers.__madnlp_suite_consistent_linear_solver(P, linear_solver)
                     param_str = P == CPU ? "CPU" : "GPU"
                     @warn "Inconsistent linear solver ($linear_solver) for $param_str parameter" maxlog=1
                 end
                 return linear_solver
-            end
+            end,
         ),
         # ---- Termination options ----
         Strategies.OptionDefinition(;
@@ -100,26 +106,32 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             default=Options.NotProvided,
             description="Relaxed tolerance for acceptable solution. If optimality error stays below this for 'acceptable_iter' iterations, algorithm terminates with SOLVED_TO_ACCEPTABLE_LEVEL.",
             aliases=(:acc_tol,),
-            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid acceptable_tol value",
-                got="acceptable_tol=$x",
-                expected="positive real number (> 0)",
-                suggestion="Provide a positive tolerance (typically 1e-6)",
-                context="MadNCL acceptable_tol validation"
-            ))
+            validator=x ->
+                x > 0 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid acceptable_tol value";
+                        got="acceptable_tol=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive tolerance (typically 1e-6)",
+                        context="MadNCL acceptable_tol validation",
+                    ),
+                ),
         ),
         Strategies.OptionDefinition(;
             name=:acceptable_iter,
             type=Integer,
             default=Options.NotProvided,
             description="Number of consecutive iterations with acceptable (but not optimal) error required before accepting the solution.",
-            validator=x -> x >= 1 || throw(Exceptions.IncorrectArgument(
-                "Invalid acceptable_iter value",
-                got="acceptable_iter=$x",
-                expected="positive integer (>= 1)",
-                suggestion="Provide a positive integer (typically 15)",
-                context="MadNCL acceptable_iter validation"
-            ))
+            validator=x ->
+                x >= 1 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid acceptable_iter value";
+                        got="acceptable_iter=$x",
+                        expected="positive integer (>= 1)",
+                        suggestion="Provide a positive integer (typically 15)",
+                        context="MadNCL acceptable_iter validation",
+                    ),
+                ),
         ),
         Strategies.OptionDefinition(;
             name=:max_wall_time,
@@ -127,46 +139,55 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             default=Options.NotProvided,
             description="Maximum wall-clock time limit in seconds. Algorithm terminates with MAXIMUM_WALLTIME_EXCEEDED if exceeded.",
             aliases=(:max_time,),
-            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid max_wall_time value",
-                got="max_wall_time=$x",
-                expected="positive real number (> 0)",
-                suggestion="Provide a positive time limit in seconds",
-                context="MadNCL max_wall_time validation"
-            ))
+            validator=x ->
+                x > 0 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid max_wall_time value";
+                        got="max_wall_time=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive time limit in seconds",
+                        context="MadNCL max_wall_time validation",
+                    ),
+                ),
         ),
         Strategies.OptionDefinition(;
             name=:diverging_iterates_tol,
             type=Real,
             default=Options.NotProvided,
             description="NLP error threshold above which algorithm is declared diverging. Terminates with DIVERGING_ITERATES status.",
-            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid diverging_iterates_tol value",
-                got="diverging_iterates_tol=$x",
-                expected="positive real number (> 0)",
-                suggestion="Provide a large positive value (typically 1e20)",
-                context="MadNCL diverging_iterates_tol validation"
-            ))
+            validator=x ->
+                x > 0 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid diverging_iterates_tol value";
+                        got="diverging_iterates_tol=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a large positive value (typically 1e20)",
+                        context="MadNCL diverging_iterates_tol validation",
+                    ),
+                ),
         ),
         # ---- NLP Scaling Options ----
         Strategies.OptionDefinition(;
             name=:nlp_scaling,
             type=Bool,
             default=Options.NotProvided,
-            description="Whether to scale the NLP problem. If true, MadNLP automatically scales the objective and constraints."
+            description="Whether to scale the NLP problem. If true, MadNLP automatically scales the objective and constraints.",
         ),
         Strategies.OptionDefinition(;
             name=:nlp_scaling_max_gradient,
             type=Real,
             default=Options.NotProvided,
             description="Maximum allowed gradient value when scaling the NLP problem. Used to prevent excessive scaling.",
-            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid nlp_scaling_max_gradient value",
-                got="nlp_scaling_max_gradient=$x",
-                expected="positive real number (> 0)",
-                suggestion="Provide a positive value (typically 100.0)",
-                context="MadNCL nlp_scaling_max_gradient validation"
-            ))
+            validator=x ->
+                x > 0 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid nlp_scaling_max_gradient value";
+                        got="nlp_scaling_max_gradient=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive value (typically 100.0)",
+                        context="MadNCL nlp_scaling_max_gradient validation",
+                    ),
+                ),
         ),
         # ---- Structural Options ----
         Strategies.OptionDefinition(;
@@ -174,14 +195,14 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             type=Bool,
             default=Options.NotProvided,
             description="Whether the Jacobian of the constraints is constant (i.e., linear constraints). Can improve performance.",
-            aliases=(:jacobian_cst,)
+            aliases=(:jacobian_cst,),
         ),
         Strategies.OptionDefinition(;
             name=:hessian_constant,
             type=Bool,
             default=Options.NotProvided,
             description="Whether the Hessian of the Lagrangian is constant (i.e., quadratic objective with linear constraints). Can improve performance.",
-            aliases=(:hessian_cst,)
+            aliases=(:hessian_cst,),
         ),
         # ---- Initialization Options ----
         Strategies.OptionDefinition(;
@@ -189,118 +210,132 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             type=Real,
             default=Options.NotProvided,
             description="Amount by which the initial point is pushed inside the bounds to ensure strictly interior starting point.",
-            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid bound_push value",
-                got="bound_push=$x",
-                expected="positive real number (> 0)",
-                suggestion="Provide a positive value (e.g., 0.01)",
-                context="MadNCL bound_push validation"
-            ))
+            validator=x ->
+                x > 0 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid bound_push value";
+                        got="bound_push=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive value (e.g., 0.01)",
+                        context="MadNCL bound_push validation",
+                    ),
+                ),
         ),
         Strategies.OptionDefinition(;
             name=:bound_fac,
             type=Real,
             default=Options.NotProvided,
             description="Factor to determine how much the initial point is pushed inside the bounds.",
-            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid bound_fac value",
-                got="bound_fac=$x",
-                expected="positive real number (> 0)",
-                suggestion="Provide a positive value (e.g., 0.01)",
-                context="MadNCL bound_fac validation"
-            ))
+            validator=x ->
+                x > 0 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid bound_fac value";
+                        got="bound_fac=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive value (e.g., 0.01)",
+                        context="MadNCL bound_fac validation",
+                    ),
+                ),
         ),
         Strategies.OptionDefinition(;
             name=:constr_mult_init_max,
             type=Real,
             default=Options.NotProvided,
             description="Maximum allowed value for the initial constraint multipliers.",
-            validator=x -> x >= 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid constr_mult_init_max value",
-                got="constr_mult_init_max=$x",
-                expected="non-negative real number (>= 0)",
-                suggestion="Provide a non-negative value (e.g., 1000.0)",
-                context="MadNCL constr_mult_init_max validation"
-            ))
+            validator=x ->
+                x >= 0 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid constr_mult_init_max value";
+                        got="constr_mult_init_max=$x",
+                        expected="non-negative real number (>= 0)",
+                        suggestion="Provide a non-negative value (e.g., 1000.0)",
+                        context="MadNCL constr_mult_init_max validation",
+                    ),
+                ),
         ),
         Strategies.OptionDefinition(;
             name=:fixed_variable_treatment,
             type=Type{<:MadNLP.AbstractFixedVariableTreatment},
             default=Options.NotProvided,
-            description="Method to handle fixed variables. Options: MadNLP.MakeParameter, MadNLP.RelaxBound, MadNLP.NoFixedVariables."
+            description="Method to handle fixed variables. Options: MadNLP.MakeParameter, MadNLP.RelaxBound, MadNLP.NoFixedVariables.",
         ),
         Strategies.OptionDefinition(;
             name=:equality_treatment,
             type=Type{<:MadNLP.AbstractEqualityTreatment},
             default=Options.NotProvided,
-            description="Method to handle equality constraints. Options: MadNLP.EnforceEquality, MadNLP.RelaxEquality."
+            description="Method to handle equality constraints. Options: MadNLP.EnforceEquality, MadNLP.RelaxEquality.",
         ),
         # ---- Advanced Options ----
         Strategies.OptionDefinition(;
             name=:kkt_system,
             type=Union{Type{<:MadNLP.AbstractKKTSystem},UnionAll},
             default=Options.NotProvided,
-            description="KKT system solver type (e.g., MadNLP.SparseKKTSystem, MadNLP.DenseKKTSystem)."
+            description="KKT system solver type (e.g., MadNLP.SparseKKTSystem, MadNLP.DenseKKTSystem).",
         ),
         Strategies.OptionDefinition(;
             name=:hessian_approximation,
             type=Union{Type{<:MadNLP.AbstractHessian},UnionAll},
             default=Options.NotProvided,
-            description="Hessian approximation method (e.g., MadNLP.ExactHessian, MadNLP.CompactLBFGS, MadNLP.BFGS)."
+            description="Hessian approximation method (e.g., MadNLP.ExactHessian, MadNLP.CompactLBFGS, MadNLP.BFGS).",
         ),
         Strategies.OptionDefinition(;
             name=:inertia_correction_method,
             type=Type{<:MadNLP.AbstractInertiaCorrector},
             default=Options.NotProvided,
-            description="Method for assumption of inertia correction (e.g., MadNLP.InertiaAuto, MadNLP.InertiaBased)."
+            description="Method for assumption of inertia correction (e.g., MadNLP.InertiaAuto, MadNLP.InertiaBased).",
         ),
         Strategies.OptionDefinition(;
             name=:mu_init,
             type=Real,
             default=Options.NotProvided,
             description="Initial value for the barrier parameter mu.",
-            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid mu_init value",
-                got="mu_init=$x",
-                expected="positive real number (> 0)",
-                suggestion="Provide a positive value (e.g., 1e-1)",
-                context="MadNCL mu_init validation"
-            ))
+            validator=x ->
+                x > 0 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid mu_init value";
+                        got="mu_init=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive value (e.g., 1e-1)",
+                        context="MadNCL mu_init validation",
+                    ),
+                ),
         ),
         Strategies.OptionDefinition(;
             name=:mu_min,
             type=Real,
             default=Options.NotProvided,
             description="Minimum value for the barrier parameter mu.",
-            validator=x -> x > 0 || throw(Exceptions.IncorrectArgument(
-                "Invalid mu_min value",
-                got="mu_min=$x",
-                expected="positive real number (> 0)",
-                suggestion="Provide a positive value (e.g., 1e-11)",
-                context="MadNCL mu_min validation"
-            ))
+            validator=x ->
+                x > 0 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid mu_min value";
+                        got="mu_min=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive value (e.g., 1e-11)",
+                        context="MadNCL mu_min validation",
+                    ),
+                ),
         ),
         Strategies.OptionDefinition(;
             name=:tau_min,
             type=Real,
             default=Options.NotProvided,
             description="Lower bound for the fraction-to-the-boundary parameter tau.",
-            validator=x -> x > 0 && x < 1 || throw(Exceptions.IncorrectArgument(
-                "Invalid tau_min value",
-                got="tau_min=$x",
-                expected="real number between 0 and 1 (exclusive)",
-                suggestion="Provide a value between 0 and 1 (e.g., 0.99)",
-                context="MadNCL tau_min validation"
-            ))
+            validator=x ->
+                x > 0 && x < 1 || throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid tau_min value";
+                        got="tau_min=$x",
+                        expected="real number between 0 and 1 (exclusive)",
+                        suggestion="Provide a value between 0 and 1 (e.g., 0.99)",
+                        context="MadNCL tau_min validation",
+                    ),
+                ),
         ),
         Strategies.OptionDefinition(;
             name=:ncl_options,
             type=MadNCL.NCLOptions,
-            default=MadNCL.NCLOptions{Float64}(;
-                verbose=true,
-                opt_tol=1e-8,
-                feas_tol=1e-8
-            ),
+            default=MadNCL.NCLOptions{Float64}(; verbose=true, opt_tol=1e-8, feas_tol=1e-8),
             description="Low-level NCLOptions structure controlling the augmented Lagrangian algorithm. 
 Available fields: 
 - `verbose` (Bool): Print convergence logs (default: true)
@@ -308,8 +343,8 @@ Available fields:
 - `opt_tol` (Float): Optimality tolerance (default: 1e-8)
 - `feas_tol` (Float): Feasibility tolerance (default: 1e-8)
 - `rho_init` (Float): Initial Augmented Lagrangian penalty (default: 10.0)
-- `max_auglag_iter` (Int): Maximum number of outer iterations (default: 30)"
-        )
+- `max_auglag_iter` (Int): Maximum number of outer iterations (default: 30)",
+        ),
     )
 end
 
@@ -342,12 +377,10 @@ function Solvers.build_madncl_solver(
     ::Type{Solvers.MadNCLTag},
     parameter::Type{<:AbstractStrategyParameter};
     mode::Symbol=:strict,
-    kwargs...
+    kwargs...,
 )
     opts = Strategies.build_strategy_options(
-        Solvers.MadNCL{parameter};
-        mode=mode,
-        kwargs...
+        Solvers.MadNCL{parameter}; mode=mode, kwargs...
     )
     return Solvers.MadNCL{parameter}(opts)
 end
@@ -369,21 +402,22 @@ Solve an NLP problem using MadNCL.
 - `MadNCL.NCLStats`: MadNCL execution statistics
 """
 function (solver::Solvers.MadNCL)(
-    nlp::NLPModels.AbstractNLPModel;
-    display::Bool=true
+    nlp::NLPModels.AbstractNLPModel; display::Bool=true
 )::MadNCL.NCLStats
     options = Strategies.options_dict(solver)
     options[:print_level] = display ? options[:print_level] : MadNLP.ERROR
-    
+
     # Handle ncl_options verbose flag
     if !display
         ncl_opts = options[:ncl_options]
         BaseType = base_type(ncl_opts)
-        ncl_opts_dict = Dict(field => getfield(ncl_opts, field) for field in fieldnames(MadNCL.NCLOptions))
+        ncl_opts_dict = Dict(
+            field => getfield(ncl_opts, field) for field in fieldnames(MadNCL.NCLOptions)
+        )
         ncl_opts_dict[:verbose] = false
         options[:ncl_options] = MadNCL.NCLOptions{BaseType}(; ncl_opts_dict...)
     end
-    
+
     return solve_with_madncl(nlp; options...)
 end
 
@@ -399,9 +433,7 @@ Backend interface for MadNCL solver.
 Calls MadNCL to solve the NLP problem.
 """
 function solve_with_madncl(
-    nlp::NLPModels.AbstractNLPModel;
-    ncl_options::MadNCL.NCLOptions,
-    kwargs...
+    nlp::NLPModels.AbstractNLPModel; ncl_options::MadNCL.NCLOptions, kwargs...
 )::MadNCL.NCLStats
     solver = MadNCL.NCLSolver(nlp; ncl_options=ncl_options, kwargs...)
     return MadNCL.solve!(solver)
@@ -431,9 +463,7 @@ A 6-element tuple `(objective, iterations, constraints_violation, message, statu
 - `status::Symbol`: Termination status from SolverCore
 - `successful::Bool`: Whether the solver converged successfully
 """
-function Optimization.extract_solver_infos(
-    nlp_solution::MadNCL.NCLStats,
-)
+function Optimization.extract_solver_infos(nlp_solution::MadNCL.NCLStats)
     objective = nlp_solution.objective
     iterations = nlp_solution.iter
     constraints_violation = nlp_solution.primal_feas

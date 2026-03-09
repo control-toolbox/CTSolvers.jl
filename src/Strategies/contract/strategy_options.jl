@@ -85,24 +85,26 @@ julia> for (name, value) in opts
 
 See also: [`OptionValue`](@ref), [`source`](@ref), [`is_user`](@ref), [`is_default`](@ref), [`is_computed`](@ref)
 """
-struct StrategyOptions{NT <: NamedTuple}
+struct StrategyOptions{NT<:NamedTuple}
     options::NT
-    
-    function StrategyOptions(options::NT) where NT <: NamedTuple
+
+    function StrategyOptions(options::NT) where {NT<:NamedTuple}
         for (key, val) in pairs(options)
             if !(val isa Options.OptionValue)
-                throw(Exceptions.IncorrectArgument(
-                    "Invalid option value type",
-                    got="$(typeof(val)) for key :$key",
-                    expected="OptionValue for all strategy options",
-                    suggestion="Wrap your value with OptionValue(value, :user/:default/:computed) or use the StrategyOptions constructor",
-                    context="StrategyOptions constructor - validating option types"
-                ))
+                throw(
+                    Exceptions.IncorrectArgument(
+                        "Invalid option value type";
+                        got="$(typeof(val)) for key :$key",
+                        expected="OptionValue for all strategy options",
+                        suggestion="Wrap your value with OptionValue(value, :user/:default/:computed) or use the StrategyOptions constructor",
+                        context="StrategyOptions constructor - validating option types",
+                    ),
+                )
             end
         end
         new{NT}(options)
     end
-    
+
     StrategyOptions(; kwargs...) = StrategyOptions((; kwargs...))
 end
 
@@ -159,7 +161,7 @@ julia> get(opts, Val(:max_iter))
 
 See also: [`Base.getindex`](@ref), [`Base.getproperty`](@ref)
 """
-function Base.get(opts::StrategyOptions{NT}, ::Val{key}) where {NT <: NamedTuple, key}
+function Base.get(opts::StrategyOptions{NT}, ::Val{key}) where {NT<:NamedTuple,key}
     return Options.value(option(opts, key))
 end
 
@@ -189,8 +191,9 @@ julia> opts.max_iter.source
 
 See also: [`Base.getindex`](@ref), [`source`](@ref)
 """
-Base.getproperty(opts::StrategyOptions, key::Symbol) = 
+function Base.getproperty(opts::StrategyOptions, key::Symbol)
     key === :options ? _raw_options(opts) : _raw_options(opts)[key]
+end
 
 # ==========================================================================
 # OptionValue access helpers
@@ -407,7 +410,9 @@ julia> collect(values(opts))
 
 See also: [`Base.keys`](@ref), [`Base.pairs`](@ref)
 """
-Base.values(opts::StrategyOptions) = (Options.value(opt) for opt in values(_raw_options(opts)))
+function Base.values(opts::StrategyOptions)
+    (Options.value(opt) for opt in values(_raw_options(opts)))
+end
 """
 $(TYPEDSIGNATURES)
 
@@ -427,7 +432,9 @@ julia> collect(pairs(opts))
 
 See also: [`Base.keys`](@ref), [`Base.values`](@ref)
 """
-Base.pairs(opts::StrategyOptions) = (k => Options.value(v) for (k, v) in pairs(_raw_options(opts)))
+function Base.pairs(opts::StrategyOptions)
+    (k => Options.value(v) for (k, v) in pairs(_raw_options(opts)))
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -452,7 +459,7 @@ julia> for value in opts
 
 See also: [`Base.keys`](@ref), [`Base.values`](@ref), [`Base.pairs`](@ref)
 """
-Base.iterate(opts::StrategyOptions, state...) = begin
+function Base.iterate(opts::StrategyOptions, state...)
     result = iterate(values(_raw_options(opts)), state...)
     result === nothing && return nothing
     (opt, newstate) = result
@@ -581,6 +588,8 @@ See also: [`Base.show(::IO, ::MIME"text/plain", ::StrategyOptions)`](@ref)
 """
 function Base.show(io::IO, opts::StrategyOptions)
     print(io, "StrategyOptions(")
-    print(io, join(("$k=$(Options.value(v))" for (k, v) in pairs(_raw_options(opts))), ", "))
+    print(
+        io, join(("$k=$(Options.value(v))" for (k, v) in pairs(_raw_options(opts))), ", ")
+    )
     print(io, ")")
 end

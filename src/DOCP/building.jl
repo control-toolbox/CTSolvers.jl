@@ -27,9 +27,7 @@ nlp = nlp_model(docp, initial_guess, modeler)
 See also: [`ocp_solution`](@ref), [`Optimization.build_model`](@ref)
 """
 function nlp_model(
-    prob::DiscretizedModel,
-    initial_guess,
-    modeler::Modelers.AbstractNLPModeler
+    prob::DiscretizedModel, initial_guess, modeler::Modelers.AbstractNLPModeler
 )::NLPModels.AbstractNLPModel
     return build_model(prob, initial_guess, modeler)
 end
@@ -61,7 +59,7 @@ See also: [`nlp_model`](@ref), [`Optimization.build_solution`](@ref)
 function ocp_solution(
     docp::DiscretizedModel,
     model_solution::SolverCore.AbstractExecutionStats,
-    modeler::Modelers.AbstractNLPModeler
+    modeler::Modelers.AbstractNLPModeler,
 )
     return build_solution(docp, model_solution, modeler)
 end

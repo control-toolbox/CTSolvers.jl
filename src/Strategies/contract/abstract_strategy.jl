@@ -191,12 +191,14 @@ the `id` method to provide its unique identifier.
 - `Exceptions.NotImplemented`: When the concrete type doesn't override this method
 """
 function id(::Type{T}) where {T<:AbstractStrategy}
-    throw(Exceptions.NotImplemented(
-        "Strategy ID method not implemented",
-        required_method="id(::Type{<:$T})",
-        suggestion="Implement id(::Type{<:$T}) to return a unique Symbol identifier",
-        context="AbstractStrategy.id - required method implementation"
-    ))
+    throw(
+        Exceptions.NotImplemented(
+            "Strategy ID method not implemented";
+            required_method="id(::Type{<:$T})",
+            suggestion="Implement id(::Type{<:$T}) to return a unique Symbol identifier",
+            context="AbstractStrategy.id - required method implementation",
+        ),
+    )
 end
 
 """
@@ -213,12 +215,14 @@ a `Dict` of `OptionDefinition` objects.
 - `Exceptions.NotImplemented`: When the concrete type doesn't override this method
 """
 function metadata(::Type{T}) where {T<:AbstractStrategy}
-    throw(Exceptions.NotImplemented(
-        "Strategy metadata method not implemented",
-        required_method="metadata(::Type{<:$T})",
-        suggestion="Implement metadata(::Type{<:$T}) to return StrategyMetadata with OptionDefinitions",
-        context="AbstractStrategy.metadata - required method implementation"
-    ))
+    throw(
+        Exceptions.NotImplemented(
+            "Strategy metadata method not implemented";
+            required_method="metadata(::Type{<:$T})",
+            suggestion="Implement metadata(::Type{<:$T}) to return StrategyMetadata with OptionDefinitions",
+            context="AbstractStrategy.metadata - required method implementation",
+        ),
+    )
 end
 
 """
@@ -250,12 +254,14 @@ function options(strategy::T) where {T<:AbstractStrategy}
         return getfield(strategy, :options)
     else
         # Fallback: require custom implementation for complex internal structures
-        throw(Exceptions.NotImplemented(
-            "Strategy options method not implemented",
-            required_method="options(strategy::$T)",
-            suggestion="Add options::StrategyOptions field to strategy type or implement custom options() method",
-            context="AbstractStrategy.options - required method implementation"
-        ))
+        throw(
+            Exceptions.NotImplemented(
+                "Strategy options method not implemented";
+                required_method="options(strategy::$T)",
+                suggestion="Add options::StrategyOptions field to strategy type or implement custom options() method",
+                context="AbstractStrategy.options - required method implementation",
+            ),
+        )
     end
 end
 
@@ -292,8 +298,16 @@ See also: [`describe`](@ref), [`options`](@ref)
 """
 function Base.show(io::IO, ::MIME"text/plain", strategy::T) where {T<:AbstractStrategy}
     type_name = nameof(T)
-    strategy_id = try id(T) catch; nothing end
-    opts = try options(strategy) catch; nothing end
+    strategy_id = try
+        id(T)
+    catch
+        ; nothing
+    end
+    opts = try
+        options(strategy)
+    catch
+        ; nothing
+    end
 
     # Header with ID on first line
     if strategy_id !== nothing
@@ -307,7 +321,9 @@ function Base.show(io::IO, ::MIME"text/plain", strategy::T) where {T<:AbstractSt
         for (i, (key, opt)) in enumerate(items)
             is_last = i == length(items)
             prefix = is_last ? "└─ " : "├─ "
-            println(io, prefix, key, " = ", Options.value(opt), "  [", Options.source(opt), "]")
+            println(
+                io, prefix, key, " = ", Options.value(opt), "  [", Options.source(opt), "]"
+            )
         end
     end
 
@@ -333,7 +349,11 @@ See also: [`Base.show(::IO, ::MIME"text/plain", ::AbstractStrategy)`](@ref)
 """
 function Base.show(io::IO, strategy::T) where {T<:AbstractStrategy}
     type_name = nameof(T)
-    opts = try options(strategy) catch; nothing end
+    opts = try
+        options(strategy)
+    catch
+        ; nothing
+    end
 
     print(io, type_name, "(")
     if opts !== nothing
@@ -383,8 +403,16 @@ end
 
 function describe(io::IO, strategy_type::Type{T}) where {T<:AbstractStrategy}
     type_name = nameof(T)
-    strategy_id = try id(T) catch; nothing end
-    meta = try metadata(T) catch; nothing end
+    strategy_id = try
+        id(T)
+    catch
+        ; nothing
+    end
+    meta = try
+        metadata(T)
+    catch
+        ; nothing
+    end
     super = supertype(T)
 
     println(io, type_name, " (strategy type)")
@@ -399,7 +427,7 @@ function describe(io::IO, strategy_type::Type{T}) where {T<:AbstractStrategy}
         println(io, "├─ supertype: ", nameof(super))
     else
         println(io, "└─ supertype: ", nameof(super))
-        return
+        return nothing
     end
 
     # metadata section
@@ -409,7 +437,7 @@ function describe(io::IO, strategy_type::Type{T}) where {T<:AbstractStrategy}
     for (i, (key, def)) in enumerate(items)
         is_last = i == length(items)
         prefix = is_last ? "   └─ " : "   ├─ "
-        cont   = is_last ? "      " : "   │  "
+        cont = is_last ? "      " : "   │  "
         println(io, prefix, def)
         println(io, cont, "description: ", def.description)
         # Add separator line between options (except after last)

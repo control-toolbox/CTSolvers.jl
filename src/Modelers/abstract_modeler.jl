@@ -56,15 +56,16 @@ Build an NLP model from a discretized optimal control problem and initial guess.
 - `CTBase.Exceptions.NotImplemented`: If not implemented by concrete type
 """
 function (modeler::AbstractNLPModeler)(
-    ::Optimization.AbstractOptimizationProblem, 
-    initial_guess
+    ::Optimization.AbstractOptimizationProblem, initial_guess
 )
-    throw(Exceptions.NotImplemented(
-        "Model building not implemented",
-        required_method="(modeler::$(typeof(modeler)))(prob::Optimization.AbstractOptimizationProblem, initial_guess)",
-        suggestion="Implement the callable method for $(typeof(modeler)) to build NLP models",
-        context="AbstractNLPModeler - required method implementation"
-    ))
+    throw(
+        Exceptions.NotImplemented(
+            "Model building not implemented";
+            required_method="(modeler::$(typeof(modeler)))(prob::Optimization.AbstractOptimizationProblem, initial_guess)",
+            suggestion="Implement the callable method for $(typeof(modeler)) to build NLP models",
+            context="AbstractNLPModeler - required method implementation",
+        ),
+    )
 end
 
 """
@@ -84,13 +85,14 @@ Build a solution object from a discretized optimal control problem and NLP solut
 - `CTBase.Exceptions.NotImplemented`: If not implemented by concrete type
 """
 function (modeler::AbstractNLPModeler)(
-    ::Optimization.AbstractOptimizationProblem,
-    ::SolverCore.AbstractExecutionStats
+    ::Optimization.AbstractOptimizationProblem, ::SolverCore.AbstractExecutionStats
 )
-    throw(Exceptions.NotImplemented(
-        "Solution building not implemented",
-        required_method="(modeler::$(typeof(modeler)))(prob::Optimization.AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats)",
-        suggestion="Implement the callable method for $(typeof(modeler)) to build solution objects",
-        context="AbstractNLPModeler - required method implementation"
-    ))
+    throw(
+        Exceptions.NotImplemented(
+            "Solution building not implemented";
+            required_method="(modeler::$(typeof(modeler)))(prob::Optimization.AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats)",
+            suggestion="Implement the callable method for $(typeof(modeler)) to build solution objects",
+            context="AbstractNLPModeler - required method implementation",
+        ),
+    )
 end

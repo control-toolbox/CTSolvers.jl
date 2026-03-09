@@ -51,13 +51,13 @@ function CommonSolve.solve(
 )
     # Build NLP model
     nlp = Optimization.build_model(problem, initial_guess, modeler)
-    
+
     # Solve NLP
     nlp_solution = CommonSolve.solve(nlp, solver; display=display)
-    
+
     # Build OCP solution
     solution = Optimization.build_solution(problem, nlp_solution, modeler)
-    
+
     return solution
 end
 
@@ -85,9 +85,7 @@ Mid-level solve: Solve NLP problem directly.
 See also: [`AbstractNLPSolver`](@ref)
 """
 function CommonSolve.solve(
-    nlp::NLPModels.AbstractNLPModel,
-    solver::AbstractNLPSolver;
-    display::Bool=__display(),
+    nlp::NLPModels.AbstractNLPModel, solver::AbstractNLPSolver; display::Bool=__display()
 )::SolverCore.AbstractExecutionStats
     return solver(nlp; display=display)
 end
@@ -110,10 +108,6 @@ that may be compatible with the solver's callable interface.
 
 See also: [`CommonSolve.solve`](@ref), [`AbstractNLPSolver`](@ref)
 """
-function CommonSolve.solve(
-    nlp, 
-    solver::AbstractNLPSolver; 
-    display::Bool=__display()
-)
+function CommonSolve.solve(nlp, solver::AbstractNLPSolver; display::Bool=__display())
     return solver(nlp; display=display)
 end

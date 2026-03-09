@@ -1,8 +1,8 @@
- # Solver information extraction
- #
- # Utilities for extracting standardized convergence information from solver stats.
+# Solver information extraction
+#
+# Utilities for extracting standardized convergence information from solver stats.
 
- """
+"""
  $(TYPEDSIGNATURES)
 
 Retrieve convergence information from an NLP solution.
@@ -30,9 +30,7 @@ A 6-element tuple `(objective, iterations, constraints_violation, message, statu
 obj, iter, viol, msg, stat, success = extract_solver_infos(nlp_solution)
 ```
 """
-function extract_solver_infos(
-    nlp_solution::SolverCore.AbstractExecutionStats,
-)
+function extract_solver_infos(nlp_solution::SolverCore.AbstractExecutionStats)
     objective = nlp_solution.objective
     iterations = nlp_solution.iter
     constraints_violation = nlp_solution.primal_feas

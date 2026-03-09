@@ -52,12 +52,14 @@ julia> id(GPU)
 ```
 """
 function id(parameter_type::Type{<:AbstractStrategyParameter})
-    throw(Exceptions.NotImplemented(
-        "id() must be implemented for parameter type",
-        required_method="id(::Type{$(parameter_type)})",
-        suggestion="Define id(::Type{$(parameter_type)}) = :your_id",
-        context="AbstractStrategyParameter contract"
-    ))
+    throw(
+        Exceptions.NotImplemented(
+            "id() must be implemented for parameter type";
+            required_method="id(::Type{$(parameter_type)})",
+            suggestion="Define id(::Type{$(parameter_type)}) = :your_id",
+            context="AbstractStrategyParameter contract",
+        ),
+    )
 end
 
 """
@@ -146,22 +148,26 @@ See also: [`id`](@ref), [`parameter_id`](@ref), [`is_parameter_type`](@ref)
 """
 function validate_parameter_type(parameter_type::Type{<:AbstractStrategyParameter})
     if !isconcretetype(parameter_type)
-        throw(Exceptions.IncorrectArgument(
-            "Invalid parameter type",
-            got="parameter_type=$parameter_type",
-            expected="a concrete DataType subtype of AbstractStrategyParameter",
-            suggestion="Define a concrete struct subtype, e.g. struct MyParam <: AbstractStrategyParameter end",
-            context="validate_parameter_type - contract validation"
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "Invalid parameter type";
+                got="parameter_type=$parameter_type",
+                expected="a concrete DataType subtype of AbstractStrategyParameter",
+                suggestion="Define a concrete struct subtype, e.g. struct MyParam <: AbstractStrategyParameter end",
+                context="validate_parameter_type - contract validation",
+            ),
+        )
     end
     if fieldcount(parameter_type) != 0
-        throw(Exceptions.IncorrectArgument(
-            "Invalid parameter type",
-            got="parameter_type=$parameter_type with $(fieldcount(parameter_type)) fields",
-            expected="a singleton parameter type with no fields",
-            suggestion="Remove fields from the parameter type; use type dispatch only",
-            context="validate_parameter_type - singleton type requirement"
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "Invalid parameter type";
+                got="parameter_type=$parameter_type with $(fieldcount(parameter_type)) fields",
+                expected="a singleton parameter type with no fields",
+                suggestion="Remove fields from the parameter type; use type dispatch only",
+                context="validate_parameter_type - singleton type requirement",
+            ),
+        )
     end
     _ = id(parameter_type)
     return nothing
@@ -227,10 +233,12 @@ _default_parameter(::Type{<:MyOtherStrategy}) = GPU
 See also: [`CPU`](@ref), [`GPU`](@ref)
 """
 function _default_parameter(::Type{<:AbstractStrategy})
-    throw(Exceptions.NotImplemented(
-        "Strategy must implement _default_parameter",
-        required_method="Strategies._default_parameter(::Type{<:YourStrategy})",
-        suggestion="Define Strategies._default_parameter(::Type{<:YourStrategy}) = CPU or GPU",
-        context="Parameter contract - all parameterized strategies must declare default parameter"
-    ))
+    throw(
+        Exceptions.NotImplemented(
+            "Strategy must implement _default_parameter";
+            required_method="Strategies._default_parameter(::Type{<:YourStrategy})",
+            suggestion="Define Strategies._default_parameter(::Type{<:YourStrategy}) = CPU or GPU",
+            context="Parameter contract - all parameterized strategies must declare default parameter",
+        ),
+    )
 end

@@ -31,12 +31,14 @@ nlp = builder(initial_guess; show_time=false, backend=:optimized)
 See also: [`get_exa_model_builder`](@ref), [`build_model`](@ref)
 """
 function get_adnlp_model_builder(prob::AbstractOptimizationProblem)
-    throw(Exceptions.NotImplemented(
-        "ADNLP model builder not implemented",
-        required_method="get_adnlp_model_builder(prob::$(typeof(prob)))",
-        suggestion="Implement get_adnlp_model_builder for $(typeof(prob)) to support ADNLPModels backend",
-        context="AbstractOptimizationProblem.get_adnlp_model_builder - required method implementation"
-    ))
+    throw(
+        Exceptions.NotImplemented(
+            "ADNLP model builder not implemented";
+            required_method="get_adnlp_model_builder(prob::$(typeof(prob)))",
+            suggestion="Implement get_adnlp_model_builder for $(typeof(prob)) to support ADNLPModels backend",
+            context="AbstractOptimizationProblem.get_adnlp_model_builder - required method implementation",
+        ),
+    )
 end
 
 """
@@ -67,12 +69,14 @@ nlp = builder(Float64, initial_guess; backend=nothing, minimize=true)
 See also: [`get_adnlp_model_builder`](@ref), [`build_model`](@ref)
 """
 function get_exa_model_builder(prob::AbstractOptimizationProblem)
-    throw(Exceptions.NotImplemented(
-        "ExaModel builder not implemented",
-        required_method="get_exa_model_builder(prob::$(typeof(prob)))",
-        suggestion="Implement get_exa_model_builder for $(typeof(prob)) to support ExaModels backend",
-        context="AbstractOptimizationProblem.get_exa_model_builder - required method implementation"
-    ))
+    throw(
+        Exceptions.NotImplemented(
+            "ExaModel builder not implemented";
+            required_method="get_exa_model_builder(prob::$(typeof(prob)))",
+            suggestion="Implement get_exa_model_builder for $(typeof(prob)) to support ExaModels backend",
+            context="AbstractOptimizationProblem.get_exa_model_builder - required method implementation",
+        ),
+    )
 end
 
 """
@@ -103,12 +107,14 @@ sol = builder(nlp_stats)
 See also: [`get_exa_solution_builder`](@ref), [`build_solution`](@ref)
 """
 function get_adnlp_solution_builder(prob::AbstractOptimizationProblem)
-    throw(Exceptions.NotImplemented(
-        "ADNLP solution builder not implemented",
-        required_method="get_adnlp_solution_builder(prob::$(typeof(prob)))",
-        suggestion="Implement get_adnlp_solution_builder for $(typeof(prob)) to support ADNLPModels backend",
-        context="AbstractOptimizationProblem.get_adnlp_solution_builder - required method implementation"
-    ))
+    throw(
+        Exceptions.NotImplemented(
+            "ADNLP solution builder not implemented";
+            required_method="get_adnlp_solution_builder(prob::$(typeof(prob)))",
+            suggestion="Implement get_adnlp_solution_builder for $(typeof(prob)) to support ADNLPModels backend",
+            context="AbstractOptimizationProblem.get_adnlp_solution_builder - required method implementation",
+        ),
+    )
 end
 
 """
@@ -139,10 +145,12 @@ sol = builder(nlp_stats)
 See also: [`get_adnlp_solution_builder`](@ref), [`build_solution`](@ref)
 """
 function get_exa_solution_builder(prob::AbstractOptimizationProblem)
-    throw(Exceptions.NotImplemented(
-        "ExaSolution builder not implemented",
-        required_method="get_exa_solution_builder(prob::$(typeof(prob)))",
-        suggestion="Implement get_exa_solution_builder for $(typeof(prob)) to support ExaModels backend",
-        context="AbstractOptimizationProblem.get_exa_solution_builder - required method implementation"
-    ))
+    throw(
+        Exceptions.NotImplemented(
+            "ExaSolution builder not implemented";
+            required_method="get_exa_solution_builder(prob::$(typeof(prob)))",
+            suggestion="Implement get_exa_solution_builder for $(typeof(prob)) to support ExaModels backend",
+            context="AbstractOptimizationProblem.get_exa_solution_builder - required method implementation",
+        ),
+    )
 end

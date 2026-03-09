@@ -1,6 +1,6 @@
 module TestExtensionStubs
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Solvers
 import CTSolvers.Strategies
@@ -22,15 +22,17 @@ are not loaded, with helpful error messages.
 """
 function test_extension_stubs()
     Test.@testset "Extension Stubs" verbose=VERBOSE showtiming=SHOWTIMING begin
-        
+
         # ====================================================================
         # UNIT TESTS - Solvers.Ipopt Stub
         # ====================================================================
-        
+
         Test.@testset "Solvers.Ipopt stub" begin
             # Test that build_ipopt_solver throws ExtensionError with IpoptTag
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(DummyTag, Strategies.CPU)
-            
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_ipopt_solver(
+                DummyTag, Strategies.CPU
+            )
+
             # Capture the error and verify its content
             err = nothing
             try
@@ -38,20 +40,22 @@ function test_extension_stubs()
             catch e
                 err = e
             end
-            
+
             Test.@test err isa Exceptions.ExtensionError
-            
+
             # Verify error message content
             err_str = string(err)
             Test.@test occursin("Ipopt", err_str)
             Test.@test occursin("NLPModelsIpopt", err_str)
-            Test.@test occursin("to create Ipopt, access options, and solve problems", err_str)
+            Test.@test occursin(
+                "to create Ipopt, access options, and solve problems", err_str
+            )
         end
-        
+
         # ====================================================================
         # UNIT TESTS - Solvers.Knitro Stub (Commented out - no license)
         # ====================================================================
-        
+
         # Commented out - no Knitro license available
         # Test.@testset "Solvers.Knitro stub" begin
         #     Test.@test_throws Exceptions.ExtensionError Solvers.build_knitro_solver(DummyTag())
@@ -70,55 +74,63 @@ function test_extension_stubs()
         #     Test.@test occursin("NLPModelsKnitro", err_str)
         #     Test.@test occursin("to create Knitro, access options, and solve problems", err_str)
         # end
-        
+
         # ====================================================================
         # UNIT TESTS - Solvers.MadNLP Stub
         # ====================================================================
-        
+
         Test.@testset "Solvers.MadNLP stub" begin
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(DummyTag, Strategies.CPU)
-            
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_madnlp_solver(
+                DummyTag, Strategies.CPU
+            )
+
             err = nothing
             try
                 Solvers.build_madnlp_solver(DummyTag, Strategies.CPU)
             catch e
                 err = e
             end
-            
+
             Test.@test err isa Exceptions.ExtensionError
-            
+
             err_str = string(err)
             Test.@test occursin("MadNLP", err_str)
             Test.@test occursin("MadNLP", err_str)
-            Test.@test occursin("to create MadNLP, access options, and solve problems", err_str)
+            Test.@test occursin(
+                "to create MadNLP, access options, and solve problems", err_str
+            )
         end
-        
+
         # ====================================================================
         # UNIT TESTS - Solvers.MadNCL Stub
         # ====================================================================
-        
+
         Test.@testset "Solvers.MadNCL stub" begin
-            Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(DummyTag, Strategies.CPU)
-            
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_madncl_solver(
+                DummyTag, Strategies.CPU
+            )
+
             err = nothing
             try
                 Solvers.build_madncl_solver(DummyTag, Strategies.CPU)
             catch e
                 err = e
             end
-            
+
             Test.@test err isa Exceptions.ExtensionError
-            
+
             err_str = string(err)
             Test.@test occursin("MadNCL", err_str)
             Test.@test occursin("MadNCL", err_str)
-            Test.@test occursin("to create MadNCL, access options, and solve problems", err_str)
+            Test.@test occursin(
+                "to create MadNCL, access options, and solve problems", err_str
+            )
         end
-        
+
         # ====================================================================
         # UNIT TESTS - All Stubs Throw Consistently
         # ====================================================================
-        
+
         Test.@testset "All stubs throw ExtensionError" begin
             # Verify that all build_*_solver stubs throw ExtensionError
             stubs = [
@@ -126,14 +138,14 @@ function test_extension_stubs()
                 # Commented out - no Knitro license available
                 # () -> Solvers.build_knitro_solver(DummyTag()),
                 () -> Solvers.build_madnlp_solver(DummyTag, Strategies.CPU),
-                () -> Solvers.build_madncl_solver(DummyTag, Strategies.CPU)
+                () -> Solvers.build_madncl_solver(DummyTag, Strategies.CPU),
             ]
-            
+
             for stub in stubs
                 Test.@test_throws Exceptions.ExtensionError stub()
             end
         end
-        
+
         # ====================================================================
         # NOTE: metadata() Stubs
         # ====================================================================

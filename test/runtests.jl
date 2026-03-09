@@ -16,8 +16,8 @@ const TestRunner = Base.get_extension(CTBase, :TestRunner)
 
 # Controls nested testset output formatting (used by individual test files)
 module TestData
-    const VERBOSE = true
-    const SHOWTIMING = true
+const VERBOSE = true
+const SHOWTIMING = true
 end
 using .TestData: VERBOSE, SHOWTIMING
 
@@ -34,9 +34,7 @@ end
 CTBase.run_tests(;
     args=String.(ARGS),
     testset_name="CTSolvers tests",
-    available_tests=(
-        "suite/*/test_*",
-    ),
+    available_tests=("suite/*/test_*",),
     filename_builder=name -> Symbol(:test_, name),
     funcname_builder=name -> Symbol(:test_, name),
     verbose=VERBOSE,
