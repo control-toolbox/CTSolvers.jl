@@ -5,6 +5,22 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.5 (2026-03-09)
+
+**No breaking changes.**
+
+This release applies code formatting for consistency.
+
+### Summary - v0.4.5
+
+- Applied JuliaFormatter to entire codebase
+
+### Migration - v0.4.5
+
+**No action required.** All existing code continues to work without changes.
+
+---
+
 ## v0.4.3-beta (2026-03-07)
 
 **Breaking change:** Extension-based backend validation for ADNLP modelers.

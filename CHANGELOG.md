@@ -10,7 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.4.4-beta] - 2026-03-08
+## [0.4.5] - 2026-03-09
+
+### Changed
+
+- **Code formatting** - Applied JuliaFormatter to entire codebase for consistency
+
+---
+
+## [0.4.4] - 2026-03-08
 
 ### Added
 
