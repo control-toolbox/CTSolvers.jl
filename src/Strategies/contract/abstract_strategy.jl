@@ -301,12 +301,14 @@ function Base.show(io::IO, ::MIME"text/plain", strategy::T) where {T<:AbstractSt
     strategy_id = try
         id(T)
     catch
-        ; nothing
+        ;
+        nothing
     end
     opts = try
         options(strategy)
     catch
-        ; nothing
+        ;
+        nothing
     end
 
     # Header with ID on first line
@@ -352,7 +354,8 @@ function Base.show(io::IO, strategy::T) where {T<:AbstractStrategy}
     opts = try
         options(strategy)
     catch
-        ; nothing
+        ;
+        nothing
     end
 
     print(io, type_name, "(")
@@ -406,12 +409,14 @@ function describe(io::IO, strategy_type::Type{T}) where {T<:AbstractStrategy}
     strategy_id = try
         id(T)
     catch
-        ; nothing
+        ;
+        nothing
     end
     meta = try
         metadata(T)
     catch
-        ; nothing
+        ;
+        nothing
     end
     super = supertype(T)
 

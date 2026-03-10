@@ -29,14 +29,14 @@ Strategies.id(::Type{<:IncompleteStrategy}) = :incomplete
 
 function Strategies.metadata(::Type{<:FakeStrategy})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:max_iter,
             type=Int,
             default=100,
             description="Maximum iterations",
             aliases=(:max, :maxiter),
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:tol, type=Float64, default=1e-6, description="Tolerance"
         ),
     )

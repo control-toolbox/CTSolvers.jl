@@ -28,14 +28,16 @@ Strategies.id(::Type{<:IntegrationStratB}) = :integrationstratb
 # Simple metadata
 function Strategies.metadata(::Type{T}) where {T<:IntegrationStratA}
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(name=:opt1, type=Int, default=10, description="Option 1")
+        Options.OptionDefinition(; name=:opt1, type=Int, default=10, description="Option 1")
     )
 end
 
 function Strategies.metadata(::Type{T}) where {T<:IntegrationStratB}
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(name=:opt1, type=Int, default=20, description="Option 1"),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
+            name=:opt1, type=Int, default=20, description="Option 1"
+        ),
+        Options.OptionDefinition(;
             name=:backend,
             type=Union{Nothing,String},
             default=nothing,

@@ -46,14 +46,14 @@ function option_names_from_resolved(
     else
         p = if param === nothing
             throw(
-            Exceptions.IncorrectArgument(
-                "Missing parameter in resolved method";
-                got="strategy :$s_id in resolved method with parameter=nothing",
-                expected="a parameter type for parameterized strategies",
-                suggestion="Ensure resolve_method validated a parameter token for the method",
-                context="option_names_from_resolved - parameter required",
-            ),
-        )
+                Exceptions.IncorrectArgument(
+                    "Missing parameter in resolved method";
+                    got="strategy :$s_id in resolved method with parameter=nothing",
+                    expected="a parameter type for parameterized strategies",
+                    suggestion="Ensure resolve_method validated a parameter token for the method",
+                    context="option_names_from_resolved - parameter required",
+                ),
+            )
         else
             (param::Type{<:Strategies.AbstractStrategyParameter})
         end
@@ -114,14 +114,14 @@ function build_strategy_from_resolved(
 
     p = if param === nothing
         throw(
-        Exceptions.IncorrectArgument(
-            "Missing parameter in resolved method";
-            got="strategy :$s_id in resolved method with parameter=nothing",
-            expected="a parameter type for parameterized strategies",
-            suggestion="Ensure resolve_method validated a parameter token for the method",
-            context="build_strategy_from_resolved - parameter required",
-        ),
-    )
+            Exceptions.IncorrectArgument(
+                "Missing parameter in resolved method";
+                got="strategy :$s_id in resolved method with parameter=nothing",
+                expected="a parameter type for parameterized strategies",
+                suggestion="Ensure resolve_method validated a parameter token for the method",
+                context="build_strategy_from_resolved - parameter required",
+            ),
+        )
     else
         (param::Type{<:Strategies.AbstractStrategyParameter})
     end

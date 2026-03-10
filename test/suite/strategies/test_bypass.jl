@@ -23,10 +23,10 @@ Strategies.id(::Type{MockSolver}) = :mock_solver
 
 function Strategies.metadata(::Type{MockSolver})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:max_iter, type=Int, default=100, description="Maximum iterations"
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:tol, type=Float64, default=1e-6, description="Tolerance"
         ),
     )
