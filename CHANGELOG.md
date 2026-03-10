@@ -10,6 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.6] - 2026-03-10
+
+### Fixed
+
+- **Option validator MethodError** - Fixed bug where passing wrong type to option validators (e.g., `ADNLP(backend=CUDABackend())`) threw cryptic `MethodError` instead of clear `IncorrectArgument`
+  - Type check now runs before validator call in option extraction
+  - Validators provide helpful error messages suggesting correct types
+  - Added explicit type validation in `get_validate_adnlp_backend`
+  - Removed dead code from typed validators
+  - Added comprehensive tests for wrong-type inputs
+
+---
+
 ## [0.4.5] - 2026-03-09
 
 ### Changed

@@ -5,6 +5,26 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.6 (2026-03-10)
+
+**No breaking changes.**
+
+This release fixes a bug in option validation that caused `MethodError` instead of clear error messages.
+
+### Summary - v0.4.6
+
+- Fixed option validator to check types before calling validators
+- Improved error messages when wrong types are passed to options
+- Added comprehensive tests for type validation
+
+### Migration - v0.4.6
+
+**No action required.** All existing code continues to work without changes.
+
+**Improved behavior:** Code that previously threw `MethodError` (e.g., `ADNLP(backend=CUDABackend())`) now throws clear `IncorrectArgument` with helpful suggestions.
+
+---
+
 ## v0.4.5 (2026-03-09)
 
 **No breaking changes.**
