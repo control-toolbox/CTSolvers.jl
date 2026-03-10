@@ -258,6 +258,43 @@ function test_extraction_api()
                 Options.extract_options(kwargs, defs)
             end
         end
+
+        Test.@testset "Type check before validator" begin
+            # Test that type check happens BEFORE validator call
+            # This prevents MethodError when validator has type annotations
+            typed_validator(x::Int) = x > 0 || throw(ArgumentError("$x must be positive"))
+
+            def = Options.OptionDefinition(
+                name=:test_option,
+                type=Int,
+                default=42,
+                description="Test option with typed validator",
+                validator=typed_validator,
+            )
+
+            # Pass wrong type - should get IncorrectArgument, NOT MethodError
+            kwargs = (test_option="not_an_int",)
+            Test.@test_throws Exceptions.IncorrectArgument Options.extract_option(
+                kwargs, def
+            )
+
+            # Verify error message mentions type mismatch
+            try
+                Options.extract_option(kwargs, def)
+                Test.@test false  # Should not reach here
+            catch e
+                Test.@test e isa Exceptions.IncorrectArgument
+                Test.@test occursin("Invalid option type", e.msg)
+                Test.@test occursin("String", string(e.got))
+                Test.@test occursin("Int", string(e.expected))
+            end
+
+            # Pass correct type but invalid value - should get ArgumentError from validator
+            kwargs = (test_option=-5,)
+            Test.@test_throws ArgumentError redirect_stderr(devnull) do
+                Options.extract_option(kwargs, def)
+            end
+        end
     end # UNIT TESTS
 
     # ============================================================================

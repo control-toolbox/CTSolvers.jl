@@ -305,6 +305,63 @@ function test_enhanced_options()
                 Test.@test_logs Modelers.Exa(backend=nothing)
             end
         end
+
+        Test.@testset "Wrong-type backend values" begin
+            # Test that passing wrong type to backend option throws IncorrectArgument, not MethodError
+            Test.@testset "ADNLP backend with wrong types" begin
+                # CUDABackend() is for Exa, not ADNLP - should get clear error
+                redirect_stderr(devnull) do
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(
+                        backend=KernelAbstractions.CPU()
+                    )
+                end
+
+                # Integer instead of Symbol
+                redirect_stderr(devnull) do
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(
+                        backend=42
+                    )
+                end
+
+                # String instead of Symbol
+                redirect_stderr(devnull) do
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(
+                        backend="optimized"
+                    )
+                end
+
+                # Verify error message is helpful
+                try
+                    Modelers.ADNLP(backend=KernelAbstractions.CPU())
+                    Test.@test false  # Should not reach here
+                catch e
+                    Test.@test e isa Exceptions.IncorrectArgument
+                    # Should mention Symbol expected
+                    Test.@test occursin("Symbol", string(e.expected)) ||
+                        occursin("type", lowercase(e.msg))
+                end
+            end
+
+            Test.@testset "ADNLP other options with wrong types" begin
+                # matrix_free expects Bool
+                redirect_stderr(devnull) do
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(
+                        matrix_free=42
+                    )
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(
+                        matrix_free="true"
+                    )
+                end
+
+                # name expects String
+                redirect_stderr(devnull) do
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(name=42)
+                    Test.@test_throws Exceptions.IncorrectArgument Modelers.ADNLP(
+                        name=:symbol
+                    )
+                end
+            end
+        end
     end
 end # function test_enhanced_options
 

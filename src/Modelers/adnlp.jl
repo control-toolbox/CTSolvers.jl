@@ -513,7 +513,7 @@ Factory function that returns a backend validator for the specified tag type.
 - `T::Type{<:AbstractTag}`: Tag type for dispatch (e.g., ADNLPTag, DummyTag)
 
 # Returns
-- `Function`: Validator function that takes `backend::Symbol` and validates it
+- `Function`: Validator function that takes `backend` and validates it
 
 # Examples
 ```julia-repl
@@ -521,7 +521,7 @@ julia> using CTSolvers.Modelers
 
 julia> # Get validator for ADNLP (with extensions loaded)
 julia> validator = get_validate_adnlp_backend(ADNLPTag)
-(::Symbol)->validate_adnlp_backend(#=method=#1, #=generic#=)
+(backend)->validate_adnlp_backend(#=method=#1, #=generic#=)
 
 julia> validator(:default)
 :default
@@ -531,7 +531,7 @@ julia> validator(:enzyme)  # Works with CTSolversEnzyme extension
 
 julia> # Get validator for dummy tag (no extensions)
 julia> dummy_validator = get_validate_adnlp_backend(DummyTag)
-(::Symbol)->validate_adnlp_backend(#=method=#1, #=generic#=)
+(backend)->validate_adnlp_backend(#=method=#1, #=generic#=)
 
 julia> dummy_validator(:enzyme)  # Throws ExtensionError
 ERROR: Control Toolbox Error
@@ -547,5 +547,18 @@ ERROR: Control Toolbox Error
 See also: `validate_adnlp_backend`, `ADNLPTag`, `Modelers.ADNLP`
 """
 function get_validate_adnlp_backend(T::Type{<:AbstractTag})
-    return backend::Symbol -> validate_adnlp_backend(T(), Val(backend))
+    return function (backend)
+        if !isa(backend, Symbol)
+            throw(
+                Exceptions.IncorrectArgument(
+                    "ADNLP backend must be a Symbol";
+                    got="backend of type $(typeof(backend))",
+                    expected="Symbol (one of :default, :optimized, :generic, :enzyme, :zygote, :manual)",
+                    suggestion="Use a Symbol like :optimized for ADNLP. For GPU execution with CUDABackend, use Exa{GPU} instead of ADNLP",
+                    context="Modelers.ADNLP backend validation",
+                ),
+            )
+        end
+        return validate_adnlp_backend(T(), Val(backend))
+    end
 end

@@ -213,18 +213,6 @@ validate_model_name("")
 ```
 """
 function validate_model_name(name::String)
-    if !isa(name, String)
-        throw(
-            Exceptions.IncorrectArgument(
-                "Invalid model name type";
-                got="name of type $(typeof(name))",
-                expected="String",
-                suggestion="Provide a non-empty string for the model name",
-                context="Model name validation",
-            ),
-        )
-    end
-
     if isempty(name)
         throw(
             Exceptions.IncorrectArgument(
@@ -264,18 +252,6 @@ validate_matrix_free(false, 1_000_000)
 ```
 """
 function validate_matrix_free(matrix_free::Bool, problem_size::Int=1000)
-    if !isa(matrix_free, Bool)
-        throw(
-            Exceptions.IncorrectArgument(
-                "Invalid matrix_free type";
-                got="matrix_free of type $(typeof(matrix_free))",
-                expected="Bool (true or false)",
-                suggestion="Use matrix_free=true for large problems or matrix_free=false for small problems",
-                context="Matrix-free mode validation",
-            ),
-        )
-    end
-
     # Provide recommendations based on problem size
     if problem_size > 100_000 && !matrix_free
         @info "Consider using matrix_free=true for large problems (n > 100000) " *
@@ -306,17 +282,6 @@ validate_optimization_direction(false)
 ```
 """
 function validate_optimization_direction(minimize::Bool)
-    if !isa(minimize, Bool)
-        throw(
-            Exceptions.IncorrectArgument(
-                "Invalid optimization direction type";
-                got="minimize of type $(typeof(minimize))",
-                expected="Bool (true for minimization, false for maximization)",
-                suggestion="Use minimize=true for minimization problems or minimize=false for maximization problems",
-                context="Optimization direction validation",
-            ),
-        )
-    end
     return minimize
 end
 

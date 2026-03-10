@@ -51,19 +51,7 @@ function extract_option(kwargs::NamedTuple, def::OptionDefinition)
         if haskey(kwargs, name)
             value = kwargs[name]
 
-            # Validate if validator provided
-            if def.validator !== nothing
-                try
-                    def.validator(value)
-                catch e
-                    @error "Validation failed for option $(def.name) with value $value" exception=(
-                        e, catch_backtrace()
-                    )
-                    rethrow()
-                end
-            end
-
-            # Type check - strict validation with exceptions
+            # Type check FIRST - strict validation with exceptions
             if !isa(value, def.type)
                 throw(
                     Exceptions.IncorrectArgument(
@@ -74,6 +62,18 @@ function extract_option(kwargs::NamedTuple, def::OptionDefinition)
                         context="Option extraction for $(def.name)",
                     ),
                 )
+            end
+
+            # Validate if validator provided (after type check)
+            if def.validator !== nothing
+                try
+                    def.validator(value)
+                catch e
+                    @error "Validation failed for option $(def.name) with value $value" exception=(
+                        e, catch_backtrace()
+                    )
+                    rethrow()
+                end
             end
 
             # Remove from kwargs
