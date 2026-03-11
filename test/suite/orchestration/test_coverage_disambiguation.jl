@@ -23,7 +23,7 @@ end
 Strategies.id(::Type{CovCollocation}) = :collocation
 function Strategies.metadata(::Type{CovCollocation})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:grid_size, type=Int, default=100, description="Grid size"
         ),
     )
@@ -35,7 +35,7 @@ end
 Strategies.id(::Type{CovADNLP}) = :adnlp
 function Strategies.metadata(::Type{CovADNLP})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend,
             type=Symbol,
             default=:dense,
@@ -51,14 +51,14 @@ end
 Strategies.id(::Type{CovIpopt}) = :ipopt
 function Strategies.metadata(::Type{CovIpopt})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:max_iter,
             type=Int,
             default=1000,
             description="Maximum iterations",
             aliases=(:maxiter,),
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend,
             type=Symbol,
             default=:cpu,

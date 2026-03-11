@@ -25,7 +25,7 @@ struct ADNLPMock <: TestModeler end
 Strategies.id(::Type{ADNLPMock}) = :adnlp
 function Strategies.metadata(::Type{ADNLPMock})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend,
             type=Symbol,
             default=:dense,
@@ -39,10 +39,10 @@ struct IpoptMock <: TestSolver end
 Strategies.id(::Type{IpoptMock}) = :ipopt
 function Strategies.metadata(::Type{IpoptMock})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:max_iter, type=Int, default=1000, description="Maximum iterations"
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend,
             type=Symbol,
             default=:cpu,

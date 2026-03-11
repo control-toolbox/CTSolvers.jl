@@ -105,21 +105,22 @@ function test_adnlp_parameter_validation()
         Test.@testset "Validator with wrong types" begin
             # Test that validators throw IncorrectArgument for wrong types, not MethodError
             adnlp_validator = Modelers.get_validate_adnlp_backend(Modelers.ADNLPTag)
-            
+
             # Pass non-Symbol types - should get IncorrectArgument
             Test.@test_throws Exceptions.IncorrectArgument adnlp_validator(42)
             Test.@test_throws Exceptions.IncorrectArgument adnlp_validator("optimized")
             Test.@test_throws Exceptions.IncorrectArgument adnlp_validator(
                 KernelAbstractions.CPU()
             )
-            
+
             # Verify error message is helpful
             try
                 adnlp_validator(KernelAbstractions.CPU())
                 Test.@test false  # Should not reach here
             catch e
                 Test.@test e isa Exceptions.IncorrectArgument
-                Test.@test occursin("Symbol", e.msg) || occursin("Symbol", string(e.expected))
+                Test.@test occursin("Symbol", e.msg) ||
+                    occursin("Symbol", string(e.expected))
                 Test.@test occursin("ADNLP", e.msg) || occursin("ADNLP", string(e.context))
             end
         end

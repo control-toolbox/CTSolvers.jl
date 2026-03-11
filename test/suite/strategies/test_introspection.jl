@@ -27,17 +27,17 @@ Strategies.id(::Type{<:IntrospectionTestStrategy}) = :introspection_test
 
 function Strategies.metadata(::Type{<:IntrospectionTestStrategy})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:max_iter,
             type=Int,
             default=100,
             description="Maximum number of iterations",
             aliases=(:max, :maxiter),
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:tol, type=Float64, default=1e-6, description="Convergence tolerance"
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:cpu, description="Execution backend"
         ),
     )

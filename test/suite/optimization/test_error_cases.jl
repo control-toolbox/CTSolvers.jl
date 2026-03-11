@@ -209,7 +209,7 @@ function test_error_cases()
                         x_var = ExaModels.variable(m, length(x); start=x)
                         ExaModels.objective(m, sum(x_var[i]^2 for i in 1:length(x)))
                         ExaModels.ExaModel(m)
-                    end
+                    end,
                 )
 
                 x0_32 = Float32[1.0, 2.0]
