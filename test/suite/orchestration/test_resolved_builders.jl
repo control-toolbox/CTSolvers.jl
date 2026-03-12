@@ -25,7 +25,7 @@ Strategies.id(::Type{RBModA}) = :rb_mod_a
 
 function Strategies.metadata(::Type{RBDiscA})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:grid_size, type=Int, default=10, description="Grid size"
         ),
     )
@@ -33,7 +33,7 @@ end
 
 function Strategies.metadata(::Type{RBModA})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:dense, description="Backend"
         ),
     )

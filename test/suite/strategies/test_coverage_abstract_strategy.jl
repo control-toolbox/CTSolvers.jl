@@ -20,14 +20,14 @@ Strategies.id(::Type{<:CovFakeStrategy}) = :cov_fake
 
 function Strategies.metadata(::Type{<:CovFakeStrategy})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:max_iter,
             type=Int,
             default=100,
             description="Maximum iterations",
             aliases=(:maxiter,),
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:tol, type=Float64, default=1e-6, description="Convergence tolerance"
         ),
     )
@@ -58,7 +58,7 @@ Strategies.id(::Type{<:CovSingleOptStrategy}) = :cov_single
 
 function Strategies.metadata(::Type{<:CovSingleOptStrategy})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:value, type=Int, default=42, description="Single value"
         ),
     )

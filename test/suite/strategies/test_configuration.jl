@@ -26,21 +26,21 @@ Strategies.id(::Type{TestStrategyB}) = :test_b
 
 function Strategies.metadata(::Type{TestStrategyA})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:max_iter,
             type=Int,
             default=100,
             description="Maximum iterations",
             aliases=(:max, :maxiter),
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:tolerance,
             type=Float64,
             default=1e-6,
             description="Convergence tolerance",
             aliases=(:tol,),
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:verbose, type=Bool, default=false, description="Verbose output"
         ),
     )
@@ -48,10 +48,10 @@ end
 
 function Strategies.metadata(::Type{TestStrategyB})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:default, description="Backend to use"
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:precision,
             type=Int,
             default=64,

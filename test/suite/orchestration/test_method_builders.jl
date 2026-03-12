@@ -22,7 +22,7 @@ end
 Strategies.id(::Type{BuilderCollocation}) = :collocation
 function Strategies.metadata(::Type{BuilderCollocation})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:grid_size, type=Int, default=100, description="Grid size"
         ),
     )
@@ -36,10 +36,10 @@ end
 Strategies.id(::Type{BuilderADNLP}) = :adnlp
 function Strategies.metadata(::Type{BuilderADNLP})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:dense, description="Backend type"
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:show_time, type=Bool, default=false, description="Show timing"
         ),
     )

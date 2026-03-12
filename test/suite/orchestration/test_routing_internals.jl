@@ -21,7 +21,7 @@ struct InternalCollocation <: InternalTestDiscretizer end
 Strategies.id(::Type{InternalCollocation}) = :collocation
 function Strategies.metadata(::Type{InternalCollocation})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:grid_size, type=Int, default=100, description="Grid size"
         ),
     )
@@ -31,7 +31,7 @@ struct InternalADNLP <: InternalTestModeler end
 Strategies.id(::Type{InternalADNLP}) = :adnlp
 function Strategies.metadata(::Type{InternalADNLP})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:dense, description="Backend type"
         ),
     )
@@ -41,10 +41,10 @@ struct InternalIpopt <: InternalTestSolver end
 Strategies.id(::Type{InternalIpopt}) = :ipopt
 function Strategies.metadata(::Type{InternalIpopt})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:max_iter, type=Int, default=100, description="Max iterations"
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:cpu, description="Backend type"
         ),
     )

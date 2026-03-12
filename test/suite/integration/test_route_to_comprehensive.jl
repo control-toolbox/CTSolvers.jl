@@ -105,7 +105,7 @@ end
 # Define metadata with option conflicts
 function Strategies.metadata(::Type{RouteCollocation})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:grid_size, type=Int, default=100, description="Grid size"
         ),
     )
@@ -113,10 +113,10 @@ end
 
 function Strategies.metadata(::Type{RouteADNLP})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:dense, description="Modeler backend"
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:show_time, type=Bool, default=false, description="Show timing"
         ),
     )
@@ -124,13 +124,13 @@ end
 
 function Strategies.metadata(::Type{RouteIpopt})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:cpu, description="Solver backend"
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:max_iter, type=Int, default=1000, description="Maximum iterations"
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:tol, type=Float64, default=1e-6, description="Tolerance"
         ),
     )
@@ -138,13 +138,13 @@ end
 
 function Strategies.metadata(::Type{RouteMadNLP})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:cpu, description="Solver backend"
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:max_iter, type=Int, default=500, description="Maximum iterations"
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:tol, type=Float64, default=1e-8, description="Tolerance"
         ),
     )

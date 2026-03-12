@@ -21,21 +21,21 @@ Strategies.id(::Type{TestUtilStrategy}) = :test_util
 
 function Strategies.metadata(::Type{TestUtilStrategy})
     Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:max_iter,
             type=Int,
             default=100,
             description="Maximum iterations",
             aliases=(:max, :maxiter),
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:tolerance,
             type=Float64,
             default=1e-6,
             description="Convergence tolerance",
             aliases=(:tol,),
         ),
-        Options.OptionDefinition(
+        Options.OptionDefinition(;
             name=:verbose, type=Bool, default=false, description="Verbose output"
         ),
     )
