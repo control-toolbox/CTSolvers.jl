@@ -5,6 +5,27 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.7-beta (2026-03-15)
+
+**No breaking changes.**
+
+This release adds a Core module and enhances display formatting for Strategies.
+
+### Summary - v0.4.7-beta
+
+- Added new `Core` module with exception handling and utilities
+- Enhanced pretty printing for strategy options with structured output
+- Improved module organization and exports across the codebase
+- Enhanced strategy registry and contract metadata handling
+
+### Migration - v0.4.7-beta
+
+**No action required.** All existing code continues to work without changes.
+
+**Improved behavior:** Strategy options now display with better formatting and organization.
+
+---
+
 ## v0.4.6 (2026-03-10)
 
 **No breaking changes.**

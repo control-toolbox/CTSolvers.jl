@@ -10,6 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.7-beta] - 2026-03-15
+
+### Added
+
+- **Core module** - New `Core` module with exception handling and utilities
+- **Display formatting for Strategies** - Enhanced pretty printing for strategy options with structured output
+- **Strategy display improvements** - Better formatting and organization of strategy option displays
+
+### Changed
+
+- **Module organization** - Restructured module exports and includes across the codebase
+- **Strategy registry** - Enhanced strategy registry and contract metadata handling
+- **Display formatting** - Improved display formatting for strategy options and metadata
+
+---
+
 ## [0.4.6] - 2026-03-10
 
 ### Fixed
