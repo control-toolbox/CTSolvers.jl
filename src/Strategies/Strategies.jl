@@ -18,17 +18,20 @@ import CTBase.Exceptions
 
 # Using CTSolvers modules to get access to the api
 using ..Options
+import ..Core as CTCore
 
 # ==============================================================================
 # Include submodules
 # ==============================================================================
 
+include(joinpath(@__DIR__, "display_formatting.jl"))
 include(joinpath(@__DIR__, "contract", "abstract_strategy.jl"))
 include(joinpath(@__DIR__, "contract", "metadata.jl"))
 include(joinpath(@__DIR__, "contract", "strategy_options.jl"))
 include(joinpath(@__DIR__, "contract", "parameters.jl"))
 
 include(joinpath(@__DIR__, "api", "registry.jl"))
+include(joinpath(@__DIR__, "api", "describe_registry.jl"))
 include(joinpath(@__DIR__, "api", "introspection.jl"))
 include(joinpath(@__DIR__, "api", "bypass.jl"))
 include(joinpath(@__DIR__, "api", "builders.jl"))

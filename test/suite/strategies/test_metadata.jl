@@ -148,8 +148,8 @@ function test_metadata()
 
             # Check that output contains expected elements
             Test.@test occursin("StrategyMetadata with 2 options:", output)
-            Test.@test occursin("max_iter (max, maxiter) :: Int64", output)
-            Test.@test occursin("tol :: Float64", output)
+            Test.@test occursin("max_iter (max, maxiter)::Int64", output)
+            Test.@test occursin("tol::Float64", output)
             Test.@test occursin("default: 100", output)
             Test.@test occursin("default: 1.0e-6", output)
             Test.@test occursin("description: Maximum iterations", output)

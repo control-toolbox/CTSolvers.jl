@@ -53,8 +53,8 @@ using ..Options
 using ..Optimization
 using ..Modelers
 
-# Import from CTSolvers
-import CTSolvers: AbstractTag
+# Import from Core
+using ..Core: AbstractTag
 
 # Include submodules
 include(joinpath(@__DIR__, "abstract_solver.jl"))

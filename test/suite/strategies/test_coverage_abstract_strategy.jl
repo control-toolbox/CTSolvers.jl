@@ -104,23 +104,14 @@ function test_coverage_abstract_strategy()
             strategy = CovNoIdStrategy()
 
             buf = IOBuffer()
-            show(buf, MIME("text/plain"), strategy)
-            output = String(take!(buf))
-
-            Test.@test occursin("CovNoIdStrategy", output)
-            Test.@test occursin("instance", output)
-            Test.@test !occursin("id:", output)
+            Test.@test_throws Exceptions.NotImplemented show(buf, MIME("text/plain"), strategy)
         end
 
         Test.@testset "show(io, MIME text/plain) - no options" begin
             strategy = CovNoOptionsStrategy(42)
 
             buf = IOBuffer()
-            show(buf, MIME("text/plain"), strategy)
-            output = String(take!(buf))
-
-            Test.@test occursin("CovNoOptionsStrategy", output)
-            Test.@test occursin("Tip:", output)
+            Test.@test_throws Exceptions.NotImplemented show(buf, MIME("text/plain"), strategy)
         end
 
         Test.@testset "show(io, MIME text/plain) - single option (└─ prefix)" begin
@@ -160,11 +151,7 @@ function test_coverage_abstract_strategy()
             strategy = CovNoOptionsStrategy(42)
 
             buf = IOBuffer()
-            show(buf, strategy)
-            output = String(take!(buf))
-
-            Test.@test occursin("CovNoOptionsStrategy(", output)
-            Test.@test occursin(")", output)
+            Test.@test_throws Exceptions.NotImplemented show(buf, strategy)
         end
 
         # ====================================================================
@@ -198,12 +185,7 @@ function test_coverage_abstract_strategy()
 
         Test.@testset "describe(strategy_type) - no metadata (early return)" begin
             buf = IOBuffer()
-            Strategies.describe(buf, CovNoIdStrategy)
-            output = String(take!(buf))
-
-            Test.@test occursin("CovNoIdStrategy", output)
-            Test.@test occursin("supertype", output)
-            Test.@test !occursin("metadata", output)
+            Test.@test_throws Exceptions.NotImplemented Strategies.describe(buf, CovNoIdStrategy)
         end
 
         Test.@testset "describe(strategy_type) - empty metadata (0 options)" begin

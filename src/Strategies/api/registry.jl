@@ -472,30 +472,83 @@ end
 
 # Display
 function Base.show(io::IO, registry::StrategyRegistry)
+    fmt = get_format_codes(io)
     n_families = length(registry.families)
     print(
-        io, "StrategyRegistry with $n_families $(n_families == 1 ? "family" : "families")"
+        io, fmt.name, "StrategyRegistry", fmt.reset, " with ", fmt.count, n_families, fmt.reset, " ", n_families == 1 ? "family" : "families"
     )
 end
 
 function Base.show(io::IO, ::MIME"text/plain", registry::StrategyRegistry)
+    fmt = get_format_codes(io)
     n_families = length(registry.families)
     println(
-        io, "StrategyRegistry with $n_families $(n_families == 1 ? "family" : "families"):"
+        io, fmt.name, "StrategyRegistry", fmt.reset, " with ", fmt.count, n_families, fmt.reset, " ", n_families == 1 ? "family" : "families", ":"
     )
 
     items = collect(registry.families)
     for (i, (family, strategies)) in enumerate(items)
-        is_last = i == length(items)
-        prefix = is_last ? "└─ " : "├─ "
-        ids = [id(T) for T in strategies]
-        println(io, prefix, family, " => ", Tuple(ids))
+        is_last_family = i == length(items)
+        family_prefix = is_last_family ? "└─ " : "├─ "
+        println(io, family_prefix, fmt.name, nameof(family), fmt.reset)
+        
+        # Group strategies by ID
+        id_to_types = Dict{Symbol,Vector{Type}}()
+        for T in strategies
+            strategy_id = id(T)
+            if !haskey(id_to_types, strategy_id)
+                id_to_types[strategy_id] = []
+            end
+            push!(id_to_types[strategy_id], T)
+        end
+        
+        # Display each unique strategy ID with its types and parameters
+        strategy_items = collect(id_to_types)
+        for (j, (strategy_id, types)) in enumerate(strategy_items)
+            is_last_strategy = j == length(strategy_items)
+            
+            # Determine prefix based on family and strategy position
+            if is_last_family
+                strategy_prefix = is_last_strategy ? "   └─ " : "   ├─ "
+                cont_prefix = "      "
+            else
+                strategy_prefix = is_last_strategy ? "│  └─ " : "│  ├─ "
+                cont_prefix = is_last_strategy ? "│     " : "│  │  "
+            end
+            
+            # Display strategy ID
+            println(io, strategy_prefix, fmt.keyword, ":", strategy_id, fmt.reset)
+            
+            # Display each type variant with its parameter
+            for (k, T) in enumerate(types)
+                is_last_type = k == length(types)
+                type_prefix = if is_last_family
+                    is_last_type ? "      └─ " : "      ├─ "
+                else
+                    if is_last_strategy
+                        is_last_type ? "│     └─ " : "│     ├─ "
+                    else
+                        is_last_type ? "│  │  └─ " : "│  │  ├─ "
+                    end
+                end
+                
+                # Get parameter if exists
+                param = get_parameter_type(T)
+                if param !== nothing
+                    println(io, type_prefix, fmt.type, T, fmt.reset, " (", fmt.keyword, nameof(param), fmt.reset, ")")
+                else
+                    println(io, type_prefix, fmt.type, T, fmt.reset)
+                end
+            end
+        end
     end
 
     if !isempty(registry.parameters)
-        println(io, "\nParameters:")
-        for (p_id, p_type) in registry.parameters
-            println(io, "  :", p_id, " => ", p_type)
+        println(io)
+        println(io, fmt.label, "Parameters:", fmt.reset)
+        param_items = collect(registry.parameters)
+        for (p_id, p_type) in param_items
+            println(io, "  ", fmt.keyword, ":", p_id, fmt.reset, " => ", fmt.type, p_type, fmt.reset)
         end
     end
 end

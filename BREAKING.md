@@ -5,6 +5,37 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.7-beta (2026-03-15)
+
+**No breaking changes.**
+
+This release adds registry-aware strategy description and enhanced display formatting.
+
+### Summary - v0.4.7-beta
+
+- Added new `Core` module with exception handling and utilities
+- Added `describe(id::Symbol, registry::StrategyRegistry)` for comprehensive strategy introspection
+- Enhanced pretty printing for strategy options with structured output
+- Improved StrategyRegistry display without duplicate IDs
+- Added visual separation between parameters and options
+- Enhanced extension error display with red coloring and exact names
+- Improved module organization and exports across the codebase
+- Enhanced strategy registry and contract metadata handling
+- Added comprehensive test suite with 53 tests
+
+### Migration - v0.4.7-beta
+
+**No action required.** All existing code continues to work without changes.
+
+**Improved behavior:**
+
+- Strategy registry display is now clearer without duplicate strategy IDs
+- Extension errors are displayed in red with exact extension names
+- New `describe` function provides detailed strategy introspection from registry
+- Visual formatting improvements make output more readable
+
+---
+
 ## v0.4.6 (2026-03-10)
 
 **No breaking changes.**
