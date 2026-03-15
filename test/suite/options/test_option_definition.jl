@@ -525,10 +525,10 @@ function test_option_definition()
             output_full = String(take!(io_full))
 
             # Check that custom display contains expected elements
-            Test.@test occursin("test :: Int64", output_min)
+            Test.@test occursin("test::Int64", output_min)
             Test.@test occursin("(default: 42)", output_min)
 
-            Test.@test occursin("max_iter (max, maxiter) :: Int64", output_full)
+            Test.@test occursin("max_iter (max, maxiter)::Int64", output_full)
             Test.@test occursin("(default: 100)", output_full)
         end
     end

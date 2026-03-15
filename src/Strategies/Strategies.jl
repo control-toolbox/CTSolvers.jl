@@ -31,6 +31,7 @@ include(joinpath(@__DIR__, "contract", "strategy_options.jl"))
 include(joinpath(@__DIR__, "contract", "parameters.jl"))
 
 include(joinpath(@__DIR__, "api", "registry.jl"))
+include(joinpath(@__DIR__, "api", "describe_registry.jl"))
 include(joinpath(@__DIR__, "api", "introspection.jl"))
 include(joinpath(@__DIR__, "api", "bypass.jl"))
 include(joinpath(@__DIR__, "api", "builders.jl"))

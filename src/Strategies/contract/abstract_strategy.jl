@@ -383,7 +383,7 @@ function describe(strategy_type::Type{T}) where {T<:AbstractStrategy}
     describe(stdout, strategy_type)
 end
 
-function describe(io::IO, strategy_type::Type{T}) where {T<:AbstractStrategy}
+function describe(io::IO, ::Type{T}) where {T<:AbstractStrategy}
     fmt = get_format_codes(io)
     type_name = nameof(T)
     strategy_id = id(T)
