@@ -15,14 +15,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Core module** - New `Core` module with exception handling and utilities
+- **Registry-aware describe function** - New `describe(id::Symbol, registry::StrategyRegistry)` for comprehensive strategy introspection
+  - Display strategy family, parameters, and default parameter
+  - Group options into common vs computed categories
+  - Show computed option values per parameter with visual separation
+  - Handle `ExtensionError` gracefully with red display and extension names
+  - Support for both single and multi-parameter strategies
+- **Enhanced StrategyRegistry display** - Improved formatting without duplicate strategy IDs
+  - Group strategies by ID with parameterized variants
+  - Show full type names with parameters in tree structure
+  - Clear visual hierarchy with proper indentation
 - **Display formatting for Strategies** - Enhanced pretty printing for strategy options with structured output
 - **Strategy display improvements** - Better formatting and organization of strategy option displays
+- **Comprehensive test suite** - Added 53 tests covering all describe functionality scenarios
 
 ### Changed
 
 - **Module organization** - Restructured module exports and includes across the codebase
 - **Strategy registry** - Enhanced strategy registry and contract metadata handling
 - **Display formatting** - Improved display formatting for strategy options and metadata
+- **Extension error display** - Missing extensions now shown in red with exact extension names
+- **Visual formatting** - Added vertical separators between parameters and options sections
 
 ---
 
