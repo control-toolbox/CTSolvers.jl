@@ -105,7 +105,7 @@ function describe(io::IO, strategy_id::Symbol, registry::StrategyRegistry)
         println(io, "├─ ", fmt.label, "parameters: ", fmt.reset, param_names)
         println(io, "│")  # vertical separator
     else
-        println(io)  # spacing
+        println(io, "│")  # vertical separator for consistency
     end
 
     # 6. Retrieve and display metadata
