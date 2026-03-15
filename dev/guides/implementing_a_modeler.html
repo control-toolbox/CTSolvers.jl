@@ -17,34 +17,44 @@
     AbstractNLPModeler &lt;|-- Modelers.ADNLP
     AbstractNLPModeler &lt;|-- Modelers.Exa</div><p>Both callables have default implementations that throw <code>NotImplemented</code>.</p><pre><code class="language-julia hljs">using CTSolvers</code></pre><p>The <code>id</code> is available directly:</p><pre><code class="language-julia hljs">CTSolvers.Strategies.id(CTSolvers.Modelers.ADNLP)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">:adnlp</code></pre><pre><code class="language-julia hljs">CTSolvers.Strategies.id(CTSolvers.Modelers.Exa)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">:exa</code></pre><h2 id="Step-by-Step-Implementation"><a class="docs-heading-anchor" href="#Step-by-Step-Implementation">Step-by-Step Implementation</a><a id="Step-by-Step-Implementation-1"></a><a class="docs-heading-anchor-permalink" href="#Step-by-Step-Implementation" title="Permalink"></a></h2><p>We walk through the Modelers.ADNLP implementation as a reference.</p><h3 id="Step-1-—-Define-the-struct"><a class="docs-heading-anchor" href="#Step-1-—-Define-the-struct">Step 1 — Define the struct</a><a id="Step-1-—-Define-the-struct-1"></a><a class="docs-heading-anchor-permalink" href="#Step-1-—-Define-the-struct" title="Permalink"></a></h3><pre><code class="language-julia hljs">struct Modelers.ADNLP &lt;: AbstractNLPModeler
     options::Strategies.StrategyOptions
-end</code></pre><h3 id="Step-2-—-Implement-id"><a class="docs-heading-anchor" href="#Step-2-—-Implement-id">Step 2 — Implement <code>id</code></a><a id="Step-2-—-Implement-id-1"></a><a class="docs-heading-anchor-permalink" href="#Step-2-—-Implement-id" title="Permalink"></a></h3><pre><code class="language-julia hljs">CTSolvers.Strategies.id(CTSolvers.Modelers.ADNLP)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">:adnlp</code></pre><h3 id="Step-3-—-Define-defaults-and-metadata"><a class="docs-heading-anchor" href="#Step-3-—-Define-defaults-and-metadata">Step 3 — Define defaults and metadata</a><a id="Step-3-—-Define-defaults-and-metadata-1"></a><a class="docs-heading-anchor-permalink" href="#Step-3-—-Define-defaults-and-metadata" title="Permalink"></a></h3><p>The metadata defines all configurable options with types, defaults, and validators:</p><pre><code class="language-julia hljs">CTSolvers.Strategies.metadata(CTSolvers.Modelers.ADNLP)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">StrategyMetadata with 11 options:
-├─ show_time :: Bool (default: NotProvided)
-│  description: Whether to show timing information while building the ADNLP model
-├─ backend (adnlp_backend) :: Symbol (default: optimized)
-│  description: Automatic differentiation backend used by ADNLPModels
-├─ matrix_free :: Bool (default: NotProvided)
-│  description: Enable matrix-free mode (avoids explicit Hessian/Jacobian matrices)
-├─ name :: String (default: NotProvided)
-│  description: Name of the optimization model for identification
-├─ gradient_backend :: Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}} (default: NotProvided)
-│  description: Override backend for gradient computation (advanced users only)
-├─ hprod_backend :: Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}} (default: NotProvided)
-│  description: Override backend for Hessian-vector product (advanced users only)
-├─ jprod_backend :: Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}} (default: NotProvided)
-│  description: Override backend for Jacobian-vector product (advanced users only)
-├─ jtprod_backend :: Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}} (default: NotProvided)
-│  description: Override backend for transpose Jacobian-vector product (advanced users only)
-├─ jacobian_backend :: Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}} (default: NotProvided)
-│  description: Override backend for Jacobian matrix computation (advanced users only)
-├─ hessian_backend :: Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}} (default: NotProvided)
-│  description: Override backend for Hessian matrix computation (advanced users only)
-└─ ghjvprod_backend :: Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}} (default: NotProvided)
-   description: Override backend for g^T ∇²c(x)v computation (advanced users only)
-</code></pre><h3 id="Step-4-—-Constructor-and-options-accessor"><a class="docs-heading-anchor" href="#Step-4-—-Constructor-and-options-accessor">Step 4 — Constructor and options accessor</a><a id="Step-4-—-Constructor-and-options-accessor-1"></a><a class="docs-heading-anchor-permalink" href="#Step-4-—-Constructor-and-options-accessor" title="Permalink"></a></h3><p>The constructor validates options and stores them:</p><pre><code class="language-julia hljs">modeler = CTSolvers.Modelers.ADNLP(backend = :optimized)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ADNLP (instance, id: :adnlp)
-└─ backend = optimized  [user]
-Tip: use describe(ADNLP) to see all available options.
-</code></pre><pre><code class="language-julia hljs">CTSolvers.Strategies.options(modeler)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">StrategyOptions with 1 option:
-└─ backend = optimized  [user]
+end</code></pre><h3 id="Step-2-—-Implement-id"><a class="docs-heading-anchor" href="#Step-2-—-Implement-id">Step 2 — Implement <code>id</code></a><a id="Step-2-—-Implement-id-1"></a><a class="docs-heading-anchor-permalink" href="#Step-2-—-Implement-id" title="Permalink"></a></h3><pre><code class="language-julia hljs">CTSolvers.Strategies.id(CTSolvers.Modelers.ADNLP)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">:adnlp</code></pre><h3 id="Step-3-—-Define-defaults-and-metadata"><a class="docs-heading-anchor" href="#Step-3-—-Define-defaults-and-metadata">Step 3 — Define defaults and metadata</a><a id="Step-3-—-Define-defaults-and-metadata-1"></a><a class="docs-heading-anchor-permalink" href="#Step-3-—-Define-defaults-and-metadata" title="Permalink"></a></h3><p>The metadata defines all configurable options with types, defaults, and validators:</p><pre><code class="language-julia hljs">CTSolvers.Strategies.metadata(CTSolvers.Modelers.ADNLP)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr34"><span class="sgr1">StrategyMetadata</span></span> with <span class="sgr35">11</span> options:
+├─ <span class="sgr34"><span class="sgr1">show_time</span></span>::<span class="sgr36">Bool</span> (<span class="sgr32">default: NotProvided</span>)
+│  <span class="sgr90">description: </span>Whether to show timing information while building the ADNLP model
+│  
+├─ <span class="sgr34"><span class="sgr1">backend</span></span> (<span class="sgr33">adnlp_backend</span>)::<span class="sgr36">Symbol</span> (<span class="sgr32">default: optimized</span>)
+│  <span class="sgr90">description: </span>Automatic differentiation backend used by ADNLPModels
+│  
+├─ <span class="sgr34"><span class="sgr1">matrix_free</span></span>::<span class="sgr36">Bool</span> (<span class="sgr32">default: NotProvided</span>)
+│  <span class="sgr90">description: </span>Enable matrix-free mode (avoids explicit Hessian/Jacobian matrices)
+│  
+├─ <span class="sgr34"><span class="sgr1">name</span></span>::<span class="sgr36">String</span> (<span class="sgr32">default: NotProvided</span>)
+│  <span class="sgr90">description: </span>Name of the optimization model for identification
+│  
+├─ <span class="sgr34"><span class="sgr1">gradient_backend</span></span>::<span class="sgr36">Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}}</span> (<span class="sgr32">default: NotProvided</span>)
+│  <span class="sgr90">description: </span>Override backend for gradient computation (advanced users only)
+│  
+├─ <span class="sgr34"><span class="sgr1">hprod_backend</span></span>::<span class="sgr36">Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}}</span> (<span class="sgr32">default: NotProvided</span>)
+│  <span class="sgr90">description: </span>Override backend for Hessian-vector product (advanced users only)
+│  
+├─ <span class="sgr34"><span class="sgr1">jprod_backend</span></span>::<span class="sgr36">Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}}</span> (<span class="sgr32">default: NotProvided</span>)
+│  <span class="sgr90">description: </span>Override backend for Jacobian-vector product (advanced users only)
+│  
+├─ <span class="sgr34"><span class="sgr1">jtprod_backend</span></span>::<span class="sgr36">Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}}</span> (<span class="sgr32">default: NotProvided</span>)
+│  <span class="sgr90">description: </span>Override backend for transpose Jacobian-vector product (advanced users only)
+│  
+├─ <span class="sgr34"><span class="sgr1">jacobian_backend</span></span>::<span class="sgr36">Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}}</span> (<span class="sgr32">default: NotProvided</span>)
+│  <span class="sgr90">description: </span>Override backend for Jacobian matrix computation (advanced users only)
+│  
+├─ <span class="sgr34"><span class="sgr1">hessian_backend</span></span>::<span class="sgr36">Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}}</span> (<span class="sgr32">default: NotProvided</span>)
+│  <span class="sgr90">description: </span>Override backend for Hessian matrix computation (advanced users only)
+│  
+└─ <span class="sgr34"><span class="sgr1">ghjvprod_backend</span></span>::<span class="sgr36">Union{Nothing, ADNLPModels.ADBackend, Type{&lt;:ADNLPModels.ADBackend}}</span> (<span class="sgr32">default: NotProvided</span>)
+   <span class="sgr90">description: </span>Override backend for g^T ∇²c(x)v computation (advanced users only)
+</code></pre><h3 id="Step-4-—-Constructor-and-options-accessor"><a class="docs-heading-anchor" href="#Step-4-—-Constructor-and-options-accessor">Step 4 — Constructor and options accessor</a><a id="Step-4-—-Constructor-and-options-accessor-1"></a><a class="docs-heading-anchor-permalink" href="#Step-4-—-Constructor-and-options-accessor" title="Permalink"></a></h3><p>The constructor validates options and stores them:</p><pre><code class="language-julia hljs">modeler = CTSolvers.Modelers.ADNLP(backend = :optimized)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr34"><span class="sgr1">ADNLP</span></span> (instance, id: <span class="sgr33">:adnlp</span>)
+└─ <span class="sgr34"><span class="sgr1">backend</span></span> = <span class="sgr32">optimized</span>  [<span class="sgr90">user</span>]
+<span class="sgr90">Tip: use describe(ADNLP) to see all available options.</span>
+</code></pre><pre><code class="language-julia hljs">CTSolvers.Strategies.options(modeler)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr34"><span class="sgr1">StrategyOptions</span></span> with <span class="sgr35">1</span> option:
+└─ <span class="sgr34"><span class="sgr1">backend</span></span> = <span class="sgr32">optimized</span>  [<span class="sgr90">user</span>]
 </code></pre><h3 id="Step-5-—-Model-building-callable"><a class="docs-heading-anchor" href="#Step-5-—-Model-building-callable">Step 5 — Model building callable</a><a id="Step-5-—-Model-building-callable-1"></a><a class="docs-heading-anchor-permalink" href="#Step-5-—-Model-building-callable" title="Permalink"></a></h3><p>This is the core of the modeler. It retrieves the appropriate <strong>builder</strong> from the problem and invokes it:</p><pre><code class="language-julia hljs">function (modeler::Modelers.ADNLP)(
     prob::AbstractOptimizationProblem,
     initial_guess,
@@ -140,4 +150,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="implementing_a_solver.html">« Implementing a Solver</a><a class="docs-footer-nextpage" href="implementing_an_optimization_problem.html">Implementing an Optimization Problem »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 12 March 2026 10:55">Thursday 12 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="implementing_a_solver.html">« Implementing a Solver</a><a class="docs-footer-nextpage" href="implementing_an_optimization_problem.html">Implementing an Optimization Problem »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Sunday 15 March 2026 21:57">Sunday 15 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
