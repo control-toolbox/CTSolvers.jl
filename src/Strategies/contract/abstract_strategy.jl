@@ -297,39 +297,24 @@ Tip: use describe(Modelers.ADNLP) to see all available options.
 See also: `describe`, `options`
 """
 function Base.show(io::IO, ::MIME"text/plain", strategy::T) where {T<:AbstractStrategy}
+    fmt = get_format_codes(io)
     type_name = nameof(T)
-    strategy_id = try
-        id(T)
-    catch
-        ;
-        nothing
-    end
-    opts = try
-        options(strategy)
-    catch
-        ;
-        nothing
-    end
+    strategy_id = id(T)
+    opts = options(strategy)
 
     # Header with ID on first line
-    if strategy_id !== nothing
-        println(io, type_name, " (instance, id: :", strategy_id, ")")
-    else
-        println(io, type_name, " (instance)")
+    println(io, fmt.name, type_name, fmt.reset, " (instance, id: ", fmt.keyword, ":", strategy_id, fmt.reset, ")")
+
+    items = collect(pairs(opts.options))
+    for (i, (key, opt)) in enumerate(items)
+        is_last = i == length(items)
+        prefix = is_last ? "└─ " : "├─ "
+        println(
+            io, prefix, fmt.name, key, fmt.reset, " = ", fmt.value, Options.value(opt), fmt.reset, "  [", fmt.label, Options.source(opt), fmt.reset, "]"
+        )
     end
 
-    if opts !== nothing
-        items = collect(pairs(opts.options))
-        for (i, (key, opt)) in enumerate(items)
-            is_last = i == length(items)
-            prefix = is_last ? "└─ " : "├─ "
-            println(
-                io, prefix, key, " = ", Options.value(opt), "  [", Options.source(opt), "]"
-            )
-        end
-    end
-
-    println(io, "Tip: use describe(", type_name, ") to see all available options.")
+    println(io, fmt.label, "Tip: use describe(", type_name, ") to see all available options.", fmt.reset)
 end
 
 """
@@ -350,18 +335,12 @@ Modelers.ADNLP(matrix_free=false, show_time=false, name=CTSolvers-ADNLP, backend
 See also: `Base.show(::IO, ::MIME"text/plain", ::AbstractStrategy)`
 """
 function Base.show(io::IO, strategy::T) where {T<:AbstractStrategy}
+    fmt = get_format_codes(io)
     type_name = nameof(T)
-    opts = try
-        options(strategy)
-    catch
-        ;
-        nothing
-    end
+    opts = options(strategy)
 
-    print(io, type_name, "(")
-    if opts !== nothing
-        print(io, join(("$k=$(Options.value(v))" for (k, v) in pairs(opts.options)), ", "))
-    end
+    print(io, fmt.name, type_name, fmt.reset, "(")
+    print(io, join((fmt.name * "$k" * fmt.reset * "=" * fmt.value * "$(Options.value(v))" * fmt.reset for (k, v) in pairs(opts.options)), ", "))
     print(io, ")")
 end
 
@@ -405,35 +384,19 @@ function describe(strategy_type::Type{T}) where {T<:AbstractStrategy}
 end
 
 function describe(io::IO, strategy_type::Type{T}) where {T<:AbstractStrategy}
+    fmt = get_format_codes(io)
     type_name = nameof(T)
-    strategy_id = try
-        id(T)
-    catch
-        ;
-        nothing
-    end
-    meta = try
-        metadata(T)
-    catch
-        ;
-        nothing
-    end
+    strategy_id = id(T)
+    meta = metadata(T)
     super = supertype(T)
 
     println(io, type_name, " (strategy type)")
 
     # id line
-    if strategy_id !== nothing
-        println(io, "├─ id: :", strategy_id)
-    end
+    println(io, "├─ id: :", strategy_id)
 
     # supertype line
-    if meta !== nothing
-        println(io, "├─ supertype: ", nameof(super))
-    else
-        println(io, "└─ supertype: ", nameof(super))
-        return nothing
-    end
+    println(io, "├─ supertype: ", nameof(super))
 
     # metadata section
     n_opts = length(meta)
@@ -444,7 +407,7 @@ function describe(io::IO, strategy_type::Type{T}) where {T<:AbstractStrategy}
         prefix = is_last ? "   └─ " : "   ├─ "
         cont = is_last ? "      " : "   │  "
         println(io, prefix, def)
-        println(io, cont, "description: ", def.description)
+        println(io, cont, fmt.label, "description: ", fmt.reset, Options.description(def))
         # Add separator line between options (except after last)
         if !is_last
             println(io, cont)

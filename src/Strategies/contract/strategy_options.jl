@@ -559,13 +559,14 @@ StrategyOptions with 2 options:
 See also: `Base.show`
 """
 function Base.show(io::IO, ::MIME"text/plain", opts::StrategyOptions)
+    fmt = get_format_codes(io)
     n = length(opts)
-    println(io, "StrategyOptions with $n option$(n == 1 ? "" : "s"):")
+    println(io, fmt.name, "StrategyOptions", fmt.reset, " with ", fmt.count, n, fmt.reset, " option", n == 1 ? "" : "s", ":")
     items = collect(pairs(_raw_options(opts)))
     for (i, (key, opt)) in enumerate(items)
         is_last = i == length(items)
         prefix = is_last ? "└─ " : "├─ "
-        println(io, prefix, key, " = ", Options.value(opt), "  [", Options.source(opt), "]")
+        println(io, prefix, fmt.name, key, fmt.reset, " = ", fmt.value, Options.value(opt), fmt.reset, "  [", fmt.label, Options.source(opt), fmt.reset, "]")
     end
 end
 
@@ -587,9 +588,10 @@ StrategyOptions(max_iter=200, tol=1.0e-6)
 See also: `Base.show(::IO, ::MIME"text/plain", ::StrategyOptions)`
 """
 function Base.show(io::IO, opts::StrategyOptions)
-    print(io, "StrategyOptions(")
+    fmt = get_format_codes(io)
+    print(io, fmt.name, "StrategyOptions", fmt.reset, "(")
     print(
-        io, join(("$k=$(Options.value(v))" for (k, v) in pairs(_raw_options(opts))), ", ")
+        io, join((fmt.name * "$k" * fmt.reset * "=" * fmt.value * "$(Options.value(v))" * fmt.reset for (k, v) in pairs(_raw_options(opts))), ", ")
     )
     print(io, ")")
 end

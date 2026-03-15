@@ -44,14 +44,9 @@ The modular architecture ensures that:
 """
 module CTSolvers
 
-import DocStringExtensions: TYPEDEF
-
-"""
-$(TYPEDEF)
-
-Abstract type for tag dispatch pattern used to handle extension-dependent implementations.
-"""
-abstract type AbstractTag end
+# Core module - common utilities and types
+include(joinpath(@__DIR__, "Core", "Core.jl"))
+using .Core
 
 # Options module - configuration and options management
 include(joinpath(@__DIR__, "Options", "Options.jl"))

@@ -15,6 +15,7 @@ module Options
 # Imports
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 import CTBase.Exceptions
+import ..Core as CTCore
 
 # Submodules
 include(joinpath(@__DIR__, "not_provided.jl"))

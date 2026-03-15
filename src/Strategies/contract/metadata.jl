@@ -344,14 +344,19 @@ Base.haskey(meta::StrategyMetadata, key::Symbol) = haskey(meta.specs, key)
 
 # Display
 function Base.show(io::IO, ::MIME"text/plain", meta::StrategyMetadata)
+    fmt = get_format_codes(io)
     n = length(meta)
-    println(io, "StrategyMetadata with $n option$(n == 1 ? "" : "s"):")
+    println(io, fmt.name, "StrategyMetadata", fmt.reset, " with ", fmt.count, n, fmt.reset, " option", n == 1 ? "" : "s", ":")
     items = collect(pairs(meta))
     for (i, (key, def)) in enumerate(items)
         is_last = i == length(items)
         prefix = is_last ? "└─ " : "├─ "
         cont = is_last ? "   " : "│  "
         println(io, prefix, def)
-        println(io, cont, "description: ", Options.description(def))
+        println(io, cont, fmt.label, "description: ", fmt.reset, Options.description(def))
+        # Add separator line between options (except after last)
+        if !is_last
+            println(io, cont)
+        end
     end
 end

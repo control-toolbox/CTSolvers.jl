@@ -713,17 +713,19 @@ max_iter (max, maxiter) :: Int64
 See also: `OptionDefinition`
 """
 function Base.show(io::IO, def::OptionDefinition)
+    fmt = CTCore.get_format_codes(io)
+    
     # Show primary name with aliases if present
     if isempty(def.aliases)
-        print(io, "$(def.name) :: $(def.type)")
+        print(io, fmt.name, def.name, fmt.reset, "::", fmt.type, def.type, fmt.reset)
     else
-        print(io, "$(def.name) ($(join(def.aliases, ", "))) :: $(def.type)")
+        print(io, fmt.name, def.name, fmt.reset, " (", fmt.keyword, join(def.aliases, ", "), fmt.reset, ")::", fmt.type, def.type, fmt.reset)
     end
 
     # Show default with source indicator
     if def.computed
-        print(io, " (default: $(def.default) [computed])")
+        print(io, " (", fmt.value, "default: ", def.default, fmt.reset, " [", fmt.keyword, "computed", fmt.reset, "])")
     else
-        print(io, " (default: $(def.default))")
+        print(io, " (", fmt.value, "default: ", def.default, fmt.reset, ")")
     end
 end

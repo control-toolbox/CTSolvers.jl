@@ -472,16 +472,18 @@ end
 
 # Display
 function Base.show(io::IO, registry::StrategyRegistry)
+    fmt = get_format_codes(io)
     n_families = length(registry.families)
     print(
-        io, "StrategyRegistry with $n_families $(n_families == 1 ? "family" : "families")"
+        io, fmt.name, "StrategyRegistry", fmt.reset, " with ", fmt.count, n_families, fmt.reset, " ", n_families == 1 ? "family" : "families"
     )
 end
 
 function Base.show(io::IO, ::MIME"text/plain", registry::StrategyRegistry)
+    fmt = get_format_codes(io)
     n_families = length(registry.families)
     println(
-        io, "StrategyRegistry with $n_families $(n_families == 1 ? "family" : "families"):"
+        io, fmt.name, "StrategyRegistry", fmt.reset, " with ", fmt.count, n_families, fmt.reset, " ", n_families == 1 ? "family" : "families", ":"
     )
 
     items = collect(registry.families)
@@ -489,13 +491,13 @@ function Base.show(io::IO, ::MIME"text/plain", registry::StrategyRegistry)
         is_last = i == length(items)
         prefix = is_last ? "└─ " : "├─ "
         ids = [id(T) for T in strategies]
-        println(io, prefix, family, " => ", Tuple(ids))
+        println(io, prefix, fmt.name, family, fmt.reset, " => ", fmt.keyword, Tuple(ids), fmt.reset)
     end
 
     if !isempty(registry.parameters)
-        println(io, "\nParameters:")
+        println(io, "\n", fmt.label, "Parameters:", fmt.reset)
         for (p_id, p_type) in registry.parameters
-            println(io, "  :", p_id, " => ", p_type)
+            println(io, "  ", fmt.keyword, ":", p_id, fmt.reset, " => ", fmt.type, p_type, fmt.reset)
         end
     end
 end
