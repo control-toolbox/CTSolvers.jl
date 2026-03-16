@@ -388,15 +388,26 @@ function describe(io::IO, ::Type{T}) where {T<:AbstractStrategy}
     type_name = nameof(T)
     strategy_id = id(T)
     meta = metadata(T)
-    super = supertype(T)
+    
+    # Build hierarchy chain up to AbstractStrategy
+    hierarchy_chain = Type[T]
+    current = T
+    while current !== AbstractStrategy && current !== Any
+        current = supertype(current)
+        push!(hierarchy_chain, current)
+        if current === AbstractStrategy
+            break
+        end
+    end
+    hierarchy_str = join([fmt.type * string(nameof(t)) * fmt.reset for t in hierarchy_chain], " → ")
 
     println(io, type_name, " (strategy type)")
 
     # id line
     println(io, "├─ id: :", strategy_id)
 
-    # supertype line
-    println(io, "├─ supertype: ", nameof(super))
+    # hierarchy line
+    println(io, "├─ hierarchy: ", hierarchy_str)
 
     # metadata section
     n_opts = length(meta)
