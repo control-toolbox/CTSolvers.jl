@@ -200,6 +200,122 @@ id(::Type{CPU}) = :cpu
 id(::Type{GPU}) = :gpu
 
 # ============================================================================
+# Parameter Description Contract
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the description for a parameter type.
+
+Every concrete parameter type should implement this method to provide
+a human-readable description of the parameter's purpose and behavior.
+
+# Arguments
+- `parameter_type::Type{<:AbstractStrategyParameter}`: The parameter type
+
+# Returns
+- `String`: Human-readable description of the parameter
+
+# Throws
+- `Exceptions.NotImplemented`: If the parameter type doesn't implement this method
+
+# Example
+\`\`\`julia-repl
+julia> using CTSolvers.Strategies
+
+julia> description(CPU)
+"CPU-based computation"
+
+julia> description(GPU)
+"GPU-based computation"
+\`\`\`
+
+See also: [`id`](@ref), [`AbstractStrategyParameter`](@ref)
+"""
+function description(parameter_type::Type{<:AbstractStrategyParameter})
+    throw(
+        Exceptions.NotImplemented(
+            "description() must be implemented for parameter type";
+            required_method="description(::Type{$(parameter_type)})",
+            suggestion="Define description(::Type{$(parameter_type)}) = \"Your description\"",
+            context="AbstractStrategyParameter contract",
+        ),
+    )
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+CPU parameter description.
+"""
+description(::Type{CPU}) = "CPU-based computation"
+
+"""
+$(TYPEDSIGNATURES)
+
+GPU parameter description.
+"""
+description(::Type{GPU}) = "GPU-based computation"
+
+# ============================================================================
+# Describe - Parameter introspection
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Display comprehensive information about a parameter type.
+
+This function provides type-level introspection that shows:
+- Parameter ID
+- Type hierarchy chain
+- Description
+
+# Arguments
+- `parameter_type::Type{<:AbstractStrategyParameter}`: The parameter type to describe
+
+# Example
+\`\`\`julia-repl
+julia> using CTSolvers.Strategies
+
+julia> describe(CPU)
+CPU (parameter)
+├─ id: :cpu
+├─ hierarchy: CPU → AbstractStrategyParameter
+└─ description: CPU-based computation
+\`\`\`
+
+See also: [`describe(::Symbol, ::StrategyRegistry)`](@ref), [`id`](@ref), [`description`](@ref)
+"""
+function describe(parameter_type::Type{T}) where {T<:AbstractStrategyParameter}
+    describe(stdout, parameter_type)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Display parameter information to a specific IO stream.
+
+See [`describe(::Type{<:AbstractStrategyParameter})`](@ref) for details.
+"""
+function describe(io::IO, parameter_type::Type{T}) where {T<:AbstractStrategyParameter}
+    fmt = get_format_codes(io)
+    type_name = nameof(parameter_type)
+    param_id = id(parameter_type)
+    param_desc = description(parameter_type)
+    
+    # Build hierarchy chain: parameter → AbstractStrategyParameter
+    hierarchy_chain = [parameter_type, AbstractStrategyParameter]
+    hierarchy_str = join([fmt.type * string(nameof(T)) * fmt.reset for T in hierarchy_chain], " → ")
+    
+    println(io, fmt.name, type_name, fmt.reset, " (parameter)")
+    println(io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", param_id, fmt.reset)
+    println(io, "├─ ", fmt.label, "hierarchy: ", fmt.reset, hierarchy_str)
+    println(io, "└─ ", fmt.label, "description: ", fmt.reset, param_desc)
+end
+
+# ============================================================================
 # Parameter Support Validation
 # ============================================================================
 

@@ -10,6 +10,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.8-beta] - 2026-03-16
+
+### Added
+
+- **Parameter description methods** - New `description` contract method for `AbstractStrategyParameter` with `NotImplemented` fallback
+- **Parameter describe functions** - New `describe` methods for parameters (type-direct and registry-aware)
+  - `describe(CPU)` and `describe(GPU)` show parameter ID, hierarchy, and description
+  - `describe(:cpu, registry)` and `describe(:gpu, registry)` list strategies using each parameter
+- **Enhanced hierarchy display** - All `describe` methods now show full hierarchy chain instead of just immediate supertype
+  - Strategy hierarchy: `Type → Parent → AbstractStrategy`
+  - Parameter hierarchy: `Type → AbstractStrategyParameter`
+- **Parameter-strategy disambiguation** - Registry-aware `describe` handles both strategy and parameter IDs with clear error messages
+- **Helper functions** - Added `_supertype_chain` for consistent hierarchy display across all describe methods
+- **Comprehensive testing** - Added 23 tests for parameter describe functionality following `.windsurf` standards
+- **New exports** - Export `description` function for parameters
+
+### Improved
+
+- **Strategy describe consistency** - Both type-direct and registry-aware `describe` now show full hierarchy chains
+- **Error messages** - Enhanced `IncorrectArgument` errors with clear disambiguation between strategy and parameter IDs
+- **Visual formatting** - Consistent tree-like display with proper hierarchy arrows across all describe methods
+
+### Fixed
+
+- **Missing hierarchy in registry-aware describe** - Fixed missing hierarchy display in `describe(id, registry)` for strategies
+
 ## [0.4.7-beta] - 2026-03-15
 
 ### Added

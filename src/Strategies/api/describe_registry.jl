@@ -54,11 +54,26 @@ Exa (strategy)
 
 See also: `describe(::Type{<:AbstractStrategy})`, `StrategyRegistry`, `create_registry`
 """
-function describe(strategy_id::Symbol, registry::StrategyRegistry)
-    describe(stdout, strategy_id, registry)
+function describe(id_symbol::Symbol, registry::StrategyRegistry)
+    describe(stdout, id_symbol, registry)
 end
 
-function describe(io::IO, strategy_id::Symbol, registry::StrategyRegistry)
+function describe(io::IO, id_symbol::Symbol, registry::StrategyRegistry)
+    # Disambiguation: check if it's a parameter ID first, then strategy ID
+    if haskey(registry.parameters, id_symbol)
+        # It's a parameter ID
+        param_type = registry.parameters[id_symbol]
+        _describe_parameter_registry(io, id_symbol, param_type, registry)
+    else
+        # Try as strategy ID
+        _describe_strategy_registry(io, id_symbol, registry)
+    end
+end
+
+"""
+Describe a strategy using registry (internal implementation).
+"""
+function _describe_strategy_registry(io::IO, strategy_id::Symbol, registry::StrategyRegistry)
     fmt = get_format_codes(io)
 
     # 1. Find family and strategy types from registry
@@ -92,9 +107,15 @@ function describe(io::IO, strategy_id::Symbol, registry::StrategyRegistry)
         nothing
     end
 
-    # 5. Header
+    # 5. Header with hierarchy
     println(io, fmt.name, type_name, fmt.reset, " (strategy)")
     println(io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", strategy_id, fmt.reset)
+    
+    # Build hierarchy chain for the base type
+    hierarchy_chain = _supertype_chain(base_type, AbstractStrategy)
+    hierarchy_str = join([fmt.type * string(nameof(t)) * fmt.reset for t in hierarchy_chain], " → ")
+    println(io, "├─ ", fmt.label, "hierarchy: ", fmt.reset, hierarchy_str)
+    
     println(io, "├─ ", fmt.label, "family: ", fmt.reset, fmt.type, nameof(family), fmt.reset)
 
     if !isempty(params)
@@ -112,9 +133,110 @@ function describe(io::IO, strategy_id::Symbol, registry::StrategyRegistry)
     _describe_metadata(io, fmt, strategy_types, params, registry)
 end
 
+"""
+Describe a parameter using registry (internal implementation).
+"""
+function _describe_parameter_registry(io::IO, param_id::Symbol, param_type::Type{<:AbstractStrategyParameter}, registry::StrategyRegistry)
+    fmt = get_format_codes(io)
+    type_name = nameof(param_type)
+    param_desc = description(param_type)
+    
+    # Build hierarchy chain
+    hierarchy_chain = [param_type, AbstractStrategyParameter]
+    hierarchy_str = join([fmt.type * string(nameof(T)) * fmt.reset for T in hierarchy_chain], " → ")
+    
+    println(io, fmt.name, type_name, fmt.reset, " (parameter)")
+    println(io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", param_id, fmt.reset)
+    println(io, "├─ ", fmt.label, "hierarchy: ", fmt.reset, hierarchy_str)
+    println(io, "├─ ", fmt.label, "description: ", fmt.reset, param_desc)
+    
+    # Find strategies using this parameter
+    strategies_using = _find_strategies_using_parameter(param_type, registry)
+    
+    if !isempty(strategies_using)
+        println(io, "│")
+        n_strategies = length(strategies_using)
+        println(io, "└─ ", fmt.label, "used by strategies (", fmt.reset, fmt.count, n_strategies, fmt.reset, "):")
+        
+        for (i, (strat_id, family, strat_type)) in enumerate(strategies_using)
+            is_last = i == length(strategies_using)
+            prefix = is_last ? "   └─ " : "   ├─ "
+            println(io, prefix, fmt.keyword, ":", strat_id, fmt.reset, " (", fmt.type, nameof(family), fmt.reset, ") → ", fmt.type, strat_type, fmt.reset)
+        end
+    else
+        println(io, "│")
+        println(io, "└─ ", fmt.label, "used by strategies: ", fmt.reset, fmt.keyword, "none", fmt.reset)
+    end
+end
+
 # ============================================================================
 # Private helpers for registry-aware describe
 # ============================================================================
+
+"""
+Build a supertype chain from a type up to (and including) a stop type.
+
+Returns a vector of types representing the inheritance chain.
+
+# Arguments
+- `T::Type`: Starting type
+- `stop_at::Type`: Type to stop at (inclusive)
+
+# Returns
+- `Vector{Type}`: Chain of types from T to stop_at
+
+# Example
+```julia
+chain = _supertype_chain(ADNLP{CPU}, AbstractStrategy)
+# Returns: [ADNLP{CPU}, AbstractNLPModeler, AbstractStrategy]
+```
+"""
+function _supertype_chain(T::Type, stop_at::Type)
+    chain = Type[T]
+    current = T
+    
+    while current !== stop_at && current !== Any
+        current = supertype(current)
+        push!(chain, current)
+        if current === stop_at
+            break
+        end
+    end
+    
+    return chain
+end
+
+"""
+Find all strategies in the registry that use a specific parameter type.
+
+Returns a vector of tuples: (strategy_id, family_type, strategy_type)
+
+# Arguments
+- `param_type::Type{<:AbstractStrategyParameter}`: The parameter type to search for
+- `registry::StrategyRegistry`: The registry to search in
+
+# Returns
+- `Vector{Tuple{Symbol, Type, Type}}`: List of (strategy_id, family, strategy_type) tuples
+"""
+function _find_strategies_using_parameter(param_type::Type{<:AbstractStrategyParameter}, registry::StrategyRegistry)
+    results = Tuple{Symbol, Type, Type}[]
+    
+    for (family, types) in registry.families
+        for T in types
+            # Check if this strategy type uses the parameter
+            strat_param = get_parameter_type(T)
+            if strat_param === param_type
+                strat_id = id(T)
+                push!(results, (strat_id, family, T))
+            end
+        end
+    end
+    
+    # Sort by strategy ID for consistent display
+    sort!(results; by=x -> x[1])
+    
+    return results
+end
 
 """
 Find a strategy in the registry by its ID.
@@ -141,13 +263,26 @@ function _find_strategy_in_registry(strategy_id::Symbol, registry::StrategyRegis
     end
     unique!(all_ids)
 
+    # Check if it might be a parameter ID
+    if haskey(registry.parameters, strategy_id)
+        throw(
+            Exceptions.IncorrectArgument(
+                "Symbol is a parameter ID, not a strategy ID";
+                got=":$strategy_id",
+                expected="a strategy ID from: $all_ids",
+                suggestion="This is a parameter ID. Use describe(:$strategy_id, registry) to see parameter info.",
+                context="describe - disambiguating strategy vs parameter ID",
+            ),
+        )
+    end
+    
     throw(
         Exceptions.IncorrectArgument(
-            "Strategy ID not found in registry";
+            "ID not found in registry";
             got=":$strategy_id",
-            expected="one of available IDs: $all_ids",
-            suggestion="Check available strategy IDs or register the missing strategy",
-            context="describe - looking up strategy ID in registry",
+            expected="one of available strategy IDs: $all_ids or parameter IDs: $(collect(keys(registry.parameters)))",
+            suggestion="Check available IDs or register the missing strategy/parameter",
+            context="describe - looking up ID in registry",
         ),
     )
 end

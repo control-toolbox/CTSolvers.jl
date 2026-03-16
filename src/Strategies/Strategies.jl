@@ -51,7 +51,7 @@ export RoutedOption, BypassValue
 export AbstractStrategyParameter, CPU, GPU
 
 # Type-level contract methods
-export id, metadata
+export id, metadata, description
 
 # Instance-level contract methods
 export options
