@@ -151,8 +151,8 @@ function test_uno_extension()
             # Solve the problem
             stats = solver(nlp; display=false)
 
-            # Check convergence
-            Test.@test stats.solution_status in (:UNO_FEASIBLE_KKT_POINT, :UNO_FEASIBLE_FJ_POINT)
+            # Check convergence (stats from direct solver call, not extract_solver_infos)
+            Test.@test stats.solution_status in (UnoSolver.UNO_FEASIBLE_KKT_POINT, UnoSolver.UNO_FEASIBLE_FJ_POINT)
             Test.@test stats.solution ≈ ros.sol atol=1e-4
             Test.@test stats.solution_objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-4
         end
@@ -168,8 +168,8 @@ function test_uno_extension()
 
             stats = solver(nlp; display=false)
 
-            # Just check it converges
-            Test.@test stats.solution_status in (:UNO_FEASIBLE_KKT_POINT, :UNO_FEASIBLE_FJ_POINT)
+            # Just check it converges (stats from direct solver call)
+            Test.@test stats.solution_status in (UnoSolver.UNO_FEASIBLE_KKT_POINT, UnoSolver.UNO_FEASIBLE_FJ_POINT)
         end
 
         Test.@testset "Max1MinusX2 Problem - ADNLPModels" begin
@@ -183,8 +183,8 @@ function test_uno_extension()
 
             stats = solver(nlp; display=false)
 
-            # Check convergence
-            Test.@test stats.solution_status in (:UNO_FEASIBLE_KKT_POINT, :UNO_FEASIBLE_FJ_POINT)
+            # Check convergence (stats from direct solver call)
+            Test.@test stats.solution_status in (UnoSolver.UNO_FEASIBLE_KKT_POINT, UnoSolver.UNO_FEASIBLE_FJ_POINT)
             Test.@test length(stats.solution) == 1
             Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-4
             Test.@test stats.solution_objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-4
@@ -228,8 +228,9 @@ function test_uno_extension()
             stats1 = solver(nlp1; display=false)
             stats2 = solver(nlp2; display=false)
 
-            Test.@test stats1.solution_status in (:UNO_FEASIBLE_KKT_POINT, :UNO_FEASIBLE_FJ_POINT)
-            Test.@test stats2.solution_status in (:UNO_FEASIBLE_KKT_POINT, :UNO_FEASIBLE_FJ_POINT)
+            # Stats from direct solver calls
+            Test.@test stats1.solution_status in (UnoSolver.UNO_FEASIBLE_KKT_POINT, UnoSolver.UNO_FEASIBLE_FJ_POINT)
+            Test.@test stats2.solution_status in (UnoSolver.UNO_FEASIBLE_KKT_POINT, UnoSolver.UNO_FEASIBLE_FJ_POINT)
         end
 
         # ====================================================================
@@ -249,7 +250,7 @@ function test_uno_extension()
                         sol = CommonSolve.solve(
                             ros.prob, ros.sol, modeler, Solvers.Uno(; opts...)
                         )
-                        Test.@test sol.status == :UNO_MAX_ITERATIONS
+                        Test.@test sol.status == Symbol(UnoSolver.UNO_MAX_ITERATIONS)
                         Test.@test sol.solution ≈ ros.sol atol=1e-6
                     end
                 end
@@ -264,7 +265,7 @@ function test_uno_extension()
                         sol = CommonSolve.solve(
                             elec.prob, elec.init, modeler, Solvers.Uno(; opts...)
                         )
-                        Test.@test sol.status == :UNO_MAX_ITERATIONS
+                        Test.@test sol.status == Symbol(UnoSolver.UNO_MAX_ITERATIONS)
                         Test.@test sol.solution ≈
                             vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
                     end
@@ -294,7 +295,8 @@ function test_uno_extension()
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         nlp = Optimization.build_model(ros.prob, ros.init, modeler)
                         sol = CTSolversUno.solve_with_uno(nlp; uno_options...)
-                        Test.@test sol.solution_status in (:UNO_FEASIBLE_KKT_POINT, :UNO_FEASIBLE_FJ_POINT)
+                        # solve_with_uno returns UnoSolver.Statistics directly
+                        Test.@test sol.solution_status in (UnoSolver.UNO_FEASIBLE_KKT_POINT, UnoSolver.UNO_FEASIBLE_FJ_POINT)
                         Test.@test sol.solution ≈ ros.sol atol=1e-4
                         Test.@test sol.solution_objective ≈
                             TestProblems.rosenbrock_objective(ros.sol) atol=1e-4
@@ -308,7 +310,8 @@ function test_uno_extension()
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         nlp = Optimization.build_model(elec.prob, elec.init, modeler)
                         sol = CTSolversUno.solve_with_uno(nlp; uno_options...)
-                        Test.@test sol.solution_status in (:UNO_FEASIBLE_KKT_POINT, :UNO_FEASIBLE_FJ_POINT)
+                        # solve_with_uno returns UnoSolver.Statistics directly
+                        Test.@test sol.solution_status in (UnoSolver.UNO_FEASIBLE_KKT_POINT, UnoSolver.UNO_FEASIBLE_FJ_POINT)
                     end
                 end
             end
@@ -321,7 +324,8 @@ function test_uno_extension()
                             max_prob.prob, max_prob.init, modeler
                         )
                         sol = CTSolversUno.solve_with_uno(nlp; uno_options...)
-                        Test.@test sol.solution_status in (:UNO_FEASIBLE_KKT_POINT, :UNO_FEASIBLE_FJ_POINT)
+                        # solve_with_uno returns UnoSolver.Statistics directly
+                        Test.@test sol.solution_status in (UnoSolver.UNO_FEASIBLE_KKT_POINT, UnoSolver.UNO_FEASIBLE_FJ_POINT)
                         Test.@test length(sol.solution) == 1
                         Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-4
                         Test.@test sol.solution_objective ≈
@@ -354,7 +358,7 @@ function test_uno_extension()
                         sol = CommonSolve.solve(
                             ros.prob, ros.init, modeler, Solvers.Uno(; uno_options...)
                         )
-                        Test.@test sol.status in (:UNO_FEASIBLE_KKT_POINT, :UNO_FEASIBLE_FJ_POINT)
+                        Test.@test sol.status in (Symbol(UnoSolver.UNO_FEASIBLE_KKT_POINT), Symbol(UnoSolver.UNO_FEASIBLE_FJ_POINT))
                         Test.@test sol.solution ≈ ros.sol atol=1e-4
                         Test.@test sol.objective ≈
                             TestProblems.rosenbrock_objective(ros.sol) atol=1e-4
@@ -369,7 +373,7 @@ function test_uno_extension()
                         sol = CommonSolve.solve(
                             elec.prob, elec.init, modeler, Solvers.Uno(; uno_options...)
                         )
-                        Test.@test sol.status in (:UNO_FEASIBLE_KKT_POINT, :UNO_FEASIBLE_FJ_POINT)
+                        Test.@test sol.status in (Symbol(UnoSolver.UNO_FEASIBLE_KKT_POINT), Symbol(UnoSolver.UNO_FEASIBLE_FJ_POINT))
                     end
                 end
             end
@@ -384,7 +388,7 @@ function test_uno_extension()
                             modeler,
                             Solvers.Uno(; uno_options...),
                         )
-                        Test.@test sol.status in (:UNO_FEASIBLE_KKT_POINT, :UNO_FEASIBLE_FJ_POINT)
+                        Test.@test sol.status in (Symbol(UnoSolver.UNO_FEASIBLE_KKT_POINT), Symbol(UnoSolver.UNO_FEASIBLE_FJ_POINT))
                         Test.@test length(sol.solution) == 1
                         Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-4
                         Test.@test sol.objective ≈
