@@ -12,6 +12,7 @@ import CTSolvers.Solvers
 import CTSolvers.Strategies
 import CTSolvers.Options
 import CTBase.Exceptions
+using NLPModels: NLPModels
 import UnoSolver
 
 # Import parameter types
