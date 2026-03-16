@@ -303,18 +303,49 @@ function Base.show(io::IO, ::MIME"text/plain", strategy::T) where {T<:AbstractSt
     opts = options(strategy)
 
     # Header with ID on first line
-    println(io, fmt.name, type_name, fmt.reset, " (instance, id: ", fmt.keyword, ":", strategy_id, fmt.reset, ")")
+    println(
+        io,
+        fmt.name,
+        type_name,
+        fmt.reset,
+        " (instance, id: ",
+        fmt.keyword,
+        ":",
+        strategy_id,
+        fmt.reset,
+        ")",
+    )
 
     items = collect(pairs(opts.options))
     for (i, (key, opt)) in enumerate(items)
         is_last = i == length(items)
         prefix = is_last ? "└─ " : "├─ "
         println(
-            io, prefix, fmt.name, key, fmt.reset, " = ", fmt.value, Options.value(opt), fmt.reset, "  [", fmt.label, Options.source(opt), fmt.reset, "]"
+            io,
+            prefix,
+            fmt.name,
+            key,
+            fmt.reset,
+            " = ",
+            fmt.value,
+            Options.value(opt),
+            fmt.reset,
+            "  [",
+            fmt.label,
+            Options.source(opt),
+            fmt.reset,
+            "]",
         )
     end
 
-    println(io, fmt.label, "Tip: use describe(", type_name, ") to see all available options.", fmt.reset)
+    println(
+        io,
+        fmt.label,
+        "Tip: use describe(",
+        type_name,
+        ") to see all available options.",
+        fmt.reset,
+    )
 end
 
 """
@@ -340,7 +371,21 @@ function Base.show(io::IO, strategy::T) where {T<:AbstractStrategy}
     opts = options(strategy)
 
     print(io, fmt.name, type_name, fmt.reset, "(")
-    print(io, join((fmt.name * "$k" * fmt.reset * "=" * fmt.value * "$(Options.value(v))" * fmt.reset for (k, v) in pairs(opts.options)), ", "))
+    print(
+        io,
+        join(
+            (
+                fmt.name *
+                "$k" *
+                fmt.reset *
+                "=" *
+                fmt.value *
+                "$(Options.value(v))" *
+                fmt.reset for (k, v) in pairs(opts.options)
+            ),
+            ", ",
+        ),
+    )
     print(io, ")")
 end
 

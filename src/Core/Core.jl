@@ -69,19 +69,19 @@ print(io, fmt.name, "option_name", fmt.reset, "::", fmt.type, "Int", fmt.reset)
 """
 function get_format_codes(io::IO)
     supports_color = get(io, :color, false)
-    
+
     return (
         # Text formatting
-        bold = supports_color ? "\033[1m" : "",
-        reset = supports_color ? "\033[0m" : "",
-        
+        bold=supports_color ? "\033[1m" : "",
+        reset=supports_color ? "\033[0m" : "",
+
         # Colors for different semantic elements
-        name = supports_color ? "\033[1m\033[34m" : "",      # Bold blue for names
-        type = supports_color ? "\033[36m" : "",             # Cyan for types
-        value = supports_color ? "\033[32m" : "",            # Green for values
-        keyword = supports_color ? "\033[33m" : "",          # Yellow for keywords/aliases
-        count = supports_color ? "\033[35m" : "",            # Magenta for counts
-        label = supports_color ? "\033[90m" : "",            # Gray for labels
+        name=supports_color ? "\033[1m\033[34m" : "",      # Bold blue for names
+        type=supports_color ? "\033[36m" : "",             # Cyan for types
+        value=supports_color ? "\033[32m" : "",            # Green for values
+        keyword=supports_color ? "\033[33m" : "",          # Yellow for keywords/aliases
+        count=supports_color ? "\033[35m" : "",            # Magenta for counts
+        label=supports_color ? "\033[90m" : "",            # Gray for labels
     )
 end
 

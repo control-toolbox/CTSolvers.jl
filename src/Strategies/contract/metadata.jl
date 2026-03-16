@@ -346,7 +346,19 @@ Base.haskey(meta::StrategyMetadata, key::Symbol) = haskey(meta.specs, key)
 function Base.show(io::IO, ::MIME"text/plain", meta::StrategyMetadata)
     fmt = get_format_codes(io)
     n = length(meta)
-    println(io, fmt.name, "StrategyMetadata", fmt.reset, " with ", fmt.count, n, fmt.reset, " option", n == 1 ? "" : "s", ":")
+    println(
+        io,
+        fmt.name,
+        "StrategyMetadata",
+        fmt.reset,
+        " with ",
+        fmt.count,
+        n,
+        fmt.reset,
+        " option",
+        n == 1 ? "" : "s",
+        ":",
+    )
     items = collect(pairs(meta))
     for (i, (key, def)) in enumerate(items)
         is_last = i == length(items)

@@ -94,12 +94,25 @@ function describe(io::IO, strategy_id::Symbol, registry::StrategyRegistry)
 
     # 5. Header
     println(io, fmt.name, type_name, fmt.reset, " (strategy)")
-    println(io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", strategy_id, fmt.reset)
-    println(io, "├─ ", fmt.label, "family: ", fmt.reset, fmt.type, nameof(family), fmt.reset)
+    println(
+        io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", strategy_id, fmt.reset
+    )
+    println(
+        io, "├─ ", fmt.label, "family: ", fmt.reset, fmt.type, nameof(family), fmt.reset
+    )
 
     if !isempty(params)
         if default_param !== nothing
-            println(io, "├─ ", fmt.label, "default parameter: ", fmt.reset, fmt.type, nameof(default_param), fmt.reset)
+            println(
+                io,
+                "├─ ",
+                fmt.label,
+                "default parameter: ",
+                fmt.reset,
+                fmt.type,
+                nameof(default_param),
+                fmt.reset,
+            )
         end
         param_names = join([fmt.type * string(nameof(P)) * fmt.reset for P in params], ", ")
         println(io, "├─ ", fmt.label, "parameters: ", fmt.reset, param_names)
@@ -212,7 +225,7 @@ function _describe_single_metadata(io::IO, fmt, strategy_type::Type)
                 ext_names,
                 "\033[0m",  # Reset color
             )
-            return
+            return nothing
         else
             rethrow()
         end
@@ -286,7 +299,7 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
             ext_names,
             "\033[0m",  # Reset color
         )
-        return
+        return nothing
     end
 
     # Collect all option names and definitions across parameters
@@ -345,7 +358,9 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
             # Use definition from first available parameter
             (P, def) = first(option_defs[name])
             println(io, prefix, def)
-            println(io, cont, fmt.label, "description: ", fmt.reset, Options.description(def))
+            println(
+                io, cont, fmt.label, "description: ", fmt.reset, Options.description(def)
+            )
 
             if !is_last
                 println(io, cont)
@@ -442,7 +457,14 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
 
             def = meta[name]
             println(io, opt_prefix, def)
-            println(io, opt_cont, fmt.label, "description: ", fmt.reset, Options.description(def))
+            println(
+                io,
+                opt_cont,
+                fmt.label,
+                "description: ",
+                fmt.reset,
+                Options.description(def),
+            )
 
             if !is_last_opt
                 println(io, opt_cont)
