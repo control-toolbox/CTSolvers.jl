@@ -5,6 +5,37 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.8-beta (2026-03-16)
+
+**No breaking changes.**
+
+This release adds parameter description methods and improves hierarchy display across all describe functions.
+
+### Summary - v0.4.8-beta
+
+- Added `description` contract method for `AbstractStrategyParameter` with `NotImplemented` fallback
+- Implemented `description` for built-in `CPU` and `GPU` parameters
+- Added `describe` methods for parameters (type-direct and registry-aware)
+- Display parameter ID, hierarchy chain, and description
+- Registry-aware `describe` lists strategies using each parameter
+- Improved strategy `describe` to show full hierarchy chain instead of just supertype
+- Added `_supertype_chain` helper function for consistent hierarchy display
+- Added comprehensive tests following `.windsurf` standards
+- Export `description` function for parameters
+
+### Migration - v0.4.8-beta
+
+**No action required.** All existing code continues to work without changes.
+
+**Improved behavior:**
+
+- All `describe` methods now show full hierarchy: `Type → Parent → AbstractStrategy`
+- New `describe(CPU)` and `describe(GPU)` provide parameter introspection
+- New `describe(:cpu, registry)` and `describe(:gpu, registry)` show strategies using parameters
+- Registry-aware `describe` now handles both strategy and parameter IDs with clear disambiguation
+
+---
+
 ## v0.4.7-beta (2026-03-15)
 
 **No breaking changes.**
