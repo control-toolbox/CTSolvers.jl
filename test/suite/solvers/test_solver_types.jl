@@ -30,6 +30,7 @@ function test_solver_types()
             Test.@test Solvers.Ipopt <: Solvers.AbstractNLPSolver
             Test.@test Solvers.MadNLP <: Solvers.AbstractNLPSolver
             Test.@test Solvers.MadNCL <: Solvers.AbstractNLPSolver
+            Test.@test Solvers.Uno <: Solvers.AbstractNLPSolver
             # Commented out - no Knitro license available
             # Test.@test Solvers.Knitro <: Solvers.AbstractNLPSolver
 
@@ -40,6 +41,7 @@ function test_solver_types()
             Test.@test !isabstracttype(Solvers.Ipopt)
             Test.@test !isabstracttype(Solvers.MadNLP)
             Test.@test !isabstracttype(Solvers.MadNCL)
+            Test.@test !isabstracttype(Solvers.Uno)
             # Commented out - no Knitro license available
             # Test.@test !isabstracttype(Solvers.Knitro)
         end
@@ -55,6 +57,7 @@ function test_solver_types()
             # Test.@test Strategies.id(Solvers.Knitro) === :knitro
             Test.@test Strategies.id(Solvers.MadNLP) === :madnlp
             Test.@test Strategies.id(Solvers.MadNCL) === :madncl
+            Test.@test Strategies.id(Solvers.Uno) === :uno
 
             # Test that all IDs are unique
             ids = [
@@ -63,8 +66,9 @@ function test_solver_types()
                 # Strategies.id(Solvers.Knitro),
                 Strategies.id(Solvers.MadNLP),
                 Strategies.id(Solvers.MadNCL),
+                Strategies.id(Solvers.Uno),
             ]
-            Test.@test length(unique(ids)) == 3
+            Test.@test length(unique(ids)) == 4
 
             # Test that IDs are Symbols
             Test.@test Strategies.id(Solvers.Ipopt) isa Symbol
@@ -72,6 +76,7 @@ function test_solver_types()
             # Test.@test Strategies.id(Solvers.Knitro) isa Symbol
             Test.@test Strategies.id(Solvers.MadNLP) isa Symbol
             Test.@test Strategies.id(Solvers.MadNCL) isa Symbol
+            Test.@test Strategies.id(Solvers.Uno) isa Symbol
         end
 
         # ====================================================================
@@ -85,6 +90,7 @@ function test_solver_types()
             # Test.@test Solvers.KnitroTag <: Solvers.AbstractTag
             Test.@test Solvers.MadNLPTag <: Solvers.AbstractTag
             Test.@test Solvers.MadNCLTag <: Solvers.AbstractTag
+            Test.@test Solvers.UnoTag <: Solvers.AbstractTag
 
             # Test that AbstractTag is abstract
             Test.@test isabstracttype(Solvers.AbstractTag)
@@ -95,6 +101,7 @@ function test_solver_types()
             # Test.@test !isabstracttype(Solvers.KnitroTag)
             Test.@test !isabstracttype(Solvers.MadNLPTag)
             Test.@test !isabstracttype(Solvers.MadNCLTag)
+            Test.@test !isabstracttype(Solvers.UnoTag)
 
             # Tags are now used as types, not instances
             # No instantiation needed
@@ -112,6 +119,7 @@ function test_solver_types()
             # Test.@test :options in fieldnames(Solvers.Knitro)
             Test.@test :options in fieldnames(Solvers.MadNLP)
             Test.@test :options in fieldnames(Solvers.MadNCL)
+            Test.@test :options in fieldnames(Solvers.Uno)
 
             # Check that there's only one field
             Test.@test length(fieldnames(Solvers.Ipopt)) == 1
@@ -119,6 +127,7 @@ function test_solver_types()
             # Test.@test length(fieldnames(Solvers.Knitro)) == 1
             Test.@test length(fieldnames(Solvers.MadNLP)) == 1
             Test.@test length(fieldnames(Solvers.MadNCL)) == 1
+            Test.@test length(fieldnames(Solvers.Uno)) == 1
         end
     end
 end

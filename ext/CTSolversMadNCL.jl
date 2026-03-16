@@ -51,7 +51,7 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             type=Integer,
             default=1000,
             description="Maximum number of augmented Lagrangian iterations",
-            aliases=(:maxiter,),
+            aliases=(:maxiter, :max_iterations),
             validator=x ->
                 x >= 0 || throw(
                     Exceptions.IncorrectArgument(

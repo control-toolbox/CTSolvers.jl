@@ -38,7 +38,7 @@ function Strategies.metadata(::Type{Solvers.Knitro{P}}) where {P<:CPU}
             type=Integer,
             default=1000,
             description="Maximum number of iterations before termination",
-            aliases=(:max_iter, :maxiter),
+            aliases=(:max_iter, :maxiter, :max_iterations),
             validator=x ->
                 x >= 0 || throw(
                     Exceptions.IncorrectArgument(

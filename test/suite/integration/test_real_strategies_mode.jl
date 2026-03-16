@@ -132,6 +132,10 @@ function test_real_strategies_mode()
                 push!(available_solvers, Solvers.MadNLP)
             end
 
+            if isdefined(CTSolvers, :Solvers) && isdefined(Solvers, :Uno)
+                push!(available_solvers, Solvers.Uno)
+            end
+
             if isempty(available_solvers)
                 Test.@testset "No solver extensions available" begin
                     Test.@test_skip "No solver extensions available for testing"

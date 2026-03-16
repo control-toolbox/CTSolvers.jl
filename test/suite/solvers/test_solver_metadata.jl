@@ -6,6 +6,7 @@ import CTSolvers.Solvers
 import CTSolvers.Strategies
 using MadNLP: MadNLP
 using MadNCL: MadNCL
+using UnoSolver: UnoSolver
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
@@ -33,12 +34,14 @@ function test_solver_metadata()
             Test.@test Strategies.id(Solvers.MadNCL) === :madncl
             Test.@test Strategies.id(Solvers.Ipopt) === :ipopt
             Test.@test Strategies.id(Solvers.Knitro) === :knitro
+            Test.@test Strategies.id(Solvers.Uno) === :uno
 
             # Test with parameterized types
             Test.@test Strategies.id(Solvers.MadNLP{Strategies.CPU}) === :madnlp
             Test.@test Strategies.id(Solvers.MadNLP{Strategies.GPU}) === :madnlp
             Test.@test Strategies.id(Solvers.MadNCL{Strategies.CPU}) === :madncl
             Test.@test Strategies.id(Solvers.MadNCL{Strategies.GPU}) === :madncl
+            Test.@test Strategies.id(Solvers.Uno{Strategies.CPU}) === :uno
         end
 
         # ====================================================================
@@ -69,6 +72,11 @@ function test_solver_metadata()
 
             # MadNCL{GPU} constructor
             Test.@test Solvers.MadNCL{Strategies.GPU} isa Type
+
+            # Uno{CPU} constructor
+            Test.@test_nowarn Solvers.Uno{Strategies.CPU}()
+            solver_uno_cpu = Solvers.Uno{Strategies.CPU}(max_iterations=100)
+            Test.@test solver_uno_cpu isa Solvers.Uno{Strategies.CPU}
         end
 
         # ====================================================================
@@ -85,6 +93,9 @@ function test_solver_metadata()
 
             solver_madncl = Solvers.MadNCL(print_level=MadNLP.ERROR)
             Test.@test solver_madncl isa Solvers.MadNCL{Strategies.CPU}
+
+            solver_uno = Solvers.Uno()
+            Test.@test solver_uno isa Solvers.Uno{Strategies.CPU}
         end
     end
 end

@@ -42,6 +42,15 @@ catch
     false
 end
 
+const UNO_AVAILABLE = try
+    using UnoSolver: UnoSolver
+    # println("✅ UnoSolver loaded for real strategy tests")
+    true
+catch
+    println("❌ UnoSolver not available - skipping real solver tests")
+    false
+end
+
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
@@ -524,6 +533,54 @@ function test_route_to_comprehensive()
 
                 # Verify real modeler has the routed option
                 test_option_routing(real_modeler, :backend, :default)
+            end
+
+            # Test with real Solvers.Uno (if available)
+            if UNO_AVAILABLE
+                Test.@testset "Real Solvers.Uno" begin
+                    real_registry = Strategies.create_registry(
+                        RouteTestDiscretizer => (RouteCollocation,),
+                        RouteTestModeler => (RouteADNLP,),
+                        Solvers.AbstractNLPSolver => (Solvers.Uno,),
+                    )
+
+                    real_families = (
+                        discretizer=RouteTestDiscretizer,
+                        modeler=RouteTestModeler,
+                        solver=Solvers.AbstractNLPSolver,
+                    )
+
+                    kwargs = (
+                        grid_size=200,
+                        primal_tolerance=Strategies.route_to(uno=1e-6),  # Route to real Solvers.Uno
+                        max_iterations=Strategies.route_to(uno=1000),  # Route to real Solvers.Uno
+                        display=false,
+                    )
+
+                    routed = Orchestration.route_all_options(
+                        MOCK_METHOD, real_families, ACTION_DEFS, kwargs, real_registry
+                    )
+
+                    # Build real solver
+                    resolved = Orchestration.resolve_method(
+                        MOCK_METHOD, real_families, real_registry
+                    )
+                    real_solver = Orchestration.build_strategy_from_resolved(
+                        resolved,
+                        :solver,
+                        real_families,
+                        real_registry;
+                        routed.strategies.solver...,
+                    )
+
+                    # Verify real solver has the routed options 
+                    test_option_routing(real_solver, :primal_tolerance, 1e-6)
+                    test_option_routing(real_solver, :max_iterations, 1000)
+                end
+            else
+                Test.@testset "Real Solvers.Uno (Not Available)" begin
+                    Test.@test_skip "UnoSolver not available"
+                end
             end
 
             # Test with real Solvers.Ipopt (if available)
