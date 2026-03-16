@@ -17,6 +17,7 @@ import CTSolvers.Solvers
 try
     using NLPModelsIpopt: NLPModelsIpopt
     using MadNLP: MadNLP
+    using UnoSolver: UnoSolver
 catch
     # Extension packages might not be available in standard test environment
 end
@@ -156,8 +157,10 @@ function test_real_strategies_mode()
                         # Should work with known options
                         solver = solver_type(max_iter=1000)
                         Test.@test solver isa solver_type
-                        Test.@test Strategies.option_value(solver, :max_iter) == 1000
-                        Test.@test Strategies.option_source(solver, :max_iter) == :user
+                        # Canonical name differs: Ipopt/MadNLP use :max_iter, Uno uses :max_iterations
+                        canonical_name = solver_type == Solvers.Uno ? :max_iterations : :max_iter
+                        Test.@test Strategies.option_value(solver, canonical_name) == 1000
+                        Test.@test Strategies.option_source(solver, canonical_name) == :user
                     end
 
                     Test.@testset "Permissive mode accepts unknown options" begin

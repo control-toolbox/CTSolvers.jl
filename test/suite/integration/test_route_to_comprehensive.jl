@@ -550,6 +550,9 @@ function test_route_to_comprehensive()
                         solver=Solvers.AbstractNLPSolver,
                     )
 
+                    # Use :uno in method tuple, not :ipopt
+                    uno_method = (:collocation, :adnlp, :uno)
+
                     kwargs = (
                         grid_size=200,
                         primal_tolerance=Strategies.route_to(uno=1e-6),  # Route to real Solvers.Uno
@@ -558,12 +561,12 @@ function test_route_to_comprehensive()
                     )
 
                     routed = Orchestration.route_all_options(
-                        MOCK_METHOD, real_families, ACTION_DEFS, kwargs, real_registry
+                        uno_method, real_families, ACTION_DEFS, kwargs, real_registry
                     )
 
                     # Build real solver
                     resolved = Orchestration.resolve_method(
-                        MOCK_METHOD, real_families, real_registry
+                        uno_method, real_families, real_registry
                     )
                     real_solver = Orchestration.build_strategy_from_resolved(
                         resolved,

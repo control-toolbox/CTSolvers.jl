@@ -13,6 +13,7 @@ import CTSolvers.Strategies
 import CTSolvers.Options
 import CTBase.Exceptions
 using NLPModels: NLPModels
+using SolverCore: SolverCore
 import UnoSolver
 
 # Import parameter types
@@ -317,6 +318,114 @@ function Solvers.build_uno_solver(
 end
 
 # ============================================================================
+# Status conversion utilities
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Map Uno termination and solution statuses to SolverCore status symbols.
+
+Based on Uno's MOI mapping and SolverCore conventions (Ipopt-compatible).
+
+# Arguments
+- `optimization_status::Cint`: Uno optimization termination status
+- `solution_status::Cint`: Uno solution quality status
+
+# Returns
+- `Symbol`: SolverCore-compatible status symbol
+
+# Status Mapping
+- `UNO_SUCCESS` + `UNO_FEASIBLE_KKT_POINT` → `:first_order`
+- `UNO_SUCCESS` + `UNO_FEASIBLE_FJ_POINT` → `:acceptable`
+- `UNO_SUCCESS` + `UNO_INFEASIBLE_STATIONARY_POINT` → `:infeasible`
+- `UNO_SUCCESS` + `UNO_FEASIBLE_SMALL_STEP` → `:small_step`
+- `UNO_SUCCESS` + `UNO_INFEASIBLE_SMALL_STEP` → `:small_step`
+- `UNO_SUCCESS` + `UNO_UNBOUNDED` → `:unbounded`
+- `UNO_ITERATION_LIMIT` → `:max_iter`
+- `UNO_TIME_LIMIT` → `:max_time`
+- `UNO_EVALUATION_ERROR` → `:exception`
+- `UNO_ALGORITHMIC_ERROR` → `:exception`
+"""
+function _uno_status_to_solvercore(optimization_status::Cint, solution_status::Cint)::Symbol
+    if optimization_status == UnoSolver.UNO_ITERATION_LIMIT
+        return :max_iter
+    elseif optimization_status == UnoSolver.UNO_TIME_LIMIT
+        return :max_time
+    elseif optimization_status == UnoSolver.UNO_EVALUATION_ERROR
+        return :exception
+    elseif optimization_status == UnoSolver.UNO_ALGORITHMIC_ERROR
+        return :exception
+    else # UNO_SUCCESS
+        if solution_status == UnoSolver.UNO_FEASIBLE_KKT_POINT
+            return :first_order
+        elseif solution_status == UnoSolver.UNO_FEASIBLE_FJ_POINT
+            return :acceptable
+        elseif solution_status == UnoSolver.UNO_INFEASIBLE_STATIONARY_POINT
+            return :infeasible
+        elseif solution_status == UnoSolver.UNO_FEASIBLE_SMALL_STEP
+            return :small_step
+        elseif solution_status == UnoSolver.UNO_INFEASIBLE_SMALL_STEP
+            return :small_step
+        else # UNO_UNBOUNDED
+            return :unbounded
+        end
+    end
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Convert UnoSolver.Statistics to SolverCore.GenericExecutionStats.
+
+This conversion allows Uno to integrate seamlessly with the CTSolvers pipeline
+which expects SolverCore.AbstractExecutionStats.
+
+# Arguments
+- `nlp::NLPModels.AbstractNLPModel`: The NLP model (needed for GenericExecutionStats constructor)
+- `uno_stats::UnoSolver.Statistics`: Uno solver execution statistics
+
+# Returns
+- `SolverCore.GenericExecutionStats`: Converted statistics compatible with CTSolvers
+
+# Field Mapping
+- `status` ← mapped from `optimization_status` and `solution_status`
+- `solution` ← `primal_solution`
+- `objective` ← `solution_objective`
+- `dual_feas` ← `solution_stationarity`
+- `primal_feas` ← `solution_primal_feasibility`
+- `multipliers` ← `constraint_dual_solution`
+- `multipliers_L` ← `lower_bound_dual_solution`
+- `multipliers_U` ← `upper_bound_dual_solution`
+- `iter` ← `number_iterations`
+- `elapsed_time` ← `cpu_time`
+"""
+function _uno_to_generic_stats(nlp::NLPModels.AbstractNLPModel, uno_stats::UnoSolver.Statistics)::SolverCore.GenericExecutionStats
+    # Map Uno status to SolverCore status
+    status = _uno_status_to_solvercore(
+        uno_stats.optimization_status,
+        uno_stats.solution_status
+    )
+    
+    # Create GenericExecutionStats with all fields marked as reliable
+    stats = SolverCore.GenericExecutionStats(
+        nlp;
+        status=status,
+        solution=uno_stats.primal_solution,
+        objective=uno_stats.solution_objective,
+        dual_feas=uno_stats.solution_stationarity,
+        primal_feas=uno_stats.solution_primal_feasibility,
+        multipliers=uno_stats.constraint_dual_solution,
+        multipliers_L=uno_stats.lower_bound_dual_solution,
+        multipliers_U=uno_stats.upper_bound_dual_solution,
+        iter=Int(uno_stats.number_iterations),
+        elapsed_time=uno_stats.cpu_time
+    )
+    
+    return stats
+end
+
+# ============================================================================
 # Callable interface with display handling
 # ============================================================================
 
@@ -330,11 +439,11 @@ Solve an NLP problem using Uno.
 - `display::Bool`: Whether to show solver output (default: true)
 
 # Returns
-- `UnoSolver.Statistics`: Solver execution statistics
+- `SolverCore.GenericExecutionStats`: Solver execution statistics
 """
 function (solver::Solvers.Uno)(
     nlp::NLPModels.AbstractNLPModel; display::Bool=true
-)::UnoSolver.Statistics
+)::SolverCore.GenericExecutionStats
     options = Strategies.options_dict(solver)
     options[:logger] = display ? options[:logger] : "SILENT"
     return solve_with_uno(nlp; options...)
@@ -356,41 +465,15 @@ Solves the NLP problem using UnoSolver backend.
 - `options...`: Uno options as keyword arguments
 
 # Returns
-- `UnoSolver.Statistics`: Solver execution statistics
+- `SolverCore.GenericExecutionStats`: Solver execution statistics
 
 See also: `Solvers.Uno`, `UnoSolver.solve`
 """
 function solve_with_uno(
     nlp::NLPModels.AbstractNLPModel; kwargs...
-)::UnoSolver.Statistics
-    return UnoSolver.uno(nlp; kwargs...)
-end
-
-
-"""
-$(TYPEDSIGNATURES)
-
-Extract solver information from Uno execution statistics.
-
-# Arguments
-- `nlp_solution::UnoSolver.Statistics`: Uno execution statistics
-
-# Returns
-A 6-element tuple `(objective, iterations, constraints_violation, message, status, successful)`:
-- `objective::Float64`: The final objective value
-- `iterations::Int`: Number of iterations performed
-- `constraints_violation::Float64`: Maximum constraint violation (primal feasibility)
-- `message::String`: Solver identifier string ("Uno")
-- `status::Symbol`: Termination status from SolverCore
-- `successful::Bool`: Whether the solver converged successfully
-"""
-function Optimization.extract_solver_infos(nlp_solution::UnoSolver.Statistics)
-    objective = nlp_solution.solution_objective
-    iterations = nlp_solution.number_iterations
-    constraints_violation = nlp_solution.solution_primal_feasibility
-    status = nlp_solution.solution_status
-    successful = (status == UnoSolver.UNO_FEASIBLE_KKT_POINT) || (status == UnoSolver.UNO_FEASIBLE_FJ_POINT)
-    return objective, iterations, constraints_violation, "Uno", Symbol(status), successful
+)::SolverCore.GenericExecutionStats
+    uno_stats = UnoSolver.uno(nlp; kwargs...)
+    return _uno_to_generic_stats(nlp, uno_stats)
 end
 
 end
