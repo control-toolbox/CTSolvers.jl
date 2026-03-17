@@ -68,7 +68,7 @@ print(io, fmt.name, "option_name", fmt.reset, "::", fmt.type, "Int", fmt.reset)
 - Ensures consistent color scheme across the entire package
 """
 function get_format_codes(io::IO)
-    supports_color = get(io, :color, false)
+    supports_color = true # get(io, :color, false)
     
     return (
         # Text formatting
