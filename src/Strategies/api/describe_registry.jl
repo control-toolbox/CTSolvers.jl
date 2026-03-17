@@ -73,7 +73,9 @@ end
 """
 Describe a strategy using registry (internal implementation).
 """
-function _describe_strategy_registry(io::IO, strategy_id::Symbol, registry::StrategyRegistry)
+function _describe_strategy_registry(
+    io::IO, strategy_id::Symbol, registry::StrategyRegistry
+)
     fmt = get_format_codes(io)
 
     # 1. Find family and strategy types from registry
@@ -109,18 +111,33 @@ function _describe_strategy_registry(io::IO, strategy_id::Symbol, registry::Stra
 
     # 5. Header with hierarchy
     println(io, fmt.name, type_name, fmt.reset, " (strategy)")
-    println(io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", strategy_id, fmt.reset)
-    
+    println(
+        io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", strategy_id, fmt.reset
+    )
+
     # Build hierarchy chain for the base type
     hierarchy_chain = _supertype_chain(base_type, AbstractStrategy)
-    hierarchy_str = join([fmt.type * string(nameof(t)) * fmt.reset for t in hierarchy_chain], " → ")
+    hierarchy_str = join(
+        [fmt.type * string(nameof(t)) * fmt.reset for t in hierarchy_chain], " → "
+    )
     println(io, "├─ ", fmt.label, "hierarchy: ", fmt.reset, hierarchy_str)
-    
-    println(io, "├─ ", fmt.label, "family: ", fmt.reset, fmt.type, nameof(family), fmt.reset)
+
+    println(
+        io, "├─ ", fmt.label, "family: ", fmt.reset, fmt.type, nameof(family), fmt.reset
+    )
 
     if !isempty(params)
         if default_param !== nothing
-            println(io, "├─ ", fmt.label, "default parameter: ", fmt.reset, fmt.type, nameof(default_param), fmt.reset)
+            println(
+                io,
+                "├─ ",
+                fmt.label,
+                "default parameter: ",
+                fmt.reset,
+                fmt.type,
+                nameof(default_param),
+                fmt.reset,
+            )
         end
         param_names = join([fmt.type * string(nameof(P)) * fmt.reset for P in params], ", ")
         println(io, "├─ ", fmt.label, "parameters: ", fmt.reset, param_names)
@@ -136,36 +153,77 @@ end
 """
 Describe a parameter using registry (internal implementation).
 """
-function _describe_parameter_registry(io::IO, param_id::Symbol, param_type::Type{<:AbstractStrategyParameter}, registry::StrategyRegistry)
+function _describe_parameter_registry(
+    io::IO,
+    param_id::Symbol,
+    param_type::Type{<:AbstractStrategyParameter},
+    registry::StrategyRegistry,
+)
     fmt = get_format_codes(io)
     type_name = nameof(param_type)
     param_desc = description(param_type)
-    
+
     # Build hierarchy chain
     hierarchy_chain = [param_type, AbstractStrategyParameter]
-    hierarchy_str = join([fmt.type * string(nameof(T)) * fmt.reset for T in hierarchy_chain], " → ")
-    
+    hierarchy_str = join(
+        [fmt.type * string(nameof(T)) * fmt.reset for T in hierarchy_chain], " → "
+    )
+
     println(io, fmt.name, type_name, fmt.reset, " (parameter)")
     println(io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", param_id, fmt.reset)
     println(io, "├─ ", fmt.label, "hierarchy: ", fmt.reset, hierarchy_str)
     println(io, "├─ ", fmt.label, "description: ", fmt.reset, param_desc)
-    
+
     # Find strategies using this parameter
     strategies_using = _find_strategies_using_parameter(param_type, registry)
-    
+
     if !isempty(strategies_using)
         println(io, "│")
         n_strategies = length(strategies_using)
-        println(io, "└─ ", fmt.label, "used by strategies (", fmt.reset, fmt.count, n_strategies, fmt.reset, "):")
-        
+        println(
+            io,
+            "└─ ",
+            fmt.label,
+            "used by strategies (",
+            fmt.reset,
+            fmt.count,
+            n_strategies,
+            fmt.reset,
+            "):",
+        )
+
         for (i, (strat_id, family, strat_type)) in enumerate(strategies_using)
             is_last = i == length(strategies_using)
             prefix = is_last ? "   └─ " : "   ├─ "
-            println(io, prefix, fmt.keyword, ":", strat_id, fmt.reset, " (", fmt.type, nameof(family), fmt.reset, ") → ", fmt.type, strat_type, fmt.reset)
+            println(
+                io,
+                prefix,
+                fmt.keyword,
+                ":",
+                strat_id,
+                fmt.reset,
+                " (",
+                fmt.type,
+                nameof(family),
+                fmt.reset,
+                ") → ",
+                fmt.type,
+                strat_type,
+                fmt.reset,
+            )
         end
     else
         println(io, "│")
-        println(io, "└─ ", fmt.label, "used by strategies: ", fmt.reset, fmt.keyword, "none", fmt.reset)
+        println(
+            io,
+            "└─ ",
+            fmt.label,
+            "used by strategies: ",
+            fmt.reset,
+            fmt.keyword,
+            "none",
+            fmt.reset,
+        )
     end
 end
 
@@ -194,7 +252,7 @@ chain = _supertype_chain(ADNLP{CPU}, AbstractStrategy)
 function _supertype_chain(T::Type, stop_at::Type)
     chain = Type[T]
     current = T
-    
+
     while current !== stop_at && current !== Any
         current = supertype(current)
         push!(chain, current)
@@ -202,7 +260,7 @@ function _supertype_chain(T::Type, stop_at::Type)
             break
         end
     end
-    
+
     return chain
 end
 
@@ -218,9 +276,11 @@ Returns a vector of tuples: (strategy_id, family_type, strategy_type)
 # Returns
 - `Vector{Tuple{Symbol, Type, Type}}`: List of (strategy_id, family, strategy_type) tuples
 """
-function _find_strategies_using_parameter(param_type::Type{<:AbstractStrategyParameter}, registry::StrategyRegistry)
-    results = Tuple{Symbol, Type, Type}[]
-    
+function _find_strategies_using_parameter(
+    param_type::Type{<:AbstractStrategyParameter}, registry::StrategyRegistry
+)
+    results = Tuple{Symbol,Type,Type}[]
+
     for (family, types) in registry.families
         for T in types
             # Check if this strategy type uses the parameter
@@ -231,10 +291,10 @@ function _find_strategies_using_parameter(param_type::Type{<:AbstractStrategyPar
             end
         end
     end
-    
+
     # Sort by strategy ID for consistent display
     sort!(results; by=x -> x[1])
-    
+
     return results
 end
 
@@ -275,7 +335,7 @@ function _find_strategy_in_registry(strategy_id::Symbol, registry::StrategyRegis
             ),
         )
     end
-    
+
     throw(
         Exceptions.IncorrectArgument(
             "ID not found in registry";
@@ -347,7 +407,7 @@ function _describe_single_metadata(io::IO, fmt, strategy_type::Type)
                 ext_names,
                 "\033[0m",  # Reset color
             )
-            return
+            return nothing
         else
             rethrow()
         end
@@ -421,7 +481,7 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
             ext_names,
             "\033[0m",  # Reset color
         )
-        return
+        return nothing
     end
 
     # Collect all option names and definitions across parameters
@@ -480,7 +540,9 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
             # Use definition from first available parameter
             (P, def) = first(option_defs[name])
             println(io, prefix, def)
-            println(io, cont, fmt.label, "description: ", fmt.reset, Options.description(def))
+            println(
+                io, cont, fmt.label, "description: ", fmt.reset, Options.description(def)
+            )
 
             if !is_last
                 println(io, cont)
@@ -577,7 +639,14 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
 
             def = meta[name]
             println(io, opt_prefix, def)
-            println(io, opt_cont, fmt.label, "description: ", fmt.reset, Options.description(def))
+            println(
+                io,
+                opt_cont,
+                fmt.label,
+                "description: ",
+                fmt.reset,
+                Options.description(def),
+            )
 
             if !is_last_opt
                 println(io, opt_cont)
