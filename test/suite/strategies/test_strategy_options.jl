@@ -164,7 +164,7 @@ function test_strategy_options()
                 # Test that getproperty does NOT resolve aliases (only canonical names)
                 Test.@test opts.max_iter isa Options.OptionValue
                 Test.@test opts.max_iter.value == 200
-                Test.@test_throws FieldError opts.maxiter  # Alias not supported in dot notation
+                Test.@test_throws ErrorException opts.maxiter  # Alias not supported in dot notation
 
                 # Test source access with aliases
                 Test.@test Options.source(opts, :max_iter) == :user
