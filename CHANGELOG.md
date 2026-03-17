@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.10-beta] - 2026-03-17
+
+### Changed
+
+- **Forced ANSI colors** - `get_format_codes()` now always enables ANSI escape sequences for consistent display
+  - Colors now appear in Documenter documentation (local and remote)
+  - Improved `describe()`, `OptionDefinition`, `StrategyMetadata`, and `StrategyOptions` display
+  - Removed color detection to ensure colors work in all contexts (terminal, docs, CI)
+
+### Fixed
+
+- **Missing colors in documentation** - Pretty-printed objects now display colors in generated HTML documentation
+- **Inconsistent color display** - Colors are now consistent across all environments and contexts
+
 ## [0.4.8-beta] - 2026-03-16
 
 ### Added

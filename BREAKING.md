@@ -5,6 +5,37 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.10-beta (2026-03-17)
+
+**No breaking changes.**
+
+This release forces ANSI color codes in all contexts for consistent display.
+
+### Summary - v0.4.10-beta
+
+- Forced ANSI colors in `get_format_codes()` for consistent display across all contexts
+- Colors now appear in Documenter documentation (local and remote)
+- Improved `describe()`, `OptionDefinition`, `StrategyMetadata`, and `StrategyOptions` display
+- Removed color detection to ensure colors work in all environments
+
+### Migration - v0.4.10-beta
+
+**No action required.** All existing code continues to work without changes.
+
+**Improved behavior:**
+
+- All pretty-printed objects now display colors in documentation
+- Colors are consistent across terminal, documentation, and CI environments
+- `describe()` functions show colored hierarchical output in generated HTML docs
+
+**Potential compatibility notes:**
+
+- Very old terminals that don't support ANSI codes may show escape sequences
+- Log files will contain ANSI color codes (generally harmless)
+- This follows modern Julia package conventions for colored output
+
+---
+
 ## v0.4.8-beta (2026-03-16)
 
 **No breaking changes.**
