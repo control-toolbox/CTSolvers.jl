@@ -48,7 +48,7 @@ function test_solvers()
 
             # Test exported concrete types
             Test.@testset "Exported Concrete Types" begin
-                for T in (Ipopt, MadNLP, MadNCL, Knitro)
+                for T in (Ipopt, MadNLP, MadNCL, Knitro, Uno)
                     Test.@testset "$(nameof(T))" begin
                         Test.@test isdefined(Solvers, nameof(T))
                         Test.@test isdefined(CurrentModule, nameof(T))
@@ -89,12 +89,14 @@ function test_solvers()
                 Test.@test Solvers.MadNLP <: Solvers.AbstractNLPSolver
                 Test.@test Solvers.MadNCL <: Solvers.AbstractNLPSolver
                 Test.@test Solvers.Knitro <: Solvers.AbstractNLPSolver
+                Test.@test Solvers.Uno <: Solvers.AbstractNLPSolver
 
                 # Test that they all implement AbstractStrategy through inheritance
                 Test.@test Solvers.Ipopt <: Strategies.AbstractStrategy
                 Test.@test Solvers.MadNLP <: Strategies.AbstractStrategy
                 Test.@test Solvers.MadNCL <: Strategies.AbstractStrategy
                 Test.@test Solvers.Knitro <: Strategies.AbstractStrategy
+                Test.@test Solvers.Uno <: Strategies.AbstractStrategy
             end
         end
     end

@@ -164,7 +164,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
             type=Integer,
             default=1000,
             description="Maximum number of interior-point iterations before termination. Set to 0 to evaluate initial point only.",
-            aliases=(:maxiter,),
+            aliases=(:maxiter, :max_iterations),
             validator=x ->
                 x >= 0 || throw(
                     Exceptions.IncorrectArgument(

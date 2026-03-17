@@ -102,6 +102,32 @@ function test_extension_stubs()
         end
 
         # ====================================================================
+        # UNIT TESTS - Solvers.Uno Stub
+        # ====================================================================
+
+        Test.@testset "Solvers.Uno stub" begin
+            Test.@test_throws Exceptions.ExtensionError Solvers.build_uno_solver(
+                DummyTag, Strategies.CPU
+            )
+
+            err = nothing
+            try
+                Solvers.build_uno_solver(DummyTag, Strategies.CPU)
+            catch e
+                err = e
+            end
+
+            Test.@test err isa Exceptions.ExtensionError
+
+            err_str = string(err)
+            Test.@test occursin("Uno", err_str)
+            Test.@test occursin("UnoSolver", err_str)
+            Test.@test occursin(
+                "to create Uno, access options, and solve problems", err_str
+            )
+        end
+
+        # ====================================================================
         # UNIT TESTS - Solvers.MadNCL Stub
         # ====================================================================
 
@@ -139,6 +165,7 @@ function test_extension_stubs()
                 # () -> Solvers.build_knitro_solver(DummyTag()),
                 () -> Solvers.build_madnlp_solver(DummyTag, Strategies.CPU),
                 () -> Solvers.build_madncl_solver(DummyTag, Strategies.CPU),
+                () -> Solvers.build_uno_solver(DummyTag, Strategies.CPU),
             ]
 
             for stub in stubs

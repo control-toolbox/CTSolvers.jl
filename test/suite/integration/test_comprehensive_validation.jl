@@ -45,6 +45,13 @@ catch
     false
 end
 
+const UNO_AVAILABLE = try
+    using UnoSolver: UnoSolver
+    true
+catch
+    false
+end
+
 # const KNITRO_AVAILABLE = try
 #     import NLPModelsKnitro
 #     import KNITRO
@@ -329,6 +336,7 @@ function test_comprehensive_validation()
         IPOPT_AVAILABLE && push!(solver_types, Solvers.Ipopt)
         MADNLP_AVAILABLE && push!(solver_types, Solvers.MadNLP)
         MADNCL_AVAILABLE && push!(solver_types, Solvers.MadNCL)
+        UNO_AVAILABLE && push!(solver_types, Solvers.Uno)
         # KNITRO_AVAILABLE && push!(solver_types, Solvers.Knitro)  # Never available - no license
 
         solver_registry = if isempty(solver_types)
@@ -592,6 +600,56 @@ function test_comprehensive_validation()
             else
                 Test.@testset "Solvers.MadNCL (Not Available)" begin
                     Test.@test_skip "MadNCL not available"
+                end
+            end
+
+            # ----------------------------------------------------------------
+            # Solvers.Uno Tests (if available)
+            # ----------------------------------------------------------------
+
+            if UNO_AVAILABLE
+                Test.@testset "Solvers.Uno" begin
+                    known_options = (max_iterations=1000, primal_tolerance=1e-6)
+                    unknown_options = (uno_fake=789, custom_uno_opt="value")
+
+                    # Test all construction methods - redirect stderr to hide warnings
+                    redirect_stderr(devnull) do
+                        test_strategy_construction(
+                            Solvers.Uno,
+                            :uno,
+                            Solvers.AbstractNLPSolver,
+                            known_options,
+                            unknown_options,
+                            solver_registry,
+                        )
+                    end
+
+                    # Test option recovery
+                    Test.@testset "Option Recovery" begin
+                        strategy_strict = Solvers.Uno(; known_options...)
+                        test_option_recovery(
+                            strategy_strict, known_options, NamedTuple(), :strict
+                        )
+
+                        redirect_stderr(devnull) do
+                            strategy_permissive = Solvers.Uno(;
+                                known_options..., unknown_options..., mode=:permissive
+                            )
+                            test_option_recovery(
+                                strategy_permissive,
+                                known_options,
+                                unknown_options,
+                                :permissive,
+                            )
+                        end
+                    end
+
+                    # Test invalid mode
+                    test_invalid_mode(Solvers.Uno)
+                end
+            else
+                Test.@testset "Solvers.Uno (Not Available)" begin
+                    Test.@test_skip "UnoSolver not available"
                 end
             end
 

@@ -12,6 +12,7 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 using NLPModelsIpopt: NLPModelsIpopt
 using MadNLP: MadNLP
 using MadNCL: MadNCL
+using UnoSolver: UnoSolver
 # using NLPModelsKnitro
 
 """
@@ -47,6 +48,13 @@ function test_type_stability()
                 Test.@test_nowarn Test.@inferred Solvers.MadNCL()
                 Test.@test_nowarn Test.@inferred Solvers.MadNCL(max_iter=100)
                 Test.@test_nowarn Test.@inferred Solvers.MadNCL(max_iter=100, tol=1e-6)
+            end
+
+            Test.@testset "Solvers.Uno construction" begin
+                # Test that constructor returns correct type
+                Test.@test_nowarn Test.@inferred Solvers.Uno()
+                Test.@test_nowarn Test.@inferred Solvers.Uno(max_iterations=100)
+                Test.@test_nowarn Test.@inferred Solvers.Uno(max_iterations=100, primal_tolerance=1e-6)
             end
 
             # Commented out - no Knitro license available
@@ -104,6 +112,19 @@ function test_type_stability()
                 Test.@test opts isa Strategies.StrategyOptions
             end
 
+            Test.@testset "Solvers.Uno contract" begin
+                Test.@test_nowarn Test.@inferred Strategies.id(Solvers.Uno)
+                Test.@test Test.@inferred(Strategies.id(Solvers.Uno)) === :uno
+
+                # Metadata returns correct type
+                meta = Strategies.metadata(Solvers.Uno)
+                Test.@test meta isa Strategies.StrategyMetadata
+
+                # Options returns correct type
+                opts = Strategies.options(Solvers.Uno())
+                Test.@test opts isa Strategies.StrategyOptions
+            end
+
             # Commented out - no Knitro license available
             # Test.@testset "Solvers.Knitro contract" begin
             #     Test.@test_nowarn Test.@inferred Strategies.id(Solvers.Knitro)
@@ -145,6 +166,17 @@ function test_type_stability()
                 Test.@test raw_opts isa NamedTuple
                 Test.@test haskey(raw_opts, :max_iter)
                 Test.@test haskey(raw_opts, :tol)
+            end
+
+            Test.@testset "Solvers.Uno options extraction" begin
+                solver = Solvers.Uno(max_iterations=100, primal_tolerance=1e-6)
+                opts = Strategies.options(solver)
+
+                # Test that extract_raw_options returns correct type
+                raw_opts = Options.extract_raw_options(opts.options)
+                Test.@test raw_opts isa NamedTuple
+                Test.@test haskey(raw_opts, :max_iterations)
+                Test.@test haskey(raw_opts, :primal_tolerance)
             end
         end
 

@@ -12,6 +12,7 @@ the `AbstractStrategy` contract and provide a unified callable interface.
 - `Solvers.MadNLP` - Matrix-free augmented Lagrangian (requires MadNLP)
 - `Solvers.MadNCL` - NCL variant of MadNLP (requires MadNCL, MadNLP)
 - `Solvers.Knitro` - Commercial solver (requires NLPModelsKnitro)
+- `Solvers.Uno` - Unified solver (requires NLPModelsUno)
 
 # Architecture
 - **Types and logic**: Defined in src/Solvers/ (this module)
@@ -63,10 +64,11 @@ include(joinpath(@__DIR__, "madnlp.jl"))
 include(joinpath(@__DIR__, "madncl.jl"))
 include(joinpath(@__DIR__, "madnlpsuite.jl"))
 include(joinpath(@__DIR__, "knitro.jl"))
+include(joinpath(@__DIR__, "uno.jl"))
 include(joinpath(@__DIR__, "common_solve_api.jl"))
 
 # Public API - abstract and concrete types
 export AbstractNLPSolver
-export Ipopt, MadNLP, MadNCL, Knitro
+export Ipopt, MadNLP, MadNCL, Knitro, Uno
 
 end # module Solvers

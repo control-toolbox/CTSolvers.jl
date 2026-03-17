@@ -64,6 +64,7 @@ function test_coverage_solvers()
             Test.@test Strategies.id(Solvers.Ipopt) === :ipopt
             Test.@test Strategies.id(Solvers.MadNLP) === :madnlp
             Test.@test Strategies.id(Solvers.MadNCL) === :madncl
+            Test.@test Strategies.id(Solvers.Uno) === :uno
         end
 
         # ====================================================================

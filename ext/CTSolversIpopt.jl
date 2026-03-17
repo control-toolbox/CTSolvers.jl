@@ -54,7 +54,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
             type=Integer,
             default=1000,
             description="Maximum number of iterations. The algorithm terminates with a message if the number of iterations exceeded this number.",
-            aliases=(:maxiter,),
+            aliases=(:maxiter, :max_iterations),
             validator=x ->
                 x >= 0 || throw(
                     Exceptions.IncorrectArgument(
