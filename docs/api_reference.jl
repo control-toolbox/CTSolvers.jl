@@ -25,6 +25,24 @@ function generate_api_reference(src_dir::String, ext_dir::String)
     pages = [
 
         # ───────────────────────────────────────────────────────────────────
+        # Core
+        # ───────────────────────────────────────────────────────────────────
+        CTBase.automatic_reference_documentation(;
+            subdirectory="api",
+            primary_modules=[
+                CTSolvers.Core => src(
+                    joinpath("Core", "Core.jl"),
+                ),
+            ],
+            exclude=EXCLUDE_SYMBOLS,
+            public=true,
+            private=true,
+            title="Core",
+            title_in_menu="Core",
+            filename="core",
+        ),
+
+        # ───────────────────────────────────────────────────────────────────
         # DOCP
         # ───────────────────────────────────────────────────────────────────
         CTBase.automatic_reference_documentation(;
@@ -148,6 +166,8 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                     joinpath("Solvers", "knitro.jl"),
                     joinpath("Solvers", "madncl.jl"),
                     joinpath("Solvers", "madnlp.jl"),
+                    joinpath("Solvers", "madnlpsuite.jl"),
+                    joinpath("Solvers", "uno.jl"),
                 ),
             ],
             exclude=EXCLUDE_SYMBOLS,
@@ -190,6 +210,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                     joinpath("Strategies", "api", "builders.jl"),
                     joinpath("Strategies", "api", "bypass.jl"),
                     joinpath("Strategies", "api", "configuration.jl"),
+                    joinpath("Strategies", "api", "describe_registry.jl"),
                     joinpath("Strategies", "api", "disambiguation.jl"),
                     joinpath("Strategies", "api", "introspection.jl"),
                     joinpath("Strategies", "api", "registry.jl"),
@@ -203,6 +224,24 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             title="Strategies — API",
             title_in_menu="Strategies (API)",
             filename="strategies_api",
+        ),
+
+        # ───────────────────────────────────────────────────────────────────
+        # Strategies — Display Formatting
+        # ─────────────────────────────────────────────────────────────────--
+        CTBase.automatic_reference_documentation(;
+            subdirectory="api",
+            primary_modules=[
+                CTSolvers.Strategies => src(
+                    joinpath("Strategies", "display_formatting.jl"),
+                ),
+            ],
+            exclude=EXCLUDE_SYMBOLS,
+            public=true,
+            private=true,
+            title="Strategies — Display Formatting",
+            title_in_menu="Strategies (Display)",
+            filename="strategies_display",
         ),
     ]
 
@@ -286,6 +325,111 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                 title="Knitro Extension",
                 title_in_menu="Knitro",
                 filename="ext_knitro",
+            ),
+        )
+    end
+
+    # ───────────────────────────────────────────────────────────────────
+    # Extension: Uno
+    # ─────────────────────────────────────────────────────────────────--
+    CTSolversUno = Base.get_extension(CTSolvers, :CTSolversUno)
+    if !isnothing(CTSolversUno)
+        push!(
+            pages,
+            CTBase.automatic_reference_documentation(;
+                subdirectory="api",
+                primary_modules=[CTSolversUno => ext("CTSolversUno.jl")],
+                external_modules_to_document=[CTSolvers],
+                exclude=EXCLUDE_SYMBOLS,
+                public=true,
+                private=true,
+                title="Uno Extension",
+                title_in_menu="Uno",
+                filename="ext_uno",
+            ),
+        )
+    end
+
+    # ───────────────────────────────────────────────────────────────────
+    # Extension: Enzyme
+    # ─────────────────────────────────────────────────────────────────--
+    CTSolversEnzyme = Base.get_extension(CTSolvers, :CTSolversEnzyme)
+    if !isnothing(CTSolversEnzyme)
+        push!(
+            pages,
+            CTBase.automatic_reference_documentation(;
+                subdirectory="api",
+                primary_modules=[CTSolversEnzyme => ext("CTSolversEnzyme.jl")],
+                external_modules_to_document=[CTSolvers],
+                exclude=EXCLUDE_SYMBOLS,
+                public=true,
+                private=true,
+                title="Enzyme Extension",
+                title_in_menu="Enzyme",
+                filename="ext_enzyme",
+            ),
+        )
+    end
+
+    # ───────────────────────────────────────────────────────────────────
+    # Extension: CUDA
+    # ─────────────────────────────────────────────────────────────────--
+    CTSolversCUDA = Base.get_extension(CTSolvers, :CTSolversCUDA)
+    if !isnothing(CTSolversCUDA)
+        push!(
+            pages,
+            CTBase.automatic_reference_documentation(;
+                subdirectory="api",
+                primary_modules=[CTSolversCUDA => ext("CTSolversCUDA.jl")],
+                external_modules_to_document=[CTSolvers],
+                exclude=EXCLUDE_SYMBOLS,
+                public=true,
+                private=true,
+                title="CUDA Extension",
+                title_in_menu="CUDA",
+                filename="ext_cuda",
+            ),
+        )
+    end
+
+    # ───────────────────────────────────────────────────────────────────
+    # Extension: MadNLPGPU
+    # ─────────────────────────────────────────────────────────────────--
+    CTSolversMadNLPGPU = Base.get_extension(CTSolvers, :CTSolversMadNLPGPU)
+    if !isnothing(CTSolversMadNLPGPU)
+        push!(
+            pages,
+            CTBase.automatic_reference_documentation(;
+                subdirectory="api",
+                primary_modules=[CTSolversMadNLPGPU => ext("CTSolversMadNLPGPU.jl")],
+                external_modules_to_document=[CTSolvers],
+                exclude=EXCLUDE_SYMBOLS,
+                public=true,
+                private=true,
+                title="MadNLPGPU Extension",
+                title_in_menu="MadNLPGPU",
+                filename="ext_madnlpgpu",
+            ),
+        )
+    end
+
+    # ─────────────────────────────────────────────────────────────────--
+    # Extension: Zygote
+    # ─────────────────────────────────────────────────────────────────--
+    CTSolversZygote = Base.get_extension(CTSolvers, :CTSolversZygote)
+    if !isnothing(CTSolversZygote)
+        push!(
+            pages,
+            CTBase.automatic_reference_documentation(;
+                subdirectory="api",
+                primary_modules=[CTSolversZygote => ext("CTSolversZygote.jl")],
+                external_modules_to_document=[CTSolvers],
+                exclude=EXCLUDE_SYMBOLS,
+                public=true,
+                private=true,
+                title="Zygote Extension",
+                title_in_menu="Zygote",
+                filename="ext_zygote",
             ),
         )
     end
