@@ -138,7 +138,7 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
             type=Integer,
             default=1000,
             description="Maximum number of outer iterations. The algorithm terminates with a message if the number of iterations exceeded this number.",
-            aliases=(:maxiter, :max_iter),
+            aliases=(:maxiter, :max_iter, :maxit),
             validator=x ->
                 x >= 0 || throw(
                     Exceptions.IncorrectArgument(
@@ -155,6 +155,7 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
             type=Real,
             default=Options.NotProvided,
             description="Time limit in seconds. A limit on walltime clock seconds that Uno can use to solve one problem.",
+            aliases=(:max_wall_time, :maxtime, :max_time),
             validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(

@@ -51,7 +51,7 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             type=Integer,
             default=1000,
             description="Maximum number of augmented Lagrangian iterations",
-            aliases=(:maxiter, :max_iterations),
+            aliases=(:maxiter, :max_iterations, :maxit),
             validator=x ->
                 x >= 0 || throw(
                     Exceptions.IncorrectArgument(
@@ -138,7 +138,7 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             type=Real,
             default=Options.NotProvided,
             description="Maximum wall-clock time limit in seconds. Algorithm terminates with MAXIMUM_WALLTIME_EXCEEDED if exceeded.",
-            aliases=(:max_time,),
+            aliases=(:max_time, :maxtime, :time_limit),
             validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(

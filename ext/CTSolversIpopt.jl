@@ -54,7 +54,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
             type=Integer,
             default=1000,
             description="Maximum number of iterations. The algorithm terminates with a message if the number of iterations exceeded this number.",
-            aliases=(:maxiter, :max_iterations),
+            aliases=(:maxiter, :max_iterations, :maxit),
             validator=x ->
                 x >= 0 || throw(
                     Exceptions.IncorrectArgument(
@@ -71,6 +71,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
             type=Real,
             default=Options.NotProvided,
             description="Maximum number of walltime clock seconds. A limit on walltime clock seconds that Ipopt can use to solve one problem.",
+            aliases=(:maxtime, :max_time, :time_limit),
             validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(
@@ -135,6 +136,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
             type=Real,
             default=Options.NotProvided,
             description="Acceptable convergence tolerance (relative). Determines which (scaled) optimality error is considered close enough.",
+            aliases=(:acc_tol,),
             validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(

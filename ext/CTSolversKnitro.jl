@@ -55,6 +55,7 @@ function Strategies.metadata(::Type{Solvers.Knitro{P}}) where {P<:CPU}
             type=Real,
             default=1e8,
             description="Maximum allowable real time in seconds before termination",
+            aliases=(:max_wall_time, :max_time, :time_limit),
             validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(

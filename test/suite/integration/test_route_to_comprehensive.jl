@@ -628,6 +628,60 @@ function test_route_to_comprehensive()
                     test_option_routing(real_solver, :tol, 1e-6)
                     test_option_routing(real_solver, :max_iter, 1000)
                 end
+
+                Test.@testset "Real Solvers.Ipopt - Alias Preservation" begin
+                    # This test verifies the original issue is fixed:
+                    # Aliases should be accessible after construction
+                    real_registry = Strategies.create_registry(
+                        RouteTestDiscretizer => (RouteCollocation,),
+                        RouteTestModeler => (RouteADNLP,),
+                        Solvers.AbstractNLPSolver => (Solvers.Ipopt,),
+                    )
+
+                    real_families = (
+                        discretizer=RouteTestDiscretizer,
+                        modeler=RouteTestModeler,
+                        solver=Solvers.AbstractNLPSolver,
+                    )
+
+                    # Use ALIASES in routing (this was the original problem)
+                    kwargs = (
+                        grid_size=200,
+                        tol=Strategies.route_to(ipopt=1e-6),
+                        maxiter=Strategies.route_to(ipopt=1000),  # Using alias!
+                        display=false,
+                    )
+
+                    routed = Orchestration.route_all_options(
+                        MOCK_METHOD, real_families, ACTION_DEFS, kwargs, real_registry
+                    )
+
+                    # Build real solver
+                    resolved = Orchestration.resolve_method(
+                        MOCK_METHOD, real_families, real_registry
+                    )
+                    real_solver = Orchestration.build_strategy_from_resolved(
+                        resolved,
+                        :solver,
+                        real_families,
+                        real_registry;
+                        routed.strategies.solver...,
+                    )
+
+                    # Verify options are accessible via canonical names
+                    Test.@test Strategies.has_option(real_solver, :max_iter)
+                    Test.@test Strategies.option_value(real_solver, :max_iter) == 1000
+
+                    # Verify options are ALSO accessible via aliases (the fix!)
+                    Test.@test Strategies.has_option(real_solver, :maxiter)
+                    Test.@test Strategies.has_option(real_solver, :max_iterations)
+
+                    opts = Strategies.options(real_solver)
+                    Test.@test opts[:maxiter] == 1000
+                    Test.@test opts[:max_iterations] == 1000
+                    Test.@test Options.source(opts, :maxiter) == :user
+                    Test.@test Options.source(opts, :max_iterations) == :user
+                end
             else
                 Test.@testset "Real Solvers.Ipopt (Not Available)" begin
                     Test.@test_skip "NLPModelsIpopt not available"
