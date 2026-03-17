@@ -125,6 +125,58 @@ function test_strategy_options()
                 Test.@test Options.is_computed(opts, :tol) == false
             end
 
+            Test.@testset "Alias resolution" begin
+                # Create StrategyOptions with alias_map
+                alias_map = Dict{Symbol,Symbol}(
+                    :maxiter => :max_iter,
+                    :max_iterations => :max_iter,
+                    :tolerance => :tol,
+                )
+                opts = Strategies.StrategyOptions(
+                    (
+                        max_iter=Options.OptionValue(200, :user),
+                        tol=Options.OptionValue(1e-8, :default),
+                    ),
+                    alias_map,
+                )
+
+                # Test getindex with canonical name
+                Test.@test opts[:max_iter] == 200
+                Test.@test opts[:tol] == 1e-8
+
+                # Test getindex with aliases
+                Test.@test opts[:maxiter] == 200
+                Test.@test opts[:max_iterations] == 200
+                Test.@test opts[:tolerance] == 1e-8
+
+                # Test haskey with canonical name
+                Test.@test haskey(opts, :max_iter)
+                Test.@test haskey(opts, :tol)
+
+                # Test haskey with aliases
+                Test.@test haskey(opts, :maxiter)
+                Test.@test haskey(opts, :max_iterations)
+                Test.@test haskey(opts, :tolerance)
+
+                # Test haskey with non-existent key
+                Test.@test !haskey(opts, :nonexistent)
+
+                # Test that getproperty does NOT resolve aliases (only canonical names)
+                Test.@test opts.max_iter isa Options.OptionValue
+                Test.@test opts.max_iter.value == 200
+                Test.@test_throws ErrorException opts.maxiter  # Alias not supported in dot notation
+
+                # Test source access with aliases
+                Test.@test Options.source(opts, :max_iter) == :user
+                Test.@test Options.source(opts, :maxiter) == :user  # Via alias
+                Test.@test Options.source(opts, :max_iterations) == :user  # Via alias
+
+                # Test value access with aliases
+                Test.@test Options.value(opts, :max_iter) == 200
+                Test.@test Options.value(opts, :maxiter) == 200  # Via alias
+                Test.@test Options.value(opts, :max_iterations) == 200  # Via alias
+            end
+
             Test.@testset "Collection interface" begin
                 opts = Strategies.StrategyOptions(
                     max_iter=Options.OptionValue(200, :user),
@@ -132,7 +184,7 @@ function test_strategy_options()
                     display=Options.OptionValue(true, :computed),
                 )
 
-                # Test keys
+                # Test keys (only canonical names, not aliases)
                 Test.@test collect(keys(opts)) == [:max_iter, :tol, :display]
 
                 # Test values (unwrapped)

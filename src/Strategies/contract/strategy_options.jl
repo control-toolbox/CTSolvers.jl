@@ -22,6 +22,7 @@ Strategy options are built using `build_strategy_options()` which supports two v
 
 # Fields
 - `options::NamedTuple`: NamedTuple of OptionValue objects with provenance
+- `alias_map::Dict{Symbol, Symbol}`: Mapping from alias names to canonical names
 
 # Construction
 
@@ -52,8 +53,12 @@ StrategyOptions(...)  # with warning about custom_opt
 # Access patterns
 
 ```julia-repl
-# Get value only
+# Get value only (canonical name)
 julia> opts[:max_iter]
+200
+
+# Get value using alias
+julia> opts[:maxiter]  # Alias automatically resolved
 200
 
 # Get OptionValue (value + source)
@@ -66,6 +71,10 @@ julia> source(opts, :max_iter)
 
 # Check if user-provided
 julia> is_user(opts, :max_iter)
+true
+
+# Check if option exists (works with aliases)
+julia> haskey(opts, :maxiter)
 true
 ```
 
@@ -87,8 +96,11 @@ See also: `OptionValue`, `source`, `is_user`, `is_default`, `is_computed`
 """
 struct StrategyOptions{NT<:NamedTuple}
     options::NT
+    alias_map::Dict{Symbol,Symbol}
 
-    function StrategyOptions(options::NT) where {NT<:NamedTuple}
+    function StrategyOptions(
+        options::NT, alias_map::Dict{Symbol,Symbol}=Dict{Symbol,Symbol}()
+    ) where {NT<:NamedTuple}
         for (key, val) in pairs(options)
             if !(val isa Options.OptionValue)
                 throw(
@@ -102,11 +114,48 @@ struct StrategyOptions{NT<:NamedTuple}
                 )
             end
         end
-        new{NT}(options)
+        new{NT}(options, alias_map)
     end
 
-    StrategyOptions(; kwargs...) = StrategyOptions((; kwargs...))
+    StrategyOptions(; kwargs...) = StrategyOptions((; kwargs...), Dict{Symbol,Symbol}())
 end
+
+# ============================================================================
+# Alias resolution helper
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+**Private helper function** - for internal framework use only.
+
+Resolve an alias to its canonical name, or return the key unchanged if not an alias.
+
+This function performs O(1) lookup in the alias_map to resolve aliases to their
+canonical names. If the key is not found in the alias_map, it is assumed to be
+already canonical and returned unchanged.
+
+!!! warning "Internal Use Only"
+    This function is **not part of the public API** and may change without notice.
+    External code should use the public access methods which handle alias resolution automatically.
+
+# Arguments
+- `opts::StrategyOptions`: Strategy options containing the alias map
+- `key::Symbol`: Key to resolve (can be canonical name or alias)
+
+# Returns
+- `Symbol`: Canonical name for the option
+
+# Example
+```julia
+# Internal usage only
+canonical = _resolve_key(opts, :maxiter)  # Returns :max_iter
+canonical = _resolve_key(opts, :max_iter)  # Returns :max_iter (already canonical)
+```
+
+See also: `Base.getindex`, `Base.haskey`
+"""
+_resolve_key(opts::StrategyOptions, key::Symbol) = get(getfield(opts, :alias_map), key, key)
 
 # ============================================================================
 # Value access - returns unwrapped value
@@ -130,16 +179,23 @@ use the `get(::Val{key})` method or direct field access.
 
 # Example
 ```julia-repl
-julia> opts[:max_iter]  # Type-unstable
+julia> opts[:max_iter]  # Canonical name
+200
+
+julia> opts[:maxiter]  # Alias - automatically resolved
 200
 
 julia> get(opts, Val(:max_iter))  # Type-stable
 200
 ```
 
+# Notes
+- Aliases are automatically resolved to canonical names
+- Both canonical names and aliases can be used interchangeably
+
 See also: `Base.getproperty`, `source`, `get(::StrategyOptions, ::Val)`
 """
-Base.getindex(opts::StrategyOptions, key::Symbol) = Options.value(option(opts, key))
+Base.getindex(opts::StrategyOptions, key::Symbol) = Options.value(option(opts, _resolve_key(opts, key)))
 
 """
 $(TYPEDSIGNATURES)
@@ -189,10 +245,23 @@ julia> opts.max_iter.source
 :user
 ```
 
+# Notes
+- This method does NOT resolve aliases (use `opts[:alias]` for alias resolution)
+- Only canonical field names work with dot notation
+- Use bracket notation `opts[:alias]` for alias support
+
 See also: `Base.getindex`, `source`
 """
 function Base.getproperty(opts::StrategyOptions, key::Symbol)
-    key === :options ? _raw_options(opts) : _raw_options(opts)[key]
+    # Special handling for internal fields
+    if key === :options
+        return _raw_options(opts)
+    elseif key === :alias_map
+        return getfield(opts, :alias_map)
+    else
+        # Dot notation does NOT resolve aliases - only canonical names work
+        return _raw_options(opts)[key]
+    end
 end
 
 # ==========================================================================
@@ -216,11 +285,18 @@ Get the `OptionValue` wrapper for an option.
 julia> opt = option(opts, :max_iter)
 julia> Options.value(opt)
 200
+
+julia> opt = option(opts, :maxiter)  # Alias - automatically resolved
+julia> Options.value(opt)
+200
 ```
+
+# Notes
+- Aliases are automatically resolved to canonical names
 
 See also: `Base.getproperty`, `Options.source`
 """
-option(opts::StrategyOptions, key::Symbol) = _raw_options(opts)[key]
+option(opts::StrategyOptions, key::Symbol) = _raw_options(opts)[_resolve_key(opts, key)]
 
 # ============================================================================
 # Source access helpers
@@ -523,13 +599,20 @@ Check if an option exists.
 julia> haskey(opts, :max_iter)
 true
 
+julia> haskey(opts, :maxiter)  # Alias - automatically resolved
+true
+
 julia> haskey(opts, :nonexistent)
 false
 ```
 
+# Notes
+- Aliases are automatically resolved to canonical names
+- Both canonical names and aliases can be used
+
 See also: `Base.length`, `Base.isempty`
 """
-Base.haskey(opts::StrategyOptions, key::Symbol) = haskey(_raw_options(opts), key)
+Base.haskey(opts::StrategyOptions, key::Symbol) = haskey(_raw_options(opts), _resolve_key(opts, key))
 
 # ============================================================================
 # Display

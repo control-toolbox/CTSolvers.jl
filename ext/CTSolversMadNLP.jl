@@ -164,7 +164,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
             type=Integer,
             default=1000,
             description="Maximum number of interior-point iterations before termination. Set to 0 to evaluate initial point only.",
-            aliases=(:maxiter, :max_iterations),
+            aliases=(:maxiter, :max_iterations, :maxit),
             validator=x ->
                 x >= 0 || throw(
                     Exceptions.IncorrectArgument(
@@ -251,7 +251,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
             type=Real,
             default=Options.NotProvided,
             description="Maximum wall-clock time limit in seconds. Algorithm terminates with MAXIMUM_WALLTIME_EXCEEDED if exceeded.",
-            aliases=(:max_time,),
+            aliases=(:max_time, :maxtime, :time_limit),
             validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(

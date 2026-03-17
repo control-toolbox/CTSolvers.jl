@@ -125,10 +125,18 @@ function build_strategy_options(
         extracted[key] = Options.OptionValue(value, :user)
     end
 
+    # Build alias_map from metadata
+    alias_map = Dict{Symbol,Symbol}()
+    for def in defs
+        for alias in Options.aliases(def)
+            alias_map[alias] = Options.name(def)
+        end
+    end
+
     # Convert Dict to NamedTuple
     nt = (; (k => v for (k, v) in extracted)...)
 
-    return StrategyOptions(nt)
+    return StrategyOptions(nt, alias_map)
 end
 
 """
