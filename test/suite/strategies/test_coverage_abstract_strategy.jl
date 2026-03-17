@@ -131,6 +131,7 @@ function test_coverage_abstract_strategy()
         # ====================================================================
 
         Test.@testset "show(io, strategy) - compact display" begin
+            # Test individual components without relying on exact color formatting
             opts = Strategies.StrategyOptions(
                 max_iter=Options.OptionValue(200, :user),
                 tol=Options.OptionValue(1e-8, :default),
@@ -141,10 +142,19 @@ function test_coverage_abstract_strategy()
             show(buf, strategy)
             output = String(take!(buf))
 
-            Test.@test occursin("CovFakeStrategy(", output)
-            Test.@test occursin("max_iter=200", output)
-            Test.@test occursin("tol=", output)
+            # Test that strategy name appears (colors don't matter)
+            Test.@test occursin("CovFakeStrategy", output)
+            
+            # Test that individual components appear
+            Test.@test occursin("max_iter", output)
+            Test.@test occursin("200", output)
+            Test.@test occursin("tol", output)
+            Test.@test occursin("1.0e-8", output)
+            
+            # Test that parentheses/structure exists
+            Test.@test occursin("(", output)
             Test.@test occursin(")", output)
+            Test.@test occursin("=", output)
         end
 
         Test.@testset "show(io, strategy) - no options" begin
