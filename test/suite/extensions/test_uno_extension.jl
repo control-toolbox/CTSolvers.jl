@@ -11,6 +11,7 @@ import CTSolvers.Optimization
 using CommonSolve: CommonSolve
 using NLPModels: NLPModels
 using ADNLPModels: ADNLPModels
+using ExaModels: ExaModels
 
 include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
 import .TestProblems
@@ -290,19 +291,36 @@ function test_uno_extension()
         # ====================================================================
         # INTEGRATION TESTS - Initial Guess (max_iterations=0)
         # ====================================================================
-        # NOTE: Skipped because Uno performs 1 iteration even with max_iterations=0,
-        # so the solution is not exactly the initial guess. This is Uno-specific behavior.
-
         Test.@testset "Initial Guess - max_iterations=0" begin
+            modelers = [Modelers.ADNLP(), Modelers.Exa()]
+            modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
+
+            # Rosenbrock: start at the known solution and enforce max_iterations=0
             Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
-                Test.@testset "Modelers.ADNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    Test.@test_skip "Uno performs 1 iteration even with max_iterations=0"
+                ros = TestProblems.Rosenbrock()
+                for (modeler, modeler_name) in zip(modelers, modelers_names)
+                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        sol = CommonSolve.solve(
+                            ros.prob, ros.sol, modeler, Solvers.Uno(max_iterations=0, logger="SILENT")
+                        )
+                        Test.@test sol.iter == 0
+                        Test.@test sol.solution ≈ ros.sol atol=1e-6
+                    end
                 end
             end
 
+            # Elec: expect solution to remain equal to the initial guess vector
             Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
-                Test.@testset "Modelers.ADNLP" verbose=VERBOSE showtiming=SHOWTIMING begin
-                    Test.@test_skip "Uno performs 1 iteration even with max_iterations=0"
+                elec = TestProblems.Elec()
+                for (modeler, modeler_name) in zip(modelers, modelers_names)
+                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        sol = CommonSolve.solve(
+                            elec.prob, elec.init, modeler, Solvers.Uno(max_iterations=0, logger="SILENT")
+                        )
+                        Test.@test sol.iter == 0
+                        Test.@test sol.solution ≈
+                            vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
+                    end
                 end
             end
         end
@@ -312,8 +330,8 @@ function test_uno_extension()
         # ====================================================================
 
         Test.@testset "solve_with_uno Function" begin
-            modelers = [Modelers.ADNLP()]
-            modelers_names = ["Modelers.ADNLP"]
+            modelers = [Modelers.ADNLP(), Modelers.Exa()]
+            modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
 
             uno_options = Dict(
                 :max_iterations => 1000,
@@ -374,8 +392,8 @@ function test_uno_extension()
         # ====================================================================
 
         Test.@testset "CommonSolve.solve with Uno" begin
-            modelers = [Modelers.ADNLP()]
-            modelers_names = ["Modelers.ADNLP"]
+            modelers = [Modelers.ADNLP(), Modelers.Exa()]
+            modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
 
             uno_options = Dict(
                 :max_iterations => 1000,
