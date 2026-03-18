@@ -81,7 +81,7 @@ function test_uno_extension()
 
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_SUCCESS, UnoSolver.UNO_FEASIBLE_FJ_POINT
-            ) == :acceptable
+            ) == :first_order
 
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_SUCCESS, UnoSolver.UNO_INFEASIBLE_STATIONARY_POINT
@@ -115,6 +115,16 @@ function test_uno_extension()
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_ALGORITHMIC_ERROR, UnoSolver.UNO_FEASIBLE_KKT_POINT
             ) == :exception
+
+            # Test additional termination status cases
+            Test.@test CTSolversUno._uno_status_to_solvercore(
+                UnoSolver.UNO_USER_TERMINATION, UnoSolver.UNO_FEASIBLE_KKT_POINT
+            ) == :user
+
+            # Test UNO_NOT_OPTIMAL case
+            Test.@test CTSolversUno._uno_status_to_solvercore(
+                UnoSolver.UNO_SUCCESS, UnoSolver.UNO_NOT_OPTIMAL
+            ) == :unknown
         end
 
         # ====================================================================
@@ -291,6 +301,7 @@ function test_uno_extension()
         # ====================================================================
         # INTEGRATION TESTS - Initial Guess (max_iterations=0)
         # ====================================================================
+        println("=== Initial Guess - max_iterations=0 ===")
         Test.@testset "Initial Guess - max_iterations=0" begin
             modelers = [Modelers.ADNLP(), Modelers.Exa()]
             modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
@@ -324,6 +335,7 @@ function test_uno_extension()
                 end
             end
         end
+        println("=== END Initial Guess - max_iterations=0 ===") 
 
         # ====================================================================
         # INTEGRATION TESTS - solve_with_uno (direct function)

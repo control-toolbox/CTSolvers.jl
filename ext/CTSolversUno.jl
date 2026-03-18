@@ -339,7 +339,7 @@ Based on Uno's MOI mapping and SolverCore conventions (Ipopt-compatible).
 
 # Status Mapping
 - `UNO_SUCCESS` + `UNO_FEASIBLE_KKT_POINT` → `:first_order`
-- `UNO_SUCCESS` + `UNO_FEASIBLE_FJ_POINT` → `:acceptable`
+- `UNO_SUCCESS` + `UNO_FEASIBLE_FJ_POINT` → `:first_order`
 - `UNO_SUCCESS` + `UNO_INFEASIBLE_STATIONARY_POINT` → `:infeasible`
 - `UNO_SUCCESS` + `UNO_FEASIBLE_SMALL_STEP` → `:small_step`
 - `UNO_SUCCESS` + `UNO_INFEASIBLE_SMALL_STEP` → `:small_step`
@@ -358,19 +358,23 @@ function _uno_status_to_solvercore(optimization_status::Cint, solution_status::C
         return :exception
     elseif optimization_status == UnoSolver.UNO_ALGORITHMIC_ERROR
         return :exception
+    elseif optimization_status == UnoSolver.UNO_USER_TERMINATION
+        return :user
     else # UNO_SUCCESS
         if solution_status == UnoSolver.UNO_FEASIBLE_KKT_POINT
             return :first_order
         elseif solution_status == UnoSolver.UNO_FEASIBLE_FJ_POINT
-            return :acceptable
+            return :first_order
         elseif solution_status == UnoSolver.UNO_INFEASIBLE_STATIONARY_POINT
             return :infeasible
         elseif solution_status == UnoSolver.UNO_FEASIBLE_SMALL_STEP
             return :small_step
         elseif solution_status == UnoSolver.UNO_INFEASIBLE_SMALL_STEP
             return :small_step
-        else # UNO_UNBOUNDED
+        elseif solution_status == UnoSolver.UNO_UNBOUNDED
             return :unbounded
+        else # UNO_NOT_OPTIMAL
+            return :unknown
         end
     end
 end
