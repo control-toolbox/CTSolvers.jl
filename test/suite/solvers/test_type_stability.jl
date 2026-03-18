@@ -54,7 +54,9 @@ function test_type_stability()
                 # Test that constructor returns correct type
                 Test.@test_nowarn Test.@inferred Solvers.Uno()
                 Test.@test_nowarn Test.@inferred Solvers.Uno(max_iterations=100)
-                Test.@test_nowarn Test.@inferred Solvers.Uno(max_iterations=100, primal_tolerance=1e-6)
+                Test.@test_nowarn Test.@inferred Solvers.Uno(
+                    max_iterations=100, primal_tolerance=1e-6
+                )
             end
 
             # Commented out - no Knitro license available

@@ -10,7 +10,7 @@ Date: 2026-03-17
 
 module TestAliasIntegration
 
-import Test
+using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Strategies
 import CTSolvers.Options
@@ -113,7 +113,9 @@ function test_alias_integration()
 
             Test.@testset "Construction with aliases" begin
                 # Use aliases in construction
-                strategy = MockStrategyWithAliases(maxiter=500, tolerance=1e-8, display=true)
+                strategy = MockStrategyWithAliases(
+                    maxiter=500, tolerance=1e-8, display=true
+                )
 
                 # Access via canonical names should work
                 Test.@test Strategies.has_option(strategy, :max_iter)
@@ -186,7 +188,9 @@ function test_alias_integration()
 
             Test.@testset "Mixed canonical and alias usage" begin
                 # Construct with mix of canonical and aliases
-                strategy = MockStrategyWithAliases(max_iter=500, tolerance=1e-8, display=true)
+                strategy = MockStrategyWithAliases(
+                    max_iter=500, tolerance=1e-8, display=true
+                )
 
                 # All should be accessible via both canonical and aliases
                 Test.@test Strategies.option_value(strategy, :max_iter) == 500

@@ -150,7 +150,7 @@ function test_coverage_options()
             buf = IOBuffer()
             show(buf, MIME("text/plain"), opts)
             output = String(take!(buf))
-            
+
             # Test that components appear regardless of color formatting
             Test.@test occursin("StrategyOptions", output)
             Test.@test occursin("2", output)  # Number of options
@@ -164,7 +164,7 @@ function test_coverage_options()
             buf2 = IOBuffer()
             show(buf2, opts)
             output2 = String(take!(buf2))
-            
+
             Test.@test occursin("StrategyOptions", output2)
             Test.@test occursin("a", output2)
             Test.@test occursin("1", output2)
@@ -176,7 +176,7 @@ function test_coverage_options()
             buf3 = IOBuffer()
             show(buf3, MIME("text/plain"), opts1)
             output3 = String(take!(buf3))
-            
+
             Test.@test occursin("1", output3)
             Test.@test occursin("option", output3)
             Test.@test occursin("x", output3)
@@ -196,7 +196,7 @@ function test_coverage_options()
             buf = IOBuffer()
             show(buf, registry)
             output = String(take!(buf))
-            
+
             Test.@test occursin("StrategyRegistry", output)
             Test.@test occursin("1", output)  # Number of families
             Test.@test occursin("family", output)
@@ -205,7 +205,7 @@ function test_coverage_options()
             buf2 = IOBuffer()
             show(buf2, MIME("text/plain"), registry)
             output2 = String(take!(buf2))
-            
+
             Test.@test occursin("StrategyRegistry", output2)
             Test.@test occursin("cov_opt_fake", output2)
         end
