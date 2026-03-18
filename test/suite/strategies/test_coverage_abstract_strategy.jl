@@ -104,14 +104,18 @@ function test_coverage_abstract_strategy()
             strategy = CovNoIdStrategy()
 
             buf = IOBuffer()
-            Test.@test_throws Exceptions.NotImplemented show(buf, MIME("text/plain"), strategy)
+            Test.@test_throws Exceptions.NotImplemented show(
+                buf, MIME("text/plain"), strategy
+            )
         end
 
         Test.@testset "show(io, MIME text/plain) - no options" begin
             strategy = CovNoOptionsStrategy(42)
 
             buf = IOBuffer()
-            Test.@test_throws Exceptions.NotImplemented show(buf, MIME("text/plain"), strategy)
+            Test.@test_throws Exceptions.NotImplemented show(
+                buf, MIME("text/plain"), strategy
+            )
         end
 
         Test.@testset "show(io, MIME text/plain) - single option (└─ prefix)" begin
@@ -144,13 +148,13 @@ function test_coverage_abstract_strategy()
 
             # Test that strategy name appears (colors don't matter)
             Test.@test occursin("CovFakeStrategy", output)
-            
+
             # Test that individual components appear
             Test.@test occursin("max_iter", output)
             Test.@test occursin("200", output)
             Test.@test occursin("tol", output)
             Test.@test occursin("1.0e-8", output)
-            
+
             # Test that parentheses/structure exists
             Test.@test occursin("(", output)
             Test.@test occursin(")", output)
@@ -195,7 +199,9 @@ function test_coverage_abstract_strategy()
 
         Test.@testset "describe(strategy_type) - no metadata (early return)" begin
             buf = IOBuffer()
-            Test.@test_throws Exceptions.NotImplemented Strategies.describe(buf, CovNoIdStrategy)
+            Test.@test_throws Exceptions.NotImplemented Strategies.describe(
+                buf, CovNoIdStrategy
+            )
         end
 
         Test.@testset "describe(strategy_type) - empty metadata (0 options)" begin

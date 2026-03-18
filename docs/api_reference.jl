@@ -29,11 +29,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
         # ───────────────────────────────────────────────────────────────────
         CTBase.automatic_reference_documentation(;
             subdirectory="api",
-            primary_modules=[
-                CTSolvers.Core => src(
-                    joinpath("Core", "Core.jl"),
-                ),
-            ],
+            primary_modules=[CTSolvers.Core => src(joinpath("Core", "Core.jl"))],
             exclude=EXCLUDE_SYMBOLS,
             public=true,
             private=true,
@@ -232,9 +228,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
         CTBase.automatic_reference_documentation(;
             subdirectory="api",
             primary_modules=[
-                CTSolvers.Strategies => src(
-                    joinpath("Strategies", "display_formatting.jl"),
-                ),
+                CTSolvers.Strategies => src(joinpath("Strategies", "display_formatting.jl"))
             ],
             exclude=EXCLUDE_SYMBOLS,
             public=true,

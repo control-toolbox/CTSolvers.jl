@@ -195,7 +195,9 @@ julia> get(opts, Val(:max_iter))  # Type-stable
 
 See also: `Base.getproperty`, `source`, `get(::StrategyOptions, ::Val)`
 """
-Base.getindex(opts::StrategyOptions, key::Symbol) = Options.value(option(opts, _resolve_key(opts, key)))
+function Base.getindex(opts::StrategyOptions, key::Symbol)
+    Options.value(option(opts, _resolve_key(opts, key)))
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -612,7 +614,9 @@ false
 
 See also: `Base.length`, `Base.isempty`
 """
-Base.haskey(opts::StrategyOptions, key::Symbol) = haskey(_raw_options(opts), _resolve_key(opts, key))
+function Base.haskey(opts::StrategyOptions, key::Symbol)
+    haskey(_raw_options(opts), _resolve_key(opts, key))
+end
 
 # ============================================================================
 # Display
@@ -644,12 +648,39 @@ See also: `Base.show`
 function Base.show(io::IO, ::MIME"text/plain", opts::StrategyOptions)
     fmt = get_format_codes(io)
     n = length(opts)
-    println(io, fmt.name, "StrategyOptions", fmt.reset, " with ", fmt.count, n, fmt.reset, " option", n == 1 ? "" : "s", ":")
+    println(
+        io,
+        fmt.name,
+        "StrategyOptions",
+        fmt.reset,
+        " with ",
+        fmt.count,
+        n,
+        fmt.reset,
+        " option",
+        n == 1 ? "" : "s",
+        ":",
+    )
     items = collect(pairs(_raw_options(opts)))
     for (i, (key, opt)) in enumerate(items)
         is_last = i == length(items)
         prefix = is_last ? "└─ " : "├─ "
-        println(io, prefix, fmt.name, key, fmt.reset, " = ", fmt.value, Options.value(opt), fmt.reset, "  [", fmt.label, Options.source(opt), fmt.reset, "]")
+        println(
+            io,
+            prefix,
+            fmt.name,
+            key,
+            fmt.reset,
+            " = ",
+            fmt.value,
+            Options.value(opt),
+            fmt.reset,
+            "  [",
+            fmt.label,
+            Options.source(opt),
+            fmt.reset,
+            "]",
+        )
     end
 end
 
@@ -674,7 +705,19 @@ function Base.show(io::IO, opts::StrategyOptions)
     fmt = get_format_codes(io)
     print(io, fmt.name, "StrategyOptions", fmt.reset, "(")
     print(
-        io, join((fmt.name * "$k" * fmt.reset * "=" * fmt.value * "$(Options.value(v))" * fmt.reset for (k, v) in pairs(_raw_options(opts))), ", ")
+        io,
+        join(
+            (
+                fmt.name *
+                "$k" *
+                fmt.reset *
+                "=" *
+                fmt.value *
+                "$(Options.value(v))" *
+                fmt.reset for (k, v) in pairs(_raw_options(opts))
+            ),
+            ", ",
+        ),
     )
     print(io, ")")
 end

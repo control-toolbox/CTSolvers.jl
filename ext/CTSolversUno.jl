@@ -14,7 +14,7 @@ import CTSolvers.Options
 import CTBase.Exceptions
 using NLPModels: NLPModels
 using SolverCore: SolverCore
-import UnoSolver
+using UnoSolver: UnoSolver
 
 # Import parameter types
 using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter
@@ -189,7 +189,9 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
             default="INFO",
             description="Verbosity level of the logger. Controls the amount of output during the solve.",
             validator=x ->
-                x in ["SILENT", "DISCRETE", "WARNING", "INFO", "DEBUG", "DEBUG2", "DEBUG3"] || throw(
+                x in
+                ["SILENT", "DISCRETE", "WARNING", "INFO", "DEBUG", "DEBUG2", "DEBUG3"] ||
+                throw(
                     Exceptions.IncorrectArgument(
                         "Invalid logger value";
                         got="logger=$x",
@@ -279,7 +281,6 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
             default=false,
             description="Whether the subproblem is printed in DEBUG mode. Useful for debugging subproblem formulations.",
         ),
-
     )
 end
 
@@ -401,13 +402,14 @@ which expects SolverCore.AbstractExecutionStats.
 - `iter` ← `number_iterations`
 - `elapsed_time` ← `cpu_time`
 """
-function _uno_to_generic_stats(nlp::NLPModels.AbstractNLPModel, uno_stats::UnoSolver.Statistics)::SolverCore.GenericExecutionStats
+function _uno_to_generic_stats(
+    nlp::NLPModels.AbstractNLPModel, uno_stats::UnoSolver.Statistics
+)::SolverCore.GenericExecutionStats
     # Map Uno status to SolverCore status
     status = _uno_status_to_solvercore(
-        uno_stats.optimization_status,
-        uno_stats.solution_status
+        uno_stats.optimization_status, uno_stats.solution_status
     )
-    
+
     # Create GenericExecutionStats with all fields marked as reliable
     stats = SolverCore.GenericExecutionStats(
         nlp;
@@ -420,9 +422,9 @@ function _uno_to_generic_stats(nlp::NLPModels.AbstractNLPModel, uno_stats::UnoSo
         multipliers_L=uno_stats.lower_bound_dual_solution,
         multipliers_U=uno_stats.upper_bound_dual_solution,
         iter=Int(uno_stats.number_iterations),
-        elapsed_time=uno_stats.cpu_time
+        elapsed_time=uno_stats.cpu_time,
     )
-    
+
     return stats
 end
 

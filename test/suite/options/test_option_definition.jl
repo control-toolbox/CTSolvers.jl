@@ -516,7 +516,7 @@ function test_option_definition()
             io_min = IOBuffer()
             println(io_min, def_min)
             output_min = String(take!(io_min))
-            
+
             Test.@test occursin("test", output_min)
             Test.@test occursin("Int", output_min)
             Test.@test occursin("42", output_min)
@@ -526,7 +526,7 @@ function test_option_definition()
             io_full = IOBuffer()
             println(io_full, def_full)
             output_full = String(take!(io_full))
-            
+
             Test.@test occursin("max_iter", output_full)
             Test.@test occursin("max", output_full)
             Test.@test occursin("maxiter", output_full)
@@ -537,9 +537,7 @@ function test_option_definition()
 
     Test.@testset "Type parameter inference correctness" begin
         # Test various concrete types
-        def_int = Options.OptionDefinition(
-            name=:i, type=Int, default=42, description="int"
-        )
+        def_int = Options.OptionDefinition(name=:i, type=Int, default=42, description="int")
         Test.@test def_int isa Options.OptionDefinition{Int64}
 
         def_float = Options.OptionDefinition(
@@ -610,10 +608,7 @@ Test.@testset "Getters and introspection" begin
     Test.@test Options.has_validator(def) === true
 
     required_def = Options.OptionDefinition(
-        name=:input,
-        type=String,
-        default=Options.NotProvided,
-        description="Input file",
+        name=:input, type=String, default=Options.NotProvided, description="Input file"
     )
     Test.@test Options.has_default(required_def) === false
     Test.@test Options.is_required(required_def) === true

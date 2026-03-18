@@ -77,40 +77,40 @@ function test_uno_extension()
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_SUCCESS, UnoSolver.UNO_FEASIBLE_KKT_POINT
             ) == :first_order
-            
+
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_SUCCESS, UnoSolver.UNO_FEASIBLE_FJ_POINT
             ) == :acceptable
-            
+
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_SUCCESS, UnoSolver.UNO_INFEASIBLE_STATIONARY_POINT
             ) == :infeasible
-            
+
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_SUCCESS, UnoSolver.UNO_FEASIBLE_SMALL_STEP
             ) == :small_step
-            
+
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_SUCCESS, UnoSolver.UNO_INFEASIBLE_SMALL_STEP
             ) == :small_step
-            
+
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_SUCCESS, UnoSolver.UNO_UNBOUNDED
             ) == :unbounded
-            
+
             # Test termination status cases
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_ITERATION_LIMIT, UnoSolver.UNO_FEASIBLE_KKT_POINT
             ) == :max_iter
-            
+
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_TIME_LIMIT, UnoSolver.UNO_FEASIBLE_KKT_POINT
             ) == :max_time
-            
+
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_EVALUATION_ERROR, UnoSolver.UNO_FEASIBLE_KKT_POINT
             ) == :exception
-            
+
             Test.@test CTSolversUno._uno_status_to_solvercore(
                 UnoSolver.UNO_ALGORITHMIC_ERROR, UnoSolver.UNO_FEASIBLE_KKT_POINT
             ) == :exception
@@ -212,7 +212,9 @@ function test_uno_extension()
             adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
             nlp = adnlp_builder(elec.init)
 
-            solver = Solvers.Uno(max_iterations=1000, primal_tolerance=1e-6, logger="SILENT")
+            solver = Solvers.Uno(
+                max_iterations=1000, primal_tolerance=1e-6, logger="SILENT"
+            )
 
             stats = solver(nlp; display=false)
 
@@ -227,7 +229,9 @@ function test_uno_extension()
             adnlp_builder = CTSolvers.get_adnlp_model_builder(max_prob.prob)
             nlp = adnlp_builder(max_prob.init)
 
-            solver = Solvers.Uno(max_iterations=1000, primal_tolerance=1e-6, logger="SILENT")
+            solver = Solvers.Uno(
+                max_iterations=1000, primal_tolerance=1e-6, logger="SILENT"
+            )
 
             stats = solver(nlp; display=false)
 
@@ -263,7 +267,9 @@ function test_uno_extension()
         # ====================================================================
 
         Test.@testset "Multiple Solves" begin
-            solver = Solvers.Uno(max_iterations=1000, primal_tolerance=1e-6, logger="SILENT")
+            solver = Solvers.Uno(
+                max_iterations=1000, primal_tolerance=1e-6, logger="SILENT"
+            )
 
             # Solve different problems with same solver
             ros = TestProblems.Rosenbrock()
@@ -452,9 +458,7 @@ function test_uno_extension()
         Test.@testset "Additional Options Validation" begin
             redirect_stderr(devnull) do
                 # Invalid preset
-                Test.@test_throws Exceptions.IncorrectArgument Solvers.Uno(
-                    preset="invalid"
-                )
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.Uno(preset="invalid")
 
                 # Invalid logger
                 Test.@test_throws Exceptions.IncorrectArgument Solvers.Uno(

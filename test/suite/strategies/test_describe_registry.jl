@@ -1,8 +1,8 @@
 module TestDescribeRegistry
 
-import Test
+using Test: Test
 import CTBase.Exceptions
-import CTSolvers
+using CTSolvers: CTSolvers
 import CTSolvers.Strategies
 import CTSolvers.Options
 import CTSolvers.Modelers

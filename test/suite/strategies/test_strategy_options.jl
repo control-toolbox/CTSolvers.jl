@@ -128,9 +128,7 @@ function test_strategy_options()
             Test.@testset "Alias resolution" begin
                 # Create StrategyOptions with alias_map
                 alias_map = Dict{Symbol,Symbol}(
-                    :maxiter => :max_iter,
-                    :max_iterations => :max_iter,
-                    :tolerance => :tol,
+                    :maxiter => :max_iter, :max_iterations => :max_iter, :tolerance => :tol
                 )
                 opts = Strategies.StrategyOptions(
                     (

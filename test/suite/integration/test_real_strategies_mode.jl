@@ -158,7 +158,8 @@ function test_real_strategies_mode()
                         solver = solver_type(max_iter=1000)
                         Test.@test solver isa solver_type
                         # Canonical name differs: Ipopt/MadNLP use :max_iter, Uno uses :max_iterations
-                        canonical_name = solver_type == Solvers.Uno ? :max_iterations : :max_iter
+                        canonical_name =
+                            solver_type == Solvers.Uno ? :max_iterations : :max_iter
                         Test.@test Strategies.option_value(solver, canonical_name) == 1000
                         Test.@test Strategies.option_source(solver, canonical_name) == :user
                     end

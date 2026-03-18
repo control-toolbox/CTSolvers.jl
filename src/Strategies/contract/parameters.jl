@@ -304,11 +304,13 @@ function describe(io::IO, parameter_type::Type{T}) where {T<:AbstractStrategyPar
     type_name = nameof(parameter_type)
     param_id = id(parameter_type)
     param_desc = description(parameter_type)
-    
+
     # Build hierarchy chain: parameter → AbstractStrategyParameter
     hierarchy_chain = [parameter_type, AbstractStrategyParameter]
-    hierarchy_str = join([fmt.type * string(nameof(T)) * fmt.reset for T in hierarchy_chain], " → ")
-    
+    hierarchy_str = join(
+        [fmt.type * string(nameof(T)) * fmt.reset for T in hierarchy_chain], " → "
+    )
+
     println(io, fmt.name, type_name, fmt.reset, " (parameter)")
     println(io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", param_id, fmt.reset)
     println(io, "├─ ", fmt.label, "hierarchy: ", fmt.reset, hierarchy_str)
