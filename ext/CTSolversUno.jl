@@ -328,26 +328,41 @@ $(TYPEDSIGNATURES)
 
 Map Uno termination and solution statuses to SolverCore status symbols.
 
-Based on Uno's MOI mapping and SolverCore conventions (Ipopt-compatible).
+Converts the combination of Uno's optimization status and solution status into
+a single SolverCore-compatible status symbol. This mapping follows Uno's MOI
+conventions and ensures compatibility with the CTSolvers pipeline.
 
 # Arguments
-- `optimization_status::Cint`: Uno optimization termination status
-- `solution_status::Cint`: Uno solution quality status
+- `optimization_status::Cint`: Uno optimization termination status (e.g., `UNO_SUCCESS`, `UNO_ITERATION_LIMIT`)
+- `solution_status::Cint`: Uno solution quality status (e.g., `UNO_FEASIBLE_KKT_POINT`, `UNO_UNBOUNDED`)
 
 # Returns
 - `Symbol`: SolverCore-compatible status symbol
 
 # Status Mapping
-- `UNO_SUCCESS` + `UNO_FEASIBLE_KKT_POINT` → `:first_order`
-- `UNO_SUCCESS` + `UNO_FEASIBLE_FJ_POINT` → `:first_order`
-- `UNO_SUCCESS` + `UNO_INFEASIBLE_STATIONARY_POINT` → `:infeasible`
-- `UNO_SUCCESS` + `UNO_FEASIBLE_SMALL_STEP` → `:small_step`
-- `UNO_SUCCESS` + `UNO_INFEASIBLE_SMALL_STEP` → `:small_step`
-- `UNO_SUCCESS` + `UNO_UNBOUNDED` → `:unbounded`
+
+## Termination-based statuses
 - `UNO_ITERATION_LIMIT` → `:max_iter`
 - `UNO_TIME_LIMIT` → `:max_time`
 - `UNO_EVALUATION_ERROR` → `:exception`
 - `UNO_ALGORITHMIC_ERROR` → `:exception`
+- `UNO_USER_TERMINATION` → `:user`
+
+## Success-based statuses (when `optimization_status == UNO_SUCCESS`)
+- `UNO_FEASIBLE_KKT_POINT` → `:first_order`
+- `UNO_FEASIBLE_FJ_POINT` → `:first_order`
+- `UNO_INFEASIBLE_STATIONARY_POINT` → `:infeasible`
+- `UNO_FEASIBLE_SMALL_STEP` → `:small_step`
+- `UNO_INFEASIBLE_SMALL_STEP` → `:small_step`
+- `UNO_UNBOUNDED` → `:unbounded`
+- `UNO_NOT_OPTIMAL` → `:unknown`
+
+# Notes
+- The function prioritizes termination status over solution status
+- When optimization succeeds, the solution status determines the final status
+- This mapping ensures Ipopt-compatible status reporting
+
+See also: [`_uno_to_generic_stats`](@ref)
 """
 function _uno_status_to_solvercore(optimization_status::Cint, solution_status::Cint)::Symbol
     if optimization_status == UnoSolver.UNO_ITERATION_LIMIT
@@ -382,29 +397,40 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Convert UnoSolver.Statistics to SolverCore.GenericExecutionStats.
+Convert Uno solver statistics to SolverCore generic execution statistics.
 
-This conversion allows Uno to integrate seamlessly with the CTSolvers pipeline
-which expects SolverCore.AbstractExecutionStats.
+Transforms UnoSolver.Statistics into SolverCore.GenericExecutionStats to enable
+seamless integration with the CTSolvers pipeline. All fields are marked as reliable
+since Uno provides complete statistics.
 
 # Arguments
-- `nlp::NLPModels.AbstractNLPModel`: The NLP model (needed for GenericExecutionStats constructor)
-- `uno_stats::UnoSolver.Statistics`: Uno solver execution statistics
+- `nlp::NLPModels.AbstractNLPModel`: The NLP model that was solved (required for GenericExecutionStats constructor)
+- `uno_stats::UnoSolver.Statistics`: Uno solver execution statistics containing solution and performance data
 
 # Returns
-- `SolverCore.GenericExecutionStats`: Converted statistics compatible with CTSolvers
+- `SolverCore.GenericExecutionStats`: Converted statistics with all fields marked as reliable
 
 # Field Mapping
-- `status` ← mapped from `optimization_status` and `solution_status`
+
+The following fields are mapped from Uno statistics to GenericExecutionStats:
+
+- `status` ← converted from `optimization_status` and `solution_status` via `_uno_status_to_solvercore`
 - `solution` ← `primal_solution`
 - `objective` ← `solution_objective`
-- `dual_feas` ← `solution_stationarity`
-- `primal_feas` ← `solution_primal_feasibility`
-- `multipliers` ← `constraint_dual_solution`
-- `multipliers_L` ← `lower_bound_dual_solution`
-- `multipliers_U` ← `upper_bound_dual_solution`
-- `iter` ← `number_iterations`
+- `dual_feas` ← `solution_stationarity` (dual feasibility/stationarity residual)
+- `primal_feas` ← `solution_primal_feasibility` (constraint violation)
+- `multipliers` ← `constraint_dual_solution` (Lagrange multipliers for constraints)
+- `multipliers_L` ← `lower_bound_dual_solution` (multipliers for lower bounds)
+- `multipliers_U` ← `upper_bound_dual_solution` (multipliers for upper bounds)
+- `iter` ← `number_iterations` (converted to Int)
 - `elapsed_time` ← `cpu_time`
+
+# Notes
+- All fields in the returned GenericExecutionStats are marked as reliable
+- Uno-specific information (complementarity, evaluation counts, model, solver) is not preserved
+- For full Uno statistics preservation, consider using a specialized UnoExecutionStats type
+
+See also: [`_uno_status_to_solvercore`](@ref), [`solve_with_uno`](@ref)
 """
 function _uno_to_generic_stats(
     nlp::NLPModels.AbstractNLPModel, uno_stats::UnoSolver.Statistics
