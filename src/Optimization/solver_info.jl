@@ -13,7 +13,7 @@ metadata for optimal control solutions.
 
 # Arguments
 
-- `nlp_solution::SolverCore.AbstractExecutionStats`: A solver execution statistics object.
+- `nlp_solution::SolverCore.GenericExecutionStats`: A solver execution statistics object.
 
 # Returns
 
@@ -30,7 +30,7 @@ A 6-element tuple `(objective, iterations, constraints_violation, message, statu
 obj, iter, viol, msg, stat, success = extract_solver_infos(nlp_solution)
 ```
 """
-function extract_solver_infos(nlp_solution::SolverCore.AbstractExecutionStats)
+function extract_solver_infos(nlp_solution::SolverCore.GenericExecutionStats)
     objective = nlp_solution.objective
     iterations = nlp_solution.iter
     constraints_violation = nlp_solution.primal_feas
