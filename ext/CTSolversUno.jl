@@ -433,16 +433,19 @@ The following fields are mapped from Uno statistics to GenericExecutionStats:
 See also: [`_uno_status_to_solvercore`](@ref), [`solve_with_uno`](@ref)
 """
 function _uno_to_generic_stats(
-    nlp::NLPModels.AbstractNLPModel, uno_stats::UnoSolver.Statistics
+    uno_stats::UnoSolver.Statistics
 )::SolverCore.GenericExecutionStats
     # Map Uno status to SolverCore status
     status = _uno_status_to_solvercore(
         uno_stats.optimization_status, uno_stats.solution_status
     )
 
+    T = typeof(uno_stats.solution_objective)
+    S = typeof(uno_stats.primal_solution)
+    V = typeof(uno_stats.lower_bound_dual_solution)
+
     # Create GenericExecutionStats with all fields marked as reliable
-    stats = SolverCore.GenericExecutionStats(
-        nlp;
+    stats = SolverCore.GenericExecutionStats{T, S, V, Any}(;
         status=status,
         solution=uno_stats.primal_solution,
         objective=uno_stats.solution_objective,
@@ -495,7 +498,7 @@ Solves the NLP problem using UnoSolver backend.
 
 # Arguments
 - `nlp::NLPModels.AbstractNLPModel`: The NLP problem to solve
-- `options...`: Uno options as keyword arguments
+- `kwargs...`: Uno options as keyword arguments
 
 # Returns
 - `SolverCore.GenericExecutionStats`: Solver execution statistics
@@ -506,7 +509,7 @@ function solve_with_uno(
     nlp::NLPModels.AbstractNLPModel; kwargs...
 )::SolverCore.GenericExecutionStats
     uno_stats = UnoSolver.uno(nlp; kwargs...)
-    return _uno_to_generic_stats(nlp, uno_stats)
+    return _uno_to_generic_stats(uno_stats)
 end
 
 end

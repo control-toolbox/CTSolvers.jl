@@ -301,7 +301,6 @@ function test_uno_extension()
         # ====================================================================
         # INTEGRATION TESTS - Initial Guess (max_iterations=0)
         # ====================================================================
-        println("=== Initial Guess - max_iterations=0 ===")
         Test.@testset "Initial Guess - max_iterations=0" begin
             modelers = [Modelers.ADNLP(), Modelers.Exa()]
             modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
@@ -341,7 +340,6 @@ function test_uno_extension()
                 end
             end
         end
-        println("=== END Initial Guess - max_iterations=0 ===")
 
         # ====================================================================
         # INTEGRATION TESTS - solve_with_uno (direct function)

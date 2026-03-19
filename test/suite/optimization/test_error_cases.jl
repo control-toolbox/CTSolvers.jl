@@ -38,14 +38,14 @@ mutable struct MockStats <: SolverCore.AbstractExecutionStats
     objective::Float64
 end
 
-"""
-Edge case stats for testing.
-"""
-mutable struct EdgeCaseStats <: SolverCore.AbstractExecutionStats
-    objective::Float64
-    iter::Int
-    primal_feas::Float64
-    status::Symbol
+# TOP-LEVEL: Create GenericExecutionStats instances for testing edge cases
+function create_edge_case_stats(objective::Float64, iter::Int, primal_feas::Float64, status::Symbol)
+    return SolverCore.GenericExecutionStats{Float64, Vector{Float64}, Vector{Float64}, Any}(
+        status=status,
+        objective=objective,
+        iter=iter,
+        primal_feas=primal_feas
+    )
 end
 
 """
@@ -231,7 +231,7 @@ function test_error_cases()
 
         Test.@testset "Solver Info Edge Cases" begin
             Test.@testset "Zero iterations" begin
-                stats = EdgeCaseStats(0.0, 0, 0.0, :first_order)
+                stats = create_edge_case_stats(0.0, 0, 0.0, :first_order)
 
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
                     stats
@@ -241,7 +241,7 @@ function test_error_cases()
             end
 
             Test.@testset "Very large objective" begin
-                stats = EdgeCaseStats(1e100, 10, 1e-6, :first_order)
+                stats = create_edge_case_stats(1e100, 10, 1e-6, :first_order)
 
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
                     stats
@@ -251,7 +251,7 @@ function test_error_cases()
             end
 
             Test.@testset "Very small constraint violation" begin
-                stats = EdgeCaseStats(1.0, 10, 1e-15, :first_order)
+                stats = create_edge_case_stats(1.0, 10, 1e-15, :first_order)
 
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
                     stats
@@ -261,7 +261,7 @@ function test_error_cases()
             end
 
             Test.@testset "Unknown status" begin
-                stats = EdgeCaseStats(1.0, 10, 1e-6, :unknown_status)
+                stats = create_edge_case_stats(1.0, 10, 1e-6, :unknown_status)
 
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
                     stats

@@ -75,14 +75,14 @@ function (modeler::FakeModeler)(
     end
 end
 
-"""
-Mock execution statistics for testing.
-"""
-mutable struct MockExecutionStats <: SolverCore.AbstractExecutionStats
-    objective::Float64
-    iter::Int
-    primal_feas::Float64
-    status::Symbol
+# TOP-LEVEL: Create GenericExecutionStats instances for testing
+function create_mock_execution_stats(objective::Float64, iter::Int, primal_feas::Float64, status::Symbol)
+    return SolverCore.GenericExecutionStats{Float64, Vector{Float64}, Vector{Float64}, Any}(
+        status=status,
+        objective=objective,
+        iter=iter,
+        primal_feas=primal_feas
+    )
 end
 
 # ============================================================================
@@ -273,7 +273,7 @@ function test_optimization()
                 Test.@test builder isa Optimization.AbstractOCPSolutionBuilder
 
                 # Test callable
-                stats = MockExecutionStats(1.23, 10, 1e-6, :first_order)
+                stats = create_mock_execution_stats(1.23, 10, 1e-6, :first_order)
                 sol = builder(stats)
                 Test.@test calls[] == 1
                 Test.@test sol.objective ≈ 1.23
@@ -293,7 +293,7 @@ function test_optimization()
                 Test.@test builder isa Optimization.AbstractOCPSolutionBuilder
 
                 # Test callable
-                stats = MockExecutionStats(2.34, 15, 1e-5, :acceptable)
+                stats = create_mock_execution_stats(2.34, 15, 1e-5, :acceptable)
                 sol = builder(stats)
                 Test.@test calls[] == 1
                 Test.@test sol.objective ≈ 2.34
@@ -402,7 +402,7 @@ function test_optimization()
 
             Test.@testset "build_solution with ADNLP" begin
                 modeler = FakeModeler(:adnlp)
-                stats = MockExecutionStats(1.23, 10, 1e-6, :first_order)
+                stats = create_mock_execution_stats(1.23, 10, 1e-6, :first_order)
 
                 sol = Optimization.build_solution(prob, stats, modeler)
                 Test.@test sol.obj ≈ 1.23
@@ -411,7 +411,7 @@ function test_optimization()
 
             Test.@testset "build_solution with Exa" begin
                 modeler = FakeModeler(:exa)
-                stats = MockExecutionStats(2.34, 15, 1e-5, :acceptable)
+                stats = create_mock_execution_stats(2.34, 15, 1e-5, :acceptable)
 
                 sol = Optimization.build_solution(prob, stats, modeler)
                 Test.@test sol.obj ≈ 2.34
@@ -425,7 +425,7 @@ function test_optimization()
 
         Test.@testset "Solver Info Extraction" begin
             Test.@testset "extract_solver_infos - first_order status" begin
-                stats = MockExecutionStats(1.23, 15, 1.0e-6, :first_order)
+                stats = create_mock_execution_stats(1.23, 15, 1.0e-6, :first_order)
 
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
                     stats
@@ -442,7 +442,7 @@ function test_optimization()
             end
 
             Test.@testset "extract_solver_infos - acceptable status" begin
-                stats = MockExecutionStats(2.34, 20, 1.0e-5, :acceptable)
+                stats = create_mock_execution_stats(2.34, 20, 1.0e-5, :acceptable)
 
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
                     stats
@@ -457,7 +457,7 @@ function test_optimization()
             end
 
             Test.@testset "extract_solver_infos - failure status" begin
-                stats = MockExecutionStats(3.45, 5, 1.0e-3, :max_iter)
+                stats = create_mock_execution_stats(3.45, 5, 1.0e-3, :max_iter)
 
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
                     stats
@@ -511,7 +511,7 @@ function test_optimization()
                 Test.@test NLPModels.obj(nlp, x0) ≈ 5.0
 
                 # Build solution
-                stats = MockExecutionStats(5.0, 10, 1e-6, :first_order)
+                stats = create_mock_execution_stats(5.0, 10, 1e-6, :first_order)
                 sol = Optimization.build_solution(prob, stats, modeler)
 
                 Test.@test sol.objective ≈ 5.0
@@ -561,7 +561,7 @@ function test_optimization()
                 Test.@test NLPModels.obj(nlp, x0) ≈ 5.0
 
                 # Build solution
-                stats = MockExecutionStats(5.0, 15, 1e-5, :acceptable)
+                stats = create_mock_execution_stats(5.0, 15, 1e-5, :acceptable)
                 sol = Optimization.build_solution(prob, stats, modeler)
 
                 Test.@test sol.objective ≈ 5.0

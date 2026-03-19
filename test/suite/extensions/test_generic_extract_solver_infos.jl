@@ -10,12 +10,14 @@ using ADNLPModels: ADNLPModels
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
-# TOP-LEVEL: Mock stats struct for testing generic extract_solver_infos
-mutable struct MockStats <: SolverCore.AbstractExecutionStats
-    objective::Float64
-    iter::Int
-    primal_feas::Float64
-    status::Symbol
+# TOP-LEVEL: Create GenericExecutionStats instances for testing
+function create_mock_stats(objective::Float64, iter::Int, primal_feas::Float64, status::Symbol)
+    return SolverCore.GenericExecutionStats{Float64, Vector{Float64}, Vector{Float64}, Any}(
+        status=status,
+        objective=objective,
+        iter=iter,
+        primal_feas=primal_feas
+    )
 end
 
 """
@@ -70,7 +72,7 @@ function test_generic_extract_solver_infos()
             )
 
             # Create mock stats with typical values
-            mock_stats = MockStats(0.0, 10, 1e-8, :first_order)
+            mock_stats = create_mock_stats(0.0, 10, 1e-8, :first_order)
 
             # Extract solver infos using generic function
             objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
@@ -90,7 +92,7 @@ function test_generic_extract_solver_infos()
             # Test different status codes and their success determination
 
             # Test successful status: :first_order
-            stats_success = MockStats(1.5, 5, 1e-6, :first_order)
+            stats_success = create_mock_stats(1.5, 5, 1e-6, :first_order)
             obj, iter, viol, msg, stat, success = Optimization.extract_solver_infos(
                 stats_success
             )
@@ -100,7 +102,7 @@ function test_generic_extract_solver_infos()
             Test.@test msg == "Ipopt/generic"
 
             # Test successful status: :acceptable
-            stats_acceptable = MockStats(1.5, 5, 1e-6, :acceptable)
+            stats_acceptable = create_mock_stats(1.5, 5, 1e-6, :acceptable)
             _, _, _, _, stat2, success2 = Optimization.extract_solver_infos(
                 stats_acceptable
             )
@@ -109,14 +111,14 @@ function test_generic_extract_solver_infos()
             Test.@test stat2 == :acceptable
 
             # Test unsuccessful status: :max_iter
-            stats_max_iter = MockStats(1.5, 100, 1e-2, :max_iter)
+            stats_max_iter = create_mock_stats(1.5, 100, 1e-2, :max_iter)
             _, _, _, _, stat3, success3 = Optimization.extract_solver_infos(stats_max_iter)
 
             Test.@test success3 == false
             Test.@test stat3 == :max_iter
 
             # Test unsuccessful status: :infeasible
-            stats_infeasible = MockStats(1.5, 50, 1e-1, :infeasible)
+            stats_infeasible = create_mock_stats(1.5, 50, 1e-1, :infeasible)
             _, _, _, _, stat4, success4 = Optimization.extract_solver_infos(
                 stats_infeasible
             )
@@ -129,7 +131,7 @@ function test_generic_extract_solver_infos()
             # Test that extract_solver_infos returns types compatible with build_solution
 
             # Test with minimization
-            mock_stats_min = MockStats(2.5, 15, 1e-7, :first_order)
+            mock_stats_min = create_mock_stats(2.5, 15, 1e-7, :first_order)
             objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
                 mock_stats_min
             )
@@ -148,7 +150,7 @@ function test_generic_extract_solver_infos()
             Test.@test length(result) == 6
 
             # Test with maximization (should not affect the generic implementation)
-            mock_stats_max = MockStats(2.5, 15, 1e-7, :first_order)
+            mock_stats_max = create_mock_stats(2.5, 15, 1e-7, :first_order)
             objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Optimization.extract_solver_infos(
                 mock_stats_max
             )
@@ -174,7 +176,7 @@ function test_generic_extract_solver_infos()
             # This verifies the complete contract with build_solution
 
             # Test with minimization
-            mock_stats_min = MockStats(2.5, 15, 1e-7, :first_order)
+            mock_stats_min = create_mock_stats(2.5, 15, 1e-7, :first_order)
             objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
                 mock_stats_min
             )
@@ -200,7 +202,7 @@ function test_generic_extract_solver_infos()
             Test.@test additional_infos isa Dict{Symbol,Any}
 
             # Test with maximization
-            mock_stats_max = MockStats(3.14, 20, 1e-8, :acceptable)
+            mock_stats_max = create_mock_stats(3.14, 20, 1e-5, :acceptable)
             objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Optimization.extract_solver_infos(
                 mock_stats_max
             )
@@ -243,7 +245,7 @@ function test_generic_extract_solver_infos()
         Test.@testset "all return values present and correct" begin
             # Test that all 6 return values are present and have correct types
 
-            mock_stats = MockStats(3.14, 42, 1e-9, :acceptable)
+            mock_stats = create_mock_stats(3.14, 42, 1e-9, :acceptable)
             result = Optimization.extract_solver_infos(mock_stats)
 
             # Should return a 6-tuple
