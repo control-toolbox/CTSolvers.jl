@@ -312,7 +312,10 @@ function test_uno_extension()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
-                            ros.prob, ros.sol, modeler, Solvers.Uno(max_iterations=0, logger="SILENT")
+                            ros.prob,
+                            ros.sol,
+                            modeler,
+                            Solvers.Uno(max_iterations=0, logger="SILENT"),
                         )
                         Test.@test sol.iter == 0
                         Test.@test sol.solution ≈ ros.sol atol=1e-6
@@ -326,7 +329,10 @@ function test_uno_extension()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         sol = CommonSolve.solve(
-                            elec.prob, elec.init, modeler, Solvers.Uno(max_iterations=0, logger="SILENT")
+                            elec.prob,
+                            elec.init,
+                            modeler,
+                            Solvers.Uno(max_iterations=0, logger="SILENT"),
                         )
                         Test.@test sol.iter == 0
                         Test.@test sol.solution ≈
@@ -335,7 +341,7 @@ function test_uno_extension()
                 end
             end
         end
-        println("=== END Initial Guess - max_iterations=0 ===") 
+        println("=== END Initial Guess - max_iterations=0 ===")
 
         # ====================================================================
         # INTEGRATION TESTS - solve_with_uno (direct function)
