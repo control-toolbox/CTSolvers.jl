@@ -445,7 +445,7 @@ function _uno_to_generic_stats(
     V = typeof(uno_stats.lower_bound_dual_solution)
 
     # Create GenericExecutionStats with all fields marked as reliable
-    stats = SolverCore.GenericExecutionStats{T, S, V, Any}(;
+    stats = SolverCore.GenericExecutionStats{T,S,V,Any}(;
         status=status,
         solution=uno_stats.primal_solution,
         objective=uno_stats.solution_objective,

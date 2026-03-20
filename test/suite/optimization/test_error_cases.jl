@@ -39,12 +39,11 @@ mutable struct MockStats <: SolverCore.AbstractExecutionStats
 end
 
 # TOP-LEVEL: Create GenericExecutionStats instances for testing edge cases
-function create_edge_case_stats(objective::Float64, iter::Int, primal_feas::Float64, status::Symbol)
-    return SolverCore.GenericExecutionStats{Float64, Vector{Float64}, Vector{Float64}, Any}(
-        status=status,
-        objective=objective,
-        iter=iter,
-        primal_feas=primal_feas
+function create_edge_case_stats(
+    objective::Float64, iter::Int, primal_feas::Float64, status::Symbol
+)
+    return SolverCore.GenericExecutionStats{Float64,Vector{Float64},Vector{Float64},Any}(;
+        status=status, objective=objective, iter=iter, primal_feas=primal_feas
     )
 end
 
