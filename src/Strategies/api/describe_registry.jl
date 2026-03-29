@@ -208,7 +208,7 @@ function _describe_parameter_registry(
                 fmt.reset,
                 ") → ",
                 fmt.type,
-                strat_type,
+                _strategy_type_name(strat_type),
                 fmt.reset,
             )
         end
@@ -348,19 +348,96 @@ function _find_strategy_in_registry(strategy_id::Symbol, registry::StrategyRegis
 end
 
 """
-Extract a clean type name from a strategy type.
+$(TYPEDSIGNATURES)
 
-Handles both parameterized types (e.g., `Exa{CPU}` → `Exa`)
-and non-parameterized types (e.g., `Collocation` → `Collocation`).
+Extract a clean type name from a DataType by removing module prefixes while preserving parameter structure.
+
+This method handles both parameterized DataTypes (e.g., `Exa{CPU}`) and non-parameterized 
+DataTypes (e.g., `Collocation`). For parameterized types, it removes module prefixes from 
+both the base type and parameters while preserving the parameter structure.
+
+# Arguments
+- `T::DataType`: The DataType to format
+
+# Returns
+- `String`: Clean type name without module prefixes (e.g., `"Exa{CPU}"` or `"Collocation"`)
+
+# Examples
+```julia-repl
+julia> using CTSolvers.Strategies
+
+julia> _strategy_type_name(CTSolvers.Modelers.Exa{CTSolvers.Strategies.CPU})
+"Exa{CPU}"
+
+julia> _strategy_type_name(Collocation)
+"Collocation"
+```
+
+# Notes
+- This is the most common case, handling concrete instantiated types
+- For parameterized types, each parameter is formatted recursively
+
+See also: [`describe`](@ref), [`_describe_parameter_registry`](@ref)
+"""
+function _strategy_type_name(T::DataType)
+    base_name = string(T.name.name)
+    if !isempty(T.parameters)
+        param_names = map(T.parameters) do p
+            p isa DataType ? _strategy_type_name(p) : string(nameof(p))
+        end
+        return "$base_name{$(join(param_names, ", "))}"
+    end
+    
+    return base_name
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract a clean type name from a UnionAll type by removing module prefixes.
+
+This method handles generic types that have not been fully instantiated, preserving 
+the type parameter variable name.
+
+# Arguments
+- `T::UnionAll`: The UnionAll type to format
+
+# Returns
+- `String`: Clean type name with generic parameter (e.g., `"Exa{P}"` where P is the type variable)
+
+# Notes
+- This is a fallback for generic types that are not yet instantiated
+- Less common than the DataType method in typical usage
+
+See also: [`_strategy_type_name(::DataType)`](@ref)
+"""
+function _strategy_type_name(T::UnionAll)
+    base_name = string(T.body.name.name)
+    param_name = string(nameof(T.var))
+    return "$base_name{$param_name}"
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract a string representation from any other Type.
+
+This is the most general fallback method for types that don't match more specific methods.
+
+# Arguments
+- `T::Type`: Any type that doesn't match other methods
+
+# Returns
+- `String`: String representation of the type
+
+# Notes
+- This is the ultimate fallback for edge cases
+- Simply converts the type to a string representation
+
+See also: [`_strategy_type_name(::DataType)`](@ref), [`_strategy_type_name(::UnionAll)`](@ref)
 """
 function _strategy_type_name(T::Type)
-    if T isa UnionAll
-        return string(T.body.name.name)
-    elseif T isa DataType
-        return string(T.name.name)
-    else
-        return string(T)
-    end
+    return string(T)
 end
 
 """

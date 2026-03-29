@@ -94,6 +94,9 @@ function test_describe_parameters()
             Test.@test occursin("used", output)
             Test.@test occursin("strategies", output)
             Test.@test occursin("exa", output)
+            # Verify that module prefix doesn't appear but clean type name with parameter does
+            Test.@test !occursin("CTSolvers.Modelers", output)
+            Test.@test occursin("Exa{CPU}", output)
         end
 
         Test.@testset "describe(:gpu, registry) - registry-aware" begin
@@ -121,6 +124,9 @@ function test_describe_parameters()
             Test.@test occursin("used", output)
             Test.@test occursin("strategies", output)
             Test.@test occursin("exa", output)
+            # Verify that module prefix doesn't appear but clean type name with parameter does
+            Test.@test !occursin("CTSolvers.Modelers", output)
+            Test.@test occursin("Exa{GPU}", output)
         end
 
         # ================================================================

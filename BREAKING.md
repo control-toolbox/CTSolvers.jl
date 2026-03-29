@@ -5,6 +5,38 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.11-beta (2026-03-29)
+
+**No breaking changes.**
+
+This release improves strategy type display and refactors internal implementation for better maintainability.
+
+### Summary - v0.4.11-beta
+
+- Strategy types in `describe()` output now show clean names without module prefixes
+- `Exa{CPU}` instead of `CTSolvers.Modelers.Exa{CTSolvers.Strategies.CPU}`
+- Preserves parameter information while removing module clutter
+- Refactored `_strategy_type_name` with multiple dispatch for extensibility
+- Applied comprehensive documentation standards to all methods
+
+### Migration - v0.4.11-beta
+
+**No action required.** All existing code continues to work without changes.
+
+**Improved behavior:**
+
+- `describe(:cpu, registry)` and `describe(:gpu, registry)` output is more readable
+- Strategy type names are cleaner while preserving parameter information
+- Internal implementation is more maintainable and follows Julia best practices
+
+**Potential compatibility notes:**
+
+- Output format has changed (improved) but no API changes
+- Tests that check exact string output may need updating to expect cleaner type names
+- This is purely a display improvement with no functional changes
+
+---
+
 ## v0.4.10-beta (2026-03-17)
 
 **No breaking changes.**

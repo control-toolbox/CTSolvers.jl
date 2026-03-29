@@ -10,6 +10,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Strategy type display** - `describe()` functions now show clean type names without module prefixes
+  - Strategy types display as `Exa{CPU}` instead of `CTSolvers.Modelers.Exa{CTSolvers.Strategies.CPU}`
+  - Preserves parameter information (e.g., `{CPU}`, `{GPU}`) while removing module clutter
+  - Improved readability in `describe(:cpu, registry)` and `describe(:gpu, registry)` output
+
+### Added
+
+- **Multiple dispatch implementation** - Refactored `_strategy_type_name` with specialized methods
+  - `_strategy_type_name(T::DataType)` for concrete instantiated types (most common case)
+  - `_strategy_type_name(T::UnionAll)` for generic types not yet instantiated
+  - `_strategy_type_name(T::Type)` as ultimate fallback for edge cases
+  - Each method has comprehensive docstring with examples and cross-references
+
+### Improved
+
+- **Documentation standards** - Applied project docstring standards to all `_strategy_type_name` methods
+  - Uses `$(TYPEDSIGNATURES)` for auto-generated signatures
+  - Structured sections: Arguments, Returns, Examples, Notes, See also
+  - Method-specific documentation explaining each dispatch case
+  - Safe, reproducible examples following project guidelines
+
+---
+
+## [0.4.11-beta] - 2026-03-29
+
+### Changed
+
+- **Strategy type display** - `describe()` functions now show clean type names without module prefixes
+  - Strategy types display as `Exa{CPU}` instead of `CTSolvers.Modelers.Exa{CTSolvers.Strategies.CPU}`
+  - Preserves parameter information (e.g., `{CPU}`, `{GPU}`) while removing module clutter
+  - Improved readability in `describe(:cpu, registry)` and `describe(:gpu, registry)` output
+
+### Added
+
+- **Multiple dispatch implementation** - Refactored `_strategy_type_name` with specialized methods
+  - `_strategy_type_name(T::DataType)` for concrete instantiated types (most common case)
+  - `_strategy_type_name(T::UnionAll)` for generic types not yet instantiated
+  - `_strategy_type_name(T::Type)` as ultimate fallback for edge cases
+  - Each method has comprehensive docstring with examples and cross-references
+
+### Improved
+
+- **Documentation standards** - Applied project docstring standards to all `_strategy_type_name` methods
+  - Uses `$(TYPEDSIGNATURES)` for auto-generated signatures
+  - Structured sections: Arguments, Returns, Examples, Notes, See also
+  - Method-specific documentation explaining each dispatch case
+  - Safe, reproducible examples following project guidelines
+
+---
+
 ## [0.4.10-beta] - 2026-03-17
 
 ### Changed
