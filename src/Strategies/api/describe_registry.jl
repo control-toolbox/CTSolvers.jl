@@ -387,7 +387,7 @@ function _strategy_type_name(T::DataType)
         end
         return "$base_name{$(join(param_names, ", "))}"
     end
-    
+
     return base_name
 end
 
