@@ -5,6 +5,23 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.12 (2026-03-31)
+
+**No breaking changes.**
+
+This release applies code formatting for consistency.
+
+### Summary - v0.4.12
+
+- Applied JuliaFormatter to `src/Strategies/api/describe_registry.jl`
+- Minor whitespace formatting for consistency
+
+### Migration - v0.4.12
+
+**No action required.** All existing code continues to work without changes.
+
+---
+
 ## v0.4.11-beta (2026-03-29)
 
 **No breaking changes.**
