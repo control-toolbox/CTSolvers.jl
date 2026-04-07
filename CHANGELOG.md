@@ -8,6 +8,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.13] - 2026-04-07
+
+### Changed
+
+- **Strategy header display** - `describe()` now shows clean base type names without parameters in strategy headers
+  - Strategy headers display as `ADNLP (strategy)` instead of `ADNLP{CPU} (strategy)`
+  - Parameter information remains available in the "parameters" section below
+  - Reduced redundancy while preserving complete information
+
+- **Options display order** - Computed options now appear before common options in multi-parameter strategies
+  - Computed options are displayed first for each parameter
+  - Common options appear after all computed options
+  - Improved information hierarchy with most dynamic content first
+
+### Added
+
+- **Base type name extraction** - New `_strategy_base_name()` function for clean type name extraction
+  - `_strategy_base_name(T::DataType)` for concrete types
+  - `_strategy_base_name(T::UnionAll)` for generic types  
+  - `_strategy_base_name(T::Type)` as fallback
+  - Used specifically for strategy headers to avoid parameter redundancy
+
+### Improved
+
+- **Visual hierarchy** - Better organization of multi-parameter strategy descriptions
+  - Computed options prioritized for immediate visibility of parameter-specific behavior
+  - Cleaner strategy headers with essential information first
+  - Maintained complete parameter information in dedicated sections
+
+---
+
 ## [Unreleased]
 
 ### Changed
