@@ -5,6 +5,62 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.13 (2026-04-07)
+
+### Display Changes (Non-Breaking)
+
+The following changes improve the display format without breaking existing functionality:
+
+#### Strategy Header Display
+
+**Before:**
+
+```text
+ADNLP{CPU} (strategy)
+```
+
+**After:**
+
+```text
+ADNLP (strategy)
+```
+
+**Impact:** No functional changes - this is purely a display improvement. The parameter information (`{CPU}`) is still displayed in the "parameters" section below the header.
+
+#### Options Display Order
+
+**Before:**
+
+```text
+common options (1 option):
+   base_type::DataType (default: Float64)
+
+computed options for CPU:
+   backend::Any (default: nothing [computed])
+```
+
+**After:**
+
+```text
+computed options for CPU:
+   backend::Any (default: nothing [computed])
+
+common options (1 option):
+   base_type::DataType (default: Float64)
+```
+
+**Impact:** No functional changes - this reorders the display to show computed options (parameter-specific) before common options (shared across parameters).
+
+### Migration Notes
+
+No code changes are required. These are display improvements that:
+
+1. **Reduce redundancy** in strategy headers by removing parameter information that's already shown elsewhere
+2. **Improve information hierarchy** by showing dynamic computed options before static common options
+3. **Maintain all existing information** in a more logical order
+
+---
+
 ## v0.4.12 (2026-03-31)
 
 **No breaking changes.**

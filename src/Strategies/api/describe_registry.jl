@@ -81,9 +81,9 @@ function _describe_strategy_registry(
     # 1. Find family and strategy types from registry
     family, strategy_types = _find_strategy_in_registry(strategy_id, registry)
 
-    # 2. Get base type name (use first match, extract UnionAll name)
+    # 2. Get base type name (without parameters for header)
     base_type = first(strategy_types)
-    type_name = _strategy_type_name(base_type)
+    type_name = _strategy_base_name(base_type)
 
     # 3. Get available parameters
     params = [get_parameter_type(T) for T in strategy_types]
@@ -420,7 +420,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Extract a string representation from any other Type.
+Extract a clean type name from any other Type.
 
 This is the most general fallback method for types that don't match more specific methods.
 
@@ -438,6 +438,49 @@ See also: [`_strategy_type_name(::DataType)`](@ref), [`_strategy_type_name(::Uni
 """
 function _strategy_type_name(T::Type)
     return string(T)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract the base type name without parameters for strategy headers.
+
+This function removes module prefixes and parameter information, returning just the
+clean base type name (e.g., "ADNLP" from "ADNLP{CPU}").
+
+# Arguments
+- `T::Type`: The type to extract the base name from
+
+# Returns
+- `String`: Clean base type name without parameters
+
+# Examples
+```julia-repl
+julia> using CTSolvers.Strategies
+
+julia> _strategy_base_name(CTSolvers.Modelers.ADNLP{CTSolvers.Strategies.CPU})
+"ADNLP"
+
+julia> _strategy_base_name(Collocation)
+"Collocation"
+```
+
+# Notes
+- Used specifically for strategy headers to avoid redundancy with parameter display
+- Handles both DataType and UnionAll types
+
+See also: [`_strategy_type_name`](@ref), [`describe`](@ref)
+"""
+function _strategy_base_name(T::DataType)
+    return string(T.name.name)
+end
+
+function _strategy_base_name(T::UnionAll)
+    return string(T.body.name.name)
+end
+
+function _strategy_base_name(T::Type)
+    return string(nameof(T))
 end
 
 """
@@ -592,50 +635,14 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
         end
     end
 
-    # Display common options
-    if !isempty(common_options)
-        n_common = length(common_options)
-        println(
-            io,
-            "├─ ",
-            fmt.label,
-            "common options (",
-            fmt.reset,
-            fmt.count,
-            n_common,
-            fmt.reset,
-            " option",
-            n_common == 1 ? "" : "s",
-            "):",
-        )
-
-        for (i, name) in enumerate(common_options)
-            is_last = i == length(common_options)
-            prefix = is_last ? "│  └─ " : "│  ├─ "
-            cont = is_last ? "│     " : "│  │  "
-
-            # Use definition from first available parameter
-            (P, def) = first(option_defs[name])
-            println(io, prefix, def)
-            println(
-                io, cont, fmt.label, "description: ", fmt.reset, Options.description(def)
-            )
-
-            if !is_last
-                println(io, cont)
-            end
-        end
-        println(io, "│")
-    end
-
-    # Display computed options per parameter
+    # Display computed options per parameter first
     for (i, P) in enumerate(params)
         is_last_param = i == length(params)
         meta = param_metadata[P]
 
         if meta === nothing
             # Extension not loaded for this parameter
-            prefix = is_last_param ? "└─ " : "├─ "
+            prefix = (is_last_param && isempty(common_options)) ? "└─ " : "├─ "
             # Get extension names from error
             ext_error = get(param_errors, P, nothing)
             ext_names = ext_error !== nothing ? join(ext_error.weakdeps, ", ") : "unknown"
@@ -654,7 +661,7 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
                 ext_names,
                 "\033[0m",  # Reset color
             )
-            if !is_last_param
+            if !is_last_param || !isempty(common_options)
                 println(io, "│")
             end
             continue
@@ -665,7 +672,7 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
 
         if isempty(param_computed)
             # No computed options for this parameter
-            prefix = is_last_param ? "└─ " : "├─ "
+            prefix = (is_last_param && isempty(common_options)) ? "└─ " : "├─ "
             println(
                 io,
                 prefix,
@@ -680,14 +687,14 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
                 "none",
                 fmt.reset,
             )
-            if !is_last_param
+            if !is_last_param || !isempty(common_options)
                 println(io, "│")
             end
             continue
         end
 
         # Display computed options for this parameter
-        prefix = is_last_param ? "└─ " : "├─ "
+        prefix = (is_last_param && isempty(common_options)) ? "└─ " : "├─ "
         println(
             io,
             prefix,
@@ -703,12 +710,12 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
         param_computed_list = collect(param_computed)
         for (j, name) in enumerate(param_computed_list)
             is_last_opt = j == length(param_computed_list)
-            opt_prefix = if is_last_param
+            opt_prefix = if is_last_param && isempty(common_options)
                 is_last_opt ? "   └─ " : "   ├─ "
             else
                 is_last_opt ? "│  └─ " : "│  ├─ "
             end
-            opt_cont = if is_last_param
+            opt_cont = if is_last_param && isempty(common_options)
                 is_last_opt ? "      " : "   │  "
             else
                 is_last_opt ? "│     " : "│  │  "
@@ -730,8 +737,43 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
             end
         end
 
-        if !is_last_param
+        if !is_last_param || !isempty(common_options)
             println(io, "│")
+        end
+    end
+
+    # Display common options last
+    if !isempty(common_options)
+        n_common = length(common_options)
+        println(
+            io,
+            "└─ ",
+            fmt.label,
+            "common options (",
+            fmt.reset,
+            fmt.count,
+            n_common,
+            fmt.reset,
+            " option",
+            n_common == 1 ? "" : "s",
+            "):",
+        )
+
+        for (i, name) in enumerate(common_options)
+            is_last = i == length(common_options)
+            prefix = is_last ? "   └─ " : "   ├─ "
+            cont = is_last ? "      " : "   │  "
+
+            # Use definition from first available parameter
+            (P, def) = first(option_defs[name])
+            println(io, prefix, def)
+            println(
+                io, cont, fmt.label, "description: ", fmt.reset, Options.description(def)
+            )
+
+            if !is_last
+                println(io, cont)
+            end
         end
     end
 end
