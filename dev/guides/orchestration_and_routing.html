@@ -36,15 +36,15 @@ registry = CTSolvers.Strategies.create_registry(
     AbstractFakeModeler     =&gt; (FakeADNLP,),
     AbstractFakeSolver      =&gt; (FakeIpopt,),
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr34"><span class="sgr1">StrategyRegistry</span></span> with <span class="sgr35">3</span> families:
-├─ <span class="sgr34"><span class="sgr1">AbstractFakeModeler</span></span>
-│  └─ <span class="sgr33">:adnlp</span>
-│     └─ <span class="sgr36">Main.FakeADNLP</span>
 ├─ <span class="sgr34"><span class="sgr1">AbstractFakeDiscretizer</span></span>
 │  └─ <span class="sgr33">:collocation</span>
 │     └─ <span class="sgr36">Main.FakeCollocation</span>
-└─ <span class="sgr34"><span class="sgr1">AbstractFakeSolver</span></span>
-   └─ <span class="sgr33">:ipopt</span>
-      └─ <span class="sgr36">Main.FakeIpopt</span>
+├─ <span class="sgr34"><span class="sgr1">AbstractFakeSolver</span></span>
+│  └─ <span class="sgr33">:ipopt</span>
+│     └─ <span class="sgr36">Main.FakeIpopt</span>
+└─ <span class="sgr34"><span class="sgr1">AbstractFakeModeler</span></span>
+   └─ <span class="sgr33">:adnlp</span>
+      └─ <span class="sgr36">Main.FakeADNLP</span>
 </code></pre><h2 id="The-Method-Tuple-Concept"><a class="docs-heading-anchor" href="#The-Method-Tuple-Concept">The Method Tuple Concept</a><a id="The-Method-Tuple-Concept-1"></a><a class="docs-heading-anchor-permalink" href="#The-Method-Tuple-Concept" title="Permalink"></a></h2><p>A <strong>method tuple</strong> identifies which concrete strategy to use for each role in the pipeline:</p><pre><code class="language-julia hljs">method = (:collocation, :adnlp, :ipopt)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(:collocation, :adnlp, :ipopt)</code></pre><p>Each symbol is a strategy <code>id</code> (returned by <code>Strategies.id(::Type)</code>). The <strong>families</strong> mapping associates each role with its abstract type:</p><pre><code class="language-julia hljs">families = (
     discretizer = AbstractFakeDiscretizer,
     modeler     = AbstractFakeModeler,
