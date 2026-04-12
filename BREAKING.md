@@ -5,6 +5,50 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.14 (2026-04-12)
+
+**No breaking changes.**
+
+This release improves unknown option error messages with registry search functionality.
+
+### Summary - v0.4.14
+
+- Enhanced error messages when an option doesn't belong to any strategy in the current method
+- Added `_find_option_in_registry()` helper function to search for options across all registered strategies
+- Error messages now suggest if an option exists in other strategies not in the current method
+- Lists all matching strategies with their IDs and family names
+- Added comprehensive test coverage for registry search functionality
+
+### Migration - v0.4.14
+
+**No action required.** All existing code continues to work without changes.
+
+**Improved behavior:**
+
+When users provide an unknown option that doesn't exist in any strategy of the current method, the error message now includes helpful suggestions if the option exists in other registered strategies.
+
+**Example:**
+
+```julia
+# Before: Generic error message
+solve(ocp, :collocation, :adnlp, :ipopt; custom_opt=123)
+# → Error: "Option :custom_opt doesn't belong to any strategy in method (:collocation, :adnlp, :ipopt). Available options: ..."
+
+# After: Enhanced error with registry match
+solve(ocp, :collocation, :adnlp, :ipopt; custom_opt=123)
+# → Error: "Option :custom_opt doesn't belong to any strategy in method (:collocation, :adnlp, :ipopt).
+#         This option exists in other strategies: :madnlp (solver).
+#         Perhaps you selected the wrong strategy? Consider using a different method."
+```
+
+**Benefits:**
+
+- **Better UX**: Users get actionable guidance when they may have chosen the wrong strategy
+- **Faster debugging**: Identifies alternative strategies that support the requested option
+- **No API changes**: Purely an enhancement of error messages
+
+---
+
 ## v0.4.13 (2026-04-07)
 
 ### Display Changes (Non-Breaking)
