@@ -8,6 +8,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.14] - 2026-04-12
+
+### Added
+
+- **Positional syntax for route_to()** - New method `route_to(args::Vararg{Any})` accepting alternating Symbol-value pairs
+  - Alternative to keyword syntax: `route_to(:solver, 100, :modeler, 50)` instead of `route_to(solver=100, modeler=50)`
+  - Both syntaxes are equivalent and produce identical `RoutedOption` results
+  - Validates even number of arguments and Symbol types for strategy identifiers
+  - Clear error messages for invalid inputs (odd count, non-Symbol identifiers, no arguments)
+
+### Changed
+
+- **Internal refactoring** - Added `_route_to_from_namedtuple()` helper function to avoid code duplication
+  - Both keyword and positional methods delegate to shared internal helper
+  - Reduced code duplication while maintaining identical behavior
+  - Improved maintainability and consistency
+
+### Improved
+
+- **Documentation** - Updated docstrings for both `route_to()` methods to show both syntaxes
+  - Examples demonstrate keyword and positional syntax equivalence
+  - Clear notes on when to use each syntax
+  - Comprehensive error documentation with suggestions
+
+### Tests
+
+- **Positional syntax test coverage** - Added 23 new tests covering:
+  - Single and multiple strategy routing
+  - Different value types (Integer, Float, String, Boolean, Symbol)
+  - Error cases (no arguments, odd count, non-Symbol identifiers)
+  - Syntax equivalence between keyword and positional forms
+
+---
+
 ## [0.4.13] - 2026-04-07
 
 ### Changed
