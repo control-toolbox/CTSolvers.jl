@@ -50,11 +50,25 @@ function Strategies.metadata(::Type{InternalIpopt})
     )
 end
 
+# Additional strategy for testing registry search
+struct InternalMadNLP <: InternalTestSolver end
+Strategies.id(::Type{InternalMadNLP}) = :madnlp
+function Strategies.metadata(::Type{InternalMadNLP})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(;
+            name=:max_iter, type=Int, default=1000, description="Max iterations"
+        ),
+        Options.OptionDefinition(;
+            name=:custom_opt, type=Int, default=42, description="Custom option for testing"
+        ),
+    )
+end
+
 # Test registry and families
 const INTERNAL_REGISTRY = Strategies.create_registry(
     InternalTestDiscretizer => (InternalCollocation,),
     InternalTestModeler => (InternalADNLP,),
-    InternalTestSolver => (InternalIpopt,),
+    InternalTestSolver => (InternalIpopt, InternalMadNLP),
 )
 
 const INTERNAL_FAMILIES = (
@@ -443,6 +457,52 @@ function test_routing_internals()
             Test.@test result.strategies.discretizer.method == :trapezoid
             Test.@test result.strategies.solver.max_iter == 500
             Test.@test result.strategies.solver.tol == 1e-6
+        end
+
+        Test.@testset "_find_option_in_registry" begin
+            # Test with option that exists in other strategies
+            resolved = Orchestration.resolve_method(
+                INTERNAL_METHOD, INTERNAL_FAMILIES, INTERNAL_REGISTRY
+            )
+            # :custom_opt exists in InternalMadNLP but not in current method (ipopt)
+            matches = Orchestration._find_option_in_registry(
+                :custom_opt, resolved, INTERNAL_FAMILIES, INTERNAL_REGISTRY
+            )
+            Test.@test length(matches) == 1
+            Test.@test matches[1] == (:madnlp, :solver)
+
+            # Test with option that doesn't exist in registry
+            matches = Orchestration._find_option_in_registry(
+                :totally_unknown, resolved, INTERNAL_FAMILIES, INTERNAL_REGISTRY
+            )
+            Test.@test isempty(matches)
+
+            # Test with option that only exists in current method strategies
+            # :grid_size exists in InternalCollocation which is in current method
+            matches = Orchestration._find_option_in_registry(
+                :grid_size, resolved, INTERNAL_FAMILIES, INTERNAL_REGISTRY
+            )
+            Test.@test isempty(matches)  # Should be empty since it's in current method
+
+            # Test with option that exists in multiple strategies across families
+            # :backend exists in both InternalADNLP and InternalIpopt, but both are in current method
+            # So result should be empty
+            matches = Orchestration._find_option_in_registry(
+                :backend, resolved, INTERNAL_FAMILIES, INTERNAL_REGISTRY
+            )
+            Test.@test isempty(matches)
+
+            # Test with method that doesn't use MadNLP
+            alt_method = (:collocation, :adnlp, :madnlp)
+            resolved_alt = Orchestration.resolve_method(
+                alt_method, INTERNAL_FAMILIES, INTERNAL_REGISTRY
+            )
+            # :max_iter exists in InternalIpopt (not in current method)
+            matches = Orchestration._find_option_in_registry(
+                :max_iter, resolved_alt, INTERNAL_FAMILIES, INTERNAL_REGISTRY
+            )
+            Test.@test length(matches) == 1
+            Test.@test matches[1] == (:ipopt, :solver)
         end
 
         # ====================================================================

@@ -32,6 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Clear notes on when to use each syntax
   - Comprehensive error documentation with suggestions
 
+- **Unknown option error messages** - Enhanced error messages when an option doesn't belong to any strategy in the current method
+  - Searches the registry for strategies not in the current method that have the option
+  - Suggests the user may have selected the wrong strategy if the option exists elsewhere
+  - Lists all matching strategies with their IDs and family names
+  - Example: "This option exists in other strategies: :madnlp (solver). Perhaps you selected the wrong strategy? Consider using a different method."
+
 ### Tests
 
 - **Positional syntax test coverage** - Added 23 new tests covering:
@@ -39,6 +45,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Different value types (Integer, Float, String, Boolean, Symbol)
   - Error cases (no arguments, odd count, non-Symbol identifiers)
   - Syntax equivalence between keyword and positional forms
+
+- **Registry search error messages** - Added 5 new tests for `_find_option_in_registry()`:
+  - Option exists in other strategies
+  - Option doesn't exist in registry
+  - Option only in current method strategies
+  - Option exists in multiple strategies across families
+  - Method with different strategy selection
+
+- **Integration test** - Added test verifying error message includes registry match suggestion
 
 ---
 

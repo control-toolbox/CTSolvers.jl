@@ -501,8 +501,79 @@ end
 """
 $(TYPEDSIGNATURES)
 
+Search for an option in all strategies of the registry, excluding strategies in the current method.
+
+This helper function checks if an unknown option exists in strategies that are not part of the
+current method, enabling helpful error messages that suggest the user may have chosen the wrong strategy.
+
+# Arguments
+- `key::Symbol`: The option name to search for
+- `resolved::ResolvedMethod`: Resolved method containing current strategy IDs
+- `families::NamedTuple`: NamedTuple mapping family names to family types
+- `registry::Strategies.StrategyRegistry`: Strategy registry containing all registered strategies
+
+# Returns
+- `Vector{Tuple{Symbol, Symbol}}`: Vector of (strategy_id, family_name) tuples for strategies that have this option
+
+# Notes
+- Strategies in the current method are excluded from the search
+- Uses try/catch around metadata() for robustness against incomplete strategy definitions
+- Results are not ordered; caller should sort if needed
+"""
+function _find_option_in_registry(
+    key::Symbol,
+    resolved::ResolvedMethod,
+    families::NamedTuple,
+    registry::Strategies.StrategyRegistry,
+)::Vector{Tuple{Symbol,Symbol}}
+    # Get set of strategy IDs in current method
+    current_strategy_ids = Set(collect(resolved.ids_by_family))
+
+    # Search all strategies in registry
+    matches = Tuple{Symbol,Symbol}[]
+    for (family_type, strategy_types) in registry.families
+        # Find the family name for this family_type
+        family_name = nothing
+        for (fname, ftype) in pairs(families)
+            if ftype === family_type
+                family_name = fname
+                break
+            end
+        end
+        if family_name === nothing
+            continue  # This family_type is not in current families, skip
+        end
+
+        for strategy_type in strategy_types
+            strategy_id = Strategies.id(strategy_type)
+            # Skip if this strategy is in current method
+            if strategy_id in current_strategy_ids
+                continue
+            end
+            # Check if option exists in this strategy's metadata
+            try
+                meta = Strategies.metadata(strategy_type)
+                if haskey(meta, key)
+                    push!(matches, (strategy_id, family_name))
+                end
+            catch
+                # Skip if metadata fails (robustness)
+            end
+        end
+    end
+
+    return matches
+end
+
+"""
+$(TYPEDSIGNATURES)
+
 Helper to throw an informative error when an option doesn't belong to any strategy.
 Lists all available options for the active strategies to help the user.
+
+# Notes
+- Also searches the registry for strategies not in the current method that have this option,
+  suggesting the user may have chosen the wrong strategy.
 """
 function _error_unknown_option(
     key::Symbol,
@@ -542,8 +613,22 @@ function _error_unknown_option(
         )
     end
 
+    # Then, check if option exists in other strategies in registry
+    registry_matches = _find_option_in_registry(key, resolved, families, registry)
+    if !isempty(registry_matches)
+        if !isempty(all_suggestions)
+            push!(suggestion_parts, "\n")
+        end
+        matches_str = join([" :$sid ($family)" for (sid, family) in registry_matches], ", ")
+        push!(
+            suggestion_parts,
+            "This option exists in other strategies:$matches_str.\n" *
+            "Perhaps you selected the wrong strategy? Consider using a different method.",
+        )
+    end
+
     # Then, suggest bypass if user is confident about the option
-    if !isempty(all_suggestions)
+    if !isempty(all_suggestions) || !isempty(registry_matches)
         push!(suggestion_parts, "\n")
     end
     push!(

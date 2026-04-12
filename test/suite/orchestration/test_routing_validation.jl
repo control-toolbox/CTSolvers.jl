@@ -36,12 +36,23 @@ struct MySolver <: TestSolverFamily end
 Strategies.id(::Type{MySolver}) = :test_solver
 Strategies.metadata(::Type{MySolver}) = Strategies.StrategyMetadata()
 
+# Additional strategy for testing registry search
+struct MyOtherSolver <: TestSolverFamily end
+Strategies.id(::Type{MyOtherSolver}) = :test_other_solver
+function Strategies.metadata(::Type{MyOtherSolver})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(;
+            name=:custom_opt, type=Int, default=42, description="Custom option"
+        ),
+    )
+end
+
 function create_test_setup()
     # Create a simple registry with test strategies
     registry = Strategies.create_registry(
         TestDiscretizerFamily => (MyDiscretizer,),
         TestModelerFamily => (MyModeler,),
-        TestSolverFamily => (MySolver,),
+        TestSolverFamily => (MySolver, MyOtherSolver),
     )
 
     # Define families
@@ -192,6 +203,33 @@ function test_routing_validation()
             Test.@test_throws Exceptions.IncorrectArgument Orchestration.route_all_options(
                 method, families, action_defs, kwargs, registry
             )
+        end
+
+        # ====================================================================
+        # INTEGRATION TESTS - Registry Match Suggestions
+        # ====================================================================
+
+        Test.@testset "Unknown option with registry match suggestion" begin
+            registry, families, action_defs = create_test_setup()
+            method = (:test_discretizer, :test_modeler, :test_solver)
+
+            # :custom_opt exists in MyOtherSolver but not in current method (test_solver)
+            kwargs = (custom_opt=123,)
+
+            err = try
+                Orchestration.route_all_options(
+                    method, families, action_defs, kwargs, registry
+                )
+                Test.@test false  # Should not reach here
+            catch e
+                e
+            end
+
+            # Verify the error message mentions the registry match
+            Test.@test err isa Exceptions.IncorrectArgument
+            Test.@test occursin("This option exists in other strategies", err.suggestion)
+            Test.@test occursin(":test_other_solver (solver)", err.suggestion)
+            Test.@test occursin("Perhaps you selected the wrong strategy", err.suggestion)
         end
     end
 end
