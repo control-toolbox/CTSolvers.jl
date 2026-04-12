@@ -68,6 +68,21 @@ struct RoutedOption
     end
 end
 
+# Internal helper function - creates RoutedOption from NamedTuple
+function _route_to_from_namedtuple(routes::NamedTuple)
+    if isempty(routes)
+        throw(
+            Exceptions.PreconditionError(
+                "route_to requires at least one strategy-value pair";
+                reason="empty routes NamedTuple provided",
+                suggestion="Use route_to(solver=100) or route_to(:solver, 100)",
+                context="route_to - internal helper precondition",
+            ),
+        )
+    end
+    return RoutedOption(routes)
+end
+
 """
 $(TYPEDSIGNATURES)
 
@@ -99,6 +114,10 @@ RoutedOption((solver = 100,))
 julia> # Multiple strategies with different values
 julia> route_to(solver=100, modeler=50)
 RoutedOption((solver = 100, modeler = 50))
+
+julia> # Alternative positional syntax
+julia> route_to(:solver, 100, :modeler, 50)
+RoutedOption((solver = 100, modeler = 50))
 ```
 
 # Usage in solve()
@@ -106,38 +125,124 @@ RoutedOption((solver = 100, modeler = 50))
 # Without disambiguation - error if max_iter exists in multiple strategies
 solve(ocp, method; max_iter=100)  # ❌ Ambiguous!
 
-# With disambiguation - explicit routing
-solve(ocp, method; 
+# With disambiguation - explicit routing (keyword syntax)
+solve(ocp, method;
     max_iter = route_to(solver=100)              # Only solver gets 100
 )
 
-solve(ocp, method; 
+solve(ocp, method;
     max_iter = route_to(solver=100, modeler=50)  # Different values for each
+)
+
+# With disambiguation - explicit routing (positional syntax)
+solve(ocp, method;
+    max_iter = route_to(:solver, 100, :modeler, 50)  # Different values for each
 )
 ```
 
 # Notes
 - Strategy identifiers must match the actual strategy IDs in your method tuple
 - You can route to one or multiple strategies in a single call
+- Alternative positional syntax: `route_to(:solver, 100, :modeler, 50)`
+- Both syntaxes are equivalent; choose based on preference
 - This is the recommended way to disambiguate options
 - The orchestration layer will validate that the strategy IDs exist
 
 See also: `RoutedOption`, `route_all_options`
 """
 function route_to(; kwargs...)
-    if isempty(kwargs)
+    return _route_to_from_namedtuple(NamedTuple(kwargs))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Create a disambiguated option value using positional arguments.
+
+This is an alternative syntax to the keyword argument version. Accepts
+alternating strategy identifier (Symbol) and value pairs.
+
+# Arguments
+- `args::Vararg{Any}`: Alternating strategy_id (Symbol) and value pairs.
+  Must have an even number of arguments. Odd-numbered arguments must be Symbols.
+
+# Returns
+- `RoutedOption`: A routed option containing the strategy => value mappings
+
+# Throws
+- `Exceptions.PreconditionError`: If no arguments provided, odd number of arguments,
+  or odd-numbered arguments are not Symbols
+
+# Example
+```julia-repl
+julia> using CTSolvers.Strategies
+
+julia> # Single strategy
+julia> route_to(:solver, 100)
+RoutedOption((solver = 100,))
+
+julia> # Multiple strategies
+julia> route_to(:solver, 100, :modeler, 50)
+RoutedOption((solver = 100, modeler = 50))
+```
+
+# Notes
+- This is equivalent to the keyword syntax: `route_to(solver=100, modeler=50)`
+- Strategy identifiers must be Symbols (e.g., `:solver`, not `"solver"`)
+- The number of arguments must be even (pairs of Symbol-value)
+
+See also: `route_to(; kwargs...)`, `RoutedOption`
+"""
+function route_to(args::Vararg{Any})
+    # Validate at least one pair
+    if isempty(args)
         throw(
             Exceptions.PreconditionError(
-                "route_to requires at least one strategy argument";
-                reason="no strategy arguments provided",
-                suggestion="Use route_to(solver=100) or route_to(solver=100, modeler=50)",
-                context="route_to - function call precondition",
+                "route_to requires at least one strategy-value pair";
+                reason="no arguments provided",
+                suggestion="Use route_to(:solver, 100) or route_to(:solver, 100, :modeler, 50)",
+                context="route_to - positional syntax precondition",
             ),
         )
     end
 
-    # Convert Base.Pairs to NamedTuple - super clean!
-    return RoutedOption(NamedTuple(kwargs))
+    # Validate even number of arguments (each Symbol must have a value)
+    if length(args) % 2 != 0
+        throw(
+            Exceptions.PreconditionError(
+                "route_to requires an even number of arguments (Symbol-value pairs)";
+                got="$(length(args)) arguments (odd number)",
+                expected="even number of arguments (e.g., 2 for one strategy, 4 for two strategies)",
+                suggestion="Ensure each strategy Symbol has a corresponding value: route_to(:solver, 100) or route_to(:solver, 100, :modeler, 50)",
+                context="route_to - positional syntax precondition",
+            ),
+        )
+    end
+
+    # Build NamedTuple from pairs
+    pairs = NamedTuple()
+    for i in 1:2:length(args)
+        strategy_id = args[i]
+        value = args[i + 1]
+
+        # Validate strategy_id is a Symbol
+        if !(strategy_id isa Symbol)
+            throw(
+                Exceptions.PreconditionError(
+                    "Strategy identifier must be a Symbol";
+                    got="strategy_id = $strategy_id (type: $(typeof(strategy_id)))",
+                    expected="Symbol (e.g., :solver, :modeler)",
+                    suggestion="Use Symbols for strategy identifiers: route_to(:solver, 100)",
+                    context="route_to - positional syntax precondition",
+                ),
+            )
+        end
+
+        pairs = merge(pairs, NamedTuple{(strategy_id,)}((value,)))
+    end
+
+    # Delegate to internal helper
+    return _route_to_from_namedtuple(pairs)
 end
 
 # ============================================================================

@@ -55,6 +55,77 @@ function test_disambiguation()
         end
 
         # ====================================================================
+        # UNIT TESTS - route_to() Positional Syntax
+        # ====================================================================
+
+        Test.@testset "route_to() Positional Syntax - Single Strategy" begin
+            result = Strategies.route_to(:solver, 100)
+            Test.@test result isa Strategies.RoutedOption
+            Test.@test length(result) == 1
+            Test.@test result[:solver] == 100
+        end
+
+        Test.@testset "route_to() Positional Syntax - Multiple Strategies" begin
+            result = Strategies.route_to(:solver, 100, :modeler, 50)
+            Test.@test result isa Strategies.RoutedOption
+            Test.@test length(result) == 2
+            Test.@test result[:solver] == 100
+            Test.@test result[:modeler] == 50
+        end
+
+        Test.@testset "route_to() Positional Syntax - Three Strategies" begin
+            result = Strategies.route_to(:solver, 100, :modeler, 50, :discretizer, 200)
+            Test.@test length(result) == 3
+            Test.@test result[:solver] == 100
+            Test.@test result[:modeler] == 50
+            Test.@test result[:discretizer] == 200
+        end
+
+        Test.@testset "route_to() Positional Syntax - Different Value Types" begin
+            # Integer
+            result = Strategies.route_to(:modeler, 42)
+            Test.@test result[:modeler] == 42
+
+            # Float
+            result = Strategies.route_to(:solver, 1.5e-6)
+            Test.@test result[:solver] == 1.5e-6
+
+            # String
+            result = Strategies.route_to(:optimizer, "ipopt")
+            Test.@test result[:optimizer] == "ipopt"
+
+            # Boolean
+            result = Strategies.route_to(:solver, true)
+            Test.@test result[:solver] == true
+
+            # Symbol
+            result = Strategies.route_to(:modeler, :auto)
+            Test.@test result[:modeler] == :auto
+        end
+
+        Test.@testset "route_to() Positional Syntax - Error Cases" begin
+            # No arguments
+            Test.@test_throws Exception Strategies.route_to()
+
+            # Odd number of arguments
+            Test.@test_throws Exception Strategies.route_to(:solver)
+
+            # Non-Symbol strategy identifier
+            Test.@test_throws Exception Strategies.route_to("solver", 100)
+            Test.@test_throws Exception Strategies.route_to(1, 100)
+        end
+
+        Test.@testset "route_to() Syntax Equivalence" begin
+            # Both syntaxes should produce identical results
+            kw_result = Strategies.route_to(solver=100, modeler=50)
+            pos_result = Strategies.route_to(:solver, 100, :modeler, 50)
+
+            Test.@test collect(pairs(kw_result)) == collect(pairs(pos_result))
+            Test.@test kw_result[:solver] == pos_result[:solver]
+            Test.@test kw_result[:modeler] == pos_result[:modeler]
+        end
+
+        # ====================================================================
         # UNIT TESTS - Different Value Types
         # ====================================================================
 
