@@ -157,7 +157,7 @@ $(TYPEDSIGNATURES)
 Return the description for the Uno solver.
 """
 Strategies.description(::Type{<:Solvers.Uno}) =
-    "Composite-step interior-point NLP solver.\n" *
+    "Unified modular NLP solver combining interior-point, SQP, trust-region and filter strategies.\n" *
     "See: https://unosolver.readthedocs.io/en/latest/"
 
 """
