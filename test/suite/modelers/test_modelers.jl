@@ -205,6 +205,42 @@ function test_modelers_options_api()
     end
 end
 
+function test_modelers_descriptions()
+    Test.@testset "Modeler descriptions" begin
+        Test.@testset "ADNLP description" begin
+            desc = Strategies.description(Modelers.ADNLP)
+            Test.@test desc isa String
+            Test.@test !isempty(desc)
+            Test.@test occursin("ADNLPModels", desc)
+            Test.@test occursin("https://jso.dev/ADNLPModels.jl", desc)
+            Test.@test occursin("\n", desc)
+        end
+
+        Test.@testset "Exa description" begin
+            desc = Strategies.description(Modelers.Exa)
+            Test.@test desc isa String
+            Test.@test !isempty(desc)
+            Test.@test occursin("ExaModels", desc)
+            Test.@test occursin("https://exanauts.github.io/ExaModels.jl", desc)
+            Test.@test occursin("\n", desc)
+        end
+
+        Test.@testset "describe(ADNLP) shows description" begin
+            io = IOBuffer()
+            Strategies.describe(io, Modelers.ADNLP)
+            output = String(take!(io))
+            Test.@test occursin("description:", output)
+            Test.@test occursin("ADNLPModels", output)
+            Test.@test occursin("https://jso.dev/ADNLPModels.jl", output)
+            lines = split(output, '\n')
+            url_line = findfirst(l -> occursin("https://jso.dev/ADNLPModels.jl", l), lines)
+            Test.@test url_line !== nothing
+            # Continuation line starts with the │ tree prefix
+            Test.@test startswith(lines[url_line], "│")
+        end
+    end
+end
+
 function test_modelers()
     Test.@testset "Modelers Module Tests" verbose = VERBOSE showtiming = SHOWTIMING begin
         test_modelers_basic()
@@ -213,6 +249,7 @@ function test_modelers()
         test_modelers_integration()
         test_modelers_error_handling()
         test_modelers_options_api()
+        test_modelers_descriptions()
     end
 end
 

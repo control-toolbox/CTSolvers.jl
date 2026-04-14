@@ -154,6 +154,15 @@ Strategies.id(::Type{<:Solvers.Uno}) = :uno
 """
 $(TYPEDSIGNATURES)
 
+Return the description for the Uno solver.
+"""
+Strategies.description(::Type{<:Solvers.Uno}) =
+    "Unified modular NLP solver combining interior-point, SQP, trust-region and filter strategies.\n" *
+    "See: https://unosolver.readthedocs.io/en/latest/"
+
+"""
+$(TYPEDSIGNATURES)
+
 Default parameter type for Uno when not explicitly specified.
 
 Returns `CPU` as the default execution parameter.

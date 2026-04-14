@@ -5,6 +5,54 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.15 (2026-04-14)
+
+**No breaking changes.**
+
+This release adds optional strategy descriptions with multi-line display support.
+
+### Summary - v0.4.15
+
+- Added `_print_labeled_multiline()` helper for consistent multi-line text formatting
+- Updated all `describe()` functions to use the helper for option and parameter descriptions
+- Added `description()` contract for strategies (optional, returns `nothing` by default)
+- Implemented `description()` for all modelers (ADNLP, Exa) and solvers (Ipopt, MadNLP, MadNCL, Uno, Knitro)
+- Strategy descriptions include reference URLs to external documentation
+- Added comprehensive tests for helper, default behavior, and multi-line alignment
+- Improved Uno description to accurately reflect its unified modular nature
+
+### Migration - v0.4.15
+
+**No action required.** All existing code continues to work without changes.
+
+**New behavior:**
+
+- `describe()` now displays strategy descriptions (if defined) between hierarchy and metadata
+- Multi-line descriptions (with `\n`) are properly indented in tree-style output
+- Option descriptions can also use multi-line format (e.g., ADNLP backend option)
+
+**Example:**
+
+```julia
+# New: strategy description with URL
+describe(Modelers.ADNLP)
+# → Shows:
+# ADNLP (strategy type)
+# ├─ id: :adnlp
+# ├─ hierarchy: ADNLP → AbstractNLPModeler → AbstractStrategy
+# ├─ description: NLP modeler using ADNLPModels with automatic differentiation.
+# │              See: https://jso.dev/ADNLPModels.jl
+# └─ metadata: ...
+```
+
+**Benefits:**
+
+- **Better discovery**: Users can see what each strategy does and find documentation links
+- **Cleaner display**: Multi-line descriptions are properly indented for readability
+- **Optional**: Strategies without descriptions continue to work unchanged (default `nothing`)
+
+---
+
 ## v0.4.14 (2026-04-12)
 
 **No breaking changes.**

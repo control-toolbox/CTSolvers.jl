@@ -49,6 +49,19 @@ Strategies.options(strategy::FakeStrategy) = strategy.options
 # Additional test struct for error handling
 struct UnimplementedStrategy <: Strategies.AbstractStrategy end
 
+# Fake strategy with description for testing multi-line display
+struct FakeStrategyWithDescription <: Strategies.AbstractStrategy
+    options::Strategies.StrategyOptions
+end
+
+Strategies.id(::Type{<:FakeStrategyWithDescription}) = :fake_described
+Strategies.metadata(::Type{<:FakeStrategyWithDescription}) = Strategies.StrategyMetadata(
+    Options.OptionDefinition(; name=:n, type=Int, default=10, description="Grid size.")
+)
+Strategies.options(s::FakeStrategyWithDescription) = s.options
+Strategies.description(::Type{<:FakeStrategyWithDescription}) =
+    "A strategy for testing description display.\nSee: https://example.com"
+
 # ============================================================================
 # Test function
 # ============================================================================
@@ -124,6 +137,94 @@ function test_abstract_strategy()
                 Test.@test_throws Exceptions.NotImplemented Strategies.options(
                     incomplete_strategy
                 )
+            end
+        end
+
+        # ========================================================================
+        # UNIT TESTS - description contract
+        # ========================================================================
+
+        Test.@testset "description() contract" begin
+            Test.@testset "default returns nothing" begin
+                Test.@test Strategies.description(FakeStrategy) === nothing
+                Test.@test Strategies.description(IncompleteStrategy) === nothing
+                Test.@test Strategies.description(UnimplementedStrategy) === nothing
+            end
+
+            Test.@testset "concrete implementation returns String" begin
+                desc = Strategies.description(FakeStrategyWithDescription)
+                Test.@test desc isa String
+                Test.@test occursin("testing description", desc)
+                Test.@test occursin("https://example.com", desc)
+                Test.@test occursin("\n", desc)
+            end
+        end
+
+        Test.@testset "describe() with description" begin
+            Test.@testset "no description — no strategy-level description line" begin
+                io = IOBuffer()
+                Strategies.describe(io, FakeStrategy)
+                output = String(take!(io))
+                Test.@test occursin("FakeStrategy", output)
+                Test.@test occursin("id", output)
+                Test.@test occursin("hierarchy", output)
+                # Strategy-level description appears as "├─ description:" (not indented under options)
+                lines = split(output, '\n')
+                strategy_desc_lines = filter(l -> startswith(l, "├─ description:"), lines)
+                Test.@test isempty(strategy_desc_lines)
+            end
+
+            Test.@testset "with description — description line shown" begin
+                io = IOBuffer()
+                Strategies.describe(io, FakeStrategyWithDescription)
+                output = String(take!(io))
+                Test.@test occursin("description:", output)
+                Test.@test occursin("testing description", output)
+            end
+
+            Test.@testset "multi-line description — second line indented" begin
+                io = IOBuffer()
+                Strategies.describe(io, FakeStrategyWithDescription)
+                output = String(take!(io))
+                lines = split(output, '\n')
+                desc_idx = findfirst(l -> occursin("description:", l), lines)
+                Test.@test desc_idx !== nothing
+                Test.@test occursin("https://example.com", output)
+                # The URL line is a continuation: starts with the cont prefix "│"
+                url_line = findfirst(l -> occursin("https://example.com", l), lines)
+                Test.@test url_line !== nothing
+                Test.@test startswith(lines[url_line], "│")
+            end
+        end
+
+        Test.@testset "_print_labeled_multiline helper" begin
+            Test.@testset "single-line text" begin
+                io = IOBuffer()
+                fmt = Strategies.get_format_codes(io)
+                Strategies._print_labeled_multiline(
+                    io, "├─ ", "│  ", fmt, "description: ", "Single line."
+                )
+                output = String(take!(io))
+                # Label and text are present (possibly separated by ANSI fmt codes)
+                Test.@test occursin("description: ", output)
+                Test.@test occursin("Single line.", output)
+                Test.@test length(split(output, '\n'; keepempty=false)) == 1
+            end
+
+            Test.@testset "multi-line text — continuation aligned" begin
+                io = IOBuffer()
+                fmt = Strategies.get_format_codes(io)
+                Strategies._print_labeled_multiline(
+                    io, "├─ ", "│  ", fmt, "description: ", "Line one.\nLine two."
+                )
+                output = String(take!(io))
+                lines = split(output, '\n'; keepempty=false)
+                Test.@test length(lines) == 2
+                Test.@test occursin("Line one.", lines[1])
+                Test.@test occursin("Line two.", lines[2])
+                # Continuation line has padding (starts with cont prefix, not same as line 1)
+                Test.@test !occursin("Line two.", lines[1])
+                Test.@test startswith(lines[2], "│")
             end
         end
 

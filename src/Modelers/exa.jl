@@ -223,6 +223,15 @@ Strategies.id(::Type{<:Modelers.Exa}) = :exa
 """
 $(TYPEDSIGNATURES)
 
+Return the description for the Exa modeler.
+"""
+Strategies.description(::Type{<:Modelers.Exa}) =
+    "NLP modeler using ExaModels, supporting CPU and GPU execution.\n" *
+    "See: https://exanauts.github.io/ExaModels.jl"
+
+"""
+$(TYPEDSIGNATURES)
+
 Default parameter type for Exa when not explicitly specified.
 
 Returns `CPU` as the default execution parameter.

@@ -87,6 +87,15 @@ Strategies.id(::Type{<:Solvers.MadNCL}) = :madncl
 """
 $(TYPEDSIGNATURES)
 
+Return the description for the MadNCL solver.
+"""
+Strategies.description(::Type{<:Solvers.MadNCL}) =
+    "Augmented Lagrangian NLP solver built on MadNLP.\n" *
+    "See: https://github.com/MadNLP/MadNCL.jl"
+
+"""
+$(TYPEDSIGNATURES)
+
 Default parameter type for MadNCL when not explicitly specified.
 
 Returns `CPU` as the default execution parameter.
