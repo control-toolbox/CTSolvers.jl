@@ -8,6 +8,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.15] - 2026-04-14
+
+### Added
+
+- **Strategy descriptions** - Optional `description()` contract for strategies with multi-line display support
+  - Default returns `nothing` (strategies without descriptions continue to work unchanged)
+  - Implemented for all modelers (ADNLP, Exa) and solvers (Ipopt, MadNLP, MadNCL, Uno, Knitro)
+  - Descriptions include reference URLs to external documentation
+  - Displayed between hierarchy and metadata in `describe()` output
+
+- **Multi-line text formatting** - Added `_print_labeled_multiline()` helper
+  - Splits text on `\n` and aligns continuation lines under the text
+  - Used in all `describe()` functions for option and parameter descriptions
+  - Consistent indentation in tree-style output (with `│` prefix)
+
+- **Multi-line option descriptions** - ADNLP backend option now uses multi-line format
+  - Lists available backends on a separate line for better readability
+
+### Changed
+
+- **Uno description** - Updated to accurately reflect its unified modular nature
+  - Changed from "Composite-step interior-point" to "Unified modular NLP solver combining interior-point, SQP, trust-region and filter strategies"
+
+### Tests
+
+- **Description contract tests** - Added 7 new tests in `test_abstract_strategy.jl`:
+  - Default `nothing` behavior for strategies without descriptions
+  - Concrete implementation returns String with URL
+  - `describe()` without description shows no description line
+  - `describe()` with description shows description line
+  - Multi-line description continuation alignment
+  - `_print_labeled_multiline` helper single-line and multi-line tests
+
+- **Modeler description tests** - Added 3 new tests in `test_modelers.jl`:
+  - ADNLP description content and URL presence
+  - Exa description content and URL presence
+  - `describe(ADNLP)` shows description with proper indentation
+
+---
+
 ## [0.4.14] - 2026-04-12
 
 ### Added
