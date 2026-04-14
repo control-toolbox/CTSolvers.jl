@@ -259,7 +259,7 @@ function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
             name=:backend,
             type=Symbol,
             default=__adnlp_model_backend(),
-            description="Automatic differentiation backend used by ADNLPModels. Available: $(join(get_adnlp_available_backends(), ", ", " and ")).",
+            description="Automatic differentiation backend used by ADNLPModels.\nAvailable: $(join(get_adnlp_available_backends(), ", ", " and ")).",
             validator=get_validate_adnlp_backend(ADNLPTag),
             aliases=(:adnlp_backend,),
         ),
