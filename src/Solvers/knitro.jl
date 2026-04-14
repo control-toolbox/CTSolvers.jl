@@ -128,6 +128,15 @@ Strategies.id(::Type{<:Solvers.Knitro}) = :knitro
 """
 $(TYPEDSIGNATURES)
 
+Return the description for the Knitro solver.
+"""
+Strategies.description(::Type{<:Solvers.Knitro}) =
+    "Commercial NLP solver by Artelys (requires license).\n" *
+    "See: https://www.artelys.com/app/docs/knitro/3_referenceManual/userOptions.html"
+
+"""
+$(TYPEDSIGNATURES)
+
 Default parameter type for Knitro when not explicitly specified.
 
 Returns `CPU` as the default execution parameter.

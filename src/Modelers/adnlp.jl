@@ -223,6 +223,15 @@ Strategies.id(::Type{<:Modelers.ADNLP}) = :adnlp
 """
 $(TYPEDSIGNATURES)
 
+Return the description for the ADNLP modeler.
+"""
+Strategies.description(::Type{<:Modelers.ADNLP}) =
+    "NLP modeler using ADNLPModels with automatic differentiation.\n" *
+    "See: https://jso.dev/ADNLPModels.jl"
+
+"""
+$(TYPEDSIGNATURES)
+
 Default parameter type for ADNLP when not explicitly specified.
 
 Returns `CPU` as the default execution parameter.

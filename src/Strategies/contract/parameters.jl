@@ -314,7 +314,7 @@ function describe(io::IO, parameter_type::Type{T}) where {T<:AbstractStrategyPar
     println(io, fmt.name, type_name, fmt.reset, " (parameter)")
     println(io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", param_id, fmt.reset)
     println(io, "├─ ", fmt.label, "hierarchy: ", fmt.reset, hierarchy_str)
-    println(io, "└─ ", fmt.label, "description: ", fmt.reset, param_desc)
+    _print_labeled_multiline(io, "└─ ", "   ", fmt, "description: ", param_desc)
 end
 
 # ============================================================================

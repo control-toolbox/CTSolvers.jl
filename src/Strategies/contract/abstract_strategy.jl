@@ -424,6 +424,33 @@ See also: `metadata`, `id`, `options`
 """
 function describe end
 
+"""
+$(TYPEDSIGNATURES)
+
+Return an optional description for a strategy type.
+
+By default returns `nothing` (no description). Strategies may override this
+to provide a human-readable summary and, optionally, a reference URL.
+Multi-line descriptions are supported using `'\\n'`.
+
+# Returns
+- `Nothing`: When no description is defined (default)
+- `String`: Human-readable description, optionally with URL on a second line
+
+# Example
+```julia
+# Default: no description
+description(MyStrategy)  # returns nothing
+
+# Override with description and URL
+description(::Type{<:Modelers.ADNLP}) =
+    "NLP modeler using ADNLPModels.\\nSee: https://jso.dev/ADNLPModels.jl"
+```
+
+See also: [`describe`](@ref), [`AbstractStrategy`](@ref)
+"""
+description(::Type{<:AbstractStrategy}) = nothing
+
 function describe(strategy_type::Type{T}) where {T<:AbstractStrategy}
     describe(stdout, strategy_type)
 end
@@ -433,6 +460,7 @@ function describe(io::IO, ::Type{T}) where {T<:AbstractStrategy}
     type_name = nameof(T)
     strategy_id = id(T)
     meta = metadata(T)
+    desc = description(T)
 
     # Build hierarchy chain up to AbstractStrategy
     hierarchy_chain = Type[T]
@@ -455,6 +483,9 @@ function describe(io::IO, ::Type{T}) where {T<:AbstractStrategy}
 
     # hierarchy line
     println(io, "├─ hierarchy: ", hierarchy_str)
+    if desc !== nothing
+        _print_labeled_multiline(io, "├─ ", "│  ", fmt, "description: ", desc)
+    end
 
     # metadata section
     n_opts = length(meta)
@@ -465,7 +496,7 @@ function describe(io::IO, ::Type{T}) where {T<:AbstractStrategy}
         prefix = is_last ? "   └─ " : "   ├─ "
         cont = is_last ? "      " : "   │  "
         println(io, prefix, def)
-        println(io, cont, fmt.label, "description: ", fmt.reset, Options.description(def))
+        _print_labeled_multiline(io, cont, cont, fmt, "description: ", Options.description(def))
         # Add separator line between options (except after last)
         if !is_last
             println(io, cont)

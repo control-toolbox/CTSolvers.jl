@@ -93,6 +93,15 @@ Strategies.id(::Type{<:Solvers.MadNLP}) = :madnlp
 """
 $(TYPEDSIGNATURES)
 
+Return the description for the MadNLP solver.
+"""
+Strategies.description(::Type{<:Solvers.MadNLP}) =
+    "Interior-point NLP solver with sparse linear algebra and GPU support.\n" *
+    "See: https://madsuite.org/MadNLP.jl/stable/options/"
+
+"""
+$(TYPEDSIGNATURES)
+
 Default parameter type for MadNLP when not explicitly specified.
 
 Returns `CPU` as the default execution parameter.

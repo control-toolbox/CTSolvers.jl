@@ -125,6 +125,15 @@ Strategies.id(::Type{<:Solvers.Ipopt}) = :ipopt
 """
 $(TYPEDSIGNATURES)
 
+Return the description for the Ipopt solver.
+"""
+Strategies.description(::Type{<:Solvers.Ipopt}) =
+    "Interior-point NLP solver (COIN-OR Ipopt).\n" *
+    "See: https://coin-or.github.io/Ipopt/OPTIONS.html"
+
+"""
+$(TYPEDSIGNATURES)
+
 Default parameter type for Ipopt when not explicitly specified.
 
 Returns `CPU` as the default execution parameter.

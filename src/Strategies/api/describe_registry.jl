@@ -122,6 +122,23 @@ function _describe_strategy_registry(
     )
     println(io, "├─ ", fmt.label, "hierarchy: ", fmt.reset, hierarchy_str)
 
+    # Strategy description (if defined)
+    base_wrapper = if base_type isa UnionAll
+        base_type
+    elseif base_type isa DataType && base_type.name.wrapper isa UnionAll
+        base_type.name.wrapper
+    else
+        base_type
+    end
+    desc = try
+        description(base_wrapper)
+    catch
+        nothing
+    end
+    if desc !== nothing
+        _print_labeled_multiline(io, "├─ ", "│  ", fmt, "description: ", desc)
+    end
+
     println(
         io, "├─ ", fmt.label, "family: ", fmt.reset, fmt.type, nameof(family), fmt.reset
     )
@@ -555,7 +572,7 @@ function _describe_single_metadata(io::IO, fmt, strategy_type::Type)
         prefix = is_last ? "   └─ " : "   ├─ "
         cont = is_last ? "      " : "   │  "
         println(io, prefix, def)
-        println(io, cont, fmt.label, "description: ", fmt.reset, Options.description(def))
+        _print_labeled_multiline(io, cont, cont, fmt, "description: ", Options.description(def))
         # Add separator line between options (except after last)
         if !is_last
             println(io, cont)
@@ -723,13 +740,8 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
 
             def = meta[name]
             println(io, opt_prefix, def)
-            println(
-                io,
-                opt_cont,
-                fmt.label,
-                "description: ",
-                fmt.reset,
-                Options.description(def),
+            _print_labeled_multiline(
+                io, opt_cont, opt_cont, fmt, "description: ", Options.description(def)
             )
 
             if !is_last_opt
@@ -767,9 +779,7 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
             # Use definition from first available parameter
             (P, def) = first(option_defs[name])
             println(io, prefix, def)
-            println(
-                io, cont, fmt.label, "description: ", fmt.reset, Options.description(def)
-            )
+            _print_labeled_multiline(io, cont, cont, fmt, "description: ", Options.description(def))
 
             if !is_last
                 println(io, cont)
