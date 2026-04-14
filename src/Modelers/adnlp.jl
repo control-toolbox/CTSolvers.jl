@@ -25,6 +25,48 @@ Default is `:optimized`.
 __adnlp_model_backend() = :optimized
 
 """
+$(TYPEDSIGNATURES)
+
+Return the list of available automatic differentiation backends for `Modelers.ADNLP`.
+
+The available backends are the predefined backends from ADNLPModels plus `:manual`:
+- `:default`: Default backend selection
+- `:optimized`: Optimized backend (default)
+- `:generic`: Generic backend
+- `:enzyme`: Enzyme backend (requires CTSolversEnzyme extension)
+- `:zygote`: Zygote backend (requires CTSolversZygote extension)
+- `:manual`: Manual backend specification (for advanced users)
+
+# Returns
+- `Vector{Symbol}`: List of available backend symbols
+
+# Example
+```julia-repl
+julia> using CTSolvers.Modelers
+
+julia> get_adnlp_available_backends()
+6-element Vector{Symbol}:
+ :default
+ :optimized
+ :generic
+ :enzyme
+ :zygote
+ :manual
+```
+
+# Notes
+- Some backends require optional extensions (e.g., Enzyme, Zygote)
+- The `:manual` backend is for advanced users who want to specify custom backend overrides
+
+See also: `Modelers.ADNLP`, `get_validate_adnlp_backend`
+"""
+function get_adnlp_available_backends()::Vector{Symbol}
+    backends = collect(keys(ADNLPModels.predefined_backend))
+    push!(backends, :manual)
+    return backends
+end
+
+"""
 $(TYPEDEF)
 
 Modeler for building ADNLPModels from discretized optimal control problems.
@@ -208,7 +250,7 @@ function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
             name=:backend,
             type=Symbol,
             default=__adnlp_model_backend(),
-            description="Automatic differentiation backend used by ADNLPModels",
+            description="Automatic differentiation backend used by ADNLPModels. Available: $(join(get_adnlp_available_backends(), ", ", " and ")).",
             validator=get_validate_adnlp_backend(ADNLPTag),
             aliases=(:adnlp_backend,),
         ),
