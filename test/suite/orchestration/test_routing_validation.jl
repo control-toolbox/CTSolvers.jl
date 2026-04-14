@@ -217,9 +217,7 @@ function test_routing_validation()
             kwargs = (custom_opt=123,)
 
             err = try
-                Orchestration.route_all_options(
-                    method, families, action_defs, kwargs, registry
-                )
+                Orchestration.route_all_options(method, families, action_defs, kwargs, registry)
                 Test.@test false  # Should not reach here
             catch e
                 e
