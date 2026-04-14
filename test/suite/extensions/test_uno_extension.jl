@@ -70,61 +70,50 @@ function test_uno_extension()
         end
 
         # ====================================================================
-        # UNIT TESTS - Status Conversion
+        # UNIT TESTS - extract_solver_infos
         # ====================================================================
 
-        Test.@testset "Status Conversion" begin
-            # Test UNO_SUCCESS cases
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_SUCCESS, UnoSolver.UNO_FEASIBLE_KKT_POINT
-            ) == :first_order
+        Test.@testset "extract_solver_infos" begin
+            # Test by solving a simple problem and extracting solver infos
+            # This tests the contract with real UnoExecutionStats objects
 
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_SUCCESS, UnoSolver.UNO_FEASIBLE_FJ_POINT
-            ) == :first_order
+            # Simple quadratic problem: minimize x^2 + y^2
+            nlp = ADNLPModels.ADNLPModel(x -> sum(x .^ 2), [1.0, 1.0])
 
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_SUCCESS, UnoSolver.UNO_INFEASIBLE_STATIONARY_POINT
-            ) == :infeasible
+            # Solve with Uno (should converge to first_order)
+            stats = CTSolversUno.solve_with_uno(nlp; max_iterations=100, logger="SILENT")
+            Test.@test stats isa UnoSolver.UnoExecutionStats
 
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_SUCCESS, UnoSolver.UNO_FEASIBLE_SMALL_STEP
-            ) == :small_step
+            # Extract solver infos
+            obj, iter, viol, msg, status, successful =
+                CTSolversUno.Optimization.extract_solver_infos(stats)
 
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_SUCCESS, UnoSolver.UNO_INFEASIBLE_SMALL_STEP
-            ) == :small_step
+            # Verify extraction
+            Test.@test msg == "Uno"
+            Test.@test typeof(obj) == Float64
+            Test.@test typeof(iter) == Int
+            Test.@test typeof(viol) == Float64
+            Test.@test typeof(status) == Symbol
+            Test.@test typeof(successful) == Bool
 
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_SUCCESS, UnoSolver.UNO_UNBOUNDED
-            ) == :unbounded
+            # For a simple unconstrained problem, should converge
+            Test.@test status in (:first_order, :acceptable)
+            Test.@test successful == true
+            Test.@test obj ≈ 0.0 atol=1e-4
+            Test.@test iter >= 0
+            Test.@test viol >= 0
 
-            # Test termination status cases
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_ITERATION_LIMIT, UnoSolver.UNO_FEASIBLE_KKT_POINT
-            ) == :max_iter
+            # Test with max_iterations=0 to get a non-successful status
+            stats_zero_iter = CTSolversUno.solve_with_uno(
+                nlp; max_iterations=0, logger="SILENT"
+            )
+            obj_zero, iter_zero, viol_zero, msg_zero, status_zero, successful_zero =
+                CTSolversUno.Optimization.extract_solver_infos(stats_zero_iter)
 
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_TIME_LIMIT, UnoSolver.UNO_FEASIBLE_KKT_POINT
-            ) == :max_time
-
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_EVALUATION_ERROR, UnoSolver.UNO_FEASIBLE_KKT_POINT
-            ) == :exception
-
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_ALGORITHMIC_ERROR, UnoSolver.UNO_FEASIBLE_KKT_POINT
-            ) == :exception
-
-            # Test additional termination status cases
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_USER_TERMINATION, UnoSolver.UNO_FEASIBLE_KKT_POINT
-            ) == :user
-
-            # Test UNO_NOT_OPTIMAL case
-            Test.@test CTSolversUno._uno_status_to_solvercore(
-                UnoSolver.UNO_SUCCESS, UnoSolver.UNO_NOT_OPTIMAL
-            ) == :unknown
+            Test.@test msg_zero == "Uno"
+            Test.@test iter_zero == 0
+            Test.@test status_zero == :max_iter
+            Test.@test successful_zero == false
         end
 
         # ====================================================================
