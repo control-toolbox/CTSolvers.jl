@@ -130,9 +130,10 @@ $(TYPEDSIGNATURES)
 
 Return the description for the Knitro solver.
 """
-Strategies.description(::Type{<:Solvers.Knitro}) =
+function Strategies.description(::Type{<:Solvers.Knitro})
     "Commercial NLP solver by Artelys (requires license).\n" *
     "See: https://www.artelys.com/app/docs/knitro/3_referenceManual/userOptions.html"
+end
 
 """
 $(TYPEDSIGNATURES)

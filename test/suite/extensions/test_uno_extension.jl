@@ -85,8 +85,9 @@ function test_uno_extension()
             Test.@test stats isa UnoSolver.UnoExecutionStats
 
             # Extract solver infos
-            obj, iter, viol, msg, status, successful =
-                CTSolversUno.Optimization.extract_solver_infos(stats)
+            obj, iter, viol, msg, status, successful = CTSolversUno.Optimization.extract_solver_infos(
+                stats
+            )
 
             # Verify extraction
             Test.@test msg == "Uno"
@@ -107,8 +108,9 @@ function test_uno_extension()
             stats_zero_iter = CTSolversUno.solve_with_uno(
                 nlp; max_iterations=0, logger="SILENT"
             )
-            obj_zero, iter_zero, viol_zero, msg_zero, status_zero, successful_zero =
-                CTSolversUno.Optimization.extract_solver_infos(stats_zero_iter)
+            obj_zero, iter_zero, viol_zero, msg_zero, status_zero, successful_zero = CTSolversUno.Optimization.extract_solver_infos(
+                stats_zero_iter
+            )
 
             Test.@test msg_zero == "Uno"
             Test.@test iter_zero == 0

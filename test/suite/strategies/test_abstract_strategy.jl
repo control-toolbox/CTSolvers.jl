@@ -55,12 +55,15 @@ struct FakeStrategyWithDescription <: Strategies.AbstractStrategy
 end
 
 Strategies.id(::Type{<:FakeStrategyWithDescription}) = :fake_described
-Strategies.metadata(::Type{<:FakeStrategyWithDescription}) = Strategies.StrategyMetadata(
-    Options.OptionDefinition(; name=:n, type=Int, default=10, description="Grid size.")
-)
+function Strategies.metadata(::Type{<:FakeStrategyWithDescription})
+    Strategies.StrategyMetadata(
+        Options.OptionDefinition(; name=:n, type=Int, default=10, description="Grid size.")
+    )
+end
 Strategies.options(s::FakeStrategyWithDescription) = s.options
-Strategies.description(::Type{<:FakeStrategyWithDescription}) =
+function Strategies.description(::Type{<:FakeStrategyWithDescription})
     "A strategy for testing description display.\nSee: https://example.com"
+end
 
 # ============================================================================
 # Test function
