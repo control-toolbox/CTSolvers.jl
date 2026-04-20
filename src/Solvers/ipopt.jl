@@ -127,9 +127,10 @@ $(TYPEDSIGNATURES)
 
 Return the description for the Ipopt solver.
 """
-Strategies.description(::Type{<:Solvers.Ipopt}) =
+function Strategies.description(::Type{<:Solvers.Ipopt})
     "Interior-point NLP solver (COIN-OR Ipopt).\n" *
     "See: https://coin-or.github.io/Ipopt/OPTIONS.html"
+end
 
 """
 $(TYPEDSIGNATURES)

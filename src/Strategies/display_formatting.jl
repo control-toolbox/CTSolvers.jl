@@ -38,7 +38,9 @@ _print_labeled_multiline(stdout, "├─ ", "│  ", fmt, "description: ", "Line
 # │               Line two.
 ```
 """
-function _print_labeled_multiline(io::IO, prefix::String, cont::String, fmt, label::String, text::String)
+function _print_labeled_multiline(
+    io::IO, prefix::String, cont::String, fmt, label::String, text::String
+)
     lines = split(text, '\n')
     println(io, prefix, fmt.label, label, fmt.reset, lines[1])
     if length(lines) > 1

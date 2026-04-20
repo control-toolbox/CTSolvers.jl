@@ -572,7 +572,9 @@ function _describe_single_metadata(io::IO, fmt, strategy_type::Type)
         prefix = is_last ? "   └─ " : "   ├─ "
         cont = is_last ? "      " : "   │  "
         println(io, prefix, def)
-        _print_labeled_multiline(io, cont, cont, fmt, "description: ", Options.description(def))
+        _print_labeled_multiline(
+            io, cont, cont, fmt, "description: ", Options.description(def)
+        )
         # Add separator line between options (except after last)
         if !is_last
             println(io, cont)
@@ -779,7 +781,9 @@ function _describe_multi_param_metadata(io::IO, fmt, strategy_types::Vector, par
             # Use definition from first available parameter
             (P, def) = first(option_defs[name])
             println(io, prefix, def)
-            _print_labeled_multiline(io, cont, cont, fmt, "description: ", Options.description(def))
+            _print_labeled_multiline(
+                io, cont, cont, fmt, "description: ", Options.description(def)
+            )
 
             if !is_last
                 println(io, cont)

@@ -496,7 +496,9 @@ function describe(io::IO, ::Type{T}) where {T<:AbstractStrategy}
         prefix = is_last ? "   └─ " : "   ├─ "
         cont = is_last ? "      " : "   │  "
         println(io, prefix, def)
-        _print_labeled_multiline(io, cont, cont, fmt, "description: ", Options.description(def))
+        _print_labeled_multiline(
+            io, cont, cont, fmt, "description: ", Options.description(def)
+        )
         # Add separator line between options (except after last)
         if !is_last
             println(io, cont)

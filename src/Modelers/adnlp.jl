@@ -225,9 +225,10 @@ $(TYPEDSIGNATURES)
 
 Return the description for the ADNLP modeler.
 """
-Strategies.description(::Type{<:Modelers.ADNLP}) =
+function Strategies.description(::Type{<:Modelers.ADNLP})
     "NLP modeler using ADNLPModels with automatic differentiation.\n" *
     "See: https://jso.dev/ADNLPModels.jl"
+end
 
 """
 $(TYPEDSIGNATURES)

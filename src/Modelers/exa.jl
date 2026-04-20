@@ -225,9 +225,10 @@ $(TYPEDSIGNATURES)
 
 Return the description for the Exa modeler.
 """
-Strategies.description(::Type{<:Modelers.Exa}) =
+function Strategies.description(::Type{<:Modelers.Exa})
     "NLP modeler using ExaModels, supporting CPU and GPU execution.\n" *
     "See: https://exanauts.github.io/ExaModels.jl"
+end
 
 """
 $(TYPEDSIGNATURES)
