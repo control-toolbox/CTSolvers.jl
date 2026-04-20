@@ -281,8 +281,7 @@ function test_madncl_extension()
                 (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)
             Test.@test length(stats.solution) == 1
             Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
-            # Note: MadNCL does NOT invert the sign (unlike MadNLP)
-            Test.@test_broken stats.objective ≈
+            Test.@test stats.objective ≈
                 TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
         end
 
@@ -447,8 +446,7 @@ function test_madncl_extension()
                             Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                             Test.@test length(sol.solution) == 1
                             Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
-                            # MadNCL does NOT invert sign (unlike MadNLP)
-                            Test.@test_broken sol.objective ≈
+                            Test.@test sol.objective ≈
                                 TestProblems.max1minusx2_objective(
                                 max_prob.sol
                             ) atol=1e-6
