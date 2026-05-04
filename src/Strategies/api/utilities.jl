@@ -61,10 +61,9 @@ $(TYPEDSIGNATURES)
 
 Extract strategy options as a mutable Dict, ready for modification.
 
-This is a convenience method that combines three steps into one:
+This is a convenience method that combines two steps into one:
 1. Getting `StrategyOptions` from the strategy
-2. Extracting raw values (unwrapping `OptionValue`)
-3. Converting to `Dict` for modification
+2. Converting to `Dict` via `options_dict(StrategyOptions)`
 
 # Arguments
 - `strategy::AbstractStrategy`: Strategy instance (solver, modeler, etc.)
@@ -91,16 +90,14 @@ julia> solve_with_ipopt(nlp; options...)
 ```
 
 # Notes
-This function is particularly useful in solver extensions and modelers where
-you need to extract options and potentially modify them before passing to
-backend solvers or model builders.
+This function delegates to `options_dict(StrategyOptions)` for the actual conversion.
+It is particularly useful in solver extensions and modelers where you need to extract
+options and potentially modify them before passing to backend solvers or model builders.
 
-See also: `options`, `Options.extract_raw_options`
+See also: `options`, `options_dict(::StrategyOptions)`
 """
 function options_dict(strategy::AbstractStrategy)
-    opts = options(strategy)
-    raw_opts = Options.extract_raw_options(_raw_options(opts))
-    return Dict{Symbol,Any}(pairs(raw_opts))
+    return options_dict(options(strategy))
 end
 
 """
