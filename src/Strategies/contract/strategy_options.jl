@@ -619,6 +619,55 @@ function Base.haskey(opts::StrategyOptions, key::Symbol)
 end
 
 # ============================================================================
+# Conversion utilities
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract strategy options as a mutable Dict, ready for modification.
+
+This method converts StrategyOptions to a Dict by unwrapping OptionValue
+wrappers and filtering out NotProvided values. The resulting Dict is mutable
+and can be modified before passing to backend solvers or model builders.
+
+# Arguments
+- `opts::StrategyOptions`: Strategy options to convert
+
+# Returns
+- `Dict{Symbol, Any}`: Mutable dictionary of option values
+
+# Example
+```julia-repl
+julia> using CTSolvers.Strategies, CTSolvers.Options
+
+julia> opts = StrategyOptions(
+           max_iter = OptionValue(500, :user),
+           tolerance = OptionValue(1e-8, :default)
+       )
+
+julia> dict = options_dict(opts)
+Dict{Symbol, Any} with 2 entries:
+  :max_iter => 500
+  :tolerance => 1.0e-8
+
+julia> dict[:verbose] = true  # Modify as needed
+true
+```
+
+# Notes
+- NotProvided values are filtered out
+- Explicit nothing values are preserved
+- The returned Dict is mutable and independent from the original StrategyOptions
+
+See also: `Options.extract_raw_options`, `_raw_options`
+"""
+function options_dict(opts::StrategyOptions)
+    raw_opts = Options.extract_raw_options(_raw_options(opts))
+    return Dict{Symbol,Any}(pairs(raw_opts))
+end
+
+# ============================================================================
 # Display
 # ============================================================================
 

@@ -293,6 +293,27 @@ for (k, v) in pairs(opts)
 end
 ```
 
+### Conversion to Dict
+
+StrategyOptions can be converted to a mutable `Dict` for modification before passing to backend solvers or model builders:
+
+```@example options
+dict = CTSolvers.Strategies.options_dict(opts)
+println("Type: ", typeof(dict))
+println("max_iter: ", dict[:max_iter])
+```
+
+The conversion unwraps `OptionValue` wrappers and filters out `NotProvided` values:
+
+```@example options
+# Modify the dict (doesn't affect original StrategyOptions)
+dict[:max_iter] = 1000
+println("Dict: ", dict[:max_iter])
+println("Original: ", opts[:max_iter])
+```
+
+This pattern is commonly used in solver extensions and modelers to customize options before passing them to backend implementations.
+
 ## Validation Modes
 
 `build_strategy_options` supports two validation modes.

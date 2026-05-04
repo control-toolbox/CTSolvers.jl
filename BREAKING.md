@@ -5,6 +5,52 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.17 (2026-05-04)
+
+**No breaking changes.**
+
+This release adds a new `options_dict` method for `StrategyOptions` and refactors the existing `AbstractStrategy` method to delegate to it.
+
+### Summary - v0.4.17
+
+- Added `options_dict(opts::StrategyOptions)` method for direct conversion from StrategyOptions to Dict
+- Refactored `options_dict(strategy::AbstractStrategy)` to delegate to the new StrategyOptions method
+- Added comprehensive tests for the new StrategyOptions method (conversion, type stability, filtering)
+- Updated docstrings for both methods with examples
+- Updated documentation guide to mention the new method
+- Improved architectural coherence by placing conversion logic on the type being converted
+
+### Migration - v0.4.17
+
+**No action required.** All existing code continues to work without changes.
+
+**New behavior:**
+
+- `options_dict` can now be called directly on `StrategyOptions` without a strategy instance
+- The existing `options_dict(strategy::AbstractStrategy)` method delegates to the new method internally
+- Both methods produce identical results
+
+**Example:**
+
+```julia
+# New: Direct conversion from StrategyOptions
+opts = Strategies.build_strategy_options(MyStrategy; max_iter=500, tol=1e-6)
+dict = Strategies.options_dict(opts)  # Works directly on StrategyOptions
+
+# Existing: Conversion via strategy (still works)
+strategy = MyStrategy(opts)
+dict = Strategies.options_dict(strategy)  # Delegates to StrategyOptions method
+```
+
+**Benefits:**
+
+- **Better testability**: Direct conversion can be tested without creating full strategy instances
+- **Reduced duplication**: Conversion logic is centralized in one place (StrategyOptions)
+- **Architectural coherence**: Conversion logic belongs to the type being converted
+- **No API changes**: All existing code continues to work unchanged
+
+---
+
 ## v0.4.15 (2026-04-14)
 
 **No breaking changes.**
