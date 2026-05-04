@@ -8,6 +8,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.17] - 2026-05-04
+
+### Added
+
+- **StrategyOptions to Dict conversion** - New `options_dict(opts::StrategyOptions)` method
+  - Converts StrategyOptions directly to mutable Dict without requiring a strategy instance
+  - Unwraps OptionValue wrappers and filters out NotProvided values
+  - Preserves explicit nothing values
+  - Enables direct conversion in code paths that have StrategyOptions but not a full strategy
+
+### Changed
+
+- **options_dict refactoring** - Refactored `options_dict(strategy::AbstractStrategy)` to delegate to new StrategyOptions method
+  - Reduces code duplication by centralizing conversion logic in StrategyOptions
+  - Improves architectural coherence (conversion logic belongs to the type being converted)
+  - Maintains backward compatibility (no API changes)
+
+### Tests
+
+- **StrategyOptions options_dict tests** - Added 4 new testsets in `test_utilities.jl`:
+  - Direct StrategyOptions conversion with mutable Dict verification
+  - Type stability check with `@inferred`
+  - NotProvided value filtering
+  - Explicit nothing value preservation
+
+### Documentation
+
+- **options_system.md** - Added "Conversion to Dict" subsection in StrategyOptions section
+  - Shows how to convert StrategyOptions to Dict directly
+  - Demonstrates mutability and independence from original StrategyOptions
+  - References the utility pattern for solver extensions
+
+---
+
 ## [0.4.15] - 2026-04-14
 
 ### Added
