@@ -333,9 +333,9 @@ function test_utilities()
             Test.@testset "Direct StrategyOptions conversion" begin
                 # Create StrategyOptions directly
                 opts = Strategies.StrategyOptions(
-                    max_iter = Options.OptionValue(500, :user),
-                    tolerance = Options.OptionValue(1e-8, :user),
-                    verbose = Options.OptionValue(true, :default),
+                    max_iter=Options.OptionValue(500, :user),
+                    tolerance=Options.OptionValue(1e-8, :user),
+                    verbose=Options.OptionValue(true, :default),
                 )
 
                 # Convert to Dict
@@ -361,8 +361,8 @@ function test_utilities()
 
             Test.@testset "Type Stability" begin
                 opts = Strategies.StrategyOptions(
-                    max_iter = Options.OptionValue(500, :user),
-                    tolerance = Options.OptionValue(1e-8, :user),
+                    max_iter=Options.OptionValue(500, :user),
+                    tolerance=Options.OptionValue(1e-8, :user),
                 )
                 result = Test.@inferred Strategies.options_dict(opts)
                 Test.@test result isa Dict{Symbol,Any}
@@ -371,8 +371,8 @@ function test_utilities()
             Test.@testset "NotProvided filtering" begin
                 # Create StrategyOptions with NotProvided value
                 opts = Strategies.StrategyOptions(
-                    max_iter = Options.OptionValue(500, :user),
-                    optional = Options.OptionValue(Options.NotProvided, :default),
+                    max_iter=Options.OptionValue(500, :user),
+                    optional=Options.OptionValue(Options.NotProvided, :default),
                 )
 
                 # Convert to Dict
@@ -386,8 +386,8 @@ function test_utilities()
             Test.@testset "Nothing preservation" begin
                 # Create StrategyOptions with explicit nothing
                 opts = Strategies.StrategyOptions(
-                    max_iter = Options.OptionValue(500, :user),
-                    optional = Options.OptionValue(nothing, :default),
+                    max_iter=Options.OptionValue(500, :user),
+                    optional=Options.OptionValue(nothing, :default),
                 )
 
                 # Convert to Dict
