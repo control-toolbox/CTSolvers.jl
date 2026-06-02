@@ -369,7 +369,6 @@ function solve_with_uno(
     nlp::NLPModels.AbstractNLPModel; kwargs...
 )::UnoSolver.UnoExecutionStats
     uno_stats = UnoSolver.uno(nlp; kwargs...)
-    # return _uno_to_generic_stats(uno_stats)
     return uno_stats
 end
 

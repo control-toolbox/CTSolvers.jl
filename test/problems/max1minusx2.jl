@@ -33,10 +33,10 @@ function Max1MinusX2()
     function build_exa_model(
         ::Type{BaseType}, initial_guess::AbstractVector; kwargs...
     )::ExaModels.ExaModel where {BaseType<:AbstractFloat}
-        m = ExaModels.ExaCore(BaseType; minimize=minimize, kwargs...)
-        x = ExaModels.variable(m, length(initial_guess); start=initial_guess)
-        ExaModels.objective(m, F(x))
-        ExaModels.constraint(m, c(x); lcon=lcon, ucon=ucon)
+        m = ExaModels.ExaCore(BaseType; concrete=Val(true), minimize=minimize, kwargs...)
+        ExaModels.@add_var(m, x, length(initial_guess); start=initial_guess)
+        ExaModels.@add_obj(m, F(x))
+        ExaModels.@add_con(m, c(x); lcon=lcon, ucon=ucon)
         return ExaModels.ExaModel(m)
     end
 

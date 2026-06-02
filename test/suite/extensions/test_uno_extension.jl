@@ -170,7 +170,7 @@ function test_uno_extension()
             nlp = ADNLPModels.ADNLPModel(x -> sum(x .^ 2), [1.0, 2.0])
 
             # Test with display=false sets logger=SILENT
-            solver_verbose = Solvers.Uno(max_iterations=10, logger="INFO")
+            solver_verbose = Solvers.Uno(max_iterations=10, logger="SILENT")
 
             # Note: We can't easily test the internal behavior without actually solving,
             # but we can verify the solver accepts the display parameter
