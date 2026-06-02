@@ -237,9 +237,9 @@ function test_optimization()
                 function test_exa_builder(::Type{T}, x; backend=nothing) where {T}
                     calls[] += 1
                     # Use correct ExaModels syntax (like in Rosenbrock)
-                    m = ExaModels.ExaCore(T; backend=backend)
-                    x_var = ExaModels.variable(m, length(x); start=x)
-                    ExaModels.objective(m, sum(x_var[i]^2 for i in 1:length(x)))
+                    m = ExaModels.ExaCore(T; concrete=Val(true), backend=backend)
+                    ExaModels.@add_var(m, x_var, length(x); start=x)
+                    ExaModels.@add_obj(m, sum(x_var[i]^2 for i in 1:length(x)))
                     return ExaModels.ExaModel(m)
                 end
 
@@ -311,11 +311,11 @@ function test_optimization()
             )
             exa_builder = Optimization.ExaModelBuilder(
                 (T, x) -> begin
-                    m = ExaModels.ExaCore(T)
-                    x_var = ExaModels.variable(m, length(x); start=x)
+                    m = ExaModels.ExaCore(T; concrete=Val(true))
+                    ExaModels.@add_var(m, x_var, length(x); start=x)
                     # Define objective using ExaModels syntax (like Rosenbrock)
                     obj_func(v) = sum(v[i]^2 for i in 1:length(x))
-                    ExaModels.objective(m, obj_func(x_var))
+                    ExaModels.@add_obj(m, obj_func(x_var))
                     ExaModels.ExaModel(m)
                 end
             )
@@ -363,11 +363,11 @@ function test_optimization()
             )
             exa_builder = Optimization.ExaModelBuilder(
                 (T, x) -> begin
-                    m = ExaModels.ExaCore(T)
-                    x_var = ExaModels.variable(m, length(x); start=x)
+                    m = ExaModels.ExaCore(T; concrete=Val(true))
+                    ExaModels.@add_var(m, x_var, length(x); start=x)
                     # Define objective using ExaModels syntax (like Rosenbrock)
                     obj_func(v) = sum(v[i]^2 for i in 1:length(x))
-                    ExaModels.objective(m, obj_func(x_var))
+                    ExaModels.@add_obj(m, obj_func(x_var))
                     ExaModels.ExaModel(m)
                 end
             )
@@ -483,10 +483,10 @@ function test_optimization()
                 )
                 exa_builder = Optimization.ExaModelBuilder(
                     (T, x) -> begin
-                        c = ExaModels.ExaCore(T)
-                        ExaModels.variable(c, 1 <= x[i = 1:length(x)] <= 3, start=x[i])
-                        ExaModels.objective(c, sum(x[i]^2 for i in 1:length(x)))
-                        ExaModels.ExaModel(c)
+                        m = ExaModels.ExaCore(T; concrete=Val(true))
+                        ExaModels.@add_var(m, x_var, length(x); start=x)
+                        ExaModels.@add_obj(m, sum(x_var[i]^2 for i in 1:length(x)))
+                        return ExaModels.ExaModel(m)
                     end,
                 )
                 adnlp_sol_builder = Optimization.ADNLPSolutionBuilder(
@@ -532,10 +532,10 @@ function test_optimization()
                 exa_builder = Optimization.ExaModelBuilder(
                     (T, x) -> begin
                         n = length(x)
-                        m = ExaModels.ExaCore(T)
-                        x_var = ExaModels.variable(m, n; start=x)
+                        m = ExaModels.ExaCore(T; concrete=Val(true))
+                        ExaModels.@add_var(m, x_var, n; start=x)
                         # Define objective directly (like Rosenbrock does with F(x))
-                        ExaModels.objective(m, sum(x_var[i]^2 for i in 1:n))
+                        ExaModels.@add_obj(m, sum(x_var[i]^2 for i in 1:n))
                         ExaModels.ExaModel(m)
                     end
                 )

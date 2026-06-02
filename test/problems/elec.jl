@@ -58,18 +58,18 @@ function Elec(; np::Int=5, seed::Int=2713)
     function build_exa_model(
         ::Type{BaseType}, guess::NamedTuple; kwargs...
     )::ExaModels.ExaModel where {BaseType<:AbstractFloat}
-        m = ExaModels.ExaCore(BaseType; minimize=minimize, kwargs...)
+        m = ExaModels.ExaCore(BaseType; concrete=Val(true), minimize=minimize, kwargs...)
 
-        x = ExaModels.variable(m, 1:np; start=guess.x)
-        y = ExaModels.variable(m, 1:np; start=guess.y)
-        z = ExaModels.variable(m, 1:np; start=guess.z)
+        ExaModels.@add_var(m, x, 1:np; start=guess.x)
+        ExaModels.@add_var(m, y, 1:np; start=guess.y)
+        ExaModels.@add_var(m, z, 1:np; start=guess.z)
 
         # Coulomb potential objective
         itr = [(i, j) for i in 1:(np - 1) for j in (i + 1):np]
-        ExaModels.objective(m, sum(elec_objective(x, y, z, i, j) for (i, j) in itr))
+        ExaModels.@add_obj(m, sum(elec_objective(x, y, z, i, j) for (i, j) in itr))
 
         # Unit-ball constraints
-        ExaModels.constraint(m, elec_constraint(x, y, z, i) for i in 1:np)
+        ExaModels.@add_con(m, elec_constraint(x, y, z, i) for i in 1:np)
 
         return ExaModels.ExaModel(m)
     end

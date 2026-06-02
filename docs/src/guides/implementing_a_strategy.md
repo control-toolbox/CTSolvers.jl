@@ -155,7 +155,9 @@ Strategies.validate_strategy_contract(Collocation)
 
 ### Step 8 — Access options
 
-The `StrategyOptions` object tracks both values and their provenance:
+The `StrategyOptions` object tracks both values and their provenance. You can access options in two ways:
+
+**Via the `options` getter:**
 
 ```@repl strategy
 c = Collocation(grid_size = 100)
@@ -165,6 +167,16 @@ Strategies.options(c)
 ```@repl strategy
 Strategies.options(c)[:grid_size]
 ```
+
+**Directly on the strategy instance (syntactic sugar):**
+
+```@repl strategy
+c[:grid_size]
+```
+
+Both methods are equivalent — the direct access delegates to `options(strategy)[key]`. Use whichever style you prefer.
+
+**Accessing provenance information:**
 
 ```@repl strategy
 Strategies.source(Strategies.options(c), :grid_size)

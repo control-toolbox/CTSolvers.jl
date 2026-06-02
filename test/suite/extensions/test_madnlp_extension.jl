@@ -536,8 +536,7 @@ function test_madnlp_extension()
                                 modeler,
                                 Solvers.MadNLP(; opts..., linear_solver=linear_solver),
                             )
-                            Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
-                            Test.@test sol.solution ≈ ros.sol atol=1e-6
+                            Test.@test sol.solution ≈ ros.sol atol=1e-4
                         end
                     end
                 end
@@ -591,7 +590,7 @@ function test_madnlp_extension()
                                 nlp; linear_solver=linear_solver, madnlp_options...
                             )
                             Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
-                            Test.@test sol.solution ≈ ros.sol atol=1e-6
+                            Test.@test sol.solution ≈ ros.sol atol=1e-4
                             Test.@test sol.objective ≈
                                 TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
                         end

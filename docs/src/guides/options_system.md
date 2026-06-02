@@ -206,6 +206,26 @@ opt = OptionValue(200, :user)
 - For predicates on a strategy: `Strategies.option_is_user(strategy, key)` (or `Options.is_user(options(strategy), key)`).
 - Avoid direct field access (`.value`, `.source`, `.options`), which is reserved for the owning module.
 
+**Accessing options from a strategy instance:**
+
+You can access strategy options in two equivalent ways:
+
+```julia
+using CTSolvers.Strategies
+
+# Build a strategy instance
+strategy = DemoStrategy(max_iter=250, tol=1e-7)
+
+# Method 1: Via the options getter (explicit)
+opts = Strategies.options(strategy)
+value = opts[:max_iter]  # Returns: 250
+
+# Method 2: Directly on the strategy (syntactic sugar)
+value = strategy[:max_iter]  # Returns: 250 (equivalent to above)
+```
+
+Both methods delegate to the same underlying `StrategyOptions` collection. The direct access (`strategy[:key]`) is provided for convenience and is equivalent to `options(strategy)[:key]`.
+
 **Example usage** (using `DemoStrategy` defined below):
 
 ```julia

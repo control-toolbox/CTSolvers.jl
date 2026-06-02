@@ -204,9 +204,9 @@ function test_error_cases()
                 # Float32
                 builder32 = Optimization.ExaModelBuilder(
                     (T, x) -> begin
-                        m = ExaModels.ExaCore(T)
-                        x_var = ExaModels.variable(m, length(x); start=x)
-                        ExaModels.objective(m, sum(x_var[i]^2 for i in 1:length(x)))
+                        m = ExaModels.ExaCore(T; concrete=Val(true))
+                        ExaModels.@add_var(m, x_var, length(x); start=x)
+                        ExaModels.@add_obj(m, sum(x_var[i]^2 for i in 1:length(x)))
                         ExaModels.ExaModel(m)
                     end,
                 )

@@ -5,6 +5,49 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.18-beta (2026-06-02)
+
+**No breaking changes.**
+
+This release adds convenient collection interface methods to `AbstractStrategy` for direct option access.
+
+### Summary - v0.4.18-beta
+
+- Added `Base.getindex(strategy::AbstractStrategy, key::Symbol)` for direct option access with alias resolution
+- Added `Base.haskey(strategy::AbstractStrategy, key::Symbol)` for checking option existence
+- Added `Base.keys(strategy::AbstractStrategy)` for listing all option names
+- All methods delegate to `options(strategy)` for full StrategyOptions functionality
+- Added comprehensive tests for the new collection interface
+- Updated documentation to explain both access patterns (via `options()` getter and direct access)
+
+### Migration - v0.4.18-beta
+
+**No action required.** All existing code continues to work without changes.
+
+**New behavior:**
+
+Strategy instances now support bracket notation for option access, equivalent to calling `options(strategy)[key]`:
+
+```julia
+# New: Direct access (syntactic sugar)
+strategy[:max_iter]  # Returns option value with alias resolution
+haskey(strategy, :max_iter)  # Checks if option exists
+keys(strategy)  # Lists all option names
+
+# Existing: Via options getter (still works)
+opts = options(strategy)
+opts[:max_iter]  # Same result as above
+```
+
+**Benefits:**
+
+- **More idiomatic Julia**: Bracket notation is familiar from Dict, NamedTuple, etc.
+- **Less verbose**: No need to call `options()` for simple value access
+- **Full functionality**: Aliases, provenance tracking, and all StrategyOptions features still work
+- **No API changes**: All existing code continues to work unchanged
+
+---
+
 ## v0.4.17 (2026-05-04)
 
 **No breaking changes.**
