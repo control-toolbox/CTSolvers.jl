@@ -141,6 +141,49 @@ function test_abstract_strategy()
                     incomplete_strategy
                 )
             end
+
+            Test.@testset "Collection interface - getindex" begin
+                # Use build_strategy_options to properly initialize alias_map
+                fake_opts = Strategies.build_strategy_options(FakeStrategy; max_iter=200, tol=1e-8)
+                fake_strategy = FakeStrategy(fake_opts)
+
+                # Test getindex with canonical name
+                Test.@test fake_strategy[:max_iter] == 200
+                Test.@test fake_strategy[:tol] == 1e-8
+
+                # Test getindex with alias (requires build_strategy_options for alias_map)
+                Test.@test fake_strategy[:max] == 200
+                Test.@test fake_strategy[:maxiter] == 200
+            end
+
+            Test.@testset "Collection interface - haskey" begin
+                # Use build_strategy_options to properly initialize alias_map
+                fake_opts = Strategies.build_strategy_options(FakeStrategy; max_iter=200, tol=1e-8)
+                fake_strategy = FakeStrategy(fake_opts)
+
+                # Test haskey with canonical name
+                Test.@test haskey(fake_strategy, :max_iter)
+                Test.@test haskey(fake_strategy, :tol)
+
+                # Test haskey with alias (requires build_strategy_options for alias_map)
+                Test.@test haskey(fake_strategy, :max)
+                Test.@test haskey(fake_strategy, :maxiter)
+
+                # Test haskey with non-existent key
+                Test.@test !haskey(fake_strategy, :nonexistent)
+            end
+
+            Test.@testset "Collection interface - keys" begin
+                # Use build_strategy_options to properly initialize alias_map
+                fake_opts = Strategies.build_strategy_options(FakeStrategy; max_iter=200, tol=1e-8)
+                fake_strategy = FakeStrategy(fake_opts)
+
+                # Test keys returns all option names
+                key_list = collect(keys(fake_strategy))
+                Test.@test :max_iter in key_list
+                Test.@test :tol in key_list
+                Test.@test length(key_list) == 2
+            end
         end
 
         # ========================================================================

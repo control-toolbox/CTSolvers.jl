@@ -8,6 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.18-beta] - 2026-06-02
+
+### Added
+
+- **AbstractStrategy collection interface** - Direct option access methods on strategy instances
+  - `Base.getindex(strategy, key)` - Access option values with alias resolution via `strategy[:key]`
+  - `Base.haskey(strategy, key)` - Check option existence via `haskey(strategy, :key)`
+  - `Base.keys(strategy)` - List all option names via `keys(strategy)`
+  - All methods delegate to `options(strategy)` for full StrategyOptions functionality
+  - Provides idiomatic Julia syntax similar to Dict and NamedTuple
+
+### Changed
+
+- **Documentation** - Updated guides to explain both option access patterns
+  - `implementing_a_strategy.md` - Added section explaining direct access vs `options()` getter
+  - `options_system.md` - Added "Accessing options from a strategy instance" subsection
+  - Both methods are equivalent; users can choose their preferred style
+
+### Tests
+
+- **AbstractStrategy collection interface tests** - Added 3 new testsets in `test_abstract_strategy.jl`:
+  - `getindex` tests with canonical names and alias resolution
+  - `haskey` tests with canonical names, aliases, and non-existent keys
+  - `keys` tests for option name listing
+  - All tests use `build_strategy_options` for proper alias initialization
+
+---
+
 ## [0.4.17] - 2026-05-04
 
 ### Added

@@ -266,6 +266,119 @@ function options(strategy::T) where {T<:AbstractStrategy}
 end
 
 # ============================================================================
+# Collection Interface - Delegation to StrategyOptions
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Get the value of a strategy option (without source information).
+
+This method delegates to the underlying `StrategyOptions` collection, providing
+convenient bracket notation access to strategy options. Aliases are automatically
+resolved to canonical names.
+
+# Arguments
+- `strategy::AbstractStrategy`: The strategy instance
+- `key::Symbol`: Option name (canonical or alias)
+
+# Returns
+- The unwrapped option value
+
+# Example
+```julia-repl
+julia> modeler = Modelers.ADNLP(backend=:sparse, max_iter=1000)
+
+julia> modeler[:max_iter]  # Canonical name
+1000
+
+julia> modeler[:maxiter]   # Alias - automatically resolved
+1000
+```
+
+# Notes
+- This is syntactic sugar for `options(strategy)[key]`
+- All functionality (alias resolution, provenance tracking) is handled by StrategyOptions
+- Use `options(strategy)` for full access to OptionValue objects with source information
+
+See also: [`options`](@ref), [`Base.haskey`](@ref), [`Base.keys`](@ref), [`CTSolvers.Strategies.StrategyOptions`](@extref)
+"""
+function Base.getindex(strategy::AbstractStrategy, key::Symbol)
+    return options(strategy)[key]
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Check if a strategy option exists.
+
+This method delegates to the underlying `StrategyOptions` collection. Aliases are
+automatically resolved to canonical names.
+
+# Arguments
+- `strategy::AbstractStrategy`: The strategy instance
+- `key::Symbol`: Option name to check (canonical or alias)
+
+# Returns
+- `Bool`: `true` if the option exists
+
+# Example
+```julia-repl
+julia> modeler = Modelers.ADNLP(backend=:sparse)
+
+julia> haskey(modeler, :max_iter)
+true
+
+julia> haskey(modeler, :maxiter)  # Alias - automatically resolved
+true
+
+julia> haskey(modeler, :nonexistent)
+false
+```
+
+# Notes
+- This is syntactic sugar for `haskey(options(strategy), key)`
+- Aliases are automatically resolved to canonical names
+
+See also: [`options`](@ref), [`Base.getindex`](@ref), [`Base.keys`](@ref), [`CTSolvers.Strategies.StrategyOptions`](@extref)
+"""
+function Base.haskey(strategy::AbstractStrategy, key::Symbol)
+    return haskey(options(strategy), key)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Get all option names for a strategy.
+
+This method delegates to the underlying `StrategyOptions` collection, providing
+access to all option names (canonical names only, not aliases).
+
+# Arguments
+- `strategy::AbstractStrategy`: The strategy instance
+
+# Returns
+- Iterator of option names (Symbols)
+
+# Example
+```julia-repl
+julia> modeler = Modelers.ADNLP(backend=:sparse, max_iter=1000)
+
+julia> collect(keys(modeler))
+[:backend, :max_iter, :matrix_free, :show_time, :name]
+```
+
+# Notes
+- This is syntactic sugar for `keys(options(strategy))`
+- Returns canonical names only (not aliases)
+
+See also: [`options`](@ref), [`Base.getindex`](@ref), [`Base.haskey`](@ref), [`CTSolvers.Strategies.StrategyOptions`](@extref)
+"""
+function Base.keys(strategy::AbstractStrategy)
+    return keys(options(strategy))
+end
+
+# ============================================================================
 # Display - Instance
 # ============================================================================
 

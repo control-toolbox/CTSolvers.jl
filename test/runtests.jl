@@ -40,6 +40,8 @@ CTBase.run_tests(;
     verbose=VERBOSE,
     showtiming=SHOWTIMING,
     test_dir=@__DIR__,
+    progress_bar_threshold=100,
+    show_progress_bar=false,
 )
 
 # If running with coverage enabled, remind the user to run the post-processing script
