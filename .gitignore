@@ -32,7 +32,7 @@ Manifest.toml
 tmp/
 .reports/
 .resources/
-.windsurf/
+.devin/
 .vscode/
 .extras/
 .coverage/
