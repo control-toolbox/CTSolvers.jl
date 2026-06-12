@@ -451,7 +451,7 @@ function Base.show(io::IO, ::MIME"text/plain", strategy::T) where {T<:AbstractSt
         )
     end
 
-    println(
+    return println(
         io,
         fmt.label,
         "Tip: use describe(",
@@ -499,7 +499,7 @@ function Base.show(io::IO, strategy::T) where {T<:AbstractStrategy}
             ", ",
         ),
     )
-    print(io, ")")
+    return print(io, ")")
 end
 
 # ============================================================================
@@ -565,7 +565,7 @@ See also: [`describe`](@ref), [`AbstractStrategy`](@ref)
 description(::Type{<:AbstractStrategy}) = nothing
 
 function describe(strategy_type::Type{T}) where {T<:AbstractStrategy}
-    describe(stdout, strategy_type)
+    return describe(stdout, strategy_type)
 end
 
 function describe(io::IO, ::Type{T}) where {T<:AbstractStrategy}

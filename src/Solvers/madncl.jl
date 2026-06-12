@@ -90,8 +90,8 @@ $(TYPEDSIGNATURES)
 Return the description for the MadNCL solver.
 """
 function Strategies.description(::Type{<:Solvers.MadNCL})
-    "Augmented Lagrangian NLP solver built on MadNLP.\n" *
-    "See: https://github.com/MadNLP/MadNCL.jl"
+    return "Augmented Lagrangian NLP solver built on MadNLP.\n" *
+           "See: https://github.com/MadNLP/MadNCL.jl"
 end
 
 """

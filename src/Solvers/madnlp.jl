@@ -96,8 +96,8 @@ $(TYPEDSIGNATURES)
 Return the description for the MadNLP solver.
 """
 function Strategies.description(::Type{<:Solvers.MadNLP})
-    "Interior-point NLP solver with sparse linear algebra and GPU support.\n" *
-    "See: https://madsuite.org/MadNLP.jl/stable/options/"
+    return "Interior-point NLP solver with sparse linear algebra and GPU support.\n" *
+           "See: https://madsuite.org/MadNLP.jl/stable/options/"
 end
 
 """

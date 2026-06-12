@@ -220,5 +220,5 @@ end
 end # module
 
 function test_cpu_only_parameters_integration()
-    TestCPUOnlyParametersIntegration.test_cpu_only_parameters_integration()
+    return TestCPUOnlyParametersIntegration.test_cpu_only_parameters_integration()
 end

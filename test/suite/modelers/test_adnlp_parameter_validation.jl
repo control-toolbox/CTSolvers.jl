@@ -200,5 +200,5 @@ end
 end # module
 
 function test_adnlp_parameter_validation()
-    TestADNLPParameterValidation.test_adnlp_parameter_validation()
+    return TestADNLPParameterValidation.test_adnlp_parameter_validation()
 end

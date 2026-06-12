@@ -289,7 +289,7 @@ CPU (parameter)
 See also: [`describe(::Symbol, ::StrategyRegistry)`](@ref), [`id`](@ref), [`description`](@ref)
 """
 function describe(parameter_type::Type{T}) where {T<:AbstractStrategyParameter}
-    describe(stdout, parameter_type)
+    return describe(stdout, parameter_type)
 end
 
 """
@@ -314,7 +314,7 @@ function describe(io::IO, parameter_type::Type{T}) where {T<:AbstractStrategyPar
     println(io, fmt.name, type_name, fmt.reset, " (parameter)")
     println(io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", param_id, fmt.reset)
     println(io, "├─ ", fmt.label, "hierarchy: ", fmt.reset, hierarchy_str)
-    _print_labeled_multiline(io, "└─ ", "   ", fmt, "description: ", param_desc)
+    return _print_labeled_multiline(io, "└─ ", "   ", fmt, "description: ", param_desc)
 end
 
 # ============================================================================

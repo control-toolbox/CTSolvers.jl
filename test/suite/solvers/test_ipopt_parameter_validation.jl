@@ -85,5 +85,5 @@ end
 end # module
 
 function test_ipopt_parameter_validation()
-    TestIpoptParameterValidation.test_ipopt_parameter_validation()
+    return TestIpoptParameterValidation.test_ipopt_parameter_validation()
 end

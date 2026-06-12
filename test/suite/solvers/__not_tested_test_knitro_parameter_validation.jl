@@ -168,5 +168,5 @@ end
 end # module
 
 function test_knitro_parameter_validation()
-    TestKnitroParameterValidation.test_knitro_parameter_validation()
+    return TestKnitroParameterValidation.test_knitro_parameter_validation()
 end

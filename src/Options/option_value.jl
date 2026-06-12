@@ -44,7 +44,7 @@ struct OptionValue{T}
     source::Symbol
 
     function OptionValue(value::T, source::Symbol) where {T}
-        _construct_option_value(value, Val(source))
+        return _construct_option_value(value, Val(source))
     end
 
     # Internal constructor dispatch functions

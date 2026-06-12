@@ -2,7 +2,7 @@
 using Random
 
 function elec_objective(x, y, z, i, j)
-    1.0 / sqrt((x[i] - x[j])^2 + (y[i] - y[j])^2 + (z[i] - z[j])^2)
+    return 1.0 / sqrt((x[i] - x[j])^2 + (y[i] - y[j])^2 + (z[i] - z[j])^2)
 end
 elec_constraint(x, y, z, i) = x[i]^2 + y[i]^2 + z[i]^2 - 1.0
 function elec_objective(x, y, z)
