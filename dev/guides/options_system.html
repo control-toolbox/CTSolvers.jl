@@ -15,12 +15,16 @@ const Exceptions = CTBase.Exceptions</code></pre><h2 id="Overview"><a class="doc
     validator   = x -&gt; x &gt;= 0 || throw(Exceptions.IncorrectArgument(
         &quot;Invalid max_iter&quot;, got = &quot;$x&quot;, expected = &quot;&gt;= 0&quot;,
     )),
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr34"><span class="sgr1">max_iter</span></span> (<span class="sgr33">maxiter</span>)::<span class="sgr36">Integer</span> (<span class="sgr32">default: 1000</span>)</code></pre><h3 id="Fields"><a class="docs-heading-anchor" href="#Fields">Fields</a><a id="Fields-1"></a><a class="docs-heading-anchor-permalink" href="#Fields" title="Permalink"></a></h3><table><tr><th style="text-align: right">Field</th><th style="text-align: right">Type</th><th style="text-align: right">Description</th></tr><tr><td style="text-align: right"><code>name</code></td><td style="text-align: right"><code>Symbol</code></td><td style="text-align: right">Primary option name</td></tr><tr><td style="text-align: right"><code>type</code></td><td style="text-align: right"><code>Type</code></td><td style="text-align: right">Expected Julia type</td></tr><tr><td style="text-align: right"><code>default</code></td><td style="text-align: right"><code>Any</code></td><td style="text-align: right">Default value (or <code>NotProvided</code>)</td></tr><tr><td style="text-align: right"><code>description</code></td><td style="text-align: right"><code>String</code></td><td style="text-align: right">Human-readable description</td></tr><tr><td style="text-align: right"><code>aliases</code></td><td style="text-align: right"><code>Tuple{Vararg{Symbol}}</code></td><td style="text-align: right">Alternative names</td></tr><tr><td style="text-align: right"><code>validator</code></td><td style="text-align: right"><code>Function</code> or <code>nothing</code></td><td style="text-align: right">Validation function</td></tr></table><h3 id="Constructor-validation"><a class="docs-heading-anchor" href="#Constructor-validation">Constructor validation</a><a id="Constructor-validation-1"></a><a class="docs-heading-anchor-permalink" href="#Constructor-validation" title="Permalink"></a></h3><p>The constructor automatically:</p><ol><li>Checks that <code>default</code> matches the declared <code>type</code></li><li>Runs the <code>validator</code> on the <code>default</code> value (if both are provided)</li><li>Skips validation when <code>default</code> is <code>NotProvided</code></li></ol><p>Type mismatch in the constructor:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; OptionDefinition(name = :count, type = Integer, default = &quot;hello&quot;, description = &quot;A count&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">Control Toolbox Error
-</span></span>
-❌ Error: <span class="sgr31"><span class="sgr1">CTBase.Exceptions.IncorrectArgument</span></span>, Type mismatch in option definition
-🔍 Got: default value hello of type String, Expected: value of type Integer
-📂 Context: OptionDefinition constructor - validating type compatibility
-💡 Suggestion: Ensure the default value matches the declared type, or adjust the type parameter</code></pre><h3 id="Aliases"><a class="docs-heading-anchor" href="#Aliases">Aliases</a><a id="Aliases-1"></a><a class="docs-heading-anchor-permalink" href="#Aliases" title="Permalink"></a></h3><p>Aliases allow users to use alternative names for the same option:</p><pre><code class="language-julia hljs">def_alias = OptionDefinition(
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr34"><span class="sgr1">max_iter</span></span> (<span class="sgr33">maxiter</span>)::<span class="sgr36">Integer</span> (<span class="sgr32">default: 1000</span>)</code></pre><h3 id="Fields"><a class="docs-heading-anchor" href="#Fields">Fields</a><a id="Fields-1"></a><a class="docs-heading-anchor-permalink" href="#Fields" title="Permalink"></a></h3><table><tr><th style="text-align: right">Field</th><th style="text-align: right">Type</th><th style="text-align: right">Description</th></tr><tr><td style="text-align: right"><code>name</code></td><td style="text-align: right"><code>Symbol</code></td><td style="text-align: right">Primary option name</td></tr><tr><td style="text-align: right"><code>type</code></td><td style="text-align: right"><code>Type</code></td><td style="text-align: right">Expected Julia type</td></tr><tr><td style="text-align: right"><code>default</code></td><td style="text-align: right"><code>Any</code></td><td style="text-align: right">Default value (or <code>NotProvided</code>)</td></tr><tr><td style="text-align: right"><code>description</code></td><td style="text-align: right"><code>String</code></td><td style="text-align: right">Human-readable description</td></tr><tr><td style="text-align: right"><code>aliases</code></td><td style="text-align: right"><code>Tuple{Vararg{Symbol}}</code></td><td style="text-align: right">Alternative names</td></tr><tr><td style="text-align: right"><code>validator</code></td><td style="text-align: right"><code>Function</code> or <code>nothing</code></td><td style="text-align: right">Validation function</td></tr></table><h3 id="Constructor-validation"><a class="docs-heading-anchor" href="#Constructor-validation">Constructor validation</a><a id="Constructor-validation-1"></a><a class="docs-heading-anchor-permalink" href="#Constructor-validation" title="Permalink"></a></h3><p>The constructor automatically:</p><ol><li>Checks that <code>default</code> matches the declared <code>type</code></li><li>Runs the <code>validator</code> on the <code>default</code> value (if both are provided)</li><li>Skips validation when <code>default</code> is <code>NotProvided</code></li></ol><p>Type mismatch in the constructor:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; OptionDefinition(name = :count, type = Integer, default = &quot;hello&quot;, description = &quot;A count&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">IncorrectArgument</span></span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Type mismatch in option definition</span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Got     </span>  <span class="sgr33">default value hello of type String</span>
+<span class="sgr2">│</span>  <span class="sgr1">Expected</span>  <span class="sgr32">value of type Integer</span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Context </span>  OptionDefinition constructor - validating type compatibility
+<span class="sgr2">│</span>  <span class="sgr1">Hint    </span>  <span class="sgr32">Ensure the default value matches the declared type, or adjust the type parameter</span>
+<span class="sgr2">└─</span></code></pre><h3 id="Aliases"><a class="docs-heading-anchor" href="#Aliases">Aliases</a><a id="Aliases-1"></a><a class="docs-heading-anchor-permalink" href="#Aliases" title="Permalink"></a></h3><p>Aliases allow users to use alternative names for the same option:</p><pre><code class="language-julia hljs">def_alias = OptionDefinition(
     name = :max_iter, type = Int, default = 100,
     description = &quot;Max iterations&quot;, aliases = (:maxiter, :max),
 )
@@ -34,15 +38,15 @@ all_names(def_alias)</code></pre><pre class="documenter-example-output"><code cl
     )),
 )</code></pre><p>Validator failure:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; extract_option((tol = -1.0,), validated_def)</code><code class="nohighlight hljs ansi" style="display:block;">┌ Error: Validation failed for option tol with value -1.0
 │   exception =
-│    <span class="sgr31"><span class="sgr1">Control Toolbox Error
-│    </span></span>
-│    ❌ Error: <span class="sgr31"><span class="sgr1">CTBase.Exceptions.IncorrectArgument</span></span>, Invalid tolerance
-│    🔍 Got: tol=-1.0, Expected: positive real number (&gt; 0)
-│    💡 Suggestion: Use 1e-6 or 1e-8
-│    📍 In your code:
-│         #5 at options_system.md:95
-│         └── extract_option at extraction.jl:70
-│             └── top-level scope at REPL[1]:1
+│    IncorrectArgument → #5  options_system.md:95
+│    │
+│    │  Invalid tolerance
+│    │
+│    │  Got       tol=-1.0
+│    │  Expected  positive real number (&gt; 0)
+│    │
+│    │  Hint      Use 1e-6 or 1e-8
+│    └─
 │    
 │    Stacktrace:
 │      [1] (::Main.var&quot;#5#6&quot;)(x::Float64)
@@ -104,23 +108,31 @@ all_names(def_alias)</code></pre><pre class="documenter-example-output"><code cl
 │     [29] _start()
 │        @ Base ./client.jl:550
 └ @ CTSolvers.Options ~/work/CTSolvers.jl/CTSolvers.jl/src/Options/extraction.jl:72
-ERROR: <span class="sgr31"><span class="sgr1">Control Toolbox Error
-</span></span>
-❌ Error: <span class="sgr31"><span class="sgr1">CTBase.Exceptions.IncorrectArgument</span></span>, Invalid tolerance
-🔍 Got: tol=-1.0, Expected: positive real number (&gt; 0)
-💡 Suggestion: Use 1e-6 or 1e-8</code></pre><h2 id="NotProvided"><a class="docs-heading-anchor" href="#NotProvided">NotProvided</a><a id="NotProvided-1"></a><a class="docs-heading-anchor-permalink" href="#NotProvided" title="Permalink"></a></h2><p><code>NotProvided</code> is a sentinel value that distinguishes &quot;no default&quot; from &quot;default is <code>nothing</code>&quot;:</p><pre><code class="language-julia hljs">NotProvided</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NotProvided</code></pre><pre><code class="language-julia hljs"># Option with NotProvided default — omitted if user doesn&#39;t provide it
+ERROR: <span class="sgr31"><span class="sgr1">IncorrectArgument</span></span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Invalid tolerance</span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Got     </span>  <span class="sgr33">tol=-1.0</span>
+<span class="sgr2">│</span>  <span class="sgr1">Expected</span>  <span class="sgr32">positive real number (&gt; 0)</span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Hint    </span>  <span class="sgr32">Use 1e-6 or 1e-8</span>
+<span class="sgr2">└─</span></code></pre><h2 id="NotProvided"><a class="docs-heading-anchor" href="#NotProvided">NotProvided</a><a id="NotProvided-1"></a><a class="docs-heading-anchor-permalink" href="#NotProvided" title="Permalink"></a></h2><p><code>NotProvided</code> is a sentinel value that distinguishes &quot;no default&quot; from &quot;default is <code>nothing</code>&quot;:</p><pre><code class="language-julia hljs">NotProvided</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">NotProvided</code></pre><pre><code class="language-julia hljs"># Option with NotProvided default — omitted if user doesn&#39;t provide it
 opt_np = OptionDefinition(
     name = :mu_init, type = Real, default = NotProvided,
     description = &quot;Initial barrier parameter&quot;,
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr34"><span class="sgr1">mu_init</span></span>::<span class="sgr36">Real</span> (<span class="sgr32">default: NotProvided</span>)</code></pre><p>When <code>extract_option</code> encounters a <code>NotProvided</code> default and the user hasn&#39;t provided the option, the option is excluded from the result:</p><pre><code class="language-julia hljs">result, remaining = extract_option((other = 42,), opt_np)
 println(&quot;Result: &quot;, result)
 println(&quot;Remaining: &quot;, remaining)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Result: NotStored
-Remaining: (other = 42,)</code></pre><h2 id="OptionValue-and-Provenance"><a class="docs-heading-anchor" href="#OptionValue-and-Provenance">OptionValue and Provenance</a><a id="OptionValue-and-Provenance-1"></a><a class="docs-heading-anchor-permalink" href="#OptionValue-and-Provenance" title="Permalink"></a></h2><p><code>OptionValue</code> wraps a value with its <strong>provenance</strong> — where it came from:</p><pre><code class="language-julia hljs">OptionValue(1000, :user)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1000 (user)</code></pre><pre><code class="language-julia hljs">OptionValue(1e-8, :default)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1.0e-8 (default)</code></pre><pre><code class="language-julia hljs">OptionValue(42, :computed)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">42 (computed)</code></pre><h3 id="Three-sources"><a class="docs-heading-anchor" href="#Three-sources">Three sources</a><a id="Three-sources-1"></a><a class="docs-heading-anchor-permalink" href="#Three-sources" title="Permalink"></a></h3><table><tr><th style="text-align: right">Source</th><th style="text-align: right">Meaning</th></tr><tr><td style="text-align: right"><code>:user</code></td><td style="text-align: right">Explicitly provided by the user</td></tr><tr><td style="text-align: right"><code>:default</code></td><td style="text-align: right">Came from the <code>OptionDefinition</code> default</td></tr><tr><td style="text-align: right"><code>:computed</code></td><td style="text-align: right">Derived or computed from other options</td></tr></table><p>Invalid source:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; OptionValue(42, :invalid_source)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">Control Toolbox Error
-</span></span>
-❌ Error: <span class="sgr31"><span class="sgr1">CTBase.Exceptions.IncorrectArgument</span></span>, Invalid option source
-🔍 Got: source=invalid_source, Expected: :default, :user, or :computed
-📂 Context: OptionValue constructor - validating source provenance
-💡 Suggestion: Use one of the valid source symbols: :default (tool default), :user (user-provided), or :computed (derived)</code></pre><p>Provenance tracking enables introspection — you can tell whether a value was explicitly chosen or inherited from defaults:</p><pre><code class="language-julia hljs">opt = OptionValue(1000, :user)
+Remaining: (other = 42,)</code></pre><h2 id="OptionValue-and-Provenance"><a class="docs-heading-anchor" href="#OptionValue-and-Provenance">OptionValue and Provenance</a><a id="OptionValue-and-Provenance-1"></a><a class="docs-heading-anchor-permalink" href="#OptionValue-and-Provenance" title="Permalink"></a></h2><p><code>OptionValue</code> wraps a value with its <strong>provenance</strong> — where it came from:</p><pre><code class="language-julia hljs">OptionValue(1000, :user)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1000 (user)</code></pre><pre><code class="language-julia hljs">OptionValue(1e-8, :default)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1.0e-8 (default)</code></pre><pre><code class="language-julia hljs">OptionValue(42, :computed)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">42 (computed)</code></pre><h3 id="Three-sources"><a class="docs-heading-anchor" href="#Three-sources">Three sources</a><a id="Three-sources-1"></a><a class="docs-heading-anchor-permalink" href="#Three-sources" title="Permalink"></a></h3><table><tr><th style="text-align: right">Source</th><th style="text-align: right">Meaning</th></tr><tr><td style="text-align: right"><code>:user</code></td><td style="text-align: right">Explicitly provided by the user</td></tr><tr><td style="text-align: right"><code>:default</code></td><td style="text-align: right">Came from the <code>OptionDefinition</code> default</td></tr><tr><td style="text-align: right"><code>:computed</code></td><td style="text-align: right">Derived or computed from other options</td></tr></table><p>Invalid source:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; OptionValue(42, :invalid_source)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">IncorrectArgument</span></span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Invalid option source</span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Got     </span>  <span class="sgr33">source=invalid_source</span>
+<span class="sgr2">│</span>  <span class="sgr1">Expected</span>  <span class="sgr32">:default, :user, or :computed</span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Context </span>  OptionValue constructor - validating source provenance
+<span class="sgr2">│</span>  <span class="sgr1">Hint    </span>  <span class="sgr32">Use one of the valid source symbols: :default (tool default), :user (user-provided), or :computed (derived)</span>
+<span class="sgr2">└─</span></code></pre><p>Provenance tracking enables introspection — you can tell whether a value was explicitly chosen or inherited from defaults:</p><pre><code class="language-julia hljs">opt = OptionValue(1000, :user)
 println(&quot;Value: &quot;, opt.value)
 println(&quot;Source: &quot;, opt.source)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Value: 1000
 Source: user</code></pre><h2 id="Accessing-Option-Properties-(Getters)"><a class="docs-heading-anchor" href="#Accessing-Option-Properties-(Getters)">Accessing Option Properties (Getters)</a><a id="Accessing-Option-Properties-(Getters)-1"></a><a class="docs-heading-anchor-permalink" href="#Accessing-Option-Properties-(Getters)" title="Permalink"></a></h2><p>Use the getters in <code>Options</code> to access <code>OptionDefinition</code> and <code>OptionValue</code> fields instead of reading struct fields directly. This keeps encapsulation intact and aligns with Strategies overrides.</p><pre><code class="language-julia hljs">using CTSolvers.Options
@@ -211,9 +223,9 @@ max_iter: 500</code></pre><p>The conversion unwraps <code>OptionValue</code> wra
 dict[:max_iter] = 1000
 println(&quot;Dict: &quot;, dict[:max_iter])
 println(&quot;Original: &quot;, opts[:max_iter])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict: 1000
-Original: 500</code></pre><p>This pattern is commonly used in solver extensions and modelers to customize options before passing them to backend implementations.</p><h2 id="Validation-Modes"><a class="docs-heading-anchor" href="#Validation-Modes">Validation Modes</a><a id="Validation-Modes-1"></a><a class="docs-heading-anchor-permalink" href="#Validation-Modes" title="Permalink"></a></h2><p><code>build_strategy_options</code> supports two validation modes.</p><h3 id="Strict-mode-(default)"><a class="docs-heading-anchor" href="#Strict-mode-(default)">Strict mode (default)</a><a id="Strict-mode-(default)-1"></a><a class="docs-heading-anchor-permalink" href="#Strict-mode-(default)" title="Permalink"></a></h3><p>Rejects unknown options with a helpful error message:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; CTSolvers.Strategies.build_strategy_options(DemoStrategy; max_itr = 500)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">Control Toolbox Error
-</span></span>
-❌ Error: <span class="sgr31"><span class="sgr1">CTBase.Exceptions.IncorrectArgument</span></span>, Unknown options provided for DemoStrategy
+Original: 500</code></pre><p>This pattern is commonly used in solver extensions and modelers to customize options before passing them to backend implementations.</p><h2 id="Validation-Modes"><a class="docs-heading-anchor" href="#Validation-Modes">Validation Modes</a><a id="Validation-Modes-1"></a><a class="docs-heading-anchor-permalink" href="#Validation-Modes" title="Permalink"></a></h2><p><code>build_strategy_options</code> supports two validation modes.</p><h3 id="Strict-mode-(default)"><a class="docs-heading-anchor" href="#Strict-mode-(default)">Strict mode (default)</a><a id="Strict-mode-(default)-1"></a><a class="docs-heading-anchor-permalink" href="#Strict-mode-(default)" title="Permalink"></a></h3><p>Rejects unknown options with a helpful error message:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; CTSolvers.Strategies.build_strategy_options(DemoStrategy; max_itr = 500)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">IncorrectArgument</span></span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Unknown options provided for DemoStrategy
 
 Unrecognized options: [:max_itr]
 
@@ -230,8 +242,10 @@ Suggestions for :max_itr:
 If you are certain these options exist for the backend,
 use permissive mode:
   DemoStrategy(...; mode=:permissive)
-
-📂 Context: build_strategy_options - strict validation</code></pre><h3 id="Permissive-mode"><a class="docs-heading-anchor" href="#Permissive-mode">Permissive mode</a><a id="Permissive-mode-1"></a><a class="docs-heading-anchor-permalink" href="#Permissive-mode" title="Permalink"></a></h3><p>Accepts unknown options with a warning and stores them with <code>:user</code> source:</p><pre><code class="language-julia hljs">opts_perm = CTSolvers.Strategies.build_strategy_options(DemoStrategy;
+</span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Context</span>  build_strategy_options - strict validation
+<span class="sgr2">└─</span></code></pre><h3 id="Permissive-mode"><a class="docs-heading-anchor" href="#Permissive-mode">Permissive mode</a><a id="Permissive-mode-1"></a><a class="docs-heading-anchor-permalink" href="#Permissive-mode" title="Permalink"></a></h3><p>Accepts unknown options with a warning and stores them with <code>:user</code> source:</p><pre><code class="language-julia hljs">opts_perm = CTSolvers.Strategies.build_strategy_options(DemoStrategy;
     mode = :permissive, max_iter = 500, custom_flag = true,
 )
 println(&quot;keys: &quot;, keys(opts_perm))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">┌ Warning: Unrecognized options passed to backend
@@ -248,12 +262,16 @@ keys: (:max_iter, :tol, :verbose, :custom_flag)</code></pre><h2 id="Extraction-F
 opt_value, remaining = extract_option((n = 200, tol = 1e-6), def_grid)
 println(&quot;Extracted: &quot;, opt_value)
 println(&quot;Remaining: &quot;, remaining)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Extracted: 200 (user)
-Remaining: (tol = 1.0e-6,)</code></pre><p>The function:</p><ol><li>Searches all names (primary + aliases)</li><li>Validates the type</li><li>Runs the validator</li><li>Returns <code>OptionValue</code> with <code>:user</code> source</li><li>Removes the matched key from remaining kwargs</li></ol><p>Type mismatch in extraction:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; extract_option((grid_size = &quot;hello&quot;,), def_grid)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">Control Toolbox Error
-</span></span>
-❌ Error: <span class="sgr31"><span class="sgr1">CTBase.Exceptions.IncorrectArgument</span></span>, Invalid option type
-🔍 Got: value hello of type String, Expected: Int64
-📂 Context: Option extraction for grid_size
-💡 Suggestion: Ensure the option value matches the expected type</code></pre><h3 id="extract_options"><a class="docs-heading-anchor" href="#extract_options"><code>extract_options</code></a><a id="extract_options-1"></a><a class="docs-heading-anchor-permalink" href="#extract_options" title="Permalink"></a></h3><p>Extracts multiple options at once:</p><pre><code class="language-julia hljs">defs = [
+Remaining: (tol = 1.0e-6,)</code></pre><p>The function:</p><ol><li>Searches all names (primary + aliases)</li><li>Validates the type</li><li>Runs the validator</li><li>Returns <code>OptionValue</code> with <code>:user</code> source</li><li>Removes the matched key from remaining kwargs</li></ol><p>Type mismatch in extraction:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; extract_option((grid_size = &quot;hello&quot;,), def_grid)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: <span class="sgr31"><span class="sgr1">IncorrectArgument</span></span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Invalid option type</span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Got     </span>  <span class="sgr33">value hello of type String</span>
+<span class="sgr2">│</span>  <span class="sgr1">Expected</span>  <span class="sgr32">Int64</span>
+<span class="sgr2">│</span>
+<span class="sgr2">│</span>  <span class="sgr1">Context </span>  Option extraction for grid_size
+<span class="sgr2">│</span>  <span class="sgr1">Hint    </span>  <span class="sgr32">Ensure the option value matches the expected type</span>
+<span class="sgr2">└─</span></code></pre><h3 id="extract_options"><a class="docs-heading-anchor" href="#extract_options"><code>extract_options</code></a><a id="extract_options-1"></a><a class="docs-heading-anchor-permalink" href="#extract_options" title="Permalink"></a></h3><p>Extracts multiple options at once:</p><pre><code class="language-julia hljs">defs = [
     OptionDefinition(name = :grid_size, type = Int, default = 100, description = &quot;Grid&quot;),
     OptionDefinition(name = :tol, type = Float64, default = 1e-6, description = &quot;Tol&quot;),
 ]
@@ -280,4 +298,4 @@ mermaid.initialize({
     startOnLoad: true,
     theme: "neutral"
 });
-</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../architecture.html">« Architecture</a><a class="docs-footer-nextpage" href="implementing_a_strategy.html">Implementing a Strategy »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Thursday 11 June 2026 19:38">Thursday 11 June 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../architecture.html">« Architecture</a><a class="docs-footer-nextpage" href="implementing_a_strategy.html">Implementing a Strategy »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 16 June 2026 07:29">Tuesday 16 June 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
