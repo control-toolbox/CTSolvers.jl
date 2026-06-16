@@ -7,7 +7,7 @@ $(TYPEDEF)
 
 Tag type for MadNLP-specific implementation dispatch.
 """
-struct MadNLPTag <: AbstractTag end
+struct MadNLPTag <: Core.AbstractTag end
 
 # ============================================================================
 # Solver type definition
@@ -193,7 +193,7 @@ Real implementation provided by the extension.
 See also: `MadNLP`, `Strategies.metadata`
 """
 function build_madnlp_solver(
-    ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     throw(
         Exceptions.ExtensionError(

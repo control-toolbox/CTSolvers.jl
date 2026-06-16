@@ -1,6 +1,7 @@
 module TestSolverTypes
 
 using Test: Test
+import CTBase.Core
 import CTBase.Exceptions
 import CTSolvers.Solvers
 import CTSolvers.Strategies
@@ -84,16 +85,16 @@ function test_solver_types()
         # ====================================================================
 
         Test.@testset "Tag Types" begin
-            # Test that tag types exist and inherit from AbstractTag
-            Test.@test Solvers.IpoptTag <: Solvers.AbstractTag
+            # Test that tag types exist and inherit from Core.AbstractTag
+            Test.@test Solvers.IpoptTag <: Core.AbstractTag
             # Commented out - no Knitro license available
-            # Test.@test Solvers.KnitroTag <: Solvers.AbstractTag
-            Test.@test Solvers.MadNLPTag <: Solvers.AbstractTag
-            Test.@test Solvers.MadNCLTag <: Solvers.AbstractTag
-            Test.@test Solvers.UnoTag <: Solvers.AbstractTag
+            # Test.@test Solvers.KnitroTag <: Core.AbstractTag
+            Test.@test Solvers.MadNLPTag <: Core.AbstractTag
+            Test.@test Solvers.MadNCLTag <: Core.AbstractTag
+            Test.@test Solvers.UnoTag <: Core.AbstractTag
 
-            # Test that AbstractTag is abstract
-            Test.@test isabstracttype(Solvers.AbstractTag)
+            # Test that Core.AbstractTag is abstract
+            Test.@test isabstracttype(Core.AbstractTag)
 
             # Test that concrete tag types are not abstract
             Test.@test !isabstracttype(Solvers.IpoptTag)

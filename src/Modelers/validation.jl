@@ -12,7 +12,7 @@ $(TYPEDSIGNATURES)
 Fallback method for invalid ADNLP backends using tag dispatch.
 
 # Arguments
-- `tag::AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
+- `tag::Core.AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
 - `backend::Val`: Backend type as Val for dispatch (invalid backend)
 
 # Throws
@@ -23,9 +23,9 @@ Fallback method for invalid ADNLP backends using tag dispatch.
 - Provides comprehensive error message with valid backend options
 - Uses structured exception with got/expected/suggestion fields
 
-See also: `validate_adnlp_backend(::AbstractTag, ::Val{:default})`, `get_validate_adnlp_backend`
+See also: `validate_adnlp_backend(::Core.AbstractTag, ::Val{:default})`, `get_validate_adnlp_backend`
 """
-function validate_adnlp_backend(tag::AbstractTag, backend::Val)
+function validate_adnlp_backend(tag::Core.AbstractTag, backend::Val)
     # This is the generic fallback - should never be reached
     throw(
         Exceptions.IncorrectArgument(
@@ -44,7 +44,7 @@ $(TYPEDSIGNATURES)
 Validate always-available ADNLP backends using tag dispatch.
 
 # Arguments
-- `tag::AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
+- `tag::Core.AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
 - `backend::Val{:default}`: Default backend type
 - `backend::Val{:optimized}`: Optimized backend type
 - `backend::Val{:generic}`: Generic backend type
@@ -58,12 +58,12 @@ Validate always-available ADNLP backends using tag dispatch.
 - Uses Julia's multiple dispatch for type-safe validation
 - Extensions can override these methods for tag-specific behavior
 
-See also: `validate_adnlp_backend(::AbstractTag, ::Val{:enzyme})`, `get_validate_adnlp_backend`
+See also: `validate_adnlp_backend(::Core.AbstractTag, ::Val{:enzyme})`, `get_validate_adnlp_backend`
 """
-validate_adnlp_backend(tag::AbstractTag, ::Val{:default}) = :default
-validate_adnlp_backend(tag::AbstractTag, ::Val{:optimized}) = :optimized
-validate_adnlp_backend(tag::AbstractTag, ::Val{:generic}) = :generic
-validate_adnlp_backend(tag::AbstractTag, ::Val{:manual}) = :manual
+validate_adnlp_backend(tag::Core.AbstractTag, ::Val{:default}) = :default
+validate_adnlp_backend(tag::Core.AbstractTag, ::Val{:optimized}) = :optimized
+validate_adnlp_backend(tag::Core.AbstractTag, ::Val{:generic}) = :generic
+validate_adnlp_backend(tag::Core.AbstractTag, ::Val{:manual}) = :manual
 
 """
 $(TYPEDSIGNATURES)
@@ -71,7 +71,7 @@ $(TYPEDSIGNATURES)
 Validate Enzyme backend using tag dispatch.
 
 # Arguments
-- `tag::AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
+- `tag::Core.AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
 - `backend::Val{:enzyme}`: Enzyme backend type
 
 # Throws
@@ -82,9 +82,9 @@ Validate Enzyme backend using tag dispatch.
 - CTSolversEnzyme extension overrides this method for ADNLPTag when Enzyme is available
 - Provides clear error message directing users to load the extension
 
-See also: `validate_adnlp_backend(::AbstractTag, ::Val{:zygote})`, `get_validate_adnlp_backend`
+See also: `validate_adnlp_backend(::Core.AbstractTag, ::Val{:zygote})`, `get_validate_adnlp_backend`
 """
-function validate_adnlp_backend(tag::AbstractTag, ::Val{:enzyme})
+function validate_adnlp_backend(tag::Core.AbstractTag, ::Val{:enzyme})
     throw(
         Exceptions.ExtensionError(
             :Enzyme;
@@ -101,7 +101,7 @@ $(TYPEDSIGNATURES)
 Validate Zygote backend using tag dispatch.
 
 # Arguments
-- `tag::AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
+- `tag::Core.AbstractTag`: Tag for dispatch (e.g., ADNLPTag, DummyTag)
 - `backend::Val{:zygote}`: Zygote backend type
 
 # Throws
@@ -112,9 +112,9 @@ Validate Zygote backend using tag dispatch.
 - CTSolversZygote extension overrides this method for ADNLPTag when Zygote is available
 - Provides clear error message directing users to load the extension
 
-See also: `validate_adnlp_backend(::AbstractTag, ::Val{:enzyme})`, `get_validate_adnlp_backend`
+See also: `validate_adnlp_backend(::Core.AbstractTag, ::Val{:enzyme})`, `get_validate_adnlp_backend`
 """
-function validate_adnlp_backend(tag::AbstractTag, ::Val{:zygote})
+function validate_adnlp_backend(tag::Core.AbstractTag, ::Val{:zygote})
     throw(
         Exceptions.ExtensionError(
             :Zygote;

@@ -1,6 +1,7 @@
 module TestExtensionStubs
 
 using Test: Test
+import CTBase.Core
 import CTBase.Exceptions
 import CTSolvers.Solvers
 import CTSolvers.Strategies
@@ -8,7 +9,7 @@ import CTSolvers.Strategies
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
-struct DummyTag <: Solvers.AbstractTag end
+struct DummyTag <: Core.AbstractTag end
 
 """
     test_extension_stubs()

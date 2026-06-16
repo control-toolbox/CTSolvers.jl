@@ -1,6 +1,7 @@
 module TestStrategiesAbstractStrategy
 
 using Test: Test
+import CTBase.Core
 import CTBase.Exceptions
 import CTSolvers.Strategies
 import CTSolvers.Options
@@ -246,7 +247,7 @@ function test_abstract_strategy()
         Test.@testset "_print_labeled_multiline helper" begin
             Test.@testset "single-line text" begin
                 io = IOBuffer()
-                fmt = Strategies.get_format_codes(io)
+                fmt = Core.get_format_codes(io)
                 Strategies._print_labeled_multiline(
                     io, "├─ ", "│  ", fmt, "description: ", "Single line."
                 )
@@ -259,7 +260,7 @@ function test_abstract_strategy()
 
             Test.@testset "multi-line text — continuation aligned" begin
                 io = IOBuffer()
-                fmt = Strategies.get_format_codes(io)
+                fmt = Core.get_format_codes(io)
                 Strategies._print_labeled_multiline(
                     io, "├─ ", "│  ", fmt, "description: ", "Line one.\nLine two."
                 )

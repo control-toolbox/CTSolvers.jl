@@ -472,7 +472,7 @@ end
 
 # Display
 function Base.show(io::IO, registry::StrategyRegistry)
-    fmt = get_format_codes(io)
+    fmt = Core.get_format_codes(io)
     n_families = length(registry.families)
     print(
         io,
@@ -489,7 +489,7 @@ function Base.show(io::IO, registry::StrategyRegistry)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", registry::StrategyRegistry)
-    fmt = get_format_codes(io)
+    fmt = Core.get_format_codes(io)
     n_families = length(registry.families)
     println(
         io,

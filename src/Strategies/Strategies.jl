@@ -14,11 +14,11 @@ module Strategies
 
 # Importing to avoid namespace pollution
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+import CTBase.Core
 import CTBase.Exceptions
 
 # Using CTSolvers modules to get access to the api
 using ..Options
-import ..Core as CTCore
 
 # ==============================================================================
 # Include submodules

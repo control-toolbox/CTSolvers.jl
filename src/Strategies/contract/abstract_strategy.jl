@@ -410,7 +410,7 @@ Tip: use describe(Modelers.ADNLP) to see all available options.
 See also: `describe`, `options`
 """
 function Base.show(io::IO, ::MIME"text/plain", strategy::T) where {T<:AbstractStrategy}
-    fmt = get_format_codes(io)
+    fmt = Core.get_format_codes(io)
     type_name = nameof(T)
     strategy_id = id(T)
     opts = options(strategy)
@@ -479,7 +479,7 @@ Modelers.ADNLP(matrix_free=false, show_time=false, name=CTSolvers-ADNLP, backend
 See also: `Base.show(::IO, ::MIME"text/plain", ::AbstractStrategy)`
 """
 function Base.show(io::IO, strategy::T) where {T<:AbstractStrategy}
-    fmt = get_format_codes(io)
+    fmt = Core.get_format_codes(io)
     type_name = nameof(T)
     opts = options(strategy)
 
@@ -569,7 +569,7 @@ function describe(strategy_type::Type{T}) where {T<:AbstractStrategy}
 end
 
 function describe(io::IO, ::Type{T}) where {T<:AbstractStrategy}
-    fmt = get_format_codes(io)
+    fmt = Core.get_format_codes(io)
     type_name = nameof(T)
     strategy_id = id(T)
     meta = metadata(T)

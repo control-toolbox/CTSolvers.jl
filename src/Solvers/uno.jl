@@ -7,7 +7,7 @@ $(TYPEDEF)
 
 Tag type for Uno-specific implementation dispatch.
 """
-struct UnoTag <: AbstractTag end
+struct UnoTag <: Core.AbstractTag end
 
 # ============================================================================
 # Solver type definition
@@ -256,7 +256,7 @@ Real implementation provided by the extension.
 See also: `Uno`, `Strategies.metadata`
 """
 function build_uno_solver(
-    ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     throw(
         Exceptions.ExtensionError(

@@ -23,14 +23,12 @@ using SolverCore: SolverCore
 using ADNLPModels: ADNLPModels
 using ExaModels: ExaModels
 using KernelAbstractions: KernelAbstractions
+import CTBase.Core
 
 # Internal CTSolvers API
 using ..Options
 using ..Strategies
 using ..Optimization
-
-# Import from Core
-using ..Core: AbstractTag
 
 # Submodules
 include(joinpath(@__DIR__, "abstract_modeler.jl"))
