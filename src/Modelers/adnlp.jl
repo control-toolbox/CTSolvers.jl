@@ -12,7 +12,7 @@ $(TYPEDEF)
 
 Tag type for ADNLP-specific implementation dispatch.
 """
-struct ADNLPTag <: AbstractTag end
+struct ADNLPTag <: Core.AbstractTag end
 
 # Default option values
 """
@@ -562,7 +562,7 @@ $(TYPEDSIGNATURES)
 Factory function that returns a backend validator for the specified tag type.
 
 # Arguments
-- `T::Type{<:AbstractTag}`: Tag type for dispatch (e.g., ADNLPTag, DummyTag)
+- `T::Type{<:Core.AbstractTag}`: Tag type for dispatch (e.g., ADNLPTag, DummyTag)
 
 # Returns
 - `Function`: Validator function that takes `backend` and validates it
@@ -598,7 +598,7 @@ ERROR: Control Toolbox Error
 
 See also: `validate_adnlp_backend`, `ADNLPTag`, `Modelers.ADNLP`
 """
-function get_validate_adnlp_backend(T::Type{<:AbstractTag})
+function get_validate_adnlp_backend(T::Type{<:Core.AbstractTag})
     return function (backend)
         if !isa(backend, Symbol)
             throw(

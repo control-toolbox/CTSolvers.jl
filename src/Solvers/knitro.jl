@@ -7,7 +7,7 @@ $(TYPEDEF)
 
 Tag type for Knitro-specific implementation dispatch.
 """
-struct KnitroTag <: AbstractTag end
+struct KnitroTag <: Core.AbstractTag end
 
 # ============================================================================
 # Solver type definition
@@ -230,7 +230,7 @@ Real implementation provided by the extension.
 See also: `Knitro`, `Strategies.metadata`
 """
 function build_knitro_solver(
-    ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     throw(
         Exceptions.ExtensionError(

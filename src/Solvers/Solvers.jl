@@ -47,15 +47,13 @@ using NLPModels: NLPModels
 using SolverCore: SolverCore
 using CommonSolve: CommonSolve
 import CTBase.Exceptions
+import CTBase.Core
 
 # CTSolvers modules
 using ..Strategies
 using ..Options
 using ..Optimization
 using ..Modelers
-
-# Import from Core
-using ..Core: AbstractTag
 
 # Include submodules
 include(joinpath(@__DIR__, "abstract_solver.jl"))

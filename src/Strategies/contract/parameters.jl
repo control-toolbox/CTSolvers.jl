@@ -300,7 +300,7 @@ Display parameter information to a specific IO stream.
 See [`describe(::Type{<:AbstractStrategyParameter})`](@ref) for details.
 """
 function describe(io::IO, parameter_type::Type{T}) where {T<:AbstractStrategyParameter}
-    fmt = get_format_codes(io)
+    fmt = Core.get_format_codes(io)
     type_name = nameof(parameter_type)
     param_id = id(parameter_type)
     param_desc = description(parameter_type)

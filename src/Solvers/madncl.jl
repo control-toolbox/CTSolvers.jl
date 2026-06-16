@@ -7,7 +7,7 @@ $(TYPEDEF)
 
 Tag type for MadNCL-specific implementation dispatch.
 """
-struct MadNCLTag <: AbstractTag end
+struct MadNCLTag <: Core.AbstractTag end
 
 # ============================================================================
 # Solver type definition
@@ -187,7 +187,7 @@ Real implementation provided by the extension.
 See also: `MadNCL`, `Strategies.metadata`
 """
 function build_madncl_solver(
-    ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     throw(
         Exceptions.ExtensionError(

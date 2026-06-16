@@ -344,7 +344,7 @@ Base.haskey(meta::StrategyMetadata, key::Symbol) = haskey(meta.specs, key)
 
 # Display
 function Base.show(io::IO, ::MIME"text/plain", meta::StrategyMetadata)
-    fmt = get_format_codes(io)
+    fmt = Core.get_format_codes(io)
     n = length(meta)
     println(
         io,

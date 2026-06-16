@@ -1,6 +1,7 @@
 module TestADNLPParameterValidation
 
 using Test
+import CTBase.Core
 using CTSolvers
 using CTSolvers.Modelers
 using CTSolvers.Strategies
@@ -20,7 +21,7 @@ struct FakeParam <: AbstractStrategyParameter end
 Strategies.id(::Type{FakeParam}) = :fake
 
 # Dummy tag for testing extension behavior
-struct DummyTag <: Modelers.AbstractTag end
+struct DummyTag <: Core.AbstractTag end
 
 # ============================================================================
 # Test function

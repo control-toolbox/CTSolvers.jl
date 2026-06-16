@@ -44,10 +44,6 @@ The modular architecture ensures that:
 """
 module CTSolvers
 
-# Core module - common utilities and types
-include(joinpath(@__DIR__, "Core", "Core.jl"))
-using .Core
-
 # Options module - configuration and options management
 include(joinpath(@__DIR__, "Options", "Options.jl"))
 using .Options

@@ -695,7 +695,7 @@ StrategyOptions with 2 options:
 See also: `Base.show`
 """
 function Base.show(io::IO, ::MIME"text/plain", opts::StrategyOptions)
-    fmt = get_format_codes(io)
+    fmt = Core.get_format_codes(io)
     n = length(opts)
     println(
         io,
@@ -751,7 +751,7 @@ StrategyOptions(max_iter=200, tol=1.0e-6)
 See also: `Base.show(::IO, ::MIME"text/plain", ::StrategyOptions)`
 """
 function Base.show(io::IO, opts::StrategyOptions)
-    fmt = get_format_codes(io)
+    fmt = Core.get_format_codes(io)
     print(io, fmt.name, "StrategyOptions", fmt.reset, "(")
     print(
         io,

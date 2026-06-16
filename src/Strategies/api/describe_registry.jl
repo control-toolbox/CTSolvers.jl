@@ -76,7 +76,7 @@ Describe a strategy using registry (internal implementation).
 function _describe_strategy_registry(
     io::IO, strategy_id::Symbol, registry::StrategyRegistry
 )
-    fmt = get_format_codes(io)
+    fmt = Core.get_format_codes(io)
 
     # 1. Find family and strategy types from registry
     family, strategy_types = _find_strategy_in_registry(strategy_id, registry)
@@ -176,7 +176,7 @@ function _describe_parameter_registry(
     param_type::Type{<:AbstractStrategyParameter},
     registry::StrategyRegistry,
 )
-    fmt = get_format_codes(io)
+    fmt = Core.get_format_codes(io)
     type_name = nameof(param_type)
     param_desc = description(param_type)
 

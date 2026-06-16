@@ -7,7 +7,7 @@ $(TYPEDEF)
 
 Tag type for Ipopt-specific implementation dispatch.
 """
-struct IpoptTag <: AbstractTag end
+struct IpoptTag <: Core.AbstractTag end
 
 # ============================================================================
 # Solver type definition
@@ -227,7 +227,7 @@ Real implementation provided by the extension.
 See also: `Ipopt`, `Strategies.metadata`
 """
 function build_ipopt_solver(
-    ::Type{<:AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     throw(
         Exceptions.ExtensionError(

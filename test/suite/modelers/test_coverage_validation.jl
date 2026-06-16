@@ -1,6 +1,7 @@
 module TestCoverageValidation
 
 using Test: Test
+import CTBase.Core
 import CTBase.Exceptions
 import CTSolvers.Modelers
 using ADNLPModels: ADNLPModels
@@ -16,7 +17,7 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 # ============================================================================
 
 # Dummy tag for testing extension behavior
-struct DummyTag <: Modelers.AbstractTag end
+struct DummyTag <: Core.AbstractTag end
 
 function test_coverage_validation()
     Test.@testset "Coverage: Modelers Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
