@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.19-beta] - 2026-06-21
+
+### Changed
+
+- Version bump
+
+---
+
 ## [0.4.18-beta] - 2026-06-02
 
 ### Added

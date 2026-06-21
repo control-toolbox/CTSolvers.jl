@@ -5,6 +5,20 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.19-beta (2026-06-21)
+
+**No breaking changes.**
+
+### Summary - v0.4.19-beta
+
+Version bump.
+
+### Migration - v0.4.19-beta
+
+**No action required.** All existing code continues to work without changes.
+
+---
+
 ## v0.4.18-beta (2026-06-02)
 
 **No breaking changes.**
