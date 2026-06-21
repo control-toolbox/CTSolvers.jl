@@ -1,5 +1,4 @@
 module TestProblems
-using CTModels
 using CTSolvers
 using SolverCore
 using ADNLPModels

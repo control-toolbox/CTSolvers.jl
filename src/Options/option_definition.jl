@@ -61,7 +61,7 @@ all_names(def) # (:max_iter, :max, :maxiter)
 ```
 
 # Throws
-- `CTModels.Exceptions.IncorrectArgument`: If the default value does not match the declared type
+- `CTBase.Exceptions.IncorrectArgument`: If the default value does not match the declared type
 - `Exception`: If the validator function fails when applied to the default value
 
 See also: `all_names`, `extract_option`, `extract_options`, `NotProvided`
@@ -124,7 +124,7 @@ delegates to specialized methods based on the type of `default`:
 - `OptionDefinition{T}`: Option definition with inferred type parameter
 
 # Throws
-- `CTModels.Exceptions.IncorrectArgument`: If concrete `default` is not compatible with `type`
+- `CTBase.Exceptions.IncorrectArgument`: If concrete `default` is not compatible with `type`
 
 # Example
 ```julia-repl
@@ -324,7 +324,7 @@ the default value is compatible with the declared `type`.
 - `OptionDefinition{T}`: Option definition with concrete default value
 
 # Throws
-- `CTModels.Exceptions.IncorrectArgument`: If `default` is not compatible with `type`
+- `CTBase.Exceptions.IncorrectArgument`: If `default` is not compatible with `type`
 
 # Example
 ```julia-repl
