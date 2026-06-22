@@ -7,7 +7,7 @@ CurrentModule = CTSolvers
 This guide explains how to implement an optimization solver in CTSolvers. Solvers are strategies that wrap NLP backend libraries (Ipopt, MadNLP, Knitro, etc.) behind a unified interface. We use **Solvers.Ipopt** as the reference example throughout.
 
 !!! tip "Prerequisites"
-    Read [Architecture](@ref) and [Implementing a Strategy](@ref) first. A solver is a strategy with two additional requirements: a **callable interface** and a **Tag Dispatch** extension.
+    Read [Architecture](@ref) first. A solver is a strategy (see Implementing a Strategy in CTBase.jl documentation) with two additional requirements: a **callable interface** and a **Tag Dispatch** extension.
 
 ## The AbstractNLPSolver Contract
 
@@ -42,6 +42,7 @@ The default callable throws `NotImplemented` with guidance.
 
 ```@example solver
 using CTSolvers
+using CTBase: CTBase
 nothing # hide
 ```
 
@@ -68,7 +69,7 @@ Like any strategy, the solver has a single `options` field:
 
 ```julia
 struct Solvers.Ipopt <: AbstractNLPSolver
-    options::Strategies.StrategyOptions
+    options::CTBase.Strategies.StrategyOptions
 end
 ```
 
@@ -77,7 +78,7 @@ end
 The `id` is available even without the extension:
 
 ```@example solver
-CTSolvers.Strategies.id(CTSolvers.Solvers.Ipopt)
+CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)
 ```
 
 ### Step 4 — Constructor with Tag Dispatch
@@ -167,20 +168,20 @@ The extension module provides three things:
 ```julia
 module CTSolversIpopt
 
-using CTSolvers, CTSolvers.Solvers, CTSolvers.Strategies, CTSolvers.Options
+using CTSolvers, CTSolvers.Solvers, CTBase.Strategies, CTBase.Options
 using CTBase.Exceptions
 using NLPModelsIpopt, NLPModels, SolverCore
 
-function Strategies.metadata(::Type{<:Solvers.Ipopt})
-    return Strategies.StrategyMetadata(
-        Options.OptionDefinition(
+function CTBase.Strategies.metadata(::Type{<:Solvers.Ipopt})
+    return CTBase.Strategies.StrategyMetadata(
+        CTBase.Options.OptionDefinition(
             name = :tol,
             type = Real,
             default = 1e-8,
             description = "Desired convergence tolerance (relative)",
             validator = x -> x > 0 || throw(Exceptions.IncorrectArgument(...)),
         ),
-        Options.OptionDefinition(
+        CTBase.Options.OptionDefinition(
             name = :max_iter,
             type = Integer,
             default = 1000,
@@ -197,7 +198,7 @@ end
 
 ```julia
 function Solvers.build_ipopt_solver(::Solvers.IpoptTag; mode::Symbol = :strict, kwargs...)
-    opts = Strategies.build_strategy_options(Solvers.Ipopt; mode = mode, kwargs...)
+    opts = CTBase.Strategies.build_strategy_options(Solvers.Ipopt; mode = mode, kwargs...)
     return Solvers.Ipopt(opts)
 end
 ```
@@ -209,7 +210,7 @@ function (solver::Solvers.Ipopt)(
     nlp::NLPModels.AbstractNLPModel;
     display::Bool = true,
 )::SolverCore.GenericExecutionStats
-    options = Strategies.options_dict(solver)
+    options = CTBase.Strategies.options_dict(solver)
     options[:print_level] = display ? options[:print_level] : 0
     return solve_with_ipopt(nlp; options...)
 end
@@ -287,14 +288,14 @@ To add a new solver (e.g., `MySolver` backed by `MyBackend`):
 ### In `src/Solvers/`
 
 1. Define `MyTag <: AbstractTag`
-2. Define `MySolver <: AbstractNLPSolver` with `options::StrategyOptions`
-3. Implement `Strategies.id(::Type{<:MySolver}) = :my_solver`
+2. Define `MySolver <: AbstractNLPSolver` with `options::CTBase.Strategies.StrategyOptions`
+3. Implement `CTBase.Strategies.id(::Type{<:MySolver}) = :my_solver`
 4. Write constructor: `MySolver(; mode, kwargs...) = build_my_solver(MyTag(); mode, kwargs...)`
 5. Write stub: `build_my_solver(::AbstractTag; kwargs...) = throw(ExtensionError(...))`
 
 ### In `ext/CTSolversMyBackend.jl`
 
-6. Implement `Strategies.metadata(::Type{<:MySolver})` with all option definitions
+6. Implement `CTBase.Strategies.metadata(::Type{<:MySolver})` with all option definitions
 7. Implement `Solvers.build_my_solver(::Solvers.MyTag; kwargs...)` — real constructor
 8. Implement `(solver::Solvers.MySolver)(nlp; display)` — callable that invokes the backend
 
@@ -304,7 +305,7 @@ To add a new solver (e.g., `MySolver` backed by `MyBackend`):
 
 ### Tests
 
-10. **Contract test**: `Strategies.validate_strategy_contract(MySolver)` (requires extension loaded)
+10. **Contract test**: `CTBase.Strategies.id(MySolver)`, `CTBase.Strategies.metadata(MySolver)`, and `CTBase.Strategies.options(MySolver())` (requires extension loaded)
 11. **Callable test**: `solver(nlp; display = false)` returns `AbstractExecutionStats`
 12. **CommonSolve test**: `solve(nlp, solver)` works at mid-level
 13. **Extension error test**: without `using MyBackend`, `MySolver()` throws `ExtensionError`

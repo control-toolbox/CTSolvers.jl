@@ -8,7 +8,7 @@ Implements GPU-specific linear solver defaults and consistency validation.
 module CTSolversMadNLPGPU
 
 import CTSolvers.Solvers
-import CTSolvers.Strategies
+import CTBase.Strategies
 using MadNLPGPU: MadNLPGPU
 using DocStringExtensions: DocStringExtensions
 

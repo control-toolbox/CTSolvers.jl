@@ -8,15 +8,15 @@ module CTSolversIpopt
 
 import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Solvers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTBase.Exceptions
 using NLPModelsIpopt: NLPModelsIpopt
 using NLPModels: NLPModels
 using SolverCore: SolverCore
 
 # Import parameter types
-using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter
+using CTBase.Strategies: CPU, GPU, AbstractStrategyParameter
 
 # ============================================================================
 # Metadata definition

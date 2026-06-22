@@ -129,7 +129,7 @@ end # module
 
 - Use module isolation for each test file
 - Separate unit and integration tests with clear comments
-- Use qualified method calls (e.g., `CTSolvers.Options.extract_options()`)
+- Use qualified method calls (e.g., `CTBase.Options.extract_options()`)
 - Each test must be independent and deterministic
 
 ### Directory Structure

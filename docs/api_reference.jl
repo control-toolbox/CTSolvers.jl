@@ -106,49 +106,6 @@ function generate_api_reference(src_dir::String, ext_dir::String)
         ),
 
         # ───────────────────────────────────────────────────────────────────
-        # Options
-        # ───────────────────────────────────────────────────────────────────
-        CTBase.automatic_reference_documentation(;
-            subdirectory="api",
-            primary_modules=[
-                CTSolvers.Options => src(
-                    joinpath("Options", "Options.jl"),
-                    joinpath("Options", "extraction.jl"),
-                    joinpath("Options", "not_provided.jl"),
-                    joinpath("Options", "option_definition.jl"),
-                    joinpath("Options", "option_value.jl"),
-                ),
-            ],
-            exclude=EXCLUDE_SYMBOLS,
-            public=true,
-            private=true,
-            title="Options",
-            title_in_menu="Options",
-            filename="options",
-        ),
-
-        # ───────────────────────────────────────────────────────────────────
-        # Orchestration
-        # ───────────────────────────────────────────────────────────────────
-        CTBase.automatic_reference_documentation(;
-            subdirectory="api",
-            primary_modules=[
-                CTSolvers.Orchestration => src(
-                    joinpath("Orchestration", "Orchestration.jl"),
-                    joinpath("Orchestration", "builders.jl"),
-                    joinpath("Orchestration", "disambiguation.jl"),
-                    joinpath("Orchestration", "routing.jl"),
-                ),
-            ],
-            exclude=EXCLUDE_SYMBOLS,
-            public=true,
-            private=true,
-            title="Orchestration",
-            title_in_menu="Orchestration",
-            filename="orchestration",
-        ),
-
-        # ───────────────────────────────────────────────────────────────────
         # Solvers
         # ───────────────────────────────────────────────────────────────────
         CTBase.automatic_reference_documentation(;
@@ -174,69 +131,6 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             filename="solvers",
         ),
 
-        # ───────────────────────────────────────────────────────────────────
-        # Strategies — Contract (abstract types, default implementations)
-        # ───────────────────────────────────────────────────────────────────
-        CTBase.automatic_reference_documentation(;
-            subdirectory="api",
-            primary_modules=[
-                CTSolvers.Strategies => src(
-                    joinpath("Strategies", "Strategies.jl"),
-                    joinpath("Strategies", "contract", "abstract_strategy.jl"),
-                    joinpath("Strategies", "contract", "metadata.jl"),
-                    joinpath("Strategies", "contract", "parameters.jl"),
-                    joinpath("Strategies", "contract", "strategy_options.jl"),
-                ),
-            ],
-            exclude=EXCLUDE_SYMBOLS,
-            public=true,
-            private=true,
-            title="Strategies — Contract",
-            title_in_menu="Strategies (Contract)",
-            filename="strategies_contract",
-        ),
-
-        # ───────────────────────────────────────────────────────────────────
-        # Strategies — API (registry, builders, introspection, configuration)
-        # ───────────────────────────────────────────────────────────────────
-        CTBase.automatic_reference_documentation(;
-            subdirectory="api",
-            primary_modules=[
-                CTSolvers.Strategies => src(
-                    joinpath("Strategies", "api", "builders.jl"),
-                    joinpath("Strategies", "api", "bypass.jl"),
-                    joinpath("Strategies", "api", "configuration.jl"),
-                    joinpath("Strategies", "api", "describe_registry.jl"),
-                    joinpath("Strategies", "api", "disambiguation.jl"),
-                    joinpath("Strategies", "api", "introspection.jl"),
-                    joinpath("Strategies", "api", "registry.jl"),
-                    joinpath("Strategies", "api", "utilities.jl"),
-                    joinpath("Strategies", "api", "validation_helpers.jl"),
-                ),
-            ],
-            exclude=EXCLUDE_SYMBOLS,
-            public=true,
-            private=true,
-            title="Strategies — API",
-            title_in_menu="Strategies (API)",
-            filename="strategies_api",
-        ),
-
-        # ───────────────────────────────────────────────────────────────────
-        # Strategies — Display Formatting
-        # ─────────────────────────────────────────────────────────────────--
-        CTBase.automatic_reference_documentation(;
-            subdirectory="api",
-            primary_modules=[
-                CTSolvers.Strategies => src(joinpath("Strategies", "display_formatting.jl"))
-            ],
-            exclude=EXCLUDE_SYMBOLS,
-            public=true,
-            private=true,
-            title="Strategies — Display Formatting",
-            title_in_menu="Strategies (Display)",
-            filename="strategies_display",
-        ),
     ]
 
     # ───────────────────────────────────────────────────────────────────

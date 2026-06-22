@@ -3,8 +3,8 @@ module TestDescribeRegistry
 using Test: Test
 import CTBase.Exceptions
 using CTSolvers: CTSolvers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTSolvers.Modelers
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
@@ -14,17 +14,17 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 # Helper: Build a real registry for testing
 # ============================================================================
 
-function get_strategy_registry()::CTSolvers.StrategyRegistry
-    return CTSolvers.create_registry(
-        CTSolvers.AbstractNLPModeler => (
-            (CTSolvers.ADNLP, [CTSolvers.CPU]),
-            (CTSolvers.Exa, [CTSolvers.CPU, CTSolvers.GPU]),
+function get_strategy_registry()::Strategies.StrategyRegistry
+    return Strategies.create_registry(
+        CTSolvers.Modelers.AbstractNLPModeler => (
+            (CTSolvers.Modelers.ADNLP, [Strategies.CPU]),
+            (CTSolvers.Modelers.Exa, [Strategies.CPU, Strategies.GPU]),
         ),
-        CTSolvers.AbstractNLPSolver => (
-            (CTSolvers.Ipopt, [CTSolvers.CPU]),
-            (CTSolvers.MadNLP, [CTSolvers.CPU, CTSolvers.GPU]),
-            (CTSolvers.MadNCL, [CTSolvers.CPU, CTSolvers.GPU]),
-            (CTSolvers.Knitro, [CTSolvers.CPU]),
+        CTSolvers.Solvers.AbstractNLPSolver => (
+            (CTSolvers.Solvers.Ipopt, [Strategies.CPU]),
+            (CTSolvers.Solvers.MadNLP, [Strategies.CPU, Strategies.GPU]),
+            (CTSolvers.Solvers.MadNCL, [Strategies.CPU, Strategies.GPU]),
+            (CTSolvers.Solvers.Knitro, [Strategies.CPU]),
         ),
     )
 end

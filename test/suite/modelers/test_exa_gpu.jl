@@ -3,8 +3,8 @@ module TestExaGPU
 using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Modelers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 using CUDA: CUDA
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

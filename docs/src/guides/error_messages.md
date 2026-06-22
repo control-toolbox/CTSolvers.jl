@@ -32,24 +32,24 @@ Thrown when a concrete type doesn't implement a required contract method.
 ### Strategy contract — missing `id`
 
 ```@example errors
-abstract type IncompleteStrategy <: CTSolvers.Strategies.AbstractStrategy end
+abstract type IncompleteStrategy <: CTBase.Strategies.AbstractStrategy end
 nothing # hide
 ```
 
 ```@repl errors
-CTSolvers.Strategies.id(IncompleteStrategy)
+CTBase.Strategies.id(IncompleteStrategy)
 ```
 
 **Fix**: Implement the missing method:
 
 ```julia
-Strategies.id(::Type{<:IncompleteStrategy}) = :my_strategy
+CTBase.Strategies.id(::Type{<:IncompleteStrategy}) = :my_strategy
 ```
 
 ### Strategy contract — missing `metadata`
 
 ```@repl errors
-CTSolvers.Strategies.metadata(IncompleteStrategy)
+CTBase.Strategies.metadata(IncompleteStrategy)
 ```
 
 ### Optimization problem contract — missing builder
@@ -71,9 +71,9 @@ CTSolvers.Optimization.get_exa_model_builder(MinimalProblem())
 
 | Method | Context |
 |--------|---------|
-| `Strategies.id(::Type{T})` | Strategy type missing `id` |
-| `Strategies.metadata(::Type{T})` | Strategy type missing `metadata` |
-| `Strategies.options(strategy)` | Strategy instance has no `options` field and no custom getter |
+| `CTBase.Strategies.id(::Type{T})` | Strategy type missing `id` |
+| `CTBase.Strategies.metadata(::Type{T})` | Strategy type missing `metadata` |
+| `CTBase.Strategies.options(strategy)` | Strategy instance has no `options` field and no custom getter |
 | `get_adnlp_model_builder(prob)` | Problem doesn't support ADNLPModels |
 | `get_exa_model_builder(prob)` | Problem doesn't support ExaModels |
 | `get_adnlp_solution_builder(prob)` | Problem doesn't support ADNLP solutions |
@@ -88,11 +88,11 @@ Thrown for invalid values, types, or routing errors. This is the most common exc
 When `extract_option` receives a value of the wrong type:
 
 ```@repl errors
-def = CTSolvers.Options.OptionDefinition(
+def = CTBase.Options.OptionDefinition(
     name = :max_iter, type = Integer, default = 100,
     description = "Maximum iterations",
 )
-CTSolvers.Options.extract_option((max_iter = "hello",), def)
+CTBase.Options.extract_option((max_iter = "hello",), def)
 ```
 
 **Fix**: Provide a value of the correct type.
@@ -102,7 +102,7 @@ CTSolvers.Options.extract_option((max_iter = "hello",), def)
 When a value doesn't satisfy the validator constraint:
 
 ```@example errors
-bad_def = CTSolvers.Options.OptionDefinition(
+bad_def = CTBase.Options.OptionDefinition(
     name = :tol, type = Real, default = 1e-8,
     description = "Tolerance",
     validator = x -> x > 0 || throw(Exceptions.IncorrectArgument(
@@ -117,7 +117,7 @@ nothing # hide
 ```
 
 ```@repl errors
-CTSolvers.Options.extract_option((tol = -1.0,), bad_def)
+CTBase.Options.extract_option((tol = -1.0,), bad_def)
 ```
 
 **Fix**: Provide a value that satisfies the validator constraint.
@@ -127,7 +127,7 @@ CTSolvers.Options.extract_option((tol = -1.0,), bad_def)
 When the default value doesn't match the declared type:
 
 ```@repl errors
-CTSolvers.Options.OptionDefinition(
+CTBase.Options.OptionDefinition(
     name = :count, type = Integer, default = "hello",
     description = "A count",
 )
@@ -138,7 +138,7 @@ CTSolvers.Options.OptionDefinition(
 ### Invalid OptionValue source
 
 ```@repl errors
-CTSolvers.Options.OptionValue(42, :invalid_source)
+CTBase.Options.OptionValue(42, :invalid_source)
 ```
 
 **Fix**: Use `:default`, `:user`, or `:computed`.
@@ -172,7 +172,7 @@ solver = Solvers.Ipopt(max_iter = 1000)
 ### OptionDefinition display
 
 ```@example errors
-CTSolvers.Options.OptionDefinition(
+CTBase.Options.OptionDefinition(
     name = :max_iter, type = Integer, default = 1000,
     description = "Maximum number of iterations",
     aliases = (:maxiter,),
@@ -182,27 +182,27 @@ CTSolvers.Options.OptionDefinition(
 ### OptionValue display
 
 ```@example errors
-CTSolvers.Options.OptionValue(1000, :user)
+CTBase.Options.OptionValue(1000, :user)
 ```
 
 ```@example errors
-CTSolvers.Options.OptionValue(1e-8, :default)
+CTBase.Options.OptionValue(1e-8, :default)
 ```
 
 ### NotProvided display
 
 ```@example errors
-CTSolvers.Options.NotProvided
+CTBase.Options.NotProvided
 ```
 
 ### Option extraction — successful
 
 ```@example errors
-def = CTSolvers.Options.OptionDefinition(
+def = CTBase.Options.OptionDefinition(
     name = :grid_size, type = Int, default = 100,
     description = "Grid size", aliases = (:n,),
 )
-opt_value, remaining = CTSolvers.Options.extract_option((n = 200, tol = 1e-6), def)
+opt_value, remaining = CTBase.Options.extract_option((n = 200, tol = 1e-6), def)
 println("Extracted: ", opt_value)
 println("Remaining: ", remaining)
 ```
@@ -211,14 +211,14 @@ println("Remaining: ", remaining)
 
 ```@example errors
 defs = [
-    CTSolvers.Options.OptionDefinition(
+    CTBase.Options.OptionDefinition(
         name = :grid_size, type = Int, default = 100, description = "Grid size",
     ),
-    CTSolvers.Options.OptionDefinition(
+    CTBase.Options.OptionDefinition(
         name = :tol, type = Float64, default = 1e-6, description = "Tolerance",
     ),
 ]
-extracted, remaining = CTSolvers.Options.extract_options((grid_size = 200, max_iter = 1000), defs)
+extracted, remaining = CTBase.Options.extract_options((grid_size = 200, max_iter = 1000), defs)
 println("Extracted: ", extracted)
 println("Remaining: ", remaining)
 ```

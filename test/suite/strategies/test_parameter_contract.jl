@@ -2,8 +2,8 @@ module TestParameterContract
 
 using Test
 using CTSolvers
-using CTSolvers.Strategies
-using CTSolvers.Strategies: _default_parameter
+using CTBase.Strategies
+using CTBase.Strategies: _default_parameter
 using CTBase.Exceptions
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

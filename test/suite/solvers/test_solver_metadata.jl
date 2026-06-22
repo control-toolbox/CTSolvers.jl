@@ -3,7 +3,7 @@ module TestSolverMetadata
 using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Solvers
-import CTSolvers.Strategies
+import CTBase.Strategies
 using MadNLP: MadNLP
 using MadNCL: MadNCL
 using UnoSolver: UnoSolver

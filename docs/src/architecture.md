@@ -10,26 +10,34 @@ This page provides the complete architectural overview. Read it before diving in
 
 ## Module Overview
 
-CTSolvers is organized into 7 modules, loaded in strict dependency order:
+CTSolvers relies on **CTBase** for its generic infrastructure and adds CTSolvers-specific modules:
+
+### Generic infrastructure (provided by CTBase)
+
+| Module | Responsibility |
+|--------|---------------|
+| **CTBase.Options** | Configuration primitives: `OptionDefinition`, `OptionValue`, extraction, validation |
+| **CTBase.Strategies** | Strategy contract (`AbstractStrategy`), registry, metadata, options building |
+| **CTBase.Orchestration** | Multi-strategy option routing and disambiguation |
+
+### CTSolvers-specific modules, loaded in dependency order
 
 | # | Module | Responsibility |
 |---|--------|---------------|
-| 1 | **Options** | Configuration primitives: `OptionDefinition`, `OptionValue`, extraction, validation |
-| 2 | **Strategies** | Strategy contract (`AbstractStrategy`), registry, metadata, options building |
-| 3 | **Orchestration** | Multi-strategy option routing and disambiguation |
-| 4 | **Optimization** | Abstract optimization types (`AbstractOptimizationProblem`), builders, `build_model`/`build_solution` |
-| 5 | **Modelers** | NLP model backends: `Modelers.ADNLP`, `Modelers.Exa` |
-| 6 | **DOCP** | `DiscretizedModel` — bridges CTModels and CTSolvers |
-| 7 | **Solvers** | Solver integration: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, CommonSolve API |
+| 1 | **Optimization** | Abstract optimization types (`AbstractOptimizationProblem`), builders, `build_model`/`build_solution` |
+| 2 | **Modelers** | NLP model backends: `Modelers.ADNLP`, `Modelers.Exa` |
+| 3 | **DOCP** | `DiscretizedModel` — bridges CTModels and CTSolvers |
+| 4 | **Solvers** | Solver integration: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, CommonSolve API |
 
-All access is **qualified** — CTSolvers does not export symbols at the top level:
+All access is **qualified** — neither CTBase nor CTSolvers export symbols at the top level:
 
 ```julia
 using CTSolvers
+using CTBase
 
 # Correct: qualified access
-CTSolvers.Strategies.id(MyStrategy)
-CTSolvers.Options.OptionDefinition(name=:x, type=Int, default=1, description="...")
+CTBase.Strategies.id(MyStrategy)
+CTBase.Options.OptionDefinition(name=:x, type=Int, default=1, description="...")
 
 # Wrong: not exported
 id(MyStrategy)  # ERROR: UndefVarError
@@ -79,7 +87,7 @@ classDiagram
     Other packages in the control-toolbox ecosystem define additional strategy families:
     - **`AbstractDiscretizer`** (in [CTDirect.jl](https://github.com/control-toolbox/CTDirect.jl)): discretizes continuous-time OCP into finite-dimensional problems (e.g., `Collocation`, `DirectShooting`).
 
-    These external strategies follow the same `AbstractStrategy` contract. See [Implementing a Strategy](@ref) for a complete tutorial.
+    These external strategies follow the same `AbstractStrategy` contract. See the Implementing a Strategy guide in CTBase.jl documentation for a complete tutorial.
 
 ### Optimization / Builder Branch
 
@@ -127,8 +135,10 @@ classDiagram
 
 ```mermaid
 flowchart LR
-    Options --> Strategies
-    Strategies --> Orchestration
+    subgraph CTBase
+        Options --> Strategies
+        Strategies --> Orchestration
+    end
     Strategies --> Optimization
     Strategies --> Modelers
     Strategies --> Solvers
@@ -140,10 +150,10 @@ flowchart LR
     Modelers --> Solvers
 ```
 
-The loading order in `CTSolvers.jl` is:
+The loading order is: CTBase loads Options → Strategies → Orchestration first; then CTSolvers loads:
 
 ```
-Options → Strategies → Orchestration → Optimization → Modelers → DOCP → Solvers
+Optimization → Modelers → DOCP → Solvers
 ```
 
 Each module only depends on modules loaded before it. This strict ordering ensures:
@@ -218,7 +228,7 @@ flowchart TB
 - **Type-level methods** (`id`, `metadata`) are called on the **type** — they enable introspection, routing, and validation without creating objects.
 - **Instance-level methods** (`options`) are called on **instances** — they provide the actual configuration with provenance tracking.
 
-See [Implementing a Strategy](@ref) for a step-by-step tutorial.
+See the Implementing a Strategy guide in CTBase.jl documentation for a step-by-step tutorial.
 
 ### Strategy Parameters (Overview)
 
@@ -248,7 +258,7 @@ flowchart TB
 - **Specialized defaults** per parameter (e.g., different linear solvers for CPU/GPU)
 - **Type-based metadata** via `metadata(::Type{<:Strategy}, ::Type{<:Parameter})`
 
-See [Strategy Parameters](@ref) for a complete guide.
+See the Strategy Parameters guide in CTBase.jl documentation for a complete guide.
 
 ### NotImplemented Pattern
 
@@ -256,7 +266,7 @@ All contract methods have default implementations that throw `NotImplemented` wi
 
 ```julia
 # If you forget to implement `id` for your strategy:
-julia> Strategies.id(IncompleteStrategy)
+julia> CTBase.Strategies.id(IncompleteStrategy)
 # ERROR: NotImplemented
 #   Strategy ID method not implemented
 #   Required method: id(::Type{<:IncompleteStrategy})
@@ -296,8 +306,8 @@ flowchart LR
 CTSolvers does **not** export symbols at the top level. All access goes through qualified module paths:
 
 ```julia
-CTSolvers.Strategies.id(MyStrategy)
-CTSolvers.Options.OptionDefinition(...)
+CTBase.Strategies.id(MyStrategy)
+CTBase.Options.OptionDefinition(...)
 CTSolvers.Optimization.build_model(problem, x0, modeler)
 ```
 
@@ -319,7 +329,7 @@ Every strategy constructor follows the same pattern:
 
 ```julia
 function MyStrategy(; mode::Symbol = :strict, kwargs...)
-    opts = Strategies.build_strategy_options(MyStrategy; mode = mode, kwargs...)
+    opts = CTBase.Strategies.build_strategy_options(MyStrategy; mode = mode, kwargs...)
     return MyStrategy(opts)
 end
 ```
@@ -332,14 +342,14 @@ end
 Options are declared via `OptionDefinition` in the `metadata` method:
 
 ```julia
-Strategies.metadata(::Type{<:MyStrategy}) = Strategies.StrategyMetadata(
-    Options.OptionDefinition(
+CTBase.Strategies.metadata(::Type{<:MyStrategy}) = CTBase.Strategies.StrategyMetadata(
+    CTBase.Options.OptionDefinition(
         name = :max_iter,
         type = Int,
         default = 1000,
         description = "Maximum number of iterations",
     ),
-    Options.OptionDefinition(
+    CTBase.Options.OptionDefinition(
         name = :tol,
         type = Float64,
         default = 1e-8,

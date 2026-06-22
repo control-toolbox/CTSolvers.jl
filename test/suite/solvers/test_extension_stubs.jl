@@ -4,7 +4,7 @@ using Test: Test
 import CTBase.Core
 import CTBase.Exceptions
 import CTSolvers.Solvers
-import CTSolvers.Strategies
+import CTBase.Strategies
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true

@@ -4,8 +4,8 @@ using Test: Test
 import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTSolvers.Solvers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTSolvers.Modelers
 import CTSolvers.Optimization
 using CommonSolve: CommonSolve
@@ -100,6 +100,17 @@ function test_madncl_extension()
             Test.@test Options.default(meta[:print_level]) isa MadNLP.LogLevels
             Test.@test Options.default(meta[:linear_solver]) == MadNLP.MumpsSolver
             Test.@test Options.default(meta[:ncl_options]) isa MadNCL.NCLOptions
+        end
+
+        # ====================================================================
+        # CONTRACT TESTS - Strategy contract validation
+        # ====================================================================
+
+        Test.@testset "Contract validation" begin
+            Test.@test Strategies.id(Solvers.MadNCL) isa Symbol
+            Test.@test Strategies.metadata(Solvers.MadNCL) isa Strategies.StrategyMetadata
+            solver = Solvers.MadNCL()
+            Test.@test Strategies.options(solver) isa Strategies.StrategyOptions
         end
 
         # ====================================================================

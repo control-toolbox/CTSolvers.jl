@@ -2,7 +2,7 @@ module TestBackwardCompatibility
 
 using Test: Test
 import CTBase.Exceptions
-import CTSolvers.Strategies
+import CTBase.Strategies
 import CTSolvers.Modelers
 import CTSolvers.Solvers
 

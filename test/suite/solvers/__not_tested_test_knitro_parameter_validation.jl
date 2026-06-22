@@ -3,7 +3,7 @@ module TestKnitroParameterValidation
 using Test
 using CTSolvers
 using CTSolvers.Solvers
-using CTSolvers.Strategies
+using CTBase.Strategies
 using CTBase.Exceptions
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

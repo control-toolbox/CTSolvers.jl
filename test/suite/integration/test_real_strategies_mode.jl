@@ -8,8 +8,8 @@ module TestRealStrategiesMode
 
 using Test: Test
 using CTSolvers: CTSolvers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTSolvers.Modelers
 import CTSolvers.Solvers
 

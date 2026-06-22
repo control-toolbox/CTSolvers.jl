@@ -1,7 +1,7 @@
 module TestMadNLPGPULinearSolver
 
 using Test: Test
-import CTSolvers.Strategies
+import CTBase.Strategies
 import CTSolvers.Solvers
 
 # Import extensions to enable metadata testing

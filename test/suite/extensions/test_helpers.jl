@@ -4,7 +4,7 @@ using Test: Test
 import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTSolvers.Solvers
-import CTSolvers.Strategies: CPU, GPU
+import CTBase.Strategies: CPU, GPU
 using MadNLP: MadNLP
 using MadNCL: MadNCL
 

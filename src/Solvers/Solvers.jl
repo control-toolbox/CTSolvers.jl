@@ -49,9 +49,11 @@ using CommonSolve: CommonSolve
 import CTBase.Exceptions
 import CTBase.Core
 
-# CTSolvers modules
-using ..Strategies
-using ..Options
+# CTBase generic infrastructure
+using CTBase.Strategies
+using CTBase.Options
+
+# Internal CTSolvers modules
 using ..Optimization
 using ..Modelers
 

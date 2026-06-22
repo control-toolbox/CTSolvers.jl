@@ -25,9 +25,11 @@ using ExaModels: ExaModels
 using KernelAbstractions: KernelAbstractions
 import CTBase.Core
 
+# CTBase generic infrastructure
+using CTBase.Options
+using CTBase.Strategies
+
 # Internal CTSolvers API
-using ..Options
-using ..Strategies
 using ..Optimization
 
 # Submodules

@@ -15,11 +15,11 @@ module TestComprehensiveValidation
 
 using Test: Test
 import CTBase.Exceptions
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTSolvers.Modelers
 import CTSolvers.Solvers
-import CTSolvers.Orchestration
+import CTBase.Orchestration
 import CTSolvers.Optimization
 
 # Load extensions if available for testing
