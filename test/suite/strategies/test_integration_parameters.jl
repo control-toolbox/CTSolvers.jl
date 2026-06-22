@@ -2,10 +2,10 @@ module TestIntegrationParameters
 
 using Test: Test
 import CTBase.Exceptions
-import CTSolvers.Strategies
+import CTBase.Strategies
 import CTSolvers.Modelers
 import CTSolvers.Solvers
-import CTSolvers.Options
+import CTBase.Options
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true

@@ -3,8 +3,8 @@ module TestCoverageSolvers
 using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Solvers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 using NLPModels: NLPModels
 using SolverCore: SolverCore
 using ADNLPModels: ADNLPModels

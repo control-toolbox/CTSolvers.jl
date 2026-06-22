@@ -9,15 +9,15 @@ module CTSolversUno
 import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Optimization
 import CTSolvers.Solvers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTBase.Exceptions
 using NLPModels: NLPModels
 using SolverCore: SolverCore
 using UnoSolver: UnoSolver
 
 # Import parameter types
-using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter
+using CTBase.Strategies: CPU, GPU, AbstractStrategyParameter
 
 # ============================================================================
 # Metadata definition

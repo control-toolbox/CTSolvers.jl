@@ -6,7 +6,7 @@ using CTSolvers.Modelers
 using CTSolvers.Modelers: AbstractNLPModeler
 using CTSolvers.Solvers
 using CTSolvers.Solvers: AbstractNLPSolver
-using CTSolvers.Strategies
+using CTBase.Strategies
 using CTBase.Exceptions
 using CUDA
 

@@ -4,8 +4,8 @@ using Test: Test
 import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTSolvers.Solvers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTSolvers.Modelers
 import CTSolvers.Optimization
 using CommonSolve: CommonSolve
@@ -142,6 +142,17 @@ function test_madnlp_extension()
                 Options.NotProvidedType
             Test.@test Options.default(meta[:equality_treatment]) isa
                 Options.NotProvidedType
+        end
+
+        # ====================================================================
+        # CONTRACT TESTS - Strategy contract validation
+        # ====================================================================
+
+        Test.@testset "Contract validation" begin
+            Test.@test Strategies.id(Solvers.MadNLP) isa Symbol
+            Test.@test Strategies.metadata(Solvers.MadNLP) isa Strategies.StrategyMetadata
+            solver = Solvers.MadNLP(print_level = MadNLP.ERROR)
+            Test.@test Strategies.options(solver) isa Strategies.StrategyOptions
         end
 
         # ====================================================================

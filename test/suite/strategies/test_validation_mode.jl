@@ -6,7 +6,7 @@ Tests the mode parameter itself: validation, default behavior, and error handlin
 module TestValidationMode
 
 using Test: Test
-import CTSolvers.Strategies
+import CTBase.Strategies
 import CTSolvers.Solvers
 using NLPModelsIpopt: NLPModelsIpopt
 

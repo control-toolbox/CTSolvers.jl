@@ -7,9 +7,9 @@ CurrentModule = CTSolvers
 The `CTSolvers.jl` package is part of the [control-toolbox ecosystem](https://github.com/control-toolbox).
 It provides the **solution layer** for optimal control problems:
 
-- **Options** — flexible configuration with provenance tracking and validation
-- **Strategies** — two-level contract pattern for configurable components
-- **Orchestration** — automatic option routing across multi-strategy pipelines
+- **CTBase.Options** — flexible configuration with provenance tracking and validation
+- **CTBase.Strategies** — two-level contract pattern for configurable components
+- **CTBase.Orchestration** — automatic option routing across multi-strategy pipelines
 - **Optimization** — abstract problem types and callable builder pattern
 - **Modelers** — NLP backend adapters (ADNLPModels, ExaModels)
 - **DOCP** — discretized optimal control problem types
@@ -31,17 +31,17 @@ It provides the **solution layer** for optimal control problems:
 
     ```julia
     using CTSolvers
-    CTSolvers.Options.extract_options(kwargs, defs)   # ✓ Qualified
-    CTSolvers.Strategies.id(Solvers.Ipopt)              # ✓ Qualified
+    CTBase.Options.extract_options(kwargs, defs)   # ✓ Qualified
+    CTBase.Strategies.id(Solvers.Ipopt)              # ✓ Qualified
     ```
 
 ## Modules
 
 | Module | Purpose |
 |--------|---------|
-| `Options` | Option definition, extraction, validation, provenance tracking |
-| `Strategies` | Abstract strategy contract, metadata, options, registry |
-| `Orchestration` | Option routing, disambiguation, method tuple handling |
+| `CTBase.Options` | Option definition, extraction, validation, provenance tracking |
+| `CTBase.Strategies` | Abstract strategy contract, metadata, options, registry |
+| `CTBase.Orchestration` | Option routing, disambiguation, method tuple handling |
 | `Optimization` | Abstract problem types, builder pattern, build/solve API |
 | `Modelers` | Modelers.ADNLP, Modelers.Exa — NLP backend adapters |
 | `DOCP` | DiscretizedModel — concrete problem type |
@@ -52,14 +52,15 @@ It provides the **solution layer** for optimal control problems:
 ### Developer Guides
 
 - [Architecture](@ref) — module overview, type hierarchy, data flow
-- [Options System](@ref) — OptionDefinition, OptionValue, extraction, validation modes
-- [Implementing a Strategy](@ref) — two-level contract, metadata, StrategyOptions, registry
-- [Strategy Parameters](@ref) — CPU/GPU parameters, type-based specialization, parameterized metadata
 - [Implementing a Solver](@ref) — tag dispatch, extension pattern, CommonSolve integration
 - [Implementing a Modeler](@ref) — callable contracts, builder interaction
 - [Implementing an Optimization Problem](@ref) — builder pattern, DOCP example
-- [Orchestration and Routing](@ref) — method tuples, auto-routing, disambiguation
 - [Error Messages Reference](@ref) — all exception types with examples and fixes
+
+!!! note "Generic infrastructure guides"
+    The guides for Options, Strategies, Orchestration, and Strategy Parameters have moved to
+    [CTBase.jl documentation](https://github.com/control-toolbox/CTBase.jl) where these
+    modules now live.
 
 ### API Reference
 

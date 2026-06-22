@@ -8,7 +8,7 @@ Implements GPU-specific backend defaults and consistency validation.
 module CTSolversCUDA
 
 import CTSolvers.Modelers
-import CTSolvers.Strategies
+import CTBase.Strategies
 using CUDA: CUDA
 using DocStringExtensions: DocStringExtensions
 

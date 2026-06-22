@@ -4,7 +4,7 @@ using Test
 import CTBase.Core
 using CTSolvers
 using CTSolvers.Modelers
-using CTSolvers.Strategies
+using CTBase.Strategies
 using CTBase.Exceptions
 using Enzyme
 using Zygote

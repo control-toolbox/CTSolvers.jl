@@ -3,8 +3,8 @@ module TestCoverageModelers
 using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Modelers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTSolvers.Optimization
 using SolverCore: SolverCore
 

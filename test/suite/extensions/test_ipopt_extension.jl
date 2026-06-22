@@ -4,8 +4,8 @@ using Test: Test
 import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTSolvers.Solvers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTSolvers.Modelers
 import CTSolvers.Optimization
 using CommonSolve: CommonSolve
@@ -62,6 +62,17 @@ function test_ipopt_extension()
             Test.@test Options.default(meta[:max_iter]) isa Integer
             Test.@test Options.default(meta[:tol]) isa Real
             Test.@test Options.default(meta[:print_level]) isa Integer
+        end
+
+        # ====================================================================
+        # CONTRACT TESTS - Strategy contract validation
+        # ====================================================================
+
+        Test.@testset "Contract validation" begin
+            Test.@test Strategies.id(Solvers.Ipopt) isa Symbol
+            Test.@test Strategies.metadata(Solvers.Ipopt) isa Strategies.StrategyMetadata
+            solver = Solvers.Ipopt()
+            Test.@test Strategies.options(solver) isa Strategies.StrategyOptions
         end
 
         # ====================================================================

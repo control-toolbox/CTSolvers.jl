@@ -8,15 +8,15 @@ module CTSolversKnitro
 
 import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Solvers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTBase.Exceptions
 using NLPModelsKnitro: NLPModelsKnitro
 using NLPModels: NLPModels
 using SolverCore: SolverCore
 
 # Import parameter types
-using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter
+using CTBase.Strategies: CPU, GPU, AbstractStrategyParameter
 
 # ============================================================================
 # Metadata Definition

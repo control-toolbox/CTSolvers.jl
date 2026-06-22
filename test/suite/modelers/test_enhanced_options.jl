@@ -14,7 +14,7 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 using ADNLPModels: ADNLPModels
 import CTSolvers.Modelers
 using KernelAbstractions: KernelAbstractions
-import CTSolvers.Strategies
+import CTBase.Strategies
 
 # Define structs at top-level (crucial!)
 struct TestDummyModel end

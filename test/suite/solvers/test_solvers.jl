@@ -4,7 +4,7 @@ using Test: Test
 import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTSolvers.Solvers
-import CTSolvers.Strategies
+import CTBase.Strategies
 using CTSolvers.Solvers  # For testing exported symbols
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

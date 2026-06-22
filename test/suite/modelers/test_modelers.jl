@@ -3,7 +3,7 @@ module TestModelers
 using Test: Test
 using CTSolvers: CTSolvers
 import CTSolvers.Modelers
-import CTSolvers.Strategies
+import CTBase.Strategies
 using ADNLPModels: ADNLPModels
 using ExaModels: ExaModels
 using SolverCore: SolverCore
@@ -241,6 +241,19 @@ function test_modelers_descriptions()
     end
 end
 
+function test_modelers_contract()
+    Test.@testset "Contract validation" begin
+        for T in (Modelers.ADNLP, Modelers.Exa)
+            Test.@testset "$(nameof(T))" begin
+                Test.@test Strategies.id(T) isa Symbol
+                Test.@test Strategies.metadata(T) isa Strategies.StrategyMetadata
+                instance = T()
+                Test.@test Strategies.options(instance) isa Strategies.StrategyOptions
+            end
+        end
+    end
+end
+
 function test_modelers()
     Test.@testset "Modelers Module Tests" verbose = VERBOSE showtiming = SHOWTIMING begin
         test_modelers_basic()
@@ -250,6 +263,7 @@ function test_modelers()
         test_modelers_error_handling()
         test_modelers_options_api()
         test_modelers_descriptions()
+        test_modelers_contract()
     end
 end
 

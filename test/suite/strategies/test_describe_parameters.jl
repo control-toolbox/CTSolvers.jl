@@ -7,7 +7,7 @@ module TestDescribeParameters
 using Test: Test
 import CTBase.Exceptions
 using CTSolvers: CTSolvers
-import CTSolvers.Strategies
+import CTBase.Strategies
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
@@ -71,9 +71,9 @@ function test_describe_parameters()
 
         Test.@testset "describe(:cpu, registry) - registry-aware" begin
             # Create a registry with parameterized strategies
-            registry = CTSolvers.create_registry(
-                CTSolvers.AbstractNLPModeler =>
-                    ((CTSolvers.Exa, [CTSolvers.CPU, CTSolvers.GPU]),),
+            registry = Strategies.create_registry(
+                CTSolvers.Modelers.AbstractNLPModeler =>
+                    ((CTSolvers.Modelers.Exa, [Strategies.CPU, Strategies.GPU]),),
             )
 
             # Capture output
@@ -101,9 +101,9 @@ function test_describe_parameters()
 
         Test.@testset "describe(:gpu, registry) - registry-aware" begin
             # Create a registry with parameterized strategies
-            registry = CTSolvers.create_registry(
-                CTSolvers.AbstractNLPModeler =>
-                    ((CTSolvers.Exa, [CTSolvers.CPU, CTSolvers.GPU]),),
+            registry = Strategies.create_registry(
+                CTSolvers.Modelers.AbstractNLPModeler =>
+                    ((CTSolvers.Modelers.Exa, [Strategies.CPU, Strategies.GPU]),),
             )
 
             # Capture output
@@ -135,8 +135,8 @@ function test_describe_parameters()
 
         Test.@testset "Unknown symbol error" begin
             # Create a registry
-            registry = CTSolvers.create_registry(
-                CTSolvers.AbstractNLPModeler => ((CTSolvers.ADNLP, [CTSolvers.CPU]),)
+            registry = Strategies.create_registry(
+                CTSolvers.Modelers.AbstractNLPModeler => ((CTSolvers.Modelers.ADNLP, [Strategies.CPU]),)
             )
 
             # Test unknown ID throws IncorrectArgument

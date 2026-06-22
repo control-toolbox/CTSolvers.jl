@@ -7,9 +7,9 @@ ensuring unknown options are rejected with helpful error messages.
 module TestValidationStrict
 
 using Test: Test
-import CTSolvers.Strategies
+import CTBase.Strategies
 import CTSolvers.Solvers
-import CTSolvers.Options
+import CTBase.Options
 using NLPModelsIpopt: NLPModelsIpopt
 import CTBase.Exceptions
 

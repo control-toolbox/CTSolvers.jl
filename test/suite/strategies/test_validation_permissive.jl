@@ -8,9 +8,9 @@ are still validated.
 module TestValidationPermissive
 
 using Test: Test
-import CTSolvers.Strategies
+import CTBase.Strategies
 import CTSolvers.Solvers
-import CTSolvers.Options
+import CTBase.Options
 using NLPModelsIpopt: NLPModelsIpopt
 
 # Test options for verbose output

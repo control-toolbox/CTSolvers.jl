@@ -5,8 +5,8 @@ using CTBase: CTBase
 const Exceptions = CTBase.Exceptions
 using CTSolvers
 using CTSolvers.Solvers
-using CTSolvers.Strategies
-using CTSolvers.Options
+using CTBase.Strategies
+using CTBase.Options
 using CTSolvers.Modelers
 using CTSolvers.Optimization
 using CommonSolve

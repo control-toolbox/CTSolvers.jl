@@ -4,8 +4,8 @@ using Test: Test
 import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTSolvers.Solvers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTSolvers.Modelers
 import CTSolvers.Optimization
 using CommonSolve: CommonSolve
@@ -116,6 +116,17 @@ function test_uno_extension()
             Test.@test iter_zero == 0
             Test.@test status_zero == :max_iter
             Test.@test successful_zero == false
+        end
+
+        # ====================================================================
+        # CONTRACT TESTS - Strategy contract validation
+        # ====================================================================
+
+        Test.@testset "Contract validation" begin
+            Test.@test Strategies.id(Solvers.Uno) isa Symbol
+            Test.@test Strategies.metadata(Solvers.Uno) isa Strategies.StrategyMetadata
+            solver = Solvers.Uno()
+            Test.@test Strategies.options(solver) isa Strategies.StrategyOptions
         end
 
         # ====================================================================

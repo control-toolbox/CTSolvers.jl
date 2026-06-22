@@ -12,8 +12,8 @@ module TestAliasIntegration
 
 using Test: Test
 import CTBase.Exceptions
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTSolvers.Solvers
 
 # Test options for verbose output

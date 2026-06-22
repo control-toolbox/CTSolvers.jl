@@ -9,9 +9,9 @@ end-to-end.
 module TestModePropagation
 
 using Test: Test
-import CTSolvers.Strategies
-import CTSolvers.Options
-import CTSolvers.Orchestration
+import CTBase.Strategies
+import CTBase.Options
+import CTBase.Orchestration
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

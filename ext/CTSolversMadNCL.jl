@@ -8,8 +8,8 @@ module CTSolversMadNCL
 
 import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Solvers
-import CTSolvers.Strategies
-import CTSolvers.Options
+import CTBase.Strategies
+import CTBase.Options
 import CTSolvers.Optimization
 import CTBase.Exceptions
 using MadNCL: MadNCL
@@ -18,7 +18,7 @@ using NLPModels: NLPModels
 using SolverCore: SolverCore
 
 # Import parameter types
-using CTSolvers.Strategies: CPU, GPU, AbstractStrategyParameter
+using CTBase.Strategies: CPU, GPU, AbstractStrategyParameter
 
 # ============================================================================
 # Helper Functions
