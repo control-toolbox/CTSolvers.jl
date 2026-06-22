@@ -474,7 +474,7 @@ end
 function Base.show(io::IO, registry::StrategyRegistry)
     fmt = Core.get_format_codes(io)
     n_families = length(registry.families)
-    print(
+    return print(
         io,
         fmt.name,
         "StrategyRegistry",

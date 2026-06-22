@@ -361,7 +361,7 @@ function test_comprehensive_validation()
 
                 # Test all construction methods - redirect stderr to hide warnings
                 redirect_stderr(devnull) do
-                    test_strategy_construction(
+                    return test_strategy_construction(
                         Modelers.ADNLP,
                         :adnlp,
                         Modelers.AbstractNLPModeler,
@@ -384,7 +384,7 @@ function test_comprehensive_validation()
                         strategy_permissive = Modelers.ADNLP(;
                             known_options..., unknown_options..., mode=:permissive
                         )
-                        test_option_recovery(
+                        return test_option_recovery(
                             strategy_permissive, known_options, unknown_options, :permissive
                         )
                     end
@@ -399,7 +399,7 @@ function test_comprehensive_validation()
                             unknown_options...,
                             mode=:permissive,
                         )
-                        test_option_recovery(
+                        return test_option_recovery(
                             strategy_build, known_options, unknown_options, :permissive
                         )
                     end
@@ -419,7 +419,7 @@ function test_comprehensive_validation()
 
                 # Test all construction methods - redirect stderr to hide warnings
                 redirect_stderr(devnull) do
-                    test_strategy_construction(
+                    return test_strategy_construction(
                         Modelers.Exa,
                         :exa,
                         Modelers.AbstractNLPModeler,
@@ -440,7 +440,7 @@ function test_comprehensive_validation()
                         strategy_permissive = Modelers.Exa(;
                             known_options..., unknown_options..., mode=:permissive
                         )
-                        test_option_recovery(
+                        return test_option_recovery(
                             strategy_permissive, known_options, unknown_options, :permissive
                         )
                     end
@@ -470,7 +470,7 @@ function test_comprehensive_validation()
 
                     # Test all construction methods - redirect stderr to hide warnings
                     redirect_stderr(devnull) do
-                        test_strategy_construction(
+                        return test_strategy_construction(
                             Solvers.Ipopt,
                             :ipopt,
                             Solvers.AbstractNLPSolver,
@@ -491,7 +491,7 @@ function test_comprehensive_validation()
                             strategy_permissive = Solvers.Ipopt(;
                                 known_options..., unknown_options..., mode=:permissive
                             )
-                            test_option_recovery(
+                            return test_option_recovery(
                                 strategy_permissive,
                                 known_options,
                                 unknown_options,
@@ -519,7 +519,7 @@ function test_comprehensive_validation()
                     unknown_options = (madnlp_fake=111, custom_madnlp=true)
 
                     redirect_stderr(devnull) do
-                        test_strategy_construction(
+                        return test_strategy_construction(
                             Solvers.MadNLP,
                             :madnlp,
                             Solvers.AbstractNLPSolver,
@@ -539,7 +539,7 @@ function test_comprehensive_validation()
                             strategy_permissive = Solvers.MadNLP(;
                                 known_options..., unknown_options..., mode=:permissive
                             )
-                            test_option_recovery(
+                            return test_option_recovery(
                                 strategy_permissive,
                                 known_options,
                                 unknown_options,
@@ -566,7 +566,7 @@ function test_comprehensive_validation()
                     unknown_options = (madncl_fake=222, custom_ncl_opt=3.14)
 
                     redirect_stderr(devnull) do
-                        test_strategy_construction(
+                        return test_strategy_construction(
                             Solvers.MadNCL,
                             :madncl,
                             Solvers.AbstractNLPSolver,
@@ -586,7 +586,7 @@ function test_comprehensive_validation()
                             strategy_permissive = Solvers.MadNCL(;
                                 known_options..., unknown_options..., mode=:permissive
                             )
-                            test_option_recovery(
+                            return test_option_recovery(
                                 strategy_permissive,
                                 known_options,
                                 unknown_options,
@@ -614,7 +614,7 @@ function test_comprehensive_validation()
 
                     # Test all construction methods - redirect stderr to hide warnings
                     redirect_stderr(devnull) do
-                        test_strategy_construction(
+                        return test_strategy_construction(
                             Solvers.Uno,
                             :uno,
                             Solvers.AbstractNLPSolver,
@@ -635,7 +635,7 @@ function test_comprehensive_validation()
                             strategy_permissive = Solvers.Uno(;
                                 known_options..., unknown_options..., mode=:permissive
                             )
-                            test_option_recovery(
+                            return test_option_recovery(
                                 strategy_permissive,
                                 known_options,
                                 unknown_options,
@@ -856,5 +856,5 @@ end # module
 
 # Redefine in outer scope for TestRunner
 function test_comprehensive_validation()
-    TestComprehensiveValidation.test_comprehensive_validation()
+    return TestComprehensiveValidation.test_comprehensive_validation()
 end

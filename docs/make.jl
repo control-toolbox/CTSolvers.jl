@@ -37,7 +37,7 @@ include("api_reference.jl")
 # Build documentation
 # ═══════════════════════════════════════════════════════════════════════════════
 with_api_reference(src_dir, ext_dir) do api_pages
-    makedocs(;
+    return makedocs(;
         draft=draft,
         remotes=nothing, # Disable remote links. Needed for DocumenterReference
         warnonly=true,

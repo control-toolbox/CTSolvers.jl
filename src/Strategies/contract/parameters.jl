@@ -52,7 +52,7 @@ julia> id(GPU)
 ```
 """
 function id(parameter_type::Type{<:AbstractStrategyParameter})
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "id() must be implemented for parameter type";
             required_method="id(::Type{$(parameter_type)})",
@@ -234,7 +234,7 @@ julia> description(GPU)
 See also: [`id`](@ref), [`AbstractStrategyParameter`](@ref)
 """
 function description(parameter_type::Type{<:AbstractStrategyParameter})
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "description() must be implemented for parameter type";
             required_method="description(::Type{$(parameter_type)})",
@@ -289,7 +289,7 @@ CPU (parameter)
 See also: [`describe(::Symbol, ::StrategyRegistry)`](@ref), [`id`](@ref), [`description`](@ref)
 """
 function describe(parameter_type::Type{T}) where {T<:AbstractStrategyParameter}
-    describe(stdout, parameter_type)
+    return describe(stdout, parameter_type)
 end
 
 """
@@ -314,7 +314,7 @@ function describe(io::IO, parameter_type::Type{T}) where {T<:AbstractStrategyPar
     println(io, fmt.name, type_name, fmt.reset, " (parameter)")
     println(io, "├─ ", fmt.label, "id: ", fmt.reset, fmt.keyword, ":", param_id, fmt.reset)
     println(io, "├─ ", fmt.label, "hierarchy: ", fmt.reset, hierarchy_str)
-    _print_labeled_multiline(io, "└─ ", "   ", fmt, "description: ", param_desc)
+    return _print_labeled_multiline(io, "└─ ", "   ", fmt, "description: ", param_desc)
 end
 
 # ============================================================================
@@ -351,7 +351,7 @@ _default_parameter(::Type{<:MyOtherStrategy}) = GPU
 See also: `CPU`, `GPU`
 """
 function _default_parameter(::Type{<:AbstractStrategy})
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "Strategy must implement _default_parameter";
             required_method="Strategies._default_parameter(::Type{<:YourStrategy})",

@@ -46,7 +46,7 @@ function test_enhanced_options()
                 # Enzyme and Zygote may generate warnings if packages not loaded - that's expected
                 redirect_stderr(devnull) do
                     Modelers.ADNLP(backend=:enzyme)  # May warn if Enzyme not loaded
-                    Modelers.ADNLP(backend=:zygote)  # May warn if Zygote not loaded
+                    return Modelers.ADNLP(backend=:zygote)  # May warn if Zygote not loaded
                 end
 
                 # Invalid backend should throw error (redirect stderr to hide error logs)

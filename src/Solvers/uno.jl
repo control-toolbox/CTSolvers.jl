@@ -157,8 +157,8 @@ $(TYPEDSIGNATURES)
 Return the description for the Uno solver.
 """
 function Strategies.description(::Type{<:Solvers.Uno})
-    "Unified modular NLP solver combining interior-point, SQP, trust-region and filter strategies.\n" *
-    "See: https://unosolver.readthedocs.io/en/latest/"
+    return "Unified modular NLP solver combining interior-point, SQP, trust-region and filter strategies.\n" *
+           "See: https://unosolver.readthedocs.io/en/latest/"
 end
 
 """
@@ -258,7 +258,7 @@ See also: `Uno`, `Strategies.metadata`
 function build_uno_solver(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :UnoSolver;
             message="to create Uno, access options, and solve problems",
@@ -283,7 +283,7 @@ See also: `Uno`, `Strategies.StrategyMetadata`
 """
 function Strategies.metadata(::Type{<:Solvers.Uno{P}}) where {P<:CPU}
     # Extension is missing
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :UnoSolver;
             message="to access Uno{$P} options metadata",

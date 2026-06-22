@@ -31,7 +31,7 @@ nlp = builder(initial_guess; show_time=false, backend=:optimized)
 See also: `get_exa_model_builder`, `build_model`
 """
 function get_adnlp_model_builder(prob::AbstractOptimizationProblem)
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "ADNLP model builder not implemented";
             required_method="get_adnlp_model_builder(prob::$(typeof(prob)))",
@@ -69,7 +69,7 @@ nlp = builder(Float64, initial_guess; backend=nothing, minimize=true)
 See also: `get_adnlp_model_builder`, `build_model`
 """
 function get_exa_model_builder(prob::AbstractOptimizationProblem)
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "ExaModel builder not implemented";
             required_method="get_exa_model_builder(prob::$(typeof(prob)))",
@@ -107,7 +107,7 @@ sol = builder(nlp_stats)
 See also: `get_exa_solution_builder`, `build_solution`
 """
 function get_adnlp_solution_builder(prob::AbstractOptimizationProblem)
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "ADNLP solution builder not implemented";
             required_method="get_adnlp_solution_builder(prob::$(typeof(prob)))",
@@ -145,7 +145,7 @@ sol = builder(nlp_stats)
 See also: `get_adnlp_solution_builder`, `build_solution`
 """
 function get_exa_solution_builder(prob::AbstractOptimizationProblem)
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "ExaSolution builder not implemented";
             required_method="get_exa_solution_builder(prob::$(typeof(prob)))",
