@@ -209,7 +209,7 @@ function test_madncl_extension()
         Test.@testset "MadNLP Option Pass-through" begin
             # Create a simple dummy problem
             ros = TestProblems.Rosenbrock()
-            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(ros.init)
 
             # checking that it runs without error with these options
@@ -218,7 +218,7 @@ function test_madncl_extension()
             )
 
             # Just ensure the call works and options are accepted
-            Test.@test_nowarn solver(nlp, display=false)
+            Test.@test_nowarn CommonSolve.solve(nlp, solver; display=false)
         end
 
         # ====================================================================
@@ -229,7 +229,7 @@ function test_madncl_extension()
             # MadNCL requires problems with constraints
             # Using Elec problem which has constraints
             elec = TestProblems.Elec()
-            adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(elec.init)
 
             # Test with display=false sets print_level=MadNLP.ERROR
@@ -249,12 +249,12 @@ function test_madncl_extension()
             ros = TestProblems.Rosenbrock()
 
             # Build NLP model
-            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(ros.init)
 
             solver = Solvers.MadNCL(max_iter=1000, tol=1e-6, print_level=MadNLP.ERROR)
 
-            stats = solver(nlp; display=false)
+            stats = CommonSolve.solve(nlp, solver; display=false)
 
             # Just check it converges
             Test.@test Symbol(stats.status) in
@@ -265,12 +265,12 @@ function test_madncl_extension()
             elec = TestProblems.Elec()
 
             # Build NLP model
-            adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(elec.init)
 
             solver = Solvers.MadNCL(max_iter=3000, tol=1e-6, print_level=MadNLP.ERROR)
 
-            stats = solver(nlp; display=false)
+            stats = CommonSolve.solve(nlp, solver; display=false)
 
             # Just check it converges
             Test.@test Symbol(stats.status) in
@@ -281,12 +281,12 @@ function test_madncl_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP model
-            adnlp_builder = CTSolvers.get_adnlp_model_builder(max_prob.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(max_prob.init)
 
             solver = Solvers.MadNCL(max_iter=1000, tol=1e-6, print_level=MadNLP.ERROR)
 
-            stats = solver(nlp; display=false)
+            stats = CommonSolve.solve(nlp, solver; display=false)
 
             # Check convergence
             Test.@test Symbol(stats.status) in
@@ -351,14 +351,14 @@ function test_madncl_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP models
-            adnlp_builder1 = CTSolvers.get_adnlp_model_builder(elec.prob)
+            adnlp_builder1 = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP())
             nlp1 = adnlp_builder1(elec.init)
 
-            adnlp_builder2 = CTSolvers.get_adnlp_model_builder(max_prob.prob)
+            adnlp_builder2 = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP())
             nlp2 = adnlp_builder2(max_prob.init)
 
-            stats1 = solver(nlp1; display=false)
-            stats2 = solver(nlp2; display=false)
+            stats1 = CommonSolve.solve(nlp1, solver; display=false)
+            stats2 = CommonSolve.solve(nlp2, solver; display=false)
 
             Test.@test Symbol(stats1.status) in
                 (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)

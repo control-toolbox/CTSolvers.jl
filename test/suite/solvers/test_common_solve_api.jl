@@ -26,9 +26,11 @@ end
 FakeSolver() = FakeSolver(Ref(0), Ref{Union{Nothing,Bool}}(nothing))
 
 """
-Implement callable interface for FakeSolver.
+Implement the CommonSolve.solve method for FakeSolver.
 """
-function (s::FakeSolver)(nlp::NLPModels.AbstractNLPModel; display::Bool=true)
+function CommonSolve.solve(
+    nlp::NLPModels.AbstractNLPModel, s::FakeSolver; display::Bool=true
+)
     s.calls[] += 1
     s.display_flag[] = display
     # Return a valid GenericExecutionStats using the NLP model

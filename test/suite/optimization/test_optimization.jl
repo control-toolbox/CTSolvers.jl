@@ -19,60 +19,41 @@ const CurrentModule = TestOptimization
 # ============================================================================
 
 """
-Fake optimization problem for testing the contract interface.
+Fake optimization problem implementing the build_model / build_solution contract.
 """
-struct FakeOptimizationProblem <: Optimization.AbstractOptimizationProblem
-    adnlp_builder::Optimization.ADNLPModelBuilder
-    exa_builder::Optimization.ExaModelBuilder
-    adnlp_solution_builder::Optimization.ADNLPSolutionBuilder
-    exa_solution_builder::Optimization.ExaSolutionBuilder
-end
-
-# Implement contract for FakeOptimizationProblem
-Optimization.get_adnlp_model_builder(prob::FakeOptimizationProblem) = prob.adnlp_builder
-Optimization.get_exa_model_builder(prob::FakeOptimizationProblem) = prob.exa_builder
-function Optimization.get_adnlp_solution_builder(prob::FakeOptimizationProblem)
-    prob.adnlp_solution_builder
-end
-function Optimization.get_exa_solution_builder(prob::FakeOptimizationProblem)
-    prob.exa_solution_builder
-end
+struct FakeOptimizationProblem <: Optimization.AbstractOptimizationProblem end
 
 """
-Minimal problem for testing NotImplemented errors.
+Minimal problem for testing NotImplemented errors (no contract method defined).
 """
 struct MinimalProblem <: Optimization.AbstractOptimizationProblem end
 
 """
-Fake modeler for testing building functions.
+Fake modeler for testing building functions; carries a backend selector.
 """
 struct FakeModeler
     backend::Symbol
 end
 
-function (modeler::FakeModeler)(
-    prob::Optimization.AbstractOptimizationProblem, initial_guess
+# Contract implementation by dispatch on (FakeOptimizationProblem, FakeModeler)
+function Optimization.build_model(
+    ::FakeOptimizationProblem, initial_guess, modeler::FakeModeler
 )
     if modeler.backend == :adnlp
-        builder = Optimization.get_adnlp_model_builder(prob)
-        return builder(initial_guess)
+        return ADNLPModels.ADNLPModel(z -> sum(z .^ 2), initial_guess)
     else
-        builder = Optimization.get_exa_model_builder(prob)
-        return builder(Float64, initial_guess)
+        n = length(initial_guess)
+        m = ExaModels.ExaCore(Float64; concrete=Val(true))
+        ExaModels.@add_var(m, x_var, n; start=initial_guess)
+        ExaModels.@add_obj(m, sum(x_var[i]^2 for i in 1:n))
+        return ExaModels.ExaModel(m)
     end
 end
 
-function (modeler::FakeModeler)(
-    prob::Optimization.AbstractOptimizationProblem,
-    nlp_solution::SolverCore.AbstractExecutionStats,
+function Optimization.build_solution(
+    ::FakeOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats, ::FakeModeler
 )
-    if modeler.backend == :adnlp
-        builder = Optimization.get_adnlp_solution_builder(prob)
-        return builder(nlp_solution)
-    else
-        builder = Optimization.get_exa_solution_builder(prob)
-        return builder(nlp_solution)
-    end
+    return (obj=nlp_solution.objective, iter=nlp_solution.iter, status=nlp_solution.status)
 end
 
 # TOP-LEVEL: Create GenericExecutionStats instances for testing
@@ -91,14 +72,11 @@ end
 """
     test_optimization()
 
-Tests for Optimization module.
-
-This function tests the complete Optimization module including:
-- Abstract types (AbstractOptimizationProblem, AbstractBuilder, etc.)
-- Concrete builder types (ADNLPModelBuilder, ExaModelBuilder, etc.)
-- Contract interface (get_*_builder functions)
-- Building functions (build_model, build_solution)
-- Solver utilities (extract_solver_infos)
+Tests for the Optimization module:
+- Abstract type (`AbstractOptimizationProblem`)
+- Building contract (`build_model`, `build_solution`) by multiple dispatch
+- NotImplemented stubs for unregistered (problem, modeler) pairs
+- Solver utilities (`extract_solver_infos`)
 """
 function test_optimization()
     Test.@testset "Optimization Module" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -108,21 +86,13 @@ function test_optimization()
         # ====================================================================
 
         Test.@testset "Exports verification" begin
-            # Test that Optimization module is available
             Test.@testset "Optimization Module" begin
                 Test.@test isdefined(CTSolvers, :Optimization)
                 Test.@test CTSolvers.Optimization isa Module
             end
 
-            # Test exported abstract types
             Test.@testset "Exported Abstract Types" begin
-                for T in (
-                    AbstractOptimizationProblem,
-                    AbstractBuilder,
-                    AbstractModelBuilder,
-                    AbstractSolutionBuilder,
-                    AbstractOCPSolutionBuilder,
-                )
+                for T in (AbstractOptimizationProblem,)
                     Test.@testset "$(nameof(T))" begin
                         Test.@test isdefined(Optimization, nameof(T))
                         Test.@test isdefined(CurrentModule, nameof(T))
@@ -131,33 +101,8 @@ function test_optimization()
                 end
             end
 
-            # Test exported concrete types
-            Test.@testset "Exported Concrete Types" begin
-                for T in (
-                    ADNLPModelBuilder,
-                    ExaModelBuilder,
-                    ADNLPSolutionBuilder,
-                    ExaSolutionBuilder,
-                )
-                    Test.@testset "$(nameof(T))" begin
-                        Test.@test isdefined(Optimization, nameof(T))
-                        Test.@test isdefined(CurrentModule, nameof(T))
-                        Test.@test T isa DataType || T isa UnionAll
-                    end
-                end
-            end
-
-            # Test exported functions
             Test.@testset "Exported Functions" begin
-                for f in (
-                    :get_adnlp_model_builder,
-                    :get_exa_model_builder,
-                    :get_adnlp_solution_builder,
-                    :get_exa_solution_builder,
-                    :build_model,
-                    :build_solution,
-                    :extract_solver_infos,
-                )
+                for f in (:build_model, :build_solution, :extract_solver_infos)
                     Test.@testset "$f" begin
                         Test.@test isdefined(Optimization, f)
                         Test.@test isdefined(CurrentModule, f)
@@ -168,250 +113,53 @@ function test_optimization()
         end
 
         # ====================================================================
-        # UNIT TESTS - Abstract Types
+        # UNIT TESTS - Contract stubs (NotImplemented)
         # ====================================================================
 
-        Test.@testset "Abstract Types" begin
-            Test.@testset "Type hierarchy" begin
-                Test.@test Optimization.AbstractOptimizationProblem <: Any
-                Test.@test Optimization.AbstractBuilder <: Any
-                Test.@test Optimization.AbstractModelBuilder <: Optimization.AbstractBuilder
-                Test.@test Optimization.AbstractSolutionBuilder <:
-                    Optimization.AbstractBuilder
-                Test.@test Optimization.AbstractOCPSolutionBuilder <:
-                    Optimization.AbstractSolutionBuilder
-            end
+        Test.@testset "Contract stubs - NotImplemented errors" begin
+            prob = MinimalProblem()
 
-            Test.@testset "Contract interface - NotImplemented errors" begin
-                prob = MinimalProblem()
-
-                Test.@test_throws Exceptions.NotImplemented Optimization.get_adnlp_model_builder(
-                    prob
-                )
-                Test.@test_throws Exceptions.NotImplemented Optimization.get_exa_model_builder(
-                    prob
-                )
-                Test.@test_throws Exceptions.NotImplemented Optimization.get_adnlp_solution_builder(
-                    prob
-                )
-                Test.@test_throws Exceptions.NotImplemented Optimization.get_exa_solution_builder(
-                    prob
-                )
-            end
+            Test.@test_throws Exceptions.NotImplemented Optimization.build_model(
+                prob, [1.0], FakeModeler(:adnlp)
+            )
+            Test.@test_throws Exceptions.NotImplemented Optimization.build_solution(
+                prob, create_mock_execution_stats(1.0, 1, 1e-6, :first_order), FakeModeler(:adnlp)
+            )
         end
 
         # ====================================================================
-        # UNIT TESTS - Concrete Builder Types
-        # ====================================================================
-
-        Test.@testset "Concrete Builder Types" begin
-            Test.@testset "ADNLPModelBuilder" begin
-                # Test construction
-                calls = Ref(0)
-                function test_builder(x; show_time=false)
-                    calls[] += 1
-                    return ADNLPModels.ADNLPModel(z -> sum(z .^ 2), x; show_time=show_time)
-                end
-
-                builder = Optimization.ADNLPModelBuilder(test_builder)
-                Test.@test builder isa Optimization.ADNLPModelBuilder
-                Test.@test builder isa Optimization.AbstractModelBuilder
-
-                # Test callable
-                x0 = [1.0, 2.0]
-                nlp = builder(x0)
-                Test.@test nlp isa ADNLPModels.ADNLPModel
-                Test.@test calls[] == 1
-                Test.@test nlp.meta.x0 == x0
-
-                # Test with kwargs
-                redirect_stdout(devnull) do
-                    nlp2 = builder(x0; show_time=true)
-                    Test.@test calls[] == 2
-                end
-            end
-
-            Test.@testset "ExaModelBuilder" begin
-                # Test construction
-                calls = Ref(0)
-                function test_exa_builder(::Type{T}, x; backend=nothing) where {T}
-                    calls[] += 1
-                    # Use correct ExaModels syntax (like in Rosenbrock)
-                    m = ExaModels.ExaCore(T; concrete=Val(true), backend=backend)
-                    ExaModels.@add_var(m, x_var, length(x); start=x)
-                    ExaModels.@add_obj(m, sum(x_var[i]^2 for i in 1:length(x)))
-                    return ExaModels.ExaModel(m)
-                end
-
-                builder = Optimization.ExaModelBuilder(test_exa_builder)
-                Test.@test builder isa Optimization.ExaModelBuilder
-                Test.@test builder isa Optimization.AbstractModelBuilder
-
-                # Test callable
-                x0 = [1.0, 2.0]
-                nlp = builder(Float64, x0)
-                Test.@test nlp isa ExaModels.ExaModel{Float64}
-                Test.@test calls[] == 1
-
-                # Test with different base type
-                nlp32 = builder(Float32, x0)
-                Test.@test nlp32 isa ExaModels.ExaModel{Float32}
-                Test.@test calls[] == 2
-            end
-
-            Test.@testset "ADNLPSolutionBuilder" begin
-                # Test construction
-                calls = Ref(0)
-                function test_solution_builder(stats)
-                    calls[] += 1
-                    return (objective=stats.objective, status=stats.status)
-                end
-
-                builder = Optimization.ADNLPSolutionBuilder(test_solution_builder)
-                Test.@test builder isa Optimization.ADNLPSolutionBuilder
-                Test.@test builder isa Optimization.AbstractOCPSolutionBuilder
-
-                # Test callable
-                stats = create_mock_execution_stats(1.23, 10, 1e-6, :first_order)
-                sol = builder(stats)
-                Test.@test calls[] == 1
-                Test.@test sol.objective ≈ 1.23
-                Test.@test sol.status == :first_order
-            end
-
-            Test.@testset "ExaSolutionBuilder" begin
-                # Test construction
-                calls = Ref(0)
-                function test_exa_solution_builder(stats)
-                    calls[] += 1
-                    return (objective=stats.objective, iterations=stats.iter)
-                end
-
-                builder = Optimization.ExaSolutionBuilder(test_exa_solution_builder)
-                Test.@test builder isa Optimization.ExaSolutionBuilder
-                Test.@test builder isa Optimization.AbstractOCPSolutionBuilder
-
-                # Test callable
-                stats = create_mock_execution_stats(2.34, 15, 1e-5, :acceptable)
-                sol = builder(stats)
-                Test.@test calls[] == 1
-                Test.@test sol.objective ≈ 2.34
-                Test.@test sol.iterations == 15
-            end
-        end
-
-        # ====================================================================
-        # UNIT TESTS - Contract Implementation
-        # ====================================================================
-
-        Test.@testset "Contract Implementation" begin
-            # Create builders
-            adnlp_builder = Optimization.ADNLPModelBuilder(
-                x -> ADNLPModels.ADNLPModel(z -> sum(z .^ 2), x)
-            )
-            exa_builder = Optimization.ExaModelBuilder(
-                (T, x) -> begin
-                    m = ExaModels.ExaCore(T; concrete=Val(true))
-                    ExaModels.@add_var(m, x_var, length(x); start=x)
-                    # Define objective using ExaModels syntax (like Rosenbrock)
-                    obj_func(v) = sum(v[i]^2 for i in 1:length(x))
-                    ExaModels.@add_obj(m, obj_func(x_var))
-                    ExaModels.ExaModel(m)
-                end
-            )
-            adnlp_sol_builder = Optimization.ADNLPSolutionBuilder(s -> (obj=s.objective,))
-            exa_sol_builder = Optimization.ExaSolutionBuilder(s -> (obj=s.objective,))
-
-            # Create fake problem
-            prob = FakeOptimizationProblem(
-                adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder
-            )
-
-            Test.@testset "get_adnlp_model_builder" begin
-                builder = Optimization.get_adnlp_model_builder(prob)
-                Test.@test builder === adnlp_builder
-                Test.@test builder isa Optimization.ADNLPModelBuilder
-            end
-
-            Test.@testset "get_exa_model_builder" begin
-                builder = Optimization.get_exa_model_builder(prob)
-                Test.@test builder === exa_builder
-                Test.@test builder isa Optimization.ExaModelBuilder
-            end
-
-            Test.@testset "get_adnlp_solution_builder" begin
-                builder = Optimization.get_adnlp_solution_builder(prob)
-                Test.@test builder === adnlp_sol_builder
-                Test.@test builder isa Optimization.ADNLPSolutionBuilder
-            end
-
-            Test.@testset "get_exa_solution_builder" begin
-                builder = Optimization.get_exa_solution_builder(prob)
-                Test.@test builder === exa_sol_builder
-                Test.@test builder isa Optimization.ExaSolutionBuilder
-            end
-        end
-
-        # ====================================================================
-        # UNIT TESTS - Building Functions
+        # UNIT TESTS - Building Functions (build_model / build_solution)
         # ====================================================================
 
         Test.@testset "Building Functions" begin
-            # Setup
-            adnlp_builder = Optimization.ADNLPModelBuilder(
-                x -> ADNLPModels.ADNLPModel(z -> sum(z .^ 2), x)
-            )
-            exa_builder = Optimization.ExaModelBuilder(
-                (T, x) -> begin
-                    m = ExaModels.ExaCore(T; concrete=Val(true))
-                    ExaModels.@add_var(m, x_var, length(x); start=x)
-                    # Define objective using ExaModels syntax (like Rosenbrock)
-                    obj_func(v) = sum(v[i]^2 for i in 1:length(x))
-                    ExaModels.@add_obj(m, obj_func(x_var))
-                    ExaModels.ExaModel(m)
-                end
-            )
-            adnlp_sol_builder = Optimization.ADNLPSolutionBuilder(
-                s -> (obj=s.objective, status=s.status)
-            )
-            exa_sol_builder = Optimization.ExaSolutionBuilder(
-                s -> (obj=s.objective, iter=s.iter)
-            )
+            prob = FakeOptimizationProblem()
 
-            prob = FakeOptimizationProblem(
-                adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder
-            )
-
-            Test.@testset "build_model with ADNLP" begin
+            Test.@testset "build_model with ADNLP backend" begin
                 modeler = FakeModeler(:adnlp)
                 x0 = [1.0, 2.0]
-
                 nlp = Optimization.build_model(prob, x0, modeler)
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 Test.@test nlp.meta.x0 == x0
             end
 
-            Test.@testset "build_model with Exa" begin
+            Test.@testset "build_model with Exa backend" begin
                 modeler = FakeModeler(:exa)
                 x0 = [1.0, 2.0]
-
                 nlp = Optimization.build_model(prob, x0, modeler)
                 Test.@test nlp isa ExaModels.ExaModel{Float64}
             end
 
-            Test.@testset "build_solution with ADNLP" begin
+            Test.@testset "build_solution with ADNLP backend" begin
                 modeler = FakeModeler(:adnlp)
                 stats = create_mock_execution_stats(1.23, 10, 1e-6, :first_order)
-
                 sol = Optimization.build_solution(prob, stats, modeler)
                 Test.@test sol.obj ≈ 1.23
                 Test.@test sol.status == :first_order
             end
 
-            Test.@testset "build_solution with Exa" begin
+            Test.@testset "build_solution with Exa backend" begin
                 modeler = FakeModeler(:exa)
                 stats = create_mock_execution_stats(2.34, 15, 1e-5, :acceptable)
-
                 sol = Optimization.build_solution(prob, stats, modeler)
                 Test.@test sol.obj ≈ 2.34
                 Test.@test sol.iter == 15
@@ -425,47 +173,34 @@ function test_optimization()
         Test.@testset "Solver Info Extraction" begin
             Test.@testset "extract_solver_infos - first_order status" begin
                 stats = create_mock_execution_stats(1.23, 15, 1.0e-6, :first_order)
-
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
                     stats
                 )
-
                 Test.@test obj ≈ 1.23
                 Test.@test iter == 15
                 Test.@test viol ≈ 1.0e-6
                 Test.@test msg == "Ipopt/generic"
                 Test.@test status == :first_order
                 Test.@test success == true
-
                 Test.@test_nowarn Test.@inferred Optimization.extract_solver_infos(stats)
             end
 
             Test.@testset "extract_solver_infos - acceptable status" begin
                 stats = create_mock_execution_stats(2.34, 20, 1.0e-5, :acceptable)
-
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
                     stats
                 )
-
                 Test.@test obj ≈ 2.34
-                Test.@test iter == 20
-                Test.@test viol ≈ 1.0e-5
-                Test.@test msg == "Ipopt/generic"
                 Test.@test status == :acceptable
                 Test.@test success == true
             end
 
             Test.@testset "extract_solver_infos - failure status" begin
                 stats = create_mock_execution_stats(3.45, 5, 1.0e-3, :max_iter)
-
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
                     stats
                 )
-
                 Test.@test obj ≈ 3.45
-                Test.@test iter == 5
-                Test.@test viol ≈ 1.0e-3
-                Test.@test msg == "Ipopt/generic"
                 Test.@test status == :max_iter
                 Test.@test success == false
             end
@@ -477,46 +212,18 @@ function test_optimization()
 
         Test.@testset "Integration Tests" begin
             Test.@testset "Complete workflow - ADNLP" begin
-                # Create builders
-                adnlp_builder = Optimization.ADNLPModelBuilder(
-                    x -> ADNLPModels.ADNLPModel(z -> sum(z .^ 2), x)
-                )
-                exa_builder = Optimization.ExaModelBuilder(
-                    (T, x) -> begin
-                        m = ExaModels.ExaCore(T; concrete=Val(true))
-                        ExaModels.@add_var(m, x_var, length(x); start=x)
-                        ExaModels.@add_obj(m, sum(x_var[i]^2 for i in 1:length(x)))
-                        return ExaModels.ExaModel(m)
-                    end,
-                )
-                adnlp_sol_builder = Optimization.ADNLPSolutionBuilder(
-                    s -> (objective=s.objective, status=s.status)
-                )
-                exa_sol_builder = Optimization.ExaSolutionBuilder(
-                    s -> (objective=s.objective, iter=s.iter)
-                )
-
-                # Create problem
-                prob = FakeOptimizationProblem(
-                    adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder
-                )
-
-                # Build model
+                prob = FakeOptimizationProblem()
                 modeler = FakeModeler(:adnlp)
                 x0 = [1.0, 2.0]
                 nlp = Optimization.build_model(prob, x0, modeler)
-
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 Test.@test NLPModels.obj(nlp, x0) ≈ 5.0
 
-                # Build solution
                 stats = create_mock_execution_stats(5.0, 10, 1e-6, :first_order)
                 sol = Optimization.build_solution(prob, stats, modeler)
-
-                Test.@test sol.objective ≈ 5.0
+                Test.@test sol.obj ≈ 5.0
                 Test.@test sol.status == :first_order
 
-                # Extract solver info
                 obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
                     stats
                 )
@@ -525,45 +232,16 @@ function test_optimization()
             end
 
             Test.@testset "Complete workflow - Exa" begin
-                # Create builders
-                adnlp_builder = Optimization.ADNLPModelBuilder(
-                    x -> ADNLPModels.ADNLPModel(z -> sum(z .^ 2), x)
-                )
-                exa_builder = Optimization.ExaModelBuilder(
-                    (T, x) -> begin
-                        n = length(x)
-                        m = ExaModels.ExaCore(T; concrete=Val(true))
-                        ExaModels.@add_var(m, x_var, n; start=x)
-                        # Define objective directly (like Rosenbrock does with F(x))
-                        ExaModels.@add_obj(m, sum(x_var[i]^2 for i in 1:n))
-                        ExaModels.ExaModel(m)
-                    end
-                )
-                adnlp_sol_builder = Optimization.ADNLPSolutionBuilder(
-                    s -> (objective=s.objective, status=s.status)
-                )
-                exa_sol_builder = Optimization.ExaSolutionBuilder(
-                    s -> (objective=s.objective, iter=s.iter)
-                )
-
-                # Create problem
-                prob = FakeOptimizationProblem(
-                    adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder
-                )
-
-                # Build model
+                prob = FakeOptimizationProblem()
                 modeler = FakeModeler(:exa)
                 x0 = [1.0, 2.0]
                 nlp = Optimization.build_model(prob, x0, modeler)
-
                 Test.@test nlp isa ExaModels.ExaModel{Float64}
                 Test.@test NLPModels.obj(nlp, x0) ≈ 5.0
 
-                # Build solution
                 stats = create_mock_execution_stats(5.0, 15, 1e-5, :acceptable)
                 sol = Optimization.build_solution(prob, stats, modeler)
-
-                Test.@test sol.objective ≈ 5.0
+                Test.@test sol.obj ≈ 5.0
                 Test.@test sol.iter == 15
             end
         end

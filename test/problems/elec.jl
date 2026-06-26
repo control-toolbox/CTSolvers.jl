@@ -74,12 +74,7 @@ function Elec(; np::Int=5, seed::Int=2713)
         return ExaModels.ExaModel(m)
     end
 
-    prob = OptimizationProblem(
-        CTSolvers.ADNLPModelBuilder(build_adnlp_model),
-        CTSolvers.ExaModelBuilder(build_exa_model),
-        ADNLPSolutionBuilder(),
-        ExaSolutionBuilder(),
-    )
+    prob = OptimizationProblem(build_adnlp_model, build_exa_model)
 
     theta = (2π) .* rand(np)
     phi = π .* rand(np)

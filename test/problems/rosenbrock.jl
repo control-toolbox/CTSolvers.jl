@@ -37,12 +37,7 @@ function Rosenbrock()
         return ExaModels.ExaModel(m)
     end
 
-    prob = OptimizationProblem(
-        CTSolvers.ADNLPModelBuilder(build_adnlp_model),
-        CTSolvers.ExaModelBuilder(build_exa_model),
-        ADNLPSolutionBuilder(),
-        ExaSolutionBuilder(),
-    )
+    prob = OptimizationProblem(build_adnlp_model, build_exa_model)
     init = [-1.2; 1.0]
     sol = [1.0; 1.0]
 

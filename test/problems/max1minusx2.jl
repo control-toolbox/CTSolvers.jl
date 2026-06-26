@@ -40,12 +40,7 @@ function Max1MinusX2()
         return ExaModels.ExaModel(m)
     end
 
-    prob = OptimizationProblem(
-        CTSolvers.ADNLPModelBuilder(build_adnlp_model),
-        CTSolvers.ExaModelBuilder(build_exa_model),
-        ADNLPSolutionBuilder(),
-        ExaSolutionBuilder(),
-    )
+    prob = OptimizationProblem(build_adnlp_model, build_exa_model)
 
     init = [2.0]
     sol = [0.0]
