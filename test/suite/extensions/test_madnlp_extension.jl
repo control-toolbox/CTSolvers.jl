@@ -6,6 +6,7 @@ using CTSolvers: CTSolvers
 import CTSolvers.Solvers
 import CTBase.Strategies
 import CTBase.Options
+import CTBase.Core
 import CTSolvers.Modelers
 import CTSolvers.Optimization
 using CommonSolve: CommonSolve
@@ -120,28 +121,28 @@ function test_madnlp_extension()
             Test.@test Options.default(meta[:linear_solver]) == MadNLP.MumpsSolver
 
             # Test termination option defaults - all use NotProvided to let MadNLP use its own defaults
-            Test.@test Options.default(meta[:acceptable_iter]) isa Options.NotProvidedType
-            Test.@test Options.default(meta[:acceptable_tol]) isa Options.NotProvidedType
-            Test.@test Options.default(meta[:max_wall_time]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:acceptable_iter]) isa Core.NotProvidedType
+            Test.@test Options.default(meta[:acceptable_tol]) isa Core.NotProvidedType
+            Test.@test Options.default(meta[:max_wall_time]) isa Core.NotProvidedType
             Test.@test Options.default(meta[:diverging_iterates_tol]) isa
-                Options.NotProvidedType
+                Core.NotProvidedType
 
             # Test scaling and structure defaults - all use NotProvided
-            Test.@test Options.default(meta[:nlp_scaling]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:nlp_scaling]) isa Core.NotProvidedType
             Test.@test Options.default(meta[:nlp_scaling_max_gradient]) isa
-                Options.NotProvidedType
-            Test.@test Options.default(meta[:jacobian_constant]) isa Options.NotProvidedType
-            Test.@test Options.default(meta[:hessian_constant]) isa Options.NotProvidedType
+                Core.NotProvidedType
+            Test.@test Options.default(meta[:jacobian_constant]) isa Core.NotProvidedType
+            Test.@test Options.default(meta[:hessian_constant]) isa Core.NotProvidedType
 
             # Test initialization defaults
-            Test.@test Options.default(meta[:bound_push]) isa Options.NotProvidedType
-            Test.@test Options.default(meta[:bound_fac]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:bound_push]) isa Core.NotProvidedType
+            Test.@test Options.default(meta[:bound_fac]) isa Core.NotProvidedType
             Test.@test Options.default(meta[:constr_mult_init_max]) isa
-                Options.NotProvidedType
+                Core.NotProvidedType
             Test.@test Options.default(meta[:fixed_variable_treatment]) isa
-                Options.NotProvidedType
+                Core.NotProvidedType
             Test.@test Options.default(meta[:equality_treatment]) isa
-                Options.NotProvidedType
+                Core.NotProvidedType
         end
 
         # ====================================================================

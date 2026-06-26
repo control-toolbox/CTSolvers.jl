@@ -6,6 +6,7 @@ using CTSolvers: CTSolvers
 import CTSolvers.Solvers
 import CTBase.Strategies
 import CTBase.Options
+import CTBase.Core
 import CTSolvers.Modelers
 import CTSolvers.Optimization
 using CommonSolve: CommonSolve
@@ -59,21 +60,21 @@ function test_madncl_extension()
             Test.@test :ncl_options in keys(meta)
 
             # Test Imported MadNLP Options
-            Test.@test Options.default(meta[:acceptable_iter]) isa Options.NotProvidedType
-            Test.@test Options.default(meta[:acceptable_tol]) isa Options.NotProvidedType
-            Test.@test Options.default(meta[:max_wall_time]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:acceptable_iter]) isa Core.NotProvidedType
+            Test.@test Options.default(meta[:acceptable_tol]) isa Core.NotProvidedType
+            Test.@test Options.default(meta[:max_wall_time]) isa Core.NotProvidedType
             Test.@test Options.default(meta[:diverging_iterates_tol]) isa
-                Options.NotProvidedType
+                Core.NotProvidedType
             Test.@test :nlp_scaling in keys(meta)
             Test.@test :jacobian_constant in keys(meta)
-            Test.@test Options.default(meta[:bound_push]) isa Options.NotProvidedType
-            Test.@test Options.default(meta[:bound_fac]) isa Options.NotProvidedType
+            Test.@test Options.default(meta[:bound_push]) isa Core.NotProvidedType
+            Test.@test Options.default(meta[:bound_fac]) isa Core.NotProvidedType
             Test.@test Options.default(meta[:constr_mult_init_max]) isa
-                Options.NotProvidedType
+                Core.NotProvidedType
             Test.@test Options.default(meta[:fixed_variable_treatment]) isa
-                Options.NotProvidedType
+                Core.NotProvidedType
             Test.@test Options.default(meta[:equality_treatment]) isa
-                Options.NotProvidedType
+                Core.NotProvidedType
             Test.@test :kkt_system in keys(meta)
             Test.@test :hessian_approximation in keys(meta)
             Test.@test :mu_init in keys(meta)
