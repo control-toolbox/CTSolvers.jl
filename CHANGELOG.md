@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.20-beta] - 2026-06-26
+
+### Changed
+
+- Consume `CTBase.Core.NotProvided` instead of `CTBase.Options.NotProvided` (the sentinel
+  moved to `CTBase.Core` in CTBase 0.25, which removed it from `Options`). Affects option
+  defaults in `Modelers/adnlp.jl`.
+
+### Dependencies
+
+- Widen compat: `CTBase = "0.25"` (required for `Core.NotProvided`), `CTModels = "0.12, 0.13"`.
+
 ## [0.4.19-beta] - 2026-06-21
 
 ### Changed

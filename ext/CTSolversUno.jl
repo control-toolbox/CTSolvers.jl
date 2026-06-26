@@ -11,6 +11,7 @@ import CTSolvers.Optimization
 import CTSolvers.Solvers
 import CTBase.Strategies
 import CTBase.Options
+import CTBase.Core
 import CTBase.Exceptions
 using NLPModels: NLPModels
 using SolverCore: SolverCore
@@ -88,7 +89,7 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:loose_primal_tolerance,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Loose tolerance on constraint violation. Used for acceptable termination criteria.",
             validator=x ->
                 x > 0 || throw(
@@ -104,7 +105,7 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:loose_dual_tolerance,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Loose tolerance on stationarity and complementarity. Used for acceptable termination criteria.",
             validator=x ->
                 x > 0 || throw(
@@ -120,7 +121,7 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:loose_tolerance_iteration_threshold,
             type=Integer,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Number of iterations for the loose tolerance to apply. If the algorithm encounters this many consecutive iterations that satisfy loose tolerances, it terminates.",
             validator=x ->
                 x >= 0 || throw(
@@ -153,7 +154,7 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:time_limit,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Time limit in seconds. A limit on walltime clock seconds that Uno can use to solve one problem.",
             aliases=(:max_wall_time, :maxtime, :max_time),
             validator=x ->
@@ -176,7 +177,7 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:unbounded_objective_threshold,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Objective threshold under which the problem is declared unbounded. If the objective value falls below this threshold, the solver terminates with unbounded status.",
         ),
 
@@ -204,7 +205,7 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:progress_norm,
             type=String,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Norm used for the progress measures. Determines how progress is measured during the solve.",
             validator=x ->
                 x in ["L1", "L2", "INF"] || throw(
@@ -220,7 +221,7 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:residual_norm,
             type=String,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Norm used for the residuals. Determines how residuals are measured for convergence.",
             validator=x ->
                 x in ["L1", "L2", "INF"] || throw(
@@ -240,7 +241,7 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:residual_scaling_threshold,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Scaling factor in stationarity and complementarity residuals. Controls how residuals are scaled for convergence checks.",
             validator=x ->
                 x > 0 || throw(
@@ -256,13 +257,13 @@ function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:protect_actual_reduction_against_roundoff,
             type=Bool,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Whether the actual reduction is slightly modified to account for roundoff errors. Can improve numerical stability.",
         ),
         Strategies.OptionDefinition(;
             name=:protected_actual_reduction_macheps_coefficient,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Coefficient of the machine epsilon in the protected actual reduction. Only used if protect_actual_reduction_against_roundoff is true.",
             validator=x ->
                 x > 0 || throw(

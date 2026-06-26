@@ -10,6 +10,7 @@ import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Solvers
 import CTBase.Strategies
 import CTBase.Options
+import CTBase.Core
 import CTBase.Exceptions
 using NLPModelsIpopt: NLPModelsIpopt
 using NLPModels: NLPModels
@@ -69,7 +70,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:max_wall_time,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Maximum number of walltime clock seconds. A limit on walltime clock seconds that Ipopt can use to solve one problem.",
             aliases=(:maxtime, :max_time, :time_limit),
             validator=x ->
@@ -86,7 +87,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:max_cpu_time,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Maximum number of CPU seconds. A limit on CPU seconds that Ipopt can use to solve one problem.",
             validator=x ->
                 x > 0 || throw(
@@ -102,7 +103,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:dual_inf_tol,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Desired threshold for the dual infeasibility. Absolute tolerance on the dual infeasibility. Successful termination requires that the max-norm of the (unscaled) dual infeasibility is less than this threshold.",
             validator=x ->
                 x > 0 || throw(
@@ -118,7 +119,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:constr_viol_tol,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Desired threshold for the constraint and variable bound violation. Absolute tolerance on the constraint and variable bound violation.",
             validator=x ->
                 x > 0 || throw(
@@ -134,7 +135,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:acceptable_tol,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Acceptable convergence tolerance (relative). Determines which (scaled) optimality error is considered close enough.",
             aliases=(:acc_tol,),
             validator=x ->
@@ -151,7 +152,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:acceptable_iter,
             type=Integer,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Number of \"acceptable\" iterations required to trigger termination. If the algorithm encounters this many consecutive iterations that are acceptable, it terminates.",
             validator=x ->
                 x >= 0 || throw(
@@ -167,7 +168,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:diverging_iterates_tol,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Threshold for maximal value of primal iterates. If any component of the primal iterates exceeds this value (in absolute terms), the optimization is aborted.",
             validator=x ->
                 x > 0 || throw(
@@ -188,7 +189,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:derivative_test,
             type=String,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Enable derivative check. If enabled, performs a finite difference check of the derivatives.",
             validator=x ->
                 x in ["none", "first-order", "second-order", "only-second-order"] || throw(
@@ -204,7 +205,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:derivative_test_tol,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Threshold for identifying incorrect derivatives. If the relative error of the finite difference approximation exceeds this value, an error is reported.",
             validator=x ->
                 x > 0 || throw(
@@ -220,7 +221,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:derivative_test_print_all,
             type=String,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Indicates whether information for all estimated derivatives should be printed.",
             validator=x ->
                 x in ["yes", "no"] || throw(
@@ -241,7 +242,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:hessian_approximation,
             type=String,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Indicates what Hessian information regarding the Lagrangian function is to be used.",
             validator=x ->
                 x in ["exact", "limited-memory"] || throw(
@@ -257,7 +258,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:limited_memory_update_type,
             type=String,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Quasi-Newton update method for the limited memory approximation.",
             validator=x ->
                 x in ["bfgs", "sr1"] || throw(
@@ -278,7 +279,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:warm_start_init_point,
             type=String,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Indicates whether specific warm start values should be used for the primal and dual variables.",
             validator=x ->
                 x in ["yes", "no"] || throw(
@@ -294,7 +295,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:warm_start_bound_push,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Indicates how much the primal variables should be pushed inside the bounds for the warm start.",
             validator=x ->
                 x > 0 || throw(
@@ -310,7 +311,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:warm_start_mult_bound_push,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Indicates how much the dual variables should be pushed inside the bounds for the warm start.",
             validator=x ->
                 x > 0 || throw(
@@ -347,7 +348,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:mu_init,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Initial value for the barrier parameter.",
             validator=x ->
                 x > 0 || throw(
@@ -363,7 +364,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:mu_max_fact,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Factor for maximal barrier parameter. This factor determines the upper bound on the barrier parameter.",
             validator=x ->
                 x > 0 || throw(
@@ -379,7 +380,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:mu_max,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Maximal value for barrier parameter. This option overrides the factor setting.",
             validator=x ->
                 x > 0 || throw(
@@ -395,7 +396,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:mu_min,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Minimal value for barrier parameter.",
             validator=x ->
                 x > 0 || throw(
@@ -411,7 +412,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:timing_statistics,
             type=String,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Indicates whether to measure time spent in components of Ipopt and NLP evaluation. The overall algorithm time is unaffected by this option.",
             validator=x ->
                 x in ["yes", "no"] || throw(
@@ -475,7 +476,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:print_timing_statistics,
             type=String,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Switch to print timing statistics. If selected, the program will print the time spent for selected tasks. This implies timing_statistics=yes.",
             validator=x ->
                 x in ["yes", "no"] || throw(
@@ -491,7 +492,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:print_frequency_iter,
             type=Integer,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Determines at which iteration frequency the summarizing iteration output line should be printed. Summarizing iteration output is printed every print_frequency_iter iterations, if at least print_frequency_time seconds have passed since last output.",
             validator=x ->
                 x >= 1 || throw(
@@ -507,7 +508,7 @@ function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
         Strategies.OptionDefinition(;
             name=:print_frequency_time,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Determines at which time frequency the summarizing iteration output line should be printed. Summarizing iteration output is printed if at least print_frequency_time seconds have passed since last output and the iteration number is a multiple of print_frequency_iter.",
             validator=x ->
                 x >= 0 || throw(

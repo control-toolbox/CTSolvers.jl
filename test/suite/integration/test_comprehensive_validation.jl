@@ -17,6 +17,7 @@ using Test: Test
 import CTBase.Exceptions
 import CTBase.Strategies
 import CTBase.Options
+import CTBase.Core
 import CTSolvers.Modelers
 import CTSolvers.Solvers
 import CTBase.Orchestration
@@ -290,7 +291,7 @@ function test_option_recovery(
         # Test some default options (should be present with :default or :computed source)
         metadata_def = Strategies.metadata(typeof(strategy))
         for (name, definition) in pairs(metadata_def)
-            if !(definition.default isa Options.NotProvidedType) &&
+            if !(definition.default isa Core.NotProvidedType) &&
                 !haskey(known_options, name)
                 Test.@test Strategies.has_option(strategy, name)
                 # Source should be :default for static defaults or :computed for parameter-dependent defaults

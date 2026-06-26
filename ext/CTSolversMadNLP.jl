@@ -11,6 +11,7 @@ import CTSolvers.Optimization
 import CTSolvers.Solvers
 import CTBase.Strategies
 import CTBase.Options
+import CTBase.Core
 import CTBase.Exceptions
 using MadNLP: MadNLP
 using NLPModels: NLPModels
@@ -216,7 +217,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:acceptable_tol,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Relaxed tolerance for acceptable solution. If optimality error stays below this for 'acceptable_iter' iterations, algorithm terminates with SOLVED_TO_ACCEPTABLE_LEVEL.",
             aliases=(:acc_tol,),
             validator=x ->
@@ -233,7 +234,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:acceptable_iter,
             type=Integer,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Number of consecutive iterations with acceptable (but not optimal) error required before accepting the solution.",
             validator=x ->
                 x >= 1 || throw(
@@ -249,7 +250,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:max_wall_time,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Maximum wall-clock time limit in seconds. Algorithm terminates with MAXIMUM_WALLTIME_EXCEEDED if exceeded.",
             aliases=(:max_time, :maxtime, :time_limit),
             validator=x ->
@@ -266,7 +267,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:diverging_iterates_tol,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="NLP error threshold above which algorithm is declared diverging. Terminates with DIVERGING_ITERATES status.",
             validator=x ->
                 x > 0 || throw(
@@ -283,13 +284,13 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:nlp_scaling,
             type=Bool,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Whether to scale the NLP problem. If true, MadNLP automatically scales the objective and constraints.",
         ),
         Strategies.OptionDefinition(;
             name=:nlp_scaling_max_gradient,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Maximum allowed gradient value when scaling the NLP problem. Used to prevent excessive scaling.",
             validator=x ->
                 x > 0 || throw(
@@ -306,14 +307,14 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:jacobian_constant,
             type=Bool,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Whether the Jacobian of the constraints is constant (i.e., linear constraints). Can improve performance.",
             aliases=(:jacobian_cst,),
         ),
         Strategies.OptionDefinition(;
             name=:hessian_constant,
             type=Bool,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Whether the Hessian of the Lagrangian is constant (i.e., quadratic objective with linear constraints). Can improve performance.",
             aliases=(:hessian_cst,),
         ),
@@ -321,7 +322,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:bound_push,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Amount by which the initial point is pushed inside the bounds to ensure strictly interior starting point.",
             validator=x ->
                 x > 0 || throw(
@@ -337,7 +338,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:bound_fac,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Factor to determine how much the initial point is pushed inside the bounds.",
             validator=x ->
                 x > 0 || throw(
@@ -353,7 +354,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:constr_mult_init_max,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Maximum allowed value for the initial constraint multipliers.",
             validator=x ->
                 x >= 0 || throw(
@@ -369,38 +370,38 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:fixed_variable_treatment,
             type=Type{<:MadNLP.AbstractFixedVariableTreatment},
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Method to handle fixed variables. Options: MadNLP.MakeParameter, MadNLP.RelaxBound, MadNLP.NoFixedVariables.",
         ),
         Strategies.OptionDefinition(;
             name=:equality_treatment,
             type=Type{<:MadNLP.AbstractEqualityTreatment},
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Method to handle equality constraints. Options: MadNLP.EnforceEquality, MadNLP.RelaxEquality.",
         ),
         # ---- Advanced Options ----
         Strategies.OptionDefinition(;
             name=:kkt_system,
             type=Union{Type{<:MadNLP.AbstractKKTSystem},UnionAll},
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="KKT system solver type (e.g., MadNLP.SparseKKTSystem, MadNLP.DenseKKTSystem).",
         ),
         Strategies.OptionDefinition(;
             name=:hessian_approximation,
             type=Union{Type{<:MadNLP.AbstractHessian},UnionAll},
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Hessian approximation method (e.g., MadNLP.ExactHessian, MadNLP.CompactLBFGS, MadNLP.BFGS).",
         ),
         Strategies.OptionDefinition(;
             name=:inertia_correction_method,
             type=Type{<:MadNLP.AbstractInertiaCorrector},
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Method for assumption of inertia correction (e.g., MadNLP.InertiaAuto, MadNLP.InertiaBased).",
         ),
         Strategies.OptionDefinition(;
             name=:mu_init,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Initial value for the barrier parameter mu.",
             validator=x ->
                 x > 0 || throw(
@@ -416,7 +417,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:mu_min,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Minimum value for the barrier parameter mu.",
             validator=x ->
                 x > 0 || throw(
@@ -432,7 +433,7 @@ function Strategies.metadata(::Type{Solvers.MadNLP{P}}) where {P<:AbstractStrate
         Strategies.OptionDefinition(;
             name=:tau_min,
             type=Real,
-            default=Options.NotProvided,
+            default=Core.NotProvided,
             description="Lower bound for the fraction-to-the-boundary parameter tau.",
             validator=x ->
                 x > 0 && x < 1 || throw(
