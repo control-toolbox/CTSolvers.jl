@@ -8,6 +8,7 @@ module CTSolversMadNCL
 
 import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Solvers
+import CommonSolve
 import CTBase.Strategies
 import CTBase.Options
 import CTBase.Core
@@ -402,8 +403,8 @@ Solve an NLP problem using MadNCL.
 # Returns
 - `MadNCL.NCLStats`: MadNCL execution statistics
 """
-function (solver::Solvers.MadNCL)(
-    nlp::NLPModels.AbstractNLPModel; display::Bool=true
+function CommonSolve.solve(
+    nlp::NLPModels.AbstractNLPModel, solver::Solvers.MadNCL; display::Bool=true
 )::MadNCL.NCLStats
     options = Strategies.options_dict(solver)
     options[:print_level] = display ? options[:print_level] : MadNLP.ERROR

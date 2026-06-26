@@ -64,7 +64,13 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Mid-level solve: Solve NLP problem directly.
+Mid-level solve: Solve an NLP problem directly.
+
+# Contract
+Concrete solvers implement this method, typically in a backend extension,
+dispatching on the solver type, e.g.
+`CommonSolve.solve(nlp::NLPModels.AbstractNLPModel, solver::Ipopt; display)` in
+the `CTSolversIpopt` extension. This generic stub throws `NotImplemented`.
 
 # Arguments
 - `nlp::NLPModels.AbstractNLPModel`: The NLP problem to solve
@@ -74,40 +80,17 @@ Mid-level solve: Solve NLP problem directly.
 # Returns
 - `SolverCore.AbstractExecutionStats`: Solver execution statistics
 
-# Example
-```julia
-# Conceptual usage pattern
-# nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-# solver = Solvers.Ipopt()
-# stats = solve(nlp, solver, display=false)
-```
-
 See also: `AbstractNLPSolver`
 """
 function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::AbstractNLPSolver; display::Bool=__display()
-)::SolverCore.AbstractExecutionStats
-    return solver(nlp; display=display)
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Flexible solve: Allow user freedom with any compatible types.
-
-This method provides flexibility for users to pass different types
-that may be compatible with the solver's callable interface.
-
-# Arguments
-- `nlp`: Problem to solve (any type compatible with solver)
-- `solver::AbstractNLPSolver`: Solver to use
-- `display::Bool`: Whether to show solver output (default: true)
-
-# Returns
-- Result from solver (type depends on solver implementation)
-
-See also: `CommonSolve.solve`, `AbstractNLPSolver`
-"""
-function CommonSolve.solve(nlp, solver::AbstractNLPSolver; display::Bool=__display())
-    return solver(nlp; display=display)
+)
+    throw(
+        Exceptions.NotImplemented(
+            "Solve not implemented for this solver";
+            required_method="CommonSolve.solve(nlp::NLPModels.AbstractNLPModel, solver::$(typeof(solver)); display)",
+            suggestion="Load the backend extension providing $(typeof(solver)) (e.g. `using NLPModelsIpopt`)",
+            context="Solvers.solve - required method implementation",
+        ),
+    )
 end

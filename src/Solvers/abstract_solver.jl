@@ -9,8 +9,8 @@ All concrete solver types must:
    - `Strategies.id(::Type{<:MySolver})` - Return unique Symbol identifier
    - `Strategies.metadata(::Type{<:MySolver})` - Return StrategyMetadata with options
    - Have an `options::Strategies.StrategyOptions` field
-3. Implement the callable interface:
-   - `(solver::MySolver)(nlp; display=Bool)` - Solve the NLP problem
+3. Implement the solve method (typically in a backend extension):
+   - `CommonSolve.solve(nlp::NLPModels.AbstractNLPModel, solver::MySolver; display=Bool)`
 
 # Solver Types
 - `Solvers.Ipopt` - Interior point optimizer (Ipopt backend)
@@ -20,55 +20,16 @@ All concrete solver types must:
 
 # Example
 ```julia
+using CommonSolve
+
 # Create solver with options
 solver = Solvers.Ipopt(max_iter=1000, tol=1e-8)
 
 # Solve an NLP problem
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-stats = solver(nlp, display=true)
+stats = solve(nlp, solver; display=true)
 ```
 
-See also: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`
+See also: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, `CommonSolve.solve`
 """
 abstract type AbstractNLPSolver <: Strategies.AbstractStrategy end
-
-"""
-$(TYPEDSIGNATURES)
-
-Callable interface for optimization solvers.
-
-Solves the given NLP problem and returns execution statistics.
-
-# Arguments
-- `nlp`: NLP problem to solve (typically `NLPModels.AbstractNLPModel`)
-- `display::Bool`: Whether to display solver output (default: true)
-
-# Returns
-- `SolverCore.AbstractExecutionStats`: Solver execution statistics
-
-# Throws
-- `CTBase.Exceptions.NotImplemented`: If not implemented by a concrete solver type
-
-# Implementation
-Concrete solver types must implement this method. The default implementation
-throws a `NotImplemented` error with helpful guidance.
-
-# Example
-```julia
-solver = Solvers.Ipopt(max_iter=100)
-nlp = ADNLPModel(x -> sum(x.^2), zeros(5))
-stats = solver(nlp, display=false)
-```
-
-See also: `AbstractNLPSolver`, `CommonSolve.solve`
-"""
-function (solver::AbstractNLPSolver)(nlp; display::Bool=true)
-    throw(
-        Exceptions.NotImplemented(
-            "Solver callable not implemented";
-            required_method="(solver::$(typeof(solver)))(nlp; display=Bool)",
-            suggestion="Implement the callable method for $(typeof(solver))",
-            context="AbstractNLPSolver - required method",
-        ),
-    )
-end

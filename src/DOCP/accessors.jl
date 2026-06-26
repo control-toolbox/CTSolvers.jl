@@ -20,4 +20,4 @@ ocp = ocp_model(docp)
 
 See also: `DiscretizedModel`
 """
-ocp_model(docp::DiscretizedModel) = docp.optimal_control_problem
+ocp_model(docp::DiscretizedModel) = docp.ocp

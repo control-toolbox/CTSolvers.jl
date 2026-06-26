@@ -20,19 +20,27 @@ import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 using NLPModels: NLPModels
 using SolverCore: SolverCore
 using CTModels: CTModels
+import CTBase.Core
+import CTBase.Exceptions
+
+# CTBase generic infrastructure
+using CTBase.Strategies
 
 # Internal CTSolvers API
 using ..CTSolvers.Optimization
 using ..CTSolvers.Modelers
 
 # Submodules
+include(joinpath(@__DIR__, "abstract_discretizer.jl"))
 include(joinpath(@__DIR__, "types.jl"))
-include(joinpath(@__DIR__, "contract_impl.jl"))
+include(joinpath(@__DIR__, "contract.jl"))
 include(joinpath(@__DIR__, "accessors.jl"))
 include(joinpath(@__DIR__, "building.jl"))
 
 # Public API
+export AbstractDiscretizer
 export DiscretizedModel
+export discretize
 export ocp_model
 export nlp_model, ocp_solution
 

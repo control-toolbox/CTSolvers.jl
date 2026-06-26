@@ -8,6 +8,7 @@ module CTSolversKnitro
 
 import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Solvers
+import CommonSolve
 import CTBase.Strategies
 import CTBase.Options
 import CTBase.Exceptions
@@ -244,8 +245,8 @@ Solve an NLP problem using Knitro.
 # Returns
 - `SolverCore.GenericExecutionStats`: Solver execution statistics
 """
-function (solver::Solvers.Knitro)(
-    nlp::NLPModels.AbstractNLPModel; display::Bool=true
+function CommonSolve.solve(
+    nlp::NLPModels.AbstractNLPModel, solver::Solvers.Knitro; display::Bool=true
 )::SolverCore.GenericExecutionStats
     options = Strategies.options_dict(solver)
     options[:outlev] = display ? options[:outlev] : 0

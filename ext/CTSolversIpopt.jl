@@ -8,6 +8,7 @@ module CTSolversIpopt
 
 import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Solvers
+import CommonSolve
 import CTBase.Strategies
 import CTBase.Options
 import CTBase.Core
@@ -591,8 +592,8 @@ Solve an NLP problem using Ipopt.
 # Returns
 - `SolverCore.GenericExecutionStats`: Solver execution statistics
 """
-function (solver::Solvers.Ipopt)(
-    nlp::NLPModels.AbstractNLPModel; display::Bool=true
+function CommonSolve.solve(
+    nlp::NLPModels.AbstractNLPModel, solver::Solvers.Ipopt; display::Bool=true
 )::SolverCore.GenericExecutionStats
     options = Strategies.options_dict(solver)
     options[:print_level] = display ? options[:print_level] : 0

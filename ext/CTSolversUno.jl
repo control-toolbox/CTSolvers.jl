@@ -9,6 +9,7 @@ module CTSolversUno
 import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Optimization
 import CTSolvers.Solvers
+import CommonSolve
 import CTBase.Strategies
 import CTBase.Options
 import CTBase.Core
@@ -338,8 +339,8 @@ Solve an NLP problem using Uno.
 
 See also: [`solve_with_uno`](@ref), [`Optimization.extract_solver_infos`](@ref)
 """
-function (solver::Solvers.Uno)(
-    nlp::NLPModels.AbstractNLPModel; display::Bool=true
+function CommonSolve.solve(
+    nlp::NLPModels.AbstractNLPModel, solver::Solvers.Uno; display::Bool=true
 )::UnoSolver.UnoExecutionStats
     options = Strategies.options_dict(solver)
     options[:logger] = display ? options[:logger] : "SILENT"

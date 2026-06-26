@@ -468,89 +468,9 @@ function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
     return Modelers.ADNLP{P}(; mode=mode, kwargs...)
 end
 
-# Model building interface
-"""
-$(TYPEDSIGNATURES)
-
-Build an ADNLPModel from a discretized optimal control problem.
-
-# Arguments
-- `modeler::Modelers.ADNLP`: Configured modeler instance
-- `prob::AbstractOptimizationProblem`: Discretized optimal control problem
-- `initial_guess`: Initial guess for optimization variables
-
-# Returns
-- `ADNLPModels.ADNLPModel`: Built NLP model
-
-# Examples
-```julia
-# Create modeler
-modeler = Modelers.ADNLP(backend=:optimized)
-
-# Build model from problem
-nlp = modeler(problem, initial_guess)
-
-# Solve the model
-stats = solve(nlp, solver)
-```
-
-# See also
-
-- `Modelers.ADNLP`: Type documentation
-- `build_model`: Generic model building interface
-- `ADNLPModels.ADNLPModel`: NLP model type
-"""
-function (modeler::Modelers.ADNLP)(
-    prob::AbstractOptimizationProblem, initial_guess
-)::ADNLPModels.ADNLPModel
-    # Get the appropriate builder for this problem type
-    builder = get_adnlp_model_builder(prob)
-
-    # Extract options as Dict
-    options = Strategies.options_dict(modeler)
-
-    # Build the ADNLP model passing all options generically
-    return builder(initial_guess; options...)
-end
-
-# Solution building interface
-"""
-$(TYPEDSIGNATURES)
-
-Build a solution object from NLP solver statistics.
-
-# Arguments
-- `modeler::Modelers.ADNLP`: Configured modeler instance
-- `prob::AbstractOptimizationProblem`: Original optimization problem
-- `nlp_solution::SolverCore.AbstractExecutionStats`: NLP solver statistics
-
-# Returns
-- Solution object appropriate for the problem type
-
-# Examples
-```julia
-# Create modeler and solve
-modeler = Modelers.ADNLP()
-nlp = modeler(problem, initial_guess)
-stats = solve(nlp, solver)
-
-# Build solution object
-solution = modeler(problem, stats)
-```
-
-# See also
-
-- `Modelers.ADNLP`: Type documentation
-- `SolverCore.AbstractExecutionStats`: Solver statistics type
-- `solve`: Generic solve interface
-"""
-function (modeler::Modelers.ADNLP)(
-    prob::AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats
-)
-    # Get the appropriate solution builder for this problem type
-    builder = get_adnlp_solution_builder(prob)
-    return builder(nlp_solution)
-end
+# Model building / solution building are implemented by multiple dispatch on
+# `(prob, ::Modelers.ADNLP)` in the package providing the problem type (e.g.
+# CTDirect), via `Optimization.build_model` / `Optimization.build_solution`.
 
 # ============================================================================
 # Backend validation factory
