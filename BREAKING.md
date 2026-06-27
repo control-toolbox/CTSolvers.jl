@@ -5,6 +5,84 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.23-beta (2026-06-27)
+
+**Breaking change:** `build_model` returns an immutable `BuiltModel` bundle (not a
+bare NLP), `build_solution` dispatches on that bundle, and `extract_solver_infos`
+moved from `Optimization` to `Solvers`.
+
+### Summary - v0.4.23-beta
+
+- `Optimization.build_model(prob, init, modeler)` returns
+  `Optimization.BuiltModel{problem, nlp, cache}` instead of a bare NLP model.
+- `Optimization.build_solution(built, stats, modeler)` dispatches on the
+  `BuiltModel` (previously `build_solution(prob, stats, modeler)`).
+- `extract_solver_infos` now lives in `Solvers` (`Solvers.extract_solver_infos`).
+- `KernelAbstractions` is again a hard dependency, so `Modelers.Exa(...)` only needs
+  `using ExaModels` (no longer also `using KernelAbstractions`) — a relaxation of
+  the v0.4.22 requirement.
+
+### Breaking Changes - v0.4.23-beta
+
+#### 1. `build_model` returns a `BuiltModel`
+
+**Before:**
+
+```julia
+nlp = Optimization.build_model(prob, init, modeler)   # bare NLP
+```
+
+**After:**
+
+```julia
+built = Optimization.build_model(prob, init, modeler) # BuiltModel
+nlp   = built.nlp                                     # or DOCP.nlp_model(prob, init, modeler)
+```
+
+#### 2. `build_solution` dispatches on the `BuiltModel`
+
+**Before:**
+
+```julia
+sol = Optimization.build_solution(prob, stats, modeler)
+```
+
+**After:**
+
+```julia
+built = Optimization.build_model(prob, init, modeler)
+stats = solve(built.nlp, solver)
+sol   = Optimization.build_solution(built, stats, modeler)
+```
+
+Packages implementing the contract (e.g. discretizers) must now have `build_model`
+return `BuiltModel(prob, nlp, cache)` and define
+`build_solution(built::BuiltModel{<:MyProblem}, stats, modeler)`.
+
+#### 3. `extract_solver_infos` moved to `Solvers`
+
+**Before:**
+
+```julia
+Optimization.extract_solver_infos(stats)
+```
+
+**After:**
+
+```julia
+Solvers.extract_solver_infos(stats)   # CTSolvers.extract_solver_infos also resolves
+```
+
+### Migration - v0.4.23-beta
+
+- Replace `build_model(...)` usages that expect a bare NLP with `build_model(...).nlp`
+  or `DOCP.nlp_model(...)`.
+- Update `build_solution` callers and implementers to dispatch on the `BuiltModel`.
+- Replace `Optimization.extract_solver_infos` with `Solvers.extract_solver_infos`.
+- `Modelers.Exa(...)` no longer requires `using KernelAbstractions`.
+
+---
+
 ## v0.4.22-beta (2026-06-27)
 
 **Breaking change:** `NLPModels`, `ADNLPModels`, `ExaModels`, and `KernelAbstractions` are
