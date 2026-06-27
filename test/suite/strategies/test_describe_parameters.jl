@@ -136,7 +136,8 @@ function test_describe_parameters()
         Test.@testset "Unknown symbol error" begin
             # Create a registry
             registry = Strategies.create_registry(
-                CTSolvers.Modelers.AbstractNLPModeler => ((CTSolvers.Modelers.ADNLP, [Strategies.CPU]),)
+                CTSolvers.Modelers.AbstractNLPModeler =>
+                    ((CTSolvers.Modelers.ADNLP, [Strategies.CPU]),),
             )
 
             # Test unknown ID throws IncorrectArgument

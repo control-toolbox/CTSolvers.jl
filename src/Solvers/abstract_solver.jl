@@ -63,7 +63,7 @@ stats = solver(nlp, display=false)
 See also: `AbstractNLPSolver`, `CommonSolve.solve`
 """
 function (solver::AbstractNLPSolver)(nlp; display::Bool=true)
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "Solver callable not implemented";
             required_method="(solver::$(typeof(solver)))(nlp; display=Bool)",

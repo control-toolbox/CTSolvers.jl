@@ -857,5 +857,5 @@ end # module
 
 # Redefine in outer scope for TestRunner
 function test_comprehensive_validation()
-    TestComprehensiveValidation.test_comprehensive_validation()
+    return TestComprehensiveValidation.test_comprehensive_validation()
 end

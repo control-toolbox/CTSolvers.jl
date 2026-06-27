@@ -514,5 +514,5 @@ end # module
 
 # Export test function to outer scope
 function test_strict_permissive_integration()
-    TestStrictPermissiveIntegration.test_strict_permissive_integration()
+    return TestStrictPermissiveIntegration.test_strict_permissive_integration()
 end

@@ -69,12 +69,10 @@ function test_madncl_extension()
             Test.@test :jacobian_constant in keys(meta)
             Test.@test Options.default(meta[:bound_push]) isa Core.NotProvidedType
             Test.@test Options.default(meta[:bound_fac]) isa Core.NotProvidedType
-            Test.@test Options.default(meta[:constr_mult_init_max]) isa
-                Core.NotProvidedType
+            Test.@test Options.default(meta[:constr_mult_init_max]) isa Core.NotProvidedType
             Test.@test Options.default(meta[:fixed_variable_treatment]) isa
                 Core.NotProvidedType
-            Test.@test Options.default(meta[:equality_treatment]) isa
-                Core.NotProvidedType
+            Test.@test Options.default(meta[:equality_treatment]) isa Core.NotProvidedType
             Test.@test :kkt_system in keys(meta)
             Test.@test :hessian_approximation in keys(meta)
             Test.@test :mu_init in keys(meta)

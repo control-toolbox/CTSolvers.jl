@@ -137,12 +137,10 @@ function test_madnlp_extension()
             # Test initialization defaults
             Test.@test Options.default(meta[:bound_push]) isa Core.NotProvidedType
             Test.@test Options.default(meta[:bound_fac]) isa Core.NotProvidedType
-            Test.@test Options.default(meta[:constr_mult_init_max]) isa
-                Core.NotProvidedType
+            Test.@test Options.default(meta[:constr_mult_init_max]) isa Core.NotProvidedType
             Test.@test Options.default(meta[:fixed_variable_treatment]) isa
                 Core.NotProvidedType
-            Test.@test Options.default(meta[:equality_treatment]) isa
-                Core.NotProvidedType
+            Test.@test Options.default(meta[:equality_treatment]) isa Core.NotProvidedType
         end
 
         # ====================================================================
@@ -152,7 +150,7 @@ function test_madnlp_extension()
         Test.@testset "Contract validation" begin
             Test.@test Strategies.id(Solvers.MadNLP) isa Symbol
             Test.@test Strategies.metadata(Solvers.MadNLP) isa Strategies.StrategyMetadata
-            solver = Solvers.MadNLP(print_level = MadNLP.ERROR)
+            solver = Solvers.MadNLP(print_level=MadNLP.ERROR)
             Test.@test Strategies.options(solver) isa Strategies.StrategyOptions
         end
 

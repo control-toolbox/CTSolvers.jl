@@ -28,7 +28,7 @@ struct PartialProblem <: Optimization.AbstractOptimizationProblem end
 
 # Implement only ADNLP builder
 function Optimization.get_adnlp_model_builder(::PartialProblem)
-    Optimization.ADNLPModelBuilder(x -> ADNLPModels.ADNLPModel(z -> sum(z .^ 2), x))
+    return Optimization.ADNLPModelBuilder(x -> ADNLPModels.ADNLPModel(z -> sum(z .^ 2), x))
 end
 
 """

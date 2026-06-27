@@ -32,10 +32,10 @@ end
 Optimization.get_adnlp_model_builder(prob::FakeOptimizationProblem) = prob.adnlp_builder
 Optimization.get_exa_model_builder(prob::FakeOptimizationProblem) = prob.exa_builder
 function Optimization.get_adnlp_solution_builder(prob::FakeOptimizationProblem)
-    prob.adnlp_solution_builder
+    return prob.adnlp_solution_builder
 end
 function Optimization.get_exa_solution_builder(prob::FakeOptimizationProblem)
-    prob.exa_solution_builder
+    return prob.exa_solution_builder
 end
 
 """

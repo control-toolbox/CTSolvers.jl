@@ -96,8 +96,8 @@ $(TYPEDSIGNATURES)
 Return the description for the MadNLP solver.
 """
 function Strategies.description(::Type{<:Solvers.MadNLP})
-    "Interior-point NLP solver with sparse linear algebra and GPU support.\n" *
-    "See: https://madsuite.org/MadNLP.jl/stable/options/"
+    return "Interior-point NLP solver with sparse linear algebra and GPU support.\n" *
+           "See: https://madsuite.org/MadNLP.jl/stable/options/"
 end
 
 """
@@ -195,7 +195,7 @@ See also: `MadNLP`, `Strategies.metadata`
 function build_madnlp_solver(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :MadNLP;
             message="to create MadNLP, access options, and solve problems",
@@ -221,7 +221,7 @@ See also: `MadNLP`, `Strategies.StrategyMetadata`
 function Strategies.metadata(
     ::Type{<:Solvers.MadNLP{P}}
 ) where {P<:AbstractStrategyParameter}
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :MadNLP;
             message="to access MadNLP{$P} options metadata",

@@ -27,7 +27,7 @@ See also: `validate_adnlp_backend(::Core.AbstractTag, ::Val{:default})`, `get_va
 """
 function validate_adnlp_backend(tag::Core.AbstractTag, backend::Val)
     # This is the generic fallback - should never be reached
-    throw(
+    return throw(
         Exceptions.IncorrectArgument(
             "Invalid ADNLPModels backend";
             got="backend=$(backend)",
@@ -85,7 +85,7 @@ Validate Enzyme backend using tag dispatch.
 See also: `validate_adnlp_backend(::Core.AbstractTag, ::Val{:zygote})`, `get_validate_adnlp_backend`
 """
 function validate_adnlp_backend(tag::Core.AbstractTag, ::Val{:enzyme})
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :Enzyme;
             message="to use Enzyme backend with ADNLP modeler",
@@ -115,7 +115,7 @@ Validate Zygote backend using tag dispatch.
 See also: `validate_adnlp_backend(::Core.AbstractTag, ::Val{:enzyme})`, `get_validate_adnlp_backend`
 """
 function validate_adnlp_backend(tag::Core.AbstractTag, ::Val{:zygote})
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :Zygote;
             message="to use Zygote backend with ADNLP modeler",
@@ -182,7 +182,7 @@ Fallback method for invalid base types in ExaModels validation.
 See also: `validate_exa_base_type(::Type{<:AbstractFloat})`
 """
 function validate_exa_base_type(T)
-    throw(
+    return throw(
         Exceptions.IncorrectArgument(
             "Invalid base type for Modelers.Exa";
             got="base_type=$T",
@@ -315,7 +315,7 @@ function validate_backend_override(backend)
     isa(backend, Type) && backend <: ADNLPModels.ADBackend && return backend
     # Accept an ADBackend instance (e.g., ForwardDiffADGradient())
     isa(backend, ADNLPModels.ADBackend) && return backend
-    throw(
+    return throw(
         Exceptions.IncorrectArgument(
             "Backend override must be nothing, a Type{<:ADBackend}, or an ADBackend instance";
             got=string(typeof(backend)),

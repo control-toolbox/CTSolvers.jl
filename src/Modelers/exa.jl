@@ -61,7 +61,7 @@ and returns an appropriate CUDA backend.
 - Uses CUDA.CUDABackend() for GPU execution
 """
 function __get_cuda_backend(::Type{<:GPU})
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :CUDA;
             message="to use GPU backend with Exa modeler",
@@ -226,8 +226,8 @@ $(TYPEDSIGNATURES)
 Return the description for the Exa modeler.
 """
 function Strategies.description(::Type{<:Modelers.Exa})
-    "NLP modeler using ExaModels, supporting CPU and GPU execution.\n" *
-    "See: https://exanauts.github.io/ExaModels.jl"
+    return "NLP modeler using ExaModels, supporting CPU and GPU execution.\n" *
+           "See: https://exanauts.github.io/ExaModels.jl"
 end
 
 """

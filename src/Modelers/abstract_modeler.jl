@@ -58,7 +58,7 @@ Build an NLP model from a discretized optimal control problem and initial guess.
 function (modeler::AbstractNLPModeler)(
     ::Optimization.AbstractOptimizationProblem, initial_guess
 )
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "Model building not implemented";
             required_method="(modeler::$(typeof(modeler)))(prob::Optimization.AbstractOptimizationProblem, initial_guess)",
@@ -87,7 +87,7 @@ Build a solution object from a discretized optimal control problem and NLP solut
 function (modeler::AbstractNLPModeler)(
     ::Optimization.AbstractOptimizationProblem, ::SolverCore.AbstractExecutionStats
 )
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "Solution building not implemented";
             required_method="(modeler::$(typeof(modeler)))(prob::Optimization.AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats)",
