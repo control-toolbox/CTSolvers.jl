@@ -5,6 +5,77 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.22-beta (2026-06-27)
+
+**Breaking change:** `NLPModels`, `ADNLPModels`, `ExaModels`, and `KernelAbstractions` are
+now *weak* dependencies. Code that uses ADNLP or Exa modelers must explicitly load the
+corresponding package before using CTSolvers modeler constructors.
+
+### Summary - v0.4.22-beta
+
+- `NLPModels`, `ADNLPModels`, `ExaModels`, `KernelAbstractions` moved from `[deps]` to
+  `[weakdeps]`; `SolverCore` remains a hard dependency
+- `Modelers.ADNLP(...)` and its parameterised form now throw `ExtensionError` unless
+  `ADNLPModels` is loaded in the session
+- `Modelers.Exa(...)` and its parameterised form now throw `ExtensionError` unless both
+  `ExaModels` and `KernelAbstractions` are loaded
+- `Strategies.metadata` for `ADNLP{P}` and `Exa{P}` likewise throw `ExtensionError` until
+  the respective extension is active
+
+### Breaking Changes - v0.4.22-beta
+
+#### 1. ADNLP modeler requires `using ADNLPModels`
+
+**Before:**
+
+```julia
+using CTSolvers
+modeler = Modelers.ADNLP()   # worked: ADNLPModels was a hard dep
+```
+
+**After:**
+
+```julia
+using CTSolvers
+using ADNLPModels             # triggers CTSolversADNLPModels extension
+modeler = Modelers.ADNLP()   # now works
+```
+
+#### 2. Exa modeler requires `using ExaModels`
+
+**Before:**
+
+```julia
+using CTSolvers
+modeler = Modelers.Exa()     # worked: ExaModels was a hard dep
+```
+
+**After:**
+
+```julia
+using CTSolvers
+using ExaModels               # triggers CTSolversExaModels extension (KernelAbstractions loaded transitively)
+modeler = Modelers.Exa()     # now works
+```
+
+#### 3. Solver extensions now co-trigger on `NLPModels`
+
+Solver extensions (`CTSolversIpopt`, `CTSolversKnitro`, `CTSolversMadNLP`, `CTSolversMadNCL`,
+`CTSolversUno`) now list `NLPModels` as a co-trigger alongside their backend package. Since
+`NLPModels` is a hard dependency of every NLP backend, **no change is required** for typical
+use (`using NLPModelsIpopt` continues to trigger `CTSolversIpopt` as before). This only
+matters if an unusual environment has `NLPModels` absent despite the backend being loaded.
+
+### Migration - v0.4.22-beta
+
+1. Add `using ADNLPModels` before any call to `Modelers.ADNLP`, `Strategies.metadata(Modelers.ADNLP{P})`,
+   or `Modelers.get_adnlp_available_backends()`.
+2. Add `using ExaModels` before any call to `Modelers.Exa`, `Strategies.metadata(Modelers.Exa{P})`.
+3. No changes required for solver use (`using NLPModelsIpopt` / `using MadNLP` etc.
+   continue to work identically).
+
+---
+
 ## v0.4.21-beta (2026-06-27)
 
 **Breaking change:** The builder/closure indirection in the DOCP and Optimization layers has

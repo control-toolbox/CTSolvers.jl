@@ -31,6 +31,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     statements removed from core source files (`DOCP/DOCP.jl`,
     `Optimization/Optimization.jl`, `Solvers/Solvers.jl`, `Modelers/Modelers.jl`).
 
+### Breaking
+
+- `Modelers.ADNLP(...)` now throws `ExtensionError` unless `using ADNLPModels` is in scope.
+- `Modelers.Exa(...)` now throws `ExtensionError` unless `using ExaModels` is in scope.
+- See `BREAKING.md` for full migration guide.
+
 ---
 
 ## [0.4.21-beta] - 2026-06-27
