@@ -8,6 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.21-beta] - 2026-06-27
+
+### Changed
+
+- **DOCP: replace builder/closure pattern with direct dispatch** — Major internal
+  reorganization of the discretization and optimization layers (PR #155).
+  - `DiscretizedModel` slimmed to `{ocp, discretizer, cache}`
+    (`cache <: CTBase.Core.AbstractCache`)
+  - `AbstractDiscretizer` moved into the `DOCP` module (`DOCP/abstract_discretizer.jl`)
+  - `Optimization.build_model` / `build_solution` are now typed `NotImplemented` stubs,
+    dispatched on `(AbstractOptimizationProblem, modeler)` in downstream packages
+  - `CommonSolve.solve(nlp, solver)` replaces the `(solver)(nlp)` callable pattern in all
+    solver extensions (Ipopt, Knitro, MadNLP, MadNCL, Uno)
+  - Modelers no longer callable; they now only carry options and metadata
+
+### Removed
+
+- `Optimization/builders.jl`, `Optimization/contract.jl`, `DOCP/contract_impl.jl`, and all
+  `AbstractBuilder` / `get_*_builder` boilerplate (replaced by direct dispatch)
+
+---
+
 ## [0.4.20-beta] - 2026-06-26
 
 ### Changed

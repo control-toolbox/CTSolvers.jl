@@ -5,6 +5,103 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.21-beta (2026-06-27)
+
+**Breaking change:** The builder/closure indirection in the DOCP and Optimization layers has
+been replaced by direct dispatch. Downstream packages implementing `AbstractBuilder`,
+calling modelers as functions, or using `(solver)(nlp)` callables must be updated.
+
+### Summary - v0.4.21-beta
+
+- `DiscretizedModel` slimmed to `{ocp, discretizer, cache}`; `AbstractBuilder` removed
+- `AbstractDiscretizer` relocated from extension code into `DOCP`
+- `Optimization.build_model` / `build_solution` are now `NotImplemented` stubs typed on
+  `AbstractOptimizationProblem`; concrete methods live downstream
+- `(solver)(nlp)` callable replaced by `CommonSolve.solve(nlp, solver)` in all extensions
+- Modelers no longer callable; they carry only options and metadata
+- Deleted: `Optimization/builders.jl`, `Optimization/contract.jl`, `DOCP/contract_impl.jl`
+
+### Breaking Changes - v0.4.21-beta
+
+#### 1. `AbstractBuilder` and `get_*_builder` removed
+
+**Before:**
+
+```julia
+struct MyBuilder <: AbstractBuilder ... end
+get_model_builder(docp) = MyBuilder(...)
+nlp = docp.builder()          # callable builder
+```
+
+**After:**
+
+```julia
+# Implement dispatch methods in your package
+function CTSolvers.Optimization.build_model(prob::AbstractOptimizationProblem, modeler)
+    ...
+end
+function CTSolvers.Optimization.build_solution(prob::AbstractOptimizationProblem, modeler, result)
+    ...
+end
+```
+
+#### 2. Modelers are no longer callable
+
+**Before:**
+
+```julia
+nlp = modeler(docp)   # modeler was a functor
+```
+
+**After:**
+
+```julia
+nlp = CTSolvers.Optimization.build_model(docp, modeler)
+```
+
+#### 3. Solver callable replaced by `CommonSolve.solve`
+
+**Before:**
+
+```julia
+result = solver(nlp)   # (solver)(nlp) callable
+```
+
+**After:**
+
+```julia
+using CommonSolve
+result = solve(nlp, solver)
+```
+
+### Migration - v0.4.21-beta
+
+1. Remove any `AbstractBuilder` / `get_*_builder` implementations.
+2. Replace modeler functor calls with `Optimization.build_model(problem, modeler)`.
+3. Replace `(solver)(nlp)` calls with `CommonSolve.solve(nlp, solver)`.
+4. Implement `build_model` / `build_solution` / `discretize` stubs by dispatch on your
+   `AbstractOptimizationProblem` subtype.
+
+---
+
+## v0.4.20-beta (2026-06-26)
+
+**No breaking changes.**
+
+This release updates the internal reference to `NotProvided` following its relocation in
+CTBase 0.25.
+
+### Summary - v0.4.20-beta
+
+- Consume `CTBase.Core.NotProvided` instead of `CTBase.Options.NotProvided`
+- Widen compat: `CTBase = "0.25"`, `CTModels = "0.12, 0.13"`
+
+### Migration - v0.4.20-beta
+
+**No action required.** All existing code continues to work without changes.
+
+---
+
 ## v0.4.19-beta (2026-06-21)
 
 **No breaking changes.**
