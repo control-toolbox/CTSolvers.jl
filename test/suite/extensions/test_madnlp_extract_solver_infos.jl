@@ -1,7 +1,7 @@
 module TestExtMadNLP
 
 using Test: Test
-import CTSolvers.Optimization
+import CTSolvers.Solvers
 using MadNLP: MadNLP
 using NLPModels: NLPModels
 using ADNLPModels: ADNLPModels
@@ -64,7 +64,7 @@ function test_madnlp_extract_solver_infos()
             stats = MadNLP.solve!(solver)
 
             # Extract solver infos using CTSolvers extension
-            objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
+            objective, iterations, constraints_violation, message, status, successful = Solvers.extract_solver_infos(
                 stats
             )
 
@@ -92,7 +92,7 @@ function test_madnlp_extract_solver_infos()
             stats_min = MadNLP.solve!(solver_min)
 
             # Extract solver infos
-            objective_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min)
+            objective_min, _, _, _, _, _ = Solvers.extract_solver_infos(stats_min)
 
             # For minimization, objective should equal stats.objective
             Test.@test objective_min ≈ stats_min.objective atol=1e-10
@@ -127,7 +127,7 @@ function test_madnlp_extract_solver_infos()
             nlp_min = ADNLPModels.ADNLPModel(obj, x0; minimize=true)
             solver_min = MadNLP.MadNLPSolver(nlp_min; print_level=MadNLP.ERROR)
             stats_min = MadNLP.solve!(solver_min)
-            obj_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min)
+            obj_min, _, _, _, _, _ = Solvers.extract_solver_infos(stats_min)
 
             # For minimization, extracted objective should equal raw stats objective
             Test.@test obj_min ≈ stats_min.objective atol=1e-10
@@ -148,7 +148,7 @@ function test_madnlp_extract_solver_infos()
             solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR)
             stats = MadNLP.solve!(solver)
 
-            _, _, _, _, status, _ = Optimization.extract_solver_infos(stats)
+            _, _, _, _, status, _ = Solvers.extract_solver_infos(stats)
 
             # Status should be a Symbol
             Test.@test status isa Symbol
@@ -172,7 +172,7 @@ function test_madnlp_extract_solver_infos()
             solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR, max_iter=100)
             stats = MadNLP.solve!(solver)
 
-            _, _, _, _, status, successful = Optimization.extract_solver_infos(stats)
+            _, _, _, _, status, successful = Solvers.extract_solver_infos(stats)
 
             # For a simple problem, should succeed
             Test.@test successful == true
@@ -197,7 +197,7 @@ function test_madnlp_extract_solver_infos()
             solver = MadNLP.MadNLPSolver(nlp; print_level=MadNLP.ERROR)
             stats = MadNLP.solve!(solver)
 
-            result = Optimization.extract_solver_infos(stats)
+            result = Solvers.extract_solver_infos(stats)
 
             # Should return a 6-tuple
             Test.@test result isa Tuple
@@ -232,7 +232,7 @@ function test_madnlp_extract_solver_infos()
             stats_max = MadNLP.solve!(solver_max)
 
             # Extract solver infos
-            objective_extracted, _, _, _, _, _ = Optimization.extract_solver_infos(
+            objective_extracted, _, _, _, _, _ = Solvers.extract_solver_infos(
                 stats_max
             )
 
@@ -281,11 +281,11 @@ function test_madnlp_extract_solver_infos()
             original_objective = stats_min.objective
 
             # Test case 1: minimization (should not flip)
-            obj_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min)
+            obj_min, _, _, _, _, _ = Solvers.extract_solver_infos(stats_min)
             Test.@test obj_min ≈ original_objective atol=1e-10
 
             # Test case 2: maximization (should flip)
-            obj_max, _, _, _, _, _ = Optimization.extract_solver_infos(stats_min)
+            obj_max, _, _, _, _, _ = Solvers.extract_solver_infos(stats_min)
             Test.@test obj_max ≈ -original_objective atol=1e-10
 
             # Verify the flip logic
@@ -304,7 +304,7 @@ function test_madnlp_extract_solver_infos()
             stats = MadNLP.solve!(solver)
 
             # Extract solver infos
-            objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
+            objective, iterations, constraints_violation, message, status, successful = Solvers.extract_solver_infos(
                 stats
             )
 
@@ -317,7 +317,7 @@ function test_madnlp_extract_solver_infos()
             Test.@test successful isa Bool
 
             # Verify tuple structure
-            result = Optimization.extract_solver_infos(stats)
+            result = Solvers.extract_solver_infos(stats)
             Test.@test result isa Tuple
             Test.@test length(result) == 6
 
@@ -326,7 +326,7 @@ function test_madnlp_extract_solver_infos()
             solver_max = MadNLP.MadNLPSolver(nlp_max; print_level=MadNLP.ERROR)
             stats_max = MadNLP.solve!(solver_max)
 
-            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Optimization.extract_solver_infos(
+            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Solvers.extract_solver_infos(
                 stats_max
             )
 
@@ -357,7 +357,7 @@ function test_madnlp_extract_solver_infos()
             stats = MadNLP.solve!(solver)
 
             # Extract solver infos
-            objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
+            objective, iterations, constraints_violation, message, status, successful = Solvers.extract_solver_infos(
                 stats
             )
 
@@ -382,7 +382,7 @@ function test_madnlp_extract_solver_infos()
             solver_max = MadNLP.MadNLPSolver(nlp_max; print_level=MadNLP.ERROR)
             stats_max = MadNLP.solve!(solver_max)
 
-            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Optimization.extract_solver_infos(
+            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Solvers.extract_solver_infos(
                 stats_max
             )
 

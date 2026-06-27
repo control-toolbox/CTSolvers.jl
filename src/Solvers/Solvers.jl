@@ -65,9 +65,13 @@ include(joinpath(@__DIR__, "madnlpsuite.jl"))
 include(joinpath(@__DIR__, "knitro.jl"))
 include(joinpath(@__DIR__, "uno.jl"))
 include(joinpath(@__DIR__, "common_solve_api.jl"))
+include(joinpath(@__DIR__, "solver_info.jl"))
 
 # Public API - abstract and concrete types
 export AbstractNLPSolver
 export Ipopt, MadNLP, MadNCL, Knitro, Uno
+
+# Public API - solver utilities
+export extract_solver_infos
 
 end # module Solvers

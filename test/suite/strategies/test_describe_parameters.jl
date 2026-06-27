@@ -5,6 +5,8 @@
 module TestDescribeParameters
 
 using Test: Test
+import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+import ExaModels: ExaModels  # trigger CTSolversExaModels extension
 import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTBase.Strategies

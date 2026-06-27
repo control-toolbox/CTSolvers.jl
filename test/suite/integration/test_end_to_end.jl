@@ -15,6 +15,7 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 # Import modules
 import CTSolvers.Modelers
 import CTSolvers.Optimization
+import CTSolvers.Solvers
 import CTSolvers.DOCP
 
 # ============================================================================
@@ -41,7 +42,7 @@ function test_end_to_end()
             Test.@test modeler isa Modelers.AbstractNLPModeler
 
             # Step 4: Build NLP model
-            nlp = Optimization.build_model(prob, ros.init, modeler)
+            nlp = Optimization.build_model(prob, ros.init, modeler).nlp
             Test.@test nlp isa ADNLPModels.ADNLPModel
             Test.@test nlp.meta.nvar == 2
             Test.@test nlp.meta.ncon == 1
@@ -69,7 +70,7 @@ function test_end_to_end()
                 result = MadNLP.solve!(solver)
 
                 # Step 10: Extract solver info
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
                     result
                 )
 
@@ -100,7 +101,7 @@ function test_end_to_end()
                 Test.@test modeler isa Modelers.Exa
 
                 # Step 3: Build NLP model
-                nlp = Optimization.build_model(prob, ros.init, modeler)
+                nlp = Optimization.build_model(prob, ros.init, modeler).nlp
                 Test.@test nlp isa ExaModels.ExaModel
                 Test.@test nlp.meta.nvar == 2
                 Test.@test nlp.meta.ncon == 1
@@ -133,7 +134,7 @@ function test_end_to_end()
                     modeler = Modelers.Exa(
                         base_type=Float32, minimize=true; mode=:permissive
                     )
-                    nlp = Optimization.build_model(prob, ros.init, modeler)
+                    nlp = Optimization.build_model(prob, ros.init, modeler).nlp
 
                     Test.@test nlp isa ExaModels.ExaModel
                     Test.@test eltype(nlp.meta.x0) == Float32
@@ -149,7 +150,7 @@ function test_end_to_end()
                     modeler = Modelers.Exa(
                         base_type=Float64, minimize=true; mode=:permissive
                     )
-                    nlp = Optimization.build_model(prob, ros.init, modeler)
+                    nlp = Optimization.build_model(prob, ros.init, modeler).nlp
 
                     Test.@test nlp isa ExaModels.ExaModel
                     Test.@test eltype(nlp.meta.x0) == Float64
@@ -172,7 +173,7 @@ function test_end_to_end()
             Test.@testset "Modelers.ADNLP - Simple" begin
                 # Test without options (defaults)
                 modeler = Modelers.ADNLP()
-                nlp = Optimization.build_model(prob, ros.init, modeler)
+                nlp = Optimization.build_model(prob, ros.init, modeler).nlp
 
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 obj = NLPModels.obj(nlp, ros.init)
@@ -182,13 +183,13 @@ function test_end_to_end()
             Test.@testset "Modelers.ADNLP - With Options" begin
                 # Test with show_time option
                 modeler = Modelers.ADNLP(show_time=false)
-                nlp = Optimization.build_model(prob, ros.init, modeler)
+                nlp = Optimization.build_model(prob, ros.init, modeler).nlp
                 Test.@test nlp isa ADNLPModels.ADNLPModel
 
                 # Test with different backends (all valid ADNLPModels backends)
                 for backend in [:optimized, :generic, :default]
                     modeler_backend = Modelers.ADNLP(backend=backend, show_time=false)
-                    nlp_backend = Optimization.build_model(prob, ros.init, modeler_backend)
+                    nlp_backend = Optimization.build_model(prob, ros.init, modeler_backend).nlp
 
                     Test.@test nlp_backend isa ADNLPModels.ADNLPModel
                     obj = NLPModels.obj(nlp_backend, ros.init)
@@ -200,7 +201,7 @@ function test_end_to_end()
             Test.@testset "Modelers.Exa - Simple" begin
                 # Test without options (defaults)
                 modeler = Modelers.Exa(base_type=Float64)
-                nlp = Optimization.build_model(prob, ros.init, modeler)
+                nlp = Optimization.build_model(prob, ros.init, modeler).nlp
 
                 Test.@test nlp isa ExaModels.ExaModel
                 obj = NLPModels.obj(nlp, ros.init)
@@ -213,7 +214,7 @@ function test_end_to_end()
                     modeler = Modelers.Exa(
                         base_type=Float64, minimize=true, backend=nothing; mode=:permissive
                     )
-                    nlp = Optimization.build_model(prob, ros.init, modeler)
+                    nlp = Optimization.build_model(prob, ros.init, modeler).nlp
 
                     Test.@test nlp isa ExaModels.ExaModel
                     obj = NLPModels.obj(nlp, ros.init)
@@ -232,7 +233,7 @@ function test_end_to_end()
 
             # Build with ADNLP
             modeler_adnlp = Modelers.ADNLP(show_time=false)
-            nlp_adnlp = Optimization.build_model(prob, ros.init, modeler_adnlp)
+            nlp_adnlp = Optimization.build_model(prob, ros.init, modeler_adnlp).nlp
             obj_adnlp = NLPModels.obj(nlp_adnlp, ros.init)
 
             # Build with Exa (permissive mode for minimize option)
@@ -240,7 +241,7 @@ function test_end_to_end()
                 modeler_exa = Modelers.Exa(
                     base_type=Float64, minimize=true; mode=:permissive
                 )
-                nlp_exa = Optimization.build_model(prob, ros.init, modeler_exa)
+                nlp_exa = Optimization.build_model(prob, ros.init, modeler_exa).nlp
                 obj_exa = NLPModels.obj(nlp_exa, Float64.(ros.init))
 
                 # Both should give same objective
@@ -262,7 +263,7 @@ function test_end_to_end()
             prob = ros.prob
 
             modeler = Modelers.ADNLP(show_time=false)
-            nlp = Optimization.build_model(prob, ros.init, modeler)
+            nlp = Optimization.build_model(prob, ros.init, modeler).nlp
 
             Test.@testset "Gradient at initial point" begin
                 grad = NLPModels.grad(nlp, ros.init)
@@ -294,7 +295,7 @@ function test_end_to_end()
             prob = ros.prob
 
             modeler = Modelers.ADNLP(show_time=false)
-            nlp = Optimization.build_model(prob, ros.init, modeler)
+            nlp = Optimization.build_model(prob, ros.init, modeler).nlp
 
             Test.@testset "Constraint at initial point" begin
                 cons = NLPModels.cons(nlp, ros.init)
@@ -327,14 +328,14 @@ function test_end_to_end()
                 modeler = Modelers.ADNLP(show_time=false)
 
                 # Should be fast
-                t = @elapsed nlp = Optimization.build_model(prob, ros.init, modeler)
+                t = @elapsed nlp = Optimization.build_model(prob, ros.init, modeler).nlp
                 Test.@test t < 1.0  # Should take less than 1 second
                 Test.@test nlp isa ADNLPModels.ADNLPModel
             end
 
             Test.@testset "Function evaluation time" begin
                 modeler = Modelers.ADNLP(show_time=false)
-                nlp = Optimization.build_model(prob, ros.init, modeler)
+                nlp = Optimization.build_model(prob, ros.init, modeler).nlp
 
                 # Objective evaluation should be fast
                 t = @elapsed obj = NLPModels.obj(nlp, ros.init)

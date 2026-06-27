@@ -1,7 +1,7 @@
 module TestExtGeneric
 
 using Test: Test
-import CTSolvers.Optimization
+import CTSolvers.Solvers
 using SolverCore: SolverCore
 using NLPModels: NLPModels
 using ADNLPModels: ADNLPModels
@@ -74,7 +74,7 @@ function test_generic_extract_solver_infos()
             mock_stats = create_mock_stats(0.0, 10, 1e-8, :first_order)
 
             # Extract solver infos using generic function
-            objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
+            objective, iterations, constraints_violation, message, status, successful = Solvers.extract_solver_infos(
                 mock_stats
             )
 
@@ -92,7 +92,7 @@ function test_generic_extract_solver_infos()
 
             # Test successful status: :first_order
             stats_success = create_mock_stats(1.5, 5, 1e-6, :first_order)
-            obj, iter, viol, msg, stat, success = Optimization.extract_solver_infos(
+            obj, iter, viol, msg, stat, success = Solvers.extract_solver_infos(
                 stats_success
             )
 
@@ -102,7 +102,7 @@ function test_generic_extract_solver_infos()
 
             # Test successful status: :acceptable
             stats_acceptable = create_mock_stats(1.5, 5, 1e-6, :acceptable)
-            _, _, _, _, stat2, success2 = Optimization.extract_solver_infos(
+            _, _, _, _, stat2, success2 = Solvers.extract_solver_infos(
                 stats_acceptable
             )
 
@@ -111,14 +111,14 @@ function test_generic_extract_solver_infos()
 
             # Test unsuccessful status: :max_iter
             stats_max_iter = create_mock_stats(1.5, 100, 1e-2, :max_iter)
-            _, _, _, _, stat3, success3 = Optimization.extract_solver_infos(stats_max_iter)
+            _, _, _, _, stat3, success3 = Solvers.extract_solver_infos(stats_max_iter)
 
             Test.@test success3 == false
             Test.@test stat3 == :max_iter
 
             # Test unsuccessful status: :infeasible
             stats_infeasible = create_mock_stats(1.5, 50, 1e-1, :infeasible)
-            _, _, _, _, stat4, success4 = Optimization.extract_solver_infos(
+            _, _, _, _, stat4, success4 = Solvers.extract_solver_infos(
                 stats_infeasible
             )
 
@@ -131,7 +131,7 @@ function test_generic_extract_solver_infos()
 
             # Test with minimization
             mock_stats_min = create_mock_stats(2.5, 15, 1e-7, :first_order)
-            objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
+            objective, iterations, constraints_violation, message, status, successful = Solvers.extract_solver_infos(
                 mock_stats_min
             )
 
@@ -144,13 +144,13 @@ function test_generic_extract_solver_infos()
             Test.@test successful isa Bool
 
             # Verify tuple structure
-            result = Optimization.extract_solver_infos(mock_stats_min)
+            result = Solvers.extract_solver_infos(mock_stats_min)
             Test.@test result isa Tuple
             Test.@test length(result) == 6
 
             # Test with maximization (should not affect the generic implementation)
             mock_stats_max = create_mock_stats(2.5, 15, 1e-7, :first_order)
-            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Optimization.extract_solver_infos(
+            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Solvers.extract_solver_infos(
                 mock_stats_max
             )
 
@@ -176,7 +176,7 @@ function test_generic_extract_solver_infos()
 
             # Test with minimization
             mock_stats_min = create_mock_stats(2.5, 15, 1e-7, :first_order)
-            objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
+            objective, iterations, constraints_violation, message, status, successful = Solvers.extract_solver_infos(
                 mock_stats_min
             )
 
@@ -202,7 +202,7 @@ function test_generic_extract_solver_infos()
 
             # Test with maximization
             mock_stats_max = create_mock_stats(3.14, 20, 1e-5, :acceptable)
-            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Optimization.extract_solver_infos(
+            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Solvers.extract_solver_infos(
                 mock_stats_max
             )
 
@@ -245,7 +245,7 @@ function test_generic_extract_solver_infos()
             # Test that all 6 return values are present and have correct types
 
             mock_stats = create_mock_stats(3.14, 42, 1e-9, :acceptable)
-            result = Optimization.extract_solver_infos(mock_stats)
+            result = Solvers.extract_solver_infos(mock_stats)
 
             # Should return a 6-tuple
             Test.@test result isa Tuple

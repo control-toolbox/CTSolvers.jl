@@ -465,7 +465,7 @@ A 6-element tuple `(objective, iterations, constraints_violation, message, statu
 - `status::Symbol`: Termination status from SolverCore
 - `successful::Bool`: Whether the solver converged successfully
 """
-function Optimization.extract_solver_infos(nlp_solution::MadNCL.NCLStats)
+function Solvers.extract_solver_infos(nlp_solution::MadNCL.NCLStats)
     objective = nlp_solution.objective
     iterations = nlp_solution.iter
     constraints_violation = nlp_solution.primal_feas

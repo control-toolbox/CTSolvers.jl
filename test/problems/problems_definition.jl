@@ -16,19 +16,21 @@ end
 function Optimization.build_model(
     prob::OptimizationProblem, initial_guess, ::Modelers.ADNLP
 )
-    return prob.build_adnlp_model(initial_guess)
+    nlp = prob.build_adnlp_model(initial_guess)
+    return Optimization.BuiltModel(prob, nlp, Optimization.NoCache())
 end
 
 # Build the Exa model from the wrapped builder, using the modeler base type.
 function Optimization.build_model(
     prob::OptimizationProblem, initial_guess, modeler::Modelers.Exa
 )
-    return prob.build_exa_model(modeler[:base_type], initial_guess)
+    nlp = prob.build_exa_model(modeler[:base_type], initial_guess)
+    return Optimization.BuiltModel(prob, nlp, Optimization.NoCache())
 end
 
 # These benchmark problems return the raw NLP solver statistics as the solution.
 function Optimization.build_solution(
-    ::OptimizationProblem,
+    ::Optimization.BuiltModel{<:OptimizationProblem},
     nlp_solution::SolverCore.AbstractExecutionStats,
     ::Modelers.AbstractNLPModeler,
 )

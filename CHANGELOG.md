@@ -8,6 +8,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.23-beta] - 2026-06-27
+
+### Changed
+
+- **Immutable `BuiltModel` bundle** — `Optimization.build_model` now returns an
+  immutable `BuiltModel{problem, nlp, cache}` (new type) instead of a bare NLP, and
+  `Optimization.build_solution` dispatches on that bundle. This removes the mutable
+  backend cache: the Exa getter — produced together with the `ExaModel` and
+  previously mutated into the shared `DiscretizedModel` — now travels immutably
+  inside the `BuiltModel`. It also fixes a latent bug where two builds on the same
+  `DiscretizedModel` could clobber each other's getter.
+  - New `Optimization.BuiltModel` and `Optimization.NoCache`
+    (`<: CTBase.Core.AbstractCache`).
+  - `DOCP.nlp_model` returns the bare NLP (`build_model(...).nlp`);
+    `DOCP.ocp_solution` realigned onto `BuiltModel`.
+- **`extract_solver_infos` moved** from `Optimization` to `Solvers`
+  (`Solvers.extract_solver_infos`); `CTSolvers.extract_solver_infos` still resolves.
+- **`KernelAbstractions` promoted back to a hard dependency** so the
+  `CTSolversExaModels` extension triggers on `ExaModels` alone (partially reverting
+  v0.4.22). Downstream packages (e.g. CTDirect) no longer need
+  `using KernelAbstractions` to use the Exa modeler; Aqua `stale_deps` ignores it.
+
+### Breaking
+
+- `Optimization.build_model` returns a `BuiltModel`, not a bare NLP — use
+  `build_model(...).nlp` (or `DOCP.nlp_model`) to obtain the NLP.
+- `Optimization.build_solution` now dispatches on the `BuiltModel`:
+  `build_solution(built, stats, modeler)` instead of `build_solution(prob, stats, modeler)`.
+- `Optimization.extract_solver_infos` moved to `Solvers.extract_solver_infos`.
+- See `BREAKING.md` for the full migration guide.
+
+---
+
 ## [0.4.22-beta] - 2026-06-27
 
 ### Changed

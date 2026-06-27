@@ -1,6 +1,7 @@
 module TestExaGPU
 
 using Test: Test
+import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
 import CTBase.Exceptions
 import CTSolvers.Modelers
 import CTBase.Strategies

@@ -14,6 +14,8 @@ Date: 2026-02-06
 module TestComprehensiveValidation
 
 using Test: Test
+import ADNLPModels: ADNLPModels # trigger CTSolversADNLPModels extension
+import ExaModels: ExaModels  # trigger CTSolversExaModels extension
 import CTBase.Exceptions
 import CTBase.Strategies
 import CTBase.Options

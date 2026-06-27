@@ -7,7 +7,6 @@ Implements the complete Solvers.Uno functionality with proper option definitions
 module CTSolversUno
 
 import DocStringExtensions: TYPEDSIGNATURES
-import CTSolvers.Optimization
 import CTSolvers.Solvers
 import CommonSolve
 import CTBase.Strategies
@@ -337,7 +336,7 @@ Solve an NLP problem using Uno.
 # Returns
 - `UnoSolver.UnoExecutionStats`: Solver execution statistics
 
-See also: [`solve_with_uno`](@ref), [`Optimization.extract_solver_infos`](@ref)
+See also: [`solve_with_uno`](@ref), [`Solvers.extract_solver_infos`](@ref)
 """
 function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::Solvers.Uno; display::Bool=true
@@ -365,7 +364,7 @@ Solves the NLP problem using UnoSolver backend.
 # Returns
 - `UnoSolver.UnoExecutionStats`: Solver execution statistics
 
-See also: `Solvers.Uno`, `UnoSolver.uno`, [`Optimization.extract_solver_infos`](@ref)
+See also: `Solvers.Uno`, `UnoSolver.uno`, [`Solvers.extract_solver_infos`](@ref)
 """
 function solve_with_uno(
     nlp::NLPModels.AbstractNLPModel; kwargs...
@@ -397,7 +396,7 @@ A 6-element tuple `(objective, iterations, constraints_violation, message, statu
 
 See also: [`solve_with_uno`](@ref)
 """
-function Optimization.extract_solver_infos(nlp_solution::UnoSolver.UnoExecutionStats)
+function Solvers.extract_solver_infos(nlp_solution::UnoSolver.UnoExecutionStats)
     objective = nlp_solution.objective
     iterations = nlp_solution.iter
     constraints_violation = nlp_solution.primal_feas

@@ -1,6 +1,7 @@
 module TestIpoptExtension
 
 using Test: Test
+import ExaModels: ExaModels  # trigger CTSolversExaModels extension
 import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTSolvers.Solvers
@@ -143,7 +144,7 @@ function test_ipopt_extension()
             ros = TestProblems.Rosenbrock()
 
             # Build NLP model from problem
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(ros.init)
 
             # Create solver with appropriate options
@@ -169,7 +170,7 @@ function test_ipopt_extension()
             elec = TestProblems.Elec()
 
             # Build NLP model
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(elec.init)
 
             solver = Solvers.Ipopt(max_iter=1000, tol=1e-6, print_level=0)
@@ -184,7 +185,7 @@ function test_ipopt_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP model
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(max_prob.init)
 
             solver = Solvers.Ipopt(max_iter=1000, tol=1e-6, print_level=0)
@@ -230,8 +231,8 @@ function test_ipopt_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP models
-            nlp1 = Optimization.build_model(ros.prob, ros.init, Modelers.ADNLP())
-            nlp2 = Optimization.build_model(max_prob.prob, max_prob.init, Modelers.ADNLP())
+            nlp1 = Optimization.build_model(ros.prob, ros.init, Modelers.ADNLP()).nlp
+            nlp2 = Optimization.build_model(max_prob.prob, max_prob.init, Modelers.ADNLP()).nlp
 
             stats1 = CommonSolve.solve(nlp1, solver; display=false)
             stats2 = CommonSolve.solve(nlp2, solver; display=false)
@@ -301,7 +302,7 @@ function test_ipopt_extension()
                 ros = TestProblems.Rosenbrock()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        nlp = Optimization.build_model(ros.prob, ros.init, modeler)
+                        nlp = Optimization.build_model(ros.prob, ros.init, modeler).nlp
                         sol = CTSolversIpopt.solve_with_ipopt(nlp; ipopt_options...)
                         Test.@test sol.status == :first_order
                         Test.@test sol.solution ≈ ros.sol atol=1e-6
@@ -315,7 +316,7 @@ function test_ipopt_extension()
                 elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                        nlp = Optimization.build_model(elec.prob, elec.init, modeler)
+                        nlp = Optimization.build_model(elec.prob, elec.init, modeler).nlp
                         sol = CTSolversIpopt.solve_with_ipopt(nlp; ipopt_options...)
                         Test.@test sol.status == :first_order
                     end
@@ -328,7 +329,7 @@ function test_ipopt_extension()
                     Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                         nlp = Optimization.build_model(
                             max_prob.prob, max_prob.init, modeler
-                        )
+                        ).nlp
                         sol = CTSolversIpopt.solve_with_ipopt(nlp; ipopt_options...)
                         Test.@test sol.status == :first_order
                         Test.@test length(sol.solution) == 1
@@ -483,7 +484,7 @@ function test_ipopt_extension()
 
         Test.@testset "Pass-through Verification" begin
             ros = TestProblems.Rosenbrock()
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(ros.init)
 
             # Test derivative_test="first-order"
@@ -513,7 +514,7 @@ function test_ipopt_extension()
 
         Test.@testset "Exhaustive Options Validation" begin
             ros = TestProblems.Rosenbrock()
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(ros.init)
 
             # Define all options with valid values to check for typos in names

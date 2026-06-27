@@ -49,14 +49,14 @@ function CommonSolve.solve(
     solver::AbstractNLPSolver;
     display::Bool=__display(),
 )
-    # Build NLP model
-    nlp = Optimization.build_model(problem, initial_guess, modeler)
+    # Build NLP model (bundled with its immutable build-time cache)
+    built = Optimization.build_model(problem, initial_guess, modeler)
 
     # Solve NLP
-    nlp_solution = CommonSolve.solve(nlp, solver; display=display)
+    nlp_solution = CommonSolve.solve(built.nlp, solver; display=display)
 
     # Build OCP solution
-    solution = Optimization.build_solution(problem, nlp_solution, modeler)
+    solution = Optimization.build_solution(built, nlp_solution, modeler)
 
     return solution
 end
