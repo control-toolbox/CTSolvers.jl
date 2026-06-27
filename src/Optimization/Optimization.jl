@@ -17,7 +17,6 @@ module Optimization
 # Imports
 import CTBase.Exceptions
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
-using NLPModels: NLPModels
 using SolverCore: SolverCore
 
 # Submodules

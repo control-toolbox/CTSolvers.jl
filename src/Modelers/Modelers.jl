@@ -20,9 +20,6 @@ module Modelers
 import CTBase.Exceptions
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 using SolverCore: SolverCore
-using ADNLPModels: ADNLPModels
-using ExaModels: ExaModels
-using KernelAbstractions: KernelAbstractions
 import CTBase.Core
 
 # CTBase generic infrastructure

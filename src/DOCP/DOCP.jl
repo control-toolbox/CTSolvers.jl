@@ -17,7 +17,6 @@ module DOCP
 
 # Imports
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
-using NLPModels: NLPModels
 using SolverCore: SolverCore
 using CTModels: CTModels
 import CTBase.Core

@@ -43,7 +43,6 @@ module Solvers
 
 # Imports
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES, TYPEDFIELDS
-using NLPModels: NLPModels
 using SolverCore: SolverCore
 using CommonSolve: CommonSolve
 import CTBase.Exceptions

@@ -5,6 +5,8 @@ import CTBase.Exceptions
 import CTSolvers.Modelers
 import CTBase.Strategies
 import CTBase.Options
+using ExaModels: ExaModels
+using KernelAbstractions: KernelAbstractions
 using CUDA: CUDA
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

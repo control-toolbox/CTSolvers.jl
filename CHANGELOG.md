@@ -8,6 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.22-beta] - 2026-06-27
+
+### Changed
+
+- **Weak-dependency policy for interchange formats** — `NLPModels`, `ADNLPModels`,
+  `ExaModels`, and `KernelAbstractions` are now *weak* dependencies (moved from
+  `[deps]` to `[weakdeps]`). `SolverCore` remains a hard dependency.
+  - Two new extensions added: `CTSolversADNLPModels` (triggered by `ADNLPModels`)
+    and `CTSolversExaModels` (triggered by `ExaModels` + `KernelAbstractions`).
+  - Solver extensions (`CTSolversIpopt`, `CTSolversKnitro`, `CTSolversMadNLP`,
+    `CTSolversMadNCL`, `CTSolversUno`) now co-trigger on `NLPModels` (in addition to
+    their existing solver-backend trigger) since they dispatch on
+    `NLPModels.AbstractNLPModel`.
+  - Core modeler stubs follow the Ipopt tag-dispatch pattern:
+    `build_adnlp_modeler` / `build_exa_modeler` throw `ExtensionError` when their
+    respective extension is not loaded; `Strategies.metadata` stubs do the same.
+  - `validate_backend_override` in core is rewritten to use two tag-dispatch helpers
+    (`__is_adbackend_type` / `__is_adbackend_instance`) so it no longer references
+    `ADNLPModels.ADBackend` directly; `CTSolversADNLPModels` overrides these to `true`.
+  - All direct `NLPModels`, `ADNLPModels`, `ExaModels`, `KernelAbstractions` `using`
+    statements removed from core source files (`DOCP/DOCP.jl`,
+    `Optimization/Optimization.jl`, `Solvers/Solvers.jl`, `Modelers/Modelers.jl`).
+
+---
+
 ## [0.4.21-beta] - 2026-06-27
 
 ### Changed

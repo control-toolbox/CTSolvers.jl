@@ -3,6 +3,17 @@
 # Implementation of `Modelers.Exa` using the `Strategies.AbstractStrategy`
 # contract.
 
+# ============================================================================
+# Tag dispatch infrastructure
+# ============================================================================
+
+"""
+$(TYPEDEF)
+
+Tag type for Exa-specific implementation dispatch.
+"""
+struct ExaTag <: Core.AbstractTag end
+
 # Default option values
 """
 $(TYPEDSIGNATURES)
@@ -247,32 +258,23 @@ See also: `Exa`, `CPU`
 Strategies._default_parameter(::Type{<:Modelers.Exa}) = CPU
 
 # Strategy metadata with option definitions (parameterized)
+"""
+$(TYPEDSIGNATURES)
+
+Stub — real implementation provided by the CTSolversExaModels extension.
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: If the ExaModels extension is not loaded
+
+See also: `Modelers.Exa`, `Strategies.StrategyMetadata`
+"""
 function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU,GPU}}
-    return Strategies.StrategyMetadata(
-        # === Existing Options (enhanced) ===
-        Strategies.OptionDefinition(;
-            name=:base_type,
-            type=DataType,
-            default=__exa_model_base_type(),
-            description="Base floating-point type used by ExaModels",
-            validator=validate_exa_base_type,
-        ),
-        Strategies.OptionDefinition(;
-            name=:backend,
-            type=Union{Nothing,KernelAbstractions.Backend},  # More permissive for various backend types
-            default=__exa_model_backend(P),
-            description="Execution backend for ExaModels (CPU, GPU, etc.)",
-            computed=true,  # Default is computed from parameter P
-            aliases=(:exa_backend,),
-            validator=function (backend)
-                if !__consistent_backend(P, backend)
-                    param_str = P == CPU ? "CPU" : "GPU"
-                    backend_str =
-                        backend === nothing ? "no backend" : string(typeof(backend))
-                    @warn "Inconsistent backend ($backend_str) for $param_str parameter" maxlog=1
-                end
-                return backend
-            end,
+    throw(
+        Exceptions.ExtensionError(
+            :ExaModels;
+            message="to access Exa{$P} options metadata",
+            feature="Exa metadata",
+            context="Load ExaModels first: using ExaModels",
         ),
     )
 end
@@ -292,11 +294,16 @@ function Strategies.metadata(::Type{Modelers.Exa})
     return Strategies.metadata(Modelers.Exa{Strategies._default_parameter(Modelers.Exa)})
 end
 
-# Parameterized constructor
+# ============================================================================
+# Constructor with Tag Dispatch
+# ============================================================================
+
 """
 $(TYPEDSIGNATURES)
 
 Create a parameterized Modelers.Exa with validated options.
+
+Requires the CTSolversExaModels extension to be loaded.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
@@ -307,38 +314,40 @@ Create a parameterized Modelers.Exa with validated options.
 # Returns
 - `Modelers.Exa{P}`: Configured modeler instance with specified parameter
 
-# Examples
-```julia
-# Explicit CPU modeler
-modeler = Modelers.Exa{CPU}()
-
-# Explicit GPU modeler (requires CUDA.jl)
-modeler = Modelers.Exa{GPU}()
-
-# With custom options
-modeler = Modelers.Exa{GPU}(base_type=Float32)
-
-# With permissive mode
-modeler = Modelers.Exa{GPU}(base_type=Float64, custom_option=123; mode=:permissive)
-```
-
 # Throws
+- `CTBase.Exceptions.ExtensionError`: If the ExaModels extension is not loaded
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
-- `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
-- `CTBase.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
 
-See also: `Modelers.Exa`, `Strategies.build_strategy_options`
+See also: `Modelers.Exa`, `build_exa_modeler`
 """
 function Modelers.Exa{P}(;
     mode::Symbol=:strict, kwargs...
 ) where {P<:AbstractStrategyParameter}
-    # Check for deprecated aliases
-    if haskey(kwargs, :exa_backend)
-        @warn "exa_backend is deprecated, use backend instead" maxlog=1
-    end
+    return build_exa_modeler(ExaTag, P; mode=mode, kwargs...)
+end
 
-    opts = Strategies.build_strategy_options(Modelers.Exa{P}; mode=mode, kwargs...)
-    return Modelers.Exa{P}(opts)
+"""
+$(TYPEDSIGNATURES)
+
+Stub function that throws ExtensionError if CTSolversExaModels extension is not loaded.
+Real implementation provided by the extension.
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
+
+See also: `Modelers.Exa`, `Strategies.metadata`
+"""
+function build_exa_modeler(
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+)
+    throw(
+        Exceptions.ExtensionError(
+            :ExaModels;
+            message="to create Exa, access options, and build NLP models",
+            feature="Exa modeler functionality",
+            context="Load ExaModels first: using ExaModels",
+        ),
+    )
 end
 
 # Simple constructor
@@ -346,6 +355,8 @@ end
 $(TYPEDSIGNATURES)
 
 Create an Modelers.Exa with validated options (defaults to CPU).
+
+Requires the CTSolversExaModels extension to be loaded.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
@@ -356,23 +367,11 @@ Create an Modelers.Exa with validated options (defaults to CPU).
 # Returns
 - `Modelers.Exa{CPU}`: Configured modeler instance with CPU parameter
 
-# Examples
-```julia
-# Default modeler (CPU)
-modeler = Modelers.Exa()
-
-# With custom options
-modeler = Modelers.Exa(base_type=Float32, backend=nothing)
-
-# With permissive mode
-modeler = Modelers.Exa(base_type=Float64, custom_option=123; mode=:permissive)
-```
-
 # Throws
+- `CTBase.Exceptions.ExtensionError`: If the ExaModels extension is not loaded
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
-- `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 
-See also: `Modelers.Exa`, `Modelers.Exa{CPU}`, `Modelers.Exa{GPU}`, `Strategies.build_strategy_options`
+See also: `Modelers.Exa`, `Modelers.Exa{CPU}`, `Modelers.Exa{GPU}`, `build_exa_modeler`
 """
 function Modelers.Exa(; mode::Symbol=:strict, kwargs...)
     P = Strategies._default_parameter(Modelers.Exa)

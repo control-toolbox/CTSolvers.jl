@@ -13,6 +13,7 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 # Import the specific types we need
 using ADNLPModels: ADNLPModels
 import CTSolvers.Modelers
+using ExaModels: ExaModels
 using KernelAbstractions: KernelAbstractions
 import CTBase.Strategies
 

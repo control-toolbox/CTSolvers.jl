@@ -27,44 +27,45 @@ __adnlp_model_backend() = :optimized
 """
 $(TYPEDSIGNATURES)
 
+Return the list of available AD backends for `Modelers.ADNLP` via tag dispatch.
+
+Stub — throws [`CTBase.Exceptions.ExtensionError`](@extref) by default.
+Overridden by the `CTSolversADNLPModels` extension for `ADNLPTag`.
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: always, until overridden by the extension
+
+See also: [`CTSolvers.Modelers.get_adnlp_available_backends`](@ref),
+[`CTSolvers.Modelers.ADNLPTag`](@ref)
+"""
+function __get_adnlp_available_backends(::Type{<:Core.AbstractTag})
+    throw(
+        Exceptions.ExtensionError(
+            :ADNLPModels;
+            message="to list available ADNLP backends",
+            feature="ADNLP backends listing",
+            context="Load ADNLPModels first: using ADNLPModels",
+        ),
+    )
+end
+
+"""
+$(TYPEDSIGNATURES)
+
 Return the list of available automatic differentiation backends for `Modelers.ADNLP`.
 
-The available backends are the predefined backends from ADNLPModels plus `:manual`:
-- `:default`: Default backend selection
-- `:optimized`: Optimized backend (default)
-- `:generic`: Generic backend
-- `:enzyme`: Enzyme backend (requires CTSolversEnzyme extension)
-- `:zygote`: Zygote backend (requires CTSolversZygote extension)
-- `:manual`: Manual backend specification (for advanced users)
+Requires the `CTSolversADNLPModels` extension (`using ADNLPModels`) to be loaded.
 
 # Returns
-- `Vector{Symbol}`: List of available backend symbols
+- `Vector{Symbol}`: available backend names (e.g. `:default`, `:optimized`, `:manual`)
 
-# Example
-```julia-repl
-julia> using CTSolvers.Modelers
+# Throws
+- `CTBase.Exceptions.ExtensionError`: if `ADNLPModels` is not loaded
 
-julia> get_adnlp_available_backends()
-6-element Vector{Symbol}:
- :default
- :optimized
- :generic
- :enzyme
- :zygote
- :manual
-```
-
-# Notes
-- Some backends require optional extensions (e.g., Enzyme, Zygote)
-- The `:manual` backend is for advanced users who want to specify custom backend overrides
-
-See also: `Modelers.ADNLP`, `get_validate_adnlp_backend`
+See also: [`CTSolvers.Modelers.ADNLP`](@ref),
+[`CTSolvers.Modelers.get_validate_adnlp_backend`](@ref)
 """
-function get_adnlp_available_backends()::Vector{Symbol}
-    backends = collect(keys(ADNLPModels.predefined_backend))
-    push!(backends, :manual)
-    return backends
-end
+get_adnlp_available_backends() = __get_adnlp_available_backends(ADNLPTag)
 
 """
 $(TYPEDEF)
@@ -247,136 +248,24 @@ See also: `ADNLP`, `CPU`
 Strategies._default_parameter(::Type{<:Modelers.ADNLP}) = CPU
 
 # Strategy metadata with option definitions (parameterized)
+"""
+$(TYPEDSIGNATURES)
+
+Stub — real implementation provided by the CTSolversADNLPModels extension.
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: If the ADNLPModels extension is not loaded
+
+See also: `Modelers.ADNLP`, `Strategies.StrategyMetadata`
+"""
 function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
-    return Strategies.StrategyMetadata(
-        # === Existing Options (unchanged) ===
-        Strategies.OptionDefinition(;
-            name=:show_time,
-            type=Bool,
-            default=Core.NotProvided,
-            description="Whether to show timing information while building the ADNLP model",
+    throw(
+        Exceptions.ExtensionError(
+            :ADNLPModels;
+            message="to access ADNLP{$P} options metadata",
+            feature="ADNLP metadata",
+            context="Load ADNLPModels first: using ADNLPModels",
         ),
-        Strategies.OptionDefinition(;
-            name=:backend,
-            type=Symbol,
-            default=__adnlp_model_backend(),
-            description="Automatic differentiation backend used by ADNLPModels.\nAvailable: $(join(get_adnlp_available_backends(), ", ", " and ")).",
-            validator=get_validate_adnlp_backend(ADNLPTag),
-            aliases=(:adnlp_backend,),
-        ),
-
-        # === New High-Priority Options ===
-        Strategies.OptionDefinition(;
-            name=:matrix_free,
-            type=Bool,
-            default=Core.NotProvided,
-            description="Enable matrix-free mode (avoids explicit Hessian/Jacobian matrices)",
-            validator=validate_matrix_free,
-        ),
-        Strategies.OptionDefinition(;
-            name=:name,
-            type=String,
-            default=Core.NotProvided,
-            description="Name of the optimization model for identification",
-            validator=validate_model_name,
-        ),
-        # NOTE: minimize option is commented out as it will be automatically set
-        # when building the model based on the problem structure
-        # Strategies.OptionDefinition(;
-        #     name=:minimize,
-        #     type=Bool,
-        #     default=Core.NotProvided,
-        #     description="Optimization direction (true for minimization, false for maximization)",
-        #     validator=validate_optimization_direction
-        # ),
-
-        # === Advanced Backend Overrides (expert users) ===
-        Strategies.OptionDefinition(;
-            name=:gradient_backend,
-            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
-            default=Core.NotProvided,
-            description="Override backend for gradient computation (advanced users only)",
-            validator=validate_backend_override,
-        ),
-        Strategies.OptionDefinition(;
-            name=:hprod_backend,
-            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
-            default=Core.NotProvided,
-            description="Override backend for Hessian-vector product (advanced users only)",
-            validator=validate_backend_override,
-        ),
-        Strategies.OptionDefinition(;
-            name=:jprod_backend,
-            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
-            default=Core.NotProvided,
-            description="Override backend for Jacobian-vector product (advanced users only)",
-            validator=validate_backend_override,
-        ),
-        Strategies.OptionDefinition(;
-            name=:jtprod_backend,
-            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
-            default=Core.NotProvided,
-            description="Override backend for transpose Jacobian-vector product (advanced users only)",
-            validator=validate_backend_override,
-        ),
-        Strategies.OptionDefinition(;
-            name=:jacobian_backend,
-            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
-            default=Core.NotProvided,
-            description="Override backend for Jacobian matrix computation (advanced users only)",
-            validator=validate_backend_override,
-        ),
-        Strategies.OptionDefinition(;
-            name=:hessian_backend,
-            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
-            default=Core.NotProvided,
-            description="Override backend for Hessian matrix computation (advanced users only)",
-            validator=validate_backend_override,
-        ),
-        Strategies.OptionDefinition(;
-            name=:ghjvprod_backend,
-            type=Union{Nothing,Type{<:ADNLPModels.ADBackend},ADNLPModels.ADBackend},
-            default=Core.NotProvided,
-            description="Override backend for g^T ∇²c(x)v computation (advanced users only)",
-            validator=validate_backend_override,
-        ),
-
-        # # === Advanced Backend Overrides for NLS (expert users) ===
-        # Strategies.OptionDefinition(;
-        #     name=:hprod_residual_backend,
-        #     type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
-        #     default=Core.NotProvided,
-        #     description="Override backend for Hessian-vector product of residuals (NLS) (advanced users only)",
-        #     validator=validate_backend_override
-        # ),
-        # Strategies.OptionDefinition(;
-        #     name=:jprod_residual_backend,
-        #     type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
-        #     default=Core.NotProvided,
-        #     description="Override backend for Jacobian-vector product of residuals (NLS) (advanced users only)",
-        #     validator=validate_backend_override
-        # ),
-        # Strategies.OptionDefinition(;
-        #     name=:jtprod_residual_backend,
-        #     type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
-        #     default=Core.NotProvided,
-        #     description="Override backend for transpose Jacobian-vector product of residuals (NLS) (advanced users only)",
-        #     validator=validate_backend_override
-        # ),
-        # Strategies.OptionDefinition(;
-        #     name=:jacobian_residual_backend,
-        #     type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
-        #     default=Core.NotProvided,
-        #     description="Override backend for Jacobian matrix of residuals (NLS) (advanced users only)",
-        #     validator=validate_backend_override
-        # ),
-        # Strategies.OptionDefinition(;
-        #     name=:hessian_residual_backend,
-        #     type=Union{Nothing, Type{<:ADNLPModels.ADBackend}, ADNLPModels.ADBackend},
-        #     default=Core.NotProvided,
-        #     description="Override backend for Hessian matrix of residuals (NLS) (advanced users only)",
-        #     validator=validate_backend_override
-        # )
     )
 end
 
@@ -387,11 +276,16 @@ function Strategies.metadata(::Type{Modelers.ADNLP})
     )
 end
 
-# Parameterized constructor
+# ============================================================================
+# Constructor with Tag Dispatch
+# ============================================================================
+
 """
 $(TYPEDSIGNATURES)
 
 Create a parameterized Modelers.ADNLP with validated options.
+
+Requires the CTSolversADNLPModels extension to be loaded.
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
@@ -402,32 +296,38 @@ Create a parameterized Modelers.ADNLP with validated options.
 # Returns
 - `Modelers.ADNLP{P}`: Configured modeler instance with specified parameter
 
-# Examples
-```julia
-# Explicit CPU modeler
-modeler = Modelers.ADNLP{CPU}()
-
-# With custom options
-modeler = Modelers.ADNLP{CPU}(backend=:optimized, matrix_free=true)
-
-# With permissive mode
-modeler = Modelers.ADNLP{CPU}(backend=:optimized, custom_option=123; mode=:permissive)
-```
-
 # Throws
+- `CTBase.Exceptions.ExtensionError`: If the ADNLPModels extension is not loaded
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
-- `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 
-See also: `Modelers.ADNLP`, `Strategies.build_strategy_options`
+See also: `Modelers.ADNLP`, `build_adnlp_modeler`
 """
 function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
-    # Check for deprecated aliases
-    if haskey(kwargs, :adnlp_backend)
-        @warn "adnlp_backend is deprecated, use backend instead" maxlog=1
-    end
+    return build_adnlp_modeler(ADNLPTag, P; mode=mode, kwargs...)
+end
 
-    opts = Strategies.build_strategy_options(Modelers.ADNLP{P}; mode=mode, kwargs...)
-    return Modelers.ADNLP{P}(opts)
+"""
+$(TYPEDSIGNATURES)
+
+Stub function that throws ExtensionError if CTSolversADNLPModels extension is not loaded.
+Real implementation provided by the extension.
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
+
+See also: `Modelers.ADNLP`, `Strategies.metadata`
+"""
+function build_adnlp_modeler(
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+)
+    throw(
+        Exceptions.ExtensionError(
+            :ADNLPModels;
+            message="to create ADNLP, access options, and build NLP models",
+            feature="ADNLP modeler functionality",
+            context="Load ADNLPModels first: using ADNLPModels",
+        ),
+    )
 end
 
 # Simple constructor
@@ -458,10 +358,10 @@ modeler = Modelers.ADNLP(backend=:optimized, custom_option=123; mode=:permissive
 ```
 
 # Throws
+- `CTBase.Exceptions.ExtensionError`: If the ADNLPModels extension is not loaded
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
-- `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 
-See also: `Modelers.ADNLP`, `Modelers.ADNLP{CPU}`, `Strategies.build_strategy_options`
+See also: `Modelers.ADNLP`, `Modelers.ADNLP{CPU}`, `build_adnlp_modeler`
 """
 function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
     P = Strategies._default_parameter(Modelers.ADNLP)

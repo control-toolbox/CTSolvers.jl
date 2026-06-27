@@ -285,6 +285,42 @@ function validate_optimization_direction(minimize::Bool)
     return minimize
 end
 
+# ============================================================================
+# ADBackend tag-dispatch helpers (ADNLPModels is a weak dep)
+# ============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Return `true` if `T` is a subtype of `ADNLPModels.ADBackend`.
+
+Stub — always returns `false`. Overridden by the `CTSolversADNLPModels` extension
+(triggered when `ADNLPModels` is loaded) for concrete `ADBackend` subtypes.
+
+# Returns
+- `Bool`: `false` (stub); `true` when the extension is active and `T <: ADBackend`
+
+See also: [`CTSolvers.Modelers.__is_adbackend_instance`](@ref),
+[`CTSolvers.Modelers.validate_backend_override`](@ref)
+"""
+__is_adbackend_type(::Type) = false
+
+"""
+$(TYPEDSIGNATURES)
+
+Return `true` if `x` is an instance of `ADNLPModels.ADBackend`.
+
+Stub — always returns `false`. Overridden by the `CTSolversADNLPModels` extension
+(triggered when `ADNLPModels` is loaded) for concrete `ADBackend` instances.
+
+# Returns
+- `Bool`: `false` (stub); `true` when the extension is active and `x isa ADBackend`
+
+See also: [`CTSolvers.Modelers.__is_adbackend_type`](@ref),
+[`CTSolvers.Modelers.validate_backend_override`](@ref)
+"""
+__is_adbackend_instance(x) = false
+
 """
 $(TYPEDSIGNATURES)
 
@@ -312,9 +348,9 @@ function validate_backend_override(backend)
     # nothing means "use default backend"
     backend === nothing && return backend
     # Accept a Type that is a subtype of ADBackend (e.g., ForwardDiffADGradient)
-    isa(backend, Type) && backend <: ADNLPModels.ADBackend && return backend
+    isa(backend, Type) && __is_adbackend_type(backend) && return backend
     # Accept an ADBackend instance (e.g., ForwardDiffADGradient())
-    isa(backend, ADNLPModels.ADBackend) && return backend
+    __is_adbackend_instance(backend) && return backend
     throw(
         Exceptions.IncorrectArgument(
             "Backend override must be nothing, a Type{<:ADBackend}, or an ADBackend instance";
