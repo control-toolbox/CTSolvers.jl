@@ -1,39 +1,38 @@
-# Helper optimization problem and solution-builder types used by benchmark test problems.
-# Helper types
-abstract type AbstractNLPSolutionBuilder <: CTSolvers.AbstractSolutionBuilder end
-struct ADNLPSolutionBuilder <: AbstractNLPSolutionBuilder end
-struct ExaSolutionBuilder <: AbstractNLPSolutionBuilder end
-
+# Helper optimization problem type used by benchmark test problems.
 #
-struct OptimizationProblem <: CTSolvers.AbstractOptimizationProblem
-    build_adnlp_model::CTSolvers.ADNLPModelBuilder
-    build_exa_model::CTSolvers.ExaModelBuilder
-    adnlp_solution_builder::ADNLPSolutionBuilder
-    exa_solution_builder::ExaSolutionBuilder
+# `OptimizationProblem` wraps the per-backend model builders as plain functions
+# and implements the CTSolvers `build_model` / `build_solution` contract by
+# multiple dispatch on the modeler type.
+
+import CTSolvers.Optimization
+import CTSolvers.Modelers
+
+struct OptimizationProblem{A,E} <: CTSolvers.AbstractOptimizationProblem
+    build_adnlp_model::A
+    build_exa_model::E
 end
 
-function CTSolvers.get_adnlp_model_builder(prob::OptimizationProblem)
-    return prob.build_adnlp_model
+# Build the ADNLP model from the wrapped builder.
+function Optimization.build_model(
+    prob::OptimizationProblem, initial_guess, ::Modelers.ADNLP
+)
+    return prob.build_adnlp_model(initial_guess)
 end
 
-function CTSolvers.get_exa_model_builder(prob::OptimizationProblem)
-    return prob.build_exa_model
+# Build the Exa model from the wrapped builder, using the modeler base type.
+function Optimization.build_model(
+    prob::OptimizationProblem, initial_guess, modeler::Modelers.Exa
+)
+    return prob.build_exa_model(modeler[:base_type], initial_guess)
 end
 
-function (builder::ADNLPSolutionBuilder)(nlp_solution::SolverCore.AbstractExecutionStats)
+# These benchmark problems return the raw NLP solver statistics as the solution.
+function Optimization.build_solution(
+    ::OptimizationProblem,
+    nlp_solution::SolverCore.AbstractExecutionStats,
+    ::Modelers.AbstractNLPModeler,
+)
     return nlp_solution
-end
-
-function (builder::ExaSolutionBuilder)(nlp_solution::SolverCore.AbstractExecutionStats)
-    return nlp_solution
-end
-
-function CTSolvers.get_adnlp_solution_builder(prob::OptimizationProblem)
-    return prob.adnlp_solution_builder
-end
-
-function CTSolvers.get_exa_solution_builder(prob::OptimizationProblem)
-    return prob.exa_solution_builder
 end
 
 #

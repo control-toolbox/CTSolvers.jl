@@ -9,6 +9,7 @@ module CTSolversMadNLP
 import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Optimization
 import CTSolvers.Solvers
+import CommonSolve
 import CTBase.Strategies
 import CTBase.Options
 import CTBase.Core
@@ -502,8 +503,8 @@ Solve an NLP problem using MadNLP.
 # Returns
 - `MadNLP.MadNLPExecutionStats`: MadNLP execution statistics
 """
-function (solver::Solvers.MadNLP)(
-    nlp::NLPModels.AbstractNLPModel; display::Bool=true
+function CommonSolve.solve(
+    nlp::NLPModels.AbstractNLPModel, solver::Solvers.MadNLP; display::Bool=true
 )::MadNLP.MadNLPExecutionStats
     options = Strategies.options_dict(solver)
     options[:print_level] = display ? options[:print_level] : MadNLP.ERROR

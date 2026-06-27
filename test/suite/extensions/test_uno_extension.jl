@@ -185,8 +185,8 @@ function test_uno_extension()
 
             # Note: We can't easily test the internal behavior without actually solving,
             # but we can verify the solver accepts the display parameter
-            Test.@test_nowarn solver_verbose(nlp; display=false)
-            Test.@test_nowarn solver_verbose(nlp; display=true)
+            Test.@test_nowarn CommonSolve.solve(nlp, solver_verbose; display=false)
+            Test.@test_nowarn CommonSolve.solve(nlp, solver_verbose; display=true)
         end
 
         # ====================================================================
@@ -197,7 +197,7 @@ function test_uno_extension()
             ros = TestProblems.Rosenbrock()
 
             # Build NLP model from problem
-            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(ros.init)
 
             # Create solver with appropriate options
@@ -210,7 +210,7 @@ function test_uno_extension()
             )
 
             # Solve the problem
-            stats = solver(nlp; display=false)
+            stats = CommonSolve.solve(nlp, solver; display=false)
 
             # Check convergence (stats is now GenericExecutionStats)
             Test.@test stats.status in (:first_order, :acceptable)
@@ -222,14 +222,14 @@ function test_uno_extension()
             elec = TestProblems.Elec()
 
             # Build NLP model
-            adnlp_builder = CTSolvers.get_adnlp_model_builder(elec.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(elec.init)
 
             solver = Solvers.Uno(
                 max_iterations=1000, primal_tolerance=1e-6, logger="SILENT"
             )
 
-            stats = solver(nlp; display=false)
+            stats = CommonSolve.solve(nlp, solver; display=false)
 
             # Just check it converges (stats is now GenericExecutionStats)
             Test.@test stats.status in (:first_order, :acceptable)
@@ -239,14 +239,14 @@ function test_uno_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP model
-            adnlp_builder = CTSolvers.get_adnlp_model_builder(max_prob.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(max_prob.init)
 
             solver = Solvers.Uno(
                 max_iterations=1000, primal_tolerance=1e-6, logger="SILENT"
             )
 
-            stats = solver(nlp; display=false)
+            stats = CommonSolve.solve(nlp, solver; display=false)
 
             # Check convergence (stats is now GenericExecutionStats)
             Test.@test stats.status in (:first_order, :acceptable)
@@ -289,11 +289,11 @@ function test_uno_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP models
-            nlp1 = CTSolvers.get_adnlp_model_builder(ros.prob)(ros.init)
-            nlp2 = CTSolvers.get_adnlp_model_builder(max_prob.prob)(max_prob.init)
+            nlp1 = Optimization.build_model(ros.prob, ros.init, Modelers.ADNLP())
+            nlp2 = Optimization.build_model(max_prob.prob, max_prob.init, Modelers.ADNLP())
 
-            stats1 = solver(nlp1; display=false)
-            stats2 = solver(nlp2; display=false)
+            stats1 = CommonSolve.solve(nlp1, solver; display=false)
+            stats2 = CommonSolve.solve(nlp2, solver; display=false)
 
             # Stats are now GenericExecutionStats
             Test.@test stats1.status in (:first_order, :acceptable)
@@ -524,7 +524,7 @@ function test_uno_extension()
 
         Test.@testset "Exhaustive Options Validation" begin
             ros = TestProblems.Rosenbrock()
-            adnlp_builder = CTSolvers.get_adnlp_model_builder(ros.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(ros.init)
 
             # Define all options with valid values to check for typos in names
@@ -540,7 +540,7 @@ function test_uno_extension()
             solver = Solvers.Uno(; exhaustive_options...)
 
             # This should NOT throw any ErrorException about unknown options
-            Test.@test_nowarn solver(nlp; display=false)
+            Test.@test_nowarn CommonSolve.solve(nlp, solver; display=false)
         end
     end
 end

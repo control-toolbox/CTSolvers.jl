@@ -208,9 +208,9 @@ function test_madnlp_extension()
             solver_verbose = Solvers.MadNLP(max_iter=10, print_level=MadNLP.INFO)
 
             # Verify the solver accepts the display parameter
-            Test.@test_nowarn solver_verbose(nlp; display=false)
+            Test.@test_nowarn CommonSolve.solve(nlp, solver_verbose; display=false)
             redirect_stdout(devnull) do
-                Test.@test_nowarn solver_verbose(nlp; display=true)
+                Test.@test_nowarn CommonSolve.solve(nlp, solver_verbose; display=true)
             end
         end
 
@@ -222,7 +222,7 @@ function test_madnlp_extension()
             ros = TestProblems.Rosenbrock()
 
             # Build NLP model
-            adnlp_builder = Optimization.get_adnlp_model_builder(ros.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(ros.init)
 
             solver = Solvers.MadNLP(
@@ -232,7 +232,7 @@ function test_madnlp_extension()
                 linear_solver=MadNLP.MumpsSolver,
             )
 
-            stats = solver(nlp; display=false)
+            stats = CommonSolve.solve(nlp, solver; display=false)
 
             # Check convergence
             Test.@test stats isa MadNLP.MadNLPExecutionStats
@@ -245,12 +245,12 @@ function test_madnlp_extension()
             elec = TestProblems.Elec()
 
             # Build NLP model
-            adnlp_builder = Optimization.get_adnlp_model_builder(elec.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(elec.init)
 
             solver = Solvers.MadNLP(max_iter=1000, tol=1e-6, print_level=MadNLP.ERROR)
 
-            stats = solver(nlp; display=false)
+            stats = CommonSolve.solve(nlp, solver; display=false)
 
             # Just check it converges
             Test.@test Symbol(stats.status) in
@@ -261,12 +261,12 @@ function test_madnlp_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP model
-            adnlp_builder = Optimization.get_adnlp_model_builder(max_prob.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP())
             nlp = adnlp_builder(max_prob.init)
 
             solver = Solvers.MadNLP(max_iter=1000, tol=1e-6, print_level=MadNLP.ERROR)
 
-            stats = solver(nlp; display=false)
+            stats = CommonSolve.solve(nlp, solver; display=false)
 
             # Check convergence
             Test.@test Symbol(stats.status) in
@@ -508,14 +508,14 @@ function test_madnlp_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP models
-            adnlp_builder = Optimization.get_adnlp_model_builder(ros.prob)
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
             nlp1 = adnlp_builder(ros.init)
 
-            adnlp_builder2 = Optimization.get_adnlp_model_builder(max_prob.prob)
+            adnlp_builder2 = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP())
             nlp2 = adnlp_builder2(max_prob.init)
 
-            stats1 = solver(nlp1; display=false)
-            stats2 = solver(nlp2; display=false)
+            stats1 = CommonSolve.solve(nlp1, solver; display=false)
+            stats2 = CommonSolve.solve(nlp2, solver; display=false)
 
             Test.@test Symbol(stats1.status) in
                 (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)

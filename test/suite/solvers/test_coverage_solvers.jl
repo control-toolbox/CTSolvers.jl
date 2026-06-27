@@ -21,15 +21,6 @@ struct CovUnimplementedSolver <: Solvers.AbstractNLPSolver
     options::Strategies.StrategyOptions
 end
 
-struct CovCallableSolver <: Solvers.AbstractNLPSolver
-    options::Strategies.StrategyOptions
-end
-
-# Implement callable for a non-NLPModel argument (covers generic solve overload)
-function (s::CovCallableSolver)(nlp; display::Bool=true)
-    return (status=:ok, display=display)
-end
-
 function test_coverage_solvers()
     Test.@testset "Coverage: Solvers" verbose=VERBOSE showtiming=SHOWTIMING begin
 
@@ -37,13 +28,15 @@ function test_coverage_solvers()
         # UNIT TESTS - AbstractNLPSolver callable (abstract_solver.jl)
         # ====================================================================
 
-        Test.@testset "AbstractNLPSolver callable - NotImplemented" begin
+        Test.@testset "AbstractNLPSolver solve - NotImplemented" begin
             opts = Strategies.StrategyOptions()
             solver = CovUnimplementedSolver(opts)
             nlp = ADNLPModels.ADNLPModel(x -> sum(x .^ 2), [1.0])
 
-            Test.@test_throws Exceptions.NotImplemented solver(nlp)
-            Test.@test_throws Exceptions.NotImplemented solver(nlp; display=false)
+            Test.@test_throws Exceptions.NotImplemented CommonSolve.solve(nlp, solver)
+            Test.@test_throws Exceptions.NotImplemented CommonSolve.solve(
+                nlp, solver; display=false
+            )
         end
 
         # Note: Knitro tests removed as Knitro is not currently tested
@@ -65,26 +58,6 @@ function test_coverage_solvers()
             Test.@test Strategies.id(Solvers.MadNLP) === :madnlp
             Test.@test Strategies.id(Solvers.MadNCL) === :madncl
             Test.@test Strategies.id(Solvers.Uno) === :uno
-        end
-
-        # ====================================================================
-        # UNIT TESTS - CommonSolve.solve(nlp, solver) generic overload
-        # (common_solve_api.jl:112-117)
-        # ====================================================================
-
-        Test.@testset "CommonSolve.solve(nlp, solver) generic" begin
-            opts = Strategies.StrategyOptions()
-            solver = CovCallableSolver(opts)
-
-            # Use a plain NamedTuple as "nlp" to hit the generic overload
-            # (not AbstractNLPModel)
-            fake_nlp = (name="fake",)
-            result = CommonSolve.solve(fake_nlp, solver; display=false)
-            Test.@test result.status === :ok
-            Test.@test result.display === false
-
-            result2 = CommonSolve.solve(fake_nlp, solver; display=true)
-            Test.@test result2.display === true
         end
     end
 end

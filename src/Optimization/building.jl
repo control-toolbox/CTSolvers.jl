@@ -26,8 +26,15 @@ nlp = build_model(prob, initial_guess, modeler)
 
 See also: `build_solution`
 """
-function build_model(prob, initial_guess, modeler)
-    return modeler(prob, initial_guess)
+function build_model(prob::AbstractOptimizationProblem, initial_guess, modeler)
+    throw(
+        Exceptions.NotImplemented(
+            "Model building not implemented";
+            required_method="build_model(prob::$(typeof(prob)), initial_guess, modeler::$(typeof(modeler)))",
+            suggestion="Implement build_model for this (problem, modeler) pair in the package providing the problem",
+            context="Optimization.build_model - required method implementation",
+        ),
+    )
 end
 
 """
@@ -53,6 +60,13 @@ sol = build_solution(prob, nlp_stats, modeler)
 
 See also: `build_model`
 """
-function build_solution(prob, model_solution, modeler)
-    return modeler(prob, model_solution)
+function build_solution(prob::AbstractOptimizationProblem, model_solution, modeler)
+    throw(
+        Exceptions.NotImplemented(
+            "Solution building not implemented";
+            required_method="build_solution(prob::$(typeof(prob)), model_solution, modeler::$(typeof(modeler)))",
+            suggestion="Implement build_solution for this (problem, modeler) pair in the package providing the problem",
+            context="Optimization.build_solution - required method implementation",
+        ),
+    )
 end

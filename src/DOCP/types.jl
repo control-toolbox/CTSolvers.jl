@@ -1,47 +1,38 @@
 # DOCP types
 #
-# Defines the `DiscretizedModel` type. Builder types live in the
-# `CTSolvers.Optimization` module.
+# Defines the `DiscretizedModel` type: a thin pairing of an optimal control
+# problem with the discretizer that produced it, plus an optional backend cache.
 
 """
 $(TYPEDEF)
 
 Discretized optimal control problem ready for NLP solving.
 
-Wraps an optimal control problem together with builders for the supported NLP backends.
-This type implements the `Optimization.AbstractOptimizationProblem` contract.
+A thin pairing of an optimal control problem with the discretizer that produced
+it, plus a backend cache. The actual NLP model and OCP solution are produced by
+multiple dispatch on `(DiscretizedModel, modeler)` through the `build_model` /
+`build_solution` contract, implemented in the package providing the discretizer
+(e.g. CTDirect). This mirrors `Flow{system, integrator}` on the ODE side.
 
 # Fields
-- `optimal_control_problem::TO`: The original optimal control problem
-- `adnlp_model_builder::TAMB`: Builder for ADNLPModels
-- `exa_model_builder::TEMB`: Builder for ExaModels
-- `adnlp_solution_builder::TASB`: Builder for ADNLP solutions
-- `exa_solution_builder::TESB`: Builder for ExaModel solutions
+- `ocp::TO`: The original optimal control problem.
+- `discretizer::TD`: The discretization strategy used.
+- `cache::TC`: Backend cache (`<: CTBase.Core.AbstractCache`), opaque to CTSolvers,
+  populated by the implementing package (e.g. CTDirect's `DOCPCache`).
 
-# Example
-```julia
-# Conceptual usage pattern
-docp = DiscretizedModel(
-    ocp,
-    adnlp_model_builder,
-    exa_model_builder,
-    adnlp_solution_builder,
-    exa_solution_builder,
-)
-```
+# Type parameters
+- `TO <: CTModels.AbstractModel`
+- `TD <: AbstractDiscretizer`
+- `TC <: CTBase.Core.AbstractCache`
 
-See also: `ocp_model`, `nlp_model`, `ocp_solution`
+See also: `ocp_model`, `discretize`, `build_model`, `build_solution`.
 """
 struct DiscretizedModel{
     TO<:CTModels.AbstractModel,
-    TAMB<:AbstractModelBuilder,
-    TEMB<:AbstractModelBuilder,
-    TASB<:AbstractSolutionBuilder,
-    TESB<:AbstractSolutionBuilder,
+    TD<:AbstractDiscretizer,
+    TC<:Core.AbstractCache,
 } <: AbstractOptimizationProblem
-    optimal_control_problem::TO
-    adnlp_model_builder::TAMB
-    exa_model_builder::TEMB
-    adnlp_solution_builder::TASB
-    exa_solution_builder::TESB
+    ocp::TO
+    discretizer::TD
+    cache::TC
 end

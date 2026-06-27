@@ -11,8 +11,9 @@ This is a general type that represents any optimization problem, not necessarily
 tied to optimal control. Subtypes can represent various problem formulations
 including discretized optimal control problems, general NLP problems, etc.
 
-Subtypes are typically paired with AbstractModelBuilder and AbstractSolutionBuilder
-implementations that know how to construct and interpret NLP back-end models and solutions.
+Subtypes implement the `build_model` / `build_solution` contract (by multiple
+dispatch on `(problem, modeler)`) to construct and interpret NLP back-end models
+and solutions.
 
 # Example
 ```julia

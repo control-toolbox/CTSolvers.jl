@@ -15,8 +15,10 @@ interfaces for model and solution building.
 # Implementation Requirements
 All concrete modeler strategies must:
 - Implement the `Strategies.AbstractStrategy` contract
-- Implement `(modeler)(prob::Optimization.AbstractOptimizationProblem, initial_guess)`
-- Implement `(modeler)(prob::Optimization.AbstractOptimizationProblem, stats::SolverCore.AbstractExecutionStats)`
+- Have the package providing the problem implement, by multiple dispatch on
+  `(prob, modeler)`:
+  - `Optimization.build_model(prob, initial_guess, modeler)`
+  - `Optimization.build_solution(prob, nlp_solution, modeler)`
 
 # Example
 ```julia
@@ -26,10 +28,8 @@ end
 
 Strategies.id(::Type{<:MyModeler}) = :my_modeler
 
-function (modeler::MyModeler)(
-    prob::Optimization.AbstractOptimizationProblem,
-    initial_guess
-)
+# In the package providing the concrete problem type:
+function Optimization.build_model(prob::MyProblem, initial_guess, ::MyModeler)
     # Build NLP model from problem and initial guess
     return nlp_model
 end
@@ -38,61 +38,3 @@ end
 See also: `Strategies.AbstractStrategy`, `Optimization.build_model`, `Optimization.build_solution`
 """
 abstract type AbstractNLPModeler <: Strategies.AbstractStrategy end
-
-"""
-$(TYPEDSIGNATURES)
-
-Build an NLP model from a discretized optimal control problem and initial guess.
-
-# Arguments
-- `modeler::AbstractNLPModeler`: The modeler strategy instance
-- `prob::Optimization.AbstractOptimizationProblem`: The discretized optimal control problem
-- `initial_guess`: Initial guess for optimization variables
-
-# Returns
-- An NLP model compatible with the target backend (e.g., ADNLPModel, ExaModel)
-
-# Throws
-- `CTBase.Exceptions.NotImplemented`: If not implemented by concrete type
-"""
-function (modeler::AbstractNLPModeler)(
-    ::Optimization.AbstractOptimizationProblem, initial_guess
-)
-    throw(
-        Exceptions.NotImplemented(
-            "Model building not implemented";
-            required_method="(modeler::$(typeof(modeler)))(prob::Optimization.AbstractOptimizationProblem, initial_guess)",
-            suggestion="Implement the callable method for $(typeof(modeler)) to build NLP models",
-            context="AbstractNLPModeler - required method implementation",
-        ),
-    )
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Build a solution object from a discretized optimal control problem and NLP solution.
-
-# Arguments
-- `modeler::AbstractNLPModeler`: The modeler strategy instance
-- `prob::Optimization.AbstractOptimizationProblem`: The discretized optimal control problem
-- `nlp_solution::SolverCore.AbstractExecutionStats`: Solution from NLP solver
-
-# Returns
-- A solution object appropriate for the problem type
-
-# Throws
-- `CTBase.Exceptions.NotImplemented`: If not implemented by concrete type
-"""
-function (modeler::AbstractNLPModeler)(
-    ::Optimization.AbstractOptimizationProblem, ::SolverCore.AbstractExecutionStats
-)
-    throw(
-        Exceptions.NotImplemented(
-            "Solution building not implemented";
-            required_method="(modeler::$(typeof(modeler)))(prob::Optimization.AbstractOptimizationProblem, nlp_solution::SolverCore.AbstractExecutionStats)",
-            suggestion="Implement the callable method for $(typeof(modeler)) to build solution objects",
-            context="AbstractNLPModeler - required method implementation",
-        ),
-    )
-end

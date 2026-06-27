@@ -36,11 +36,15 @@ function test_coverage_modelers()
             prob = CovFakeProblem()
             stats = CovFakeStats()
 
-            # Model building callable - NotImplemented
-            Test.@test_throws Exceptions.NotImplemented modeler(prob, [1.0, 2.0])
+            # Model building contract - NotImplemented
+            Test.@test_throws Exceptions.NotImplemented Optimization.build_model(
+                prob, [1.0, 2.0], modeler
+            )
 
-            # Solution building callable - NotImplemented
-            Test.@test_throws Exceptions.NotImplemented modeler(prob, stats)
+            # Solution building contract - NotImplemented
+            Test.@test_throws Exceptions.NotImplemented Optimization.build_solution(
+                prob, stats, modeler
+            )
         end
 
         Test.@testset "AbstractNLPModeler - type hierarchy" begin
