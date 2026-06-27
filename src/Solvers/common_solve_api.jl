@@ -68,12 +68,13 @@ Mid-level solve: Solve an NLP problem directly.
 
 # Contract
 Concrete solvers implement this method, typically in a backend extension,
-dispatching on the solver type, e.g.
+dispatching on both the problem type and the solver type, e.g.
 `CommonSolve.solve(nlp::NLPModels.AbstractNLPModel, solver::Ipopt; display)` in
 the `CTSolversIpopt` extension. This generic stub throws `NotImplemented`.
+`NLPModels` is a weak dep — the typed method lives in each solver extension.
 
 # Arguments
-- `nlp::NLPModels.AbstractNLPModel`: The NLP problem to solve
+- `nlp`: The NLP problem to solve (type depends on backend)
 - `solver::AbstractNLPSolver`: Solver to use
 - `display::Bool`: Whether to show solver output (default: true)
 
@@ -83,12 +84,12 @@ the `CTSolversIpopt` extension. This generic stub throws `NotImplemented`.
 See also: `AbstractNLPSolver`
 """
 function CommonSolve.solve(
-    nlp::NLPModels.AbstractNLPModel, solver::AbstractNLPSolver; display::Bool=__display()
+    nlp, solver::AbstractNLPSolver; display::Bool=__display()
 )
     throw(
         Exceptions.NotImplemented(
             "Solve not implemented for this solver";
-            required_method="CommonSolve.solve(nlp::NLPModels.AbstractNLPModel, solver::$(typeof(solver)); display)",
+            required_method="CommonSolve.solve(nlp, solver::$(typeof(solver)); display)",
             suggestion="Load the backend extension providing $(typeof(solver)) (e.g. `using NLPModelsIpopt`)",
             context="Solvers.solve - required method implementation",
         ),

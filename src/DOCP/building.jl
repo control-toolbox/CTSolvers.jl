@@ -28,7 +28,7 @@ See also: `ocp_solution`, `Optimization.build_model`
 """
 function nlp_model(
     prob::DiscretizedModel, initial_guess, modeler::Modelers.AbstractNLPModeler
-)::NLPModels.AbstractNLPModel
+)
     return build_model(prob, initial_guess, modeler)
 end
 
