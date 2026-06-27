@@ -57,23 +57,24 @@ end
 
 # Contract implementation by dispatch on (DiscretizedModel{<:FakeDiscretizer}, FakeModelerDOCP)
 function Optimization.build_model(
-    ::DOCP.DiscretizedModel{<:Any,<:FakeDiscretizer},
+    prob::DOCP.DiscretizedModel{<:Any,<:FakeDiscretizer},
     initial_guess,
     modeler::FakeModelerDOCP,
 )
     if modeler.backend == :adnlp
-        return ADNLPModels.ADNLPModel(z -> sum(z .^ 2), initial_guess)
+        nlp = ADNLPModels.ADNLPModel(z -> sum(z .^ 2), initial_guess)
     else
         n = length(initial_guess)
         m = ExaModels.ExaCore(Float64; concrete=Val(true))
         ExaModels.@add_var(m, x_var, n; start=initial_guess)
         ExaModels.@add_obj(m, sum(x_var[i]^2 for i in 1:n))
-        return ExaModels.ExaModel(m)
+        nlp = ExaModels.ExaModel(m)
     end
+    return Optimization.BuiltModel(prob, nlp, Optimization.NoCache())
 end
 
 function Optimization.build_solution(
-    ::DOCP.DiscretizedModel{<:Any,<:FakeDiscretizer},
+    ::Optimization.BuiltModel{<:DOCP.DiscretizedModel{<:Any,<:FakeDiscretizer}},
     nlp_solution::SolverCore.AbstractExecutionStats,
     ::FakeModelerDOCP,
 )
@@ -185,9 +186,9 @@ function test_docp()
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 Test.@test NLPModels.obj(nlp, x0) ≈ 5.0
 
-                nlp2 = Optimization.build_model(docp, x0, modeler)
-                Test.@test nlp2 isa ADNLPModels.ADNLPModel
-                Test.@test NLPModels.obj(nlp2, x0) ≈ 5.0
+                built2 = Optimization.build_model(docp, x0, modeler)
+                Test.@test built2.nlp isa ADNLPModels.ADNLPModel
+                Test.@test NLPModels.obj(built2.nlp, x0) ≈ 5.0
             end
 
             Test.@testset "nlp_model with Exa backend" begin
@@ -199,21 +200,22 @@ function test_docp()
                 Test.@test nlp isa ExaModels.ExaModel{Float64}
                 Test.@test NLPModels.obj(nlp, x0) ≈ 5.0
 
-                nlp2 = Optimization.build_model(docp, x0, modeler)
-                Test.@test nlp2 isa ExaModels.ExaModel{Float64}
-                Test.@test NLPModels.obj(nlp2, x0) ≈ 5.0
+                built2 = Optimization.build_model(docp, x0, modeler)
+                Test.@test built2.nlp isa ExaModels.ExaModel{Float64}
+                Test.@test NLPModels.obj(built2.nlp, x0) ≈ 5.0
             end
 
             Test.@testset "ocp_solution with ADNLP backend" begin
                 modeler = FakeModelerDOCP(:adnlp)
                 stats = MockExecutionStats(1.23, 10, 1e-6, :first_order)
+                built = Optimization.BuiltModel(docp, nothing, Optimization.NoCache())
 
-                sol = DOCP.ocp_solution(docp, stats, modeler)
+                sol = DOCP.ocp_solution(built, stats, modeler)
                 Test.@test sol.objective ≈ 1.23
                 Test.@test sol.status == :first_order
                 Test.@test sol.success === true
 
-                sol2 = Optimization.build_solution(docp, stats, modeler)
+                sol2 = Optimization.build_solution(built, stats, modeler)
                 Test.@test sol2.objective ≈ 1.23
                 Test.@test sol2.status == :first_order
             end
@@ -221,12 +223,13 @@ function test_docp()
             Test.@testset "ocp_solution with Exa backend" begin
                 modeler = FakeModelerDOCP(:exa)
                 stats = MockExecutionStats(2.34, 15, 1e-5, :acceptable)
+                built = Optimization.BuiltModel(docp, nothing, Optimization.NoCache())
 
-                sol = DOCP.ocp_solution(docp, stats, modeler)
+                sol = DOCP.ocp_solution(built, stats, modeler)
                 Test.@test sol.objective ≈ 2.34
                 Test.@test sol.iter == 15
 
-                sol2 = Optimization.build_solution(docp, stats, modeler)
+                sol2 = Optimization.build_solution(built, stats, modeler)
                 Test.@test sol2.objective ≈ 2.34
                 Test.@test sol2.iter == 15
             end
@@ -265,12 +268,12 @@ function test_docp()
 
                 modeler = FakeModelerDOCP(:adnlp)
                 x0 = [1.0, 2.0, 3.0]
-                nlp = DOCP.nlp_model(docp, x0, modeler)
-                Test.@test nlp isa ADNLPModels.ADNLPModel
-                Test.@test NLPModels.obj(nlp, x0) ≈ 14.0
+                built = Optimization.build_model(docp, x0, modeler)
+                Test.@test built.nlp isa ADNLPModels.ADNLPModel
+                Test.@test NLPModels.obj(built.nlp, x0) ≈ 14.0
 
                 stats = MockExecutionStats(14.0, 20, 1e-8, :first_order)
-                sol = DOCP.ocp_solution(docp, stats, modeler)
+                sol = DOCP.ocp_solution(built, stats, modeler)
                 Test.@test sol.objective ≈ 14.0
                 Test.@test sol.iter == 20
                 Test.@test sol.status == :first_order
@@ -281,12 +284,12 @@ function test_docp()
                 docp = fake_docp("integration_test_exa")
                 modeler = FakeModelerDOCP(:exa)
                 x0 = [1.0, 2.0, 3.0]
-                nlp = DOCP.nlp_model(docp, x0, modeler)
-                Test.@test nlp isa ExaModels.ExaModel{Float64}
-                Test.@test NLPModels.obj(nlp, x0) ≈ 14.0
+                built = Optimization.build_model(docp, x0, modeler)
+                Test.@test built.nlp isa ExaModels.ExaModel{Float64}
+                Test.@test NLPModels.obj(built.nlp, x0) ≈ 14.0
 
                 stats = MockExecutionStats(14.0, 25, 1e-7, :acceptable)
-                sol = DOCP.ocp_solution(docp, stats, modeler)
+                sol = DOCP.ocp_solution(built, stats, modeler)
                 Test.@test sol.objective ≈ 14.0
                 Test.@test sol.iter == 25
                 Test.@test sol.status == :acceptable

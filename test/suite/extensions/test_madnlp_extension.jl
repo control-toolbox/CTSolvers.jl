@@ -222,7 +222,7 @@ function test_madnlp_extension()
             ros = TestProblems.Rosenbrock()
 
             # Build NLP model
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(ros.init)
 
             solver = Solvers.MadNLP(
@@ -245,7 +245,7 @@ function test_madnlp_extension()
             elec = TestProblems.Elec()
 
             # Build NLP model
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(elec.init)
 
             solver = Solvers.MadNLP(max_iter=1000, tol=1e-6, print_level=MadNLP.ERROR)
@@ -261,7 +261,7 @@ function test_madnlp_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP model
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(max_prob.init)
 
             solver = Solvers.MadNLP(max_iter=1000, tol=1e-6, print_level=MadNLP.ERROR)
@@ -292,7 +292,7 @@ function test_madnlp_extension()
 
                 Test.@testset "Rosenbrock - GPU" begin
                     ros = TestProblems.Rosenbrock()
-                    nlp = Optimization.build_model(ros.prob, ros.init, gpu_modeler)
+                    nlp = Optimization.build_model(ros.prob, ros.init, gpu_modeler).nlp
                     sol = CommonSolve.solve(
                         ros.prob, ros.init, gpu_modeler, gpu_solver; display=false
                     )
@@ -508,10 +508,10 @@ function test_madnlp_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP models
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
             nlp1 = adnlp_builder(ros.init)
 
-            adnlp_builder2 = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP())
+            adnlp_builder2 = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP()).nlp
             nlp2 = adnlp_builder2(max_prob.init)
 
             stats1 = CommonSolve.solve(nlp1, solver; display=false)
@@ -597,7 +597,7 @@ function test_madnlp_extension()
                     for (linear_solver, linear_solver_name) in
                         zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                            nlp = Optimization.build_model(ros.prob, ros.init, modeler)
+                            nlp = Optimization.build_model(ros.prob, ros.init, modeler).nlp
                             sol = CTSolversMadNLP.solve_with_madnlp(
                                 nlp; linear_solver=linear_solver, madnlp_options...
                             )
@@ -616,7 +616,7 @@ function test_madnlp_extension()
                     for (linear_solver, linear_solver_name) in
                         zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                            nlp = Optimization.build_model(elec.prob, elec.init, modeler)
+                            nlp = Optimization.build_model(elec.prob, elec.init, modeler).nlp
                             sol = CTSolversMadNLP.solve_with_madnlp(
                                 nlp; linear_solver=linear_solver, madnlp_options...
                             )
@@ -634,7 +634,7 @@ function test_madnlp_extension()
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
                             nlp = Optimization.build_model(
                                 max_prob.prob, max_prob.init, modeler
-                            )
+                            ).nlp
                             sol = CTSolversMadNLP.solve_with_madnlp(
                                 nlp; linear_solver=linear_solver, madnlp_options...
                             )
@@ -665,7 +665,7 @@ function test_madnlp_extension()
 
                 Test.@testset "Rosenbrock - GPU" begin
                     ros = TestProblems.Rosenbrock()
-                    nlp = Optimization.build_model(ros.prob, ros.init, gpu_modeler)
+                    nlp = Optimization.build_model(ros.prob, ros.init, gpu_modeler).nlp
                     sol = CTSolversMadNLP.solve_with_madnlp(nlp; madnlp_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test Array(sol.solution) ≈ ros.sol atol=1e-6
@@ -674,7 +674,7 @@ function test_madnlp_extension()
 
                 Test.@testset "Elec - GPU" begin
                     elec = TestProblems.Elec()
-                    nlp = Optimization.build_model(elec.prob, elec.init, gpu_modeler)
+                    nlp = Optimization.build_model(elec.prob, elec.init, gpu_modeler).nlp
                     sol = CTSolversMadNLP.solve_with_madnlp(nlp; madnlp_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test isfinite(sol.objective)
@@ -684,7 +684,7 @@ function test_madnlp_extension()
                     max_prob = TestProblems.Max1MinusX2()
                     nlp = Optimization.build_model(
                         max_prob.prob, max_prob.init, gpu_modeler
-                    )
+                    ).nlp
                     sol = CTSolversMadNLP.solve_with_madnlp(nlp; madnlp_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test length(sol.solution) == 1

@@ -1,4 +1,6 @@
 module TestParameterContract
+import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+import ExaModels: ExaModels  # trigger CTSolversExaModels extension
 
 using Test
 using CTSolvers

@@ -1,6 +1,7 @@
 module TestCoverageModelers
 
 using Test: Test
+import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
 import CTBase.Exceptions
 import CTSolvers.Modelers
 import CTBase.Strategies
@@ -43,8 +44,9 @@ function test_coverage_modelers()
             )
 
             # Solution building contract - NotImplemented
+            built = Optimization.BuiltModel(prob, nothing, Optimization.NoCache())
             Test.@test_throws Exceptions.NotImplemented Optimization.build_solution(
-                prob, stats, modeler
+                built, stats, modeler
             )
         end
 

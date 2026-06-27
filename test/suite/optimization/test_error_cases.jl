@@ -11,6 +11,7 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 # Import from CTSolvers
 import CTSolvers.Optimization
+import CTSolvers.Solvers
 import CTSolvers.Modelers
 
 # ============================================================================
@@ -27,8 +28,9 @@ Problem with only partial contract implementation (ADNLP only, no Exa).
 """
 struct PartialProblem <: Optimization.AbstractOptimizationProblem end
 
-function Optimization.build_model(::PartialProblem, initial_guess, ::Modelers.ADNLP)
-    return ADNLPModels.ADNLPModel(z -> sum(z .^ 2), initial_guess)
+function Optimization.build_model(prob::PartialProblem, initial_guess, ::Modelers.ADNLP)
+    nlp = ADNLPModels.ADNLPModel(z -> sum(z .^ 2), initial_guess)
+    return Optimization.BuiltModel(prob, nlp, Optimization.NoCache())
 end
 
 """
@@ -41,7 +43,9 @@ function Optimization.build_model(::FailingProblem, initial_guess, ::Modelers.AD
 end
 
 function Optimization.build_solution(
-    ::FailingProblem, ::SolverCore.AbstractExecutionStats, ::Modelers.ADNLP
+    ::Optimization.BuiltModel{<:FailingProblem},
+    ::SolverCore.AbstractExecutionStats,
+    ::Modelers.ADNLP,
 )
     return error("Intentional error")
 end
@@ -51,17 +55,19 @@ Sum-of-squares problem implementing both backends (for edge cases).
 """
 struct SquaresProblem <: Optimization.AbstractOptimizationProblem end
 
-function Optimization.build_model(::SquaresProblem, initial_guess, ::Modelers.ADNLP)
-    return ADNLPModels.ADNLPModel(z -> sum(z .^ 2), initial_guess)
+function Optimization.build_model(prob::SquaresProblem, initial_guess, ::Modelers.ADNLP)
+    nlp = ADNLPModels.ADNLPModel(z -> sum(z .^ 2), initial_guess)
+    return Optimization.BuiltModel(prob, nlp, Optimization.NoCache())
 end
 
-function Optimization.build_model(::SquaresProblem, initial_guess, modeler::Modelers.Exa)
+function Optimization.build_model(prob::SquaresProblem, initial_guess, modeler::Modelers.Exa)
     T = modeler[:base_type]
     x = T.(initial_guess)
     m = ExaModels.ExaCore(T; concrete=Val(true))
     ExaModels.@add_var(m, x_var, length(x); start=x)
     ExaModels.@add_obj(m, sum(x_var[i]^2 for i in 1:length(x)))
-    return ExaModels.ExaModel(m)
+    nlp = ExaModels.ExaModel(m)
+    return Optimization.BuiltModel(prob, nlp, Optimization.NoCache())
 end
 
 """
@@ -107,8 +113,9 @@ function test_error_cases()
 
             Test.@testset "build_solution - NotImplemented" begin
                 stats = create_edge_case_stats(1.0, 1, 1e-6, :first_order)
+                built = Optimization.BuiltModel(prob, nothing, Optimization.NoCache())
                 Test.@test_throws Exceptions.NotImplemented Optimization.build_solution(
-                    prob, stats, Modelers.ADNLP()
+                    built, stats, Modelers.ADNLP()
                 )
             end
         end
@@ -122,7 +129,7 @@ function test_error_cases()
 
             Test.@testset "Implemented backend works" begin
                 x0 = [1.0, 2.0]
-                nlp = Optimization.build_model(prob, x0, Modelers.ADNLP())
+                nlp = Optimization.build_model(prob, x0, Modelers.ADNLP()).nlp
                 Test.@test nlp isa ADNLPModels.ADNLPModel
             end
 
@@ -148,8 +155,9 @@ function test_error_cases()
 
             Test.@testset "build_solution with failing implementation" begin
                 stats = MockStats(1.0)
+                built = Optimization.BuiltModel(prob, nothing, Optimization.NoCache())
                 Test.@test_throws ErrorException Optimization.build_solution(
-                    prob, stats, Modelers.ADNLP()
+                    built, stats, Modelers.ADNLP()
                 )
             end
         end
@@ -163,7 +171,7 @@ function test_error_cases()
 
             Test.@testset "Single variable problem" begin
                 x0 = [1.0]
-                nlp = Optimization.build_model(prob, x0, Modelers.ADNLP())
+                nlp = Optimization.build_model(prob, x0, Modelers.ADNLP()).nlp
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 Test.@test nlp.meta.nvar == 1
                 Test.@test NLPModels.obj(nlp, x0) ≈ 1.0
@@ -172,7 +180,7 @@ function test_error_cases()
             Test.@testset "Large dimension problem" begin
                 n = 1000
                 x0 = ones(n)
-                nlp = Optimization.build_model(prob, x0, Modelers.ADNLP())
+                nlp = Optimization.build_model(prob, x0, Modelers.ADNLP()).nlp
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 Test.@test nlp.meta.nvar == n
             end
@@ -180,13 +188,13 @@ function test_error_cases()
             Test.@testset "Different numeric types" begin
                 nlp32 = Optimization.build_model(
                     prob, Float32[1.0, 2.0], Modelers.Exa(; base_type=Float32)
-                )
+                ).nlp
                 Test.@test nlp32 isa ExaModels.ExaModel{Float32}
                 Test.@test eltype(nlp32.meta.x0) == Float32
 
                 nlp64 = Optimization.build_model(
                     prob, Float64[1.0, 2.0], Modelers.Exa(; base_type=Float64)
-                )
+                ).nlp
                 Test.@test nlp64 isa ExaModels.ExaModel{Float64}
                 Test.@test eltype(nlp64.meta.x0) == Float64
             end
@@ -199,7 +207,7 @@ function test_error_cases()
         Test.@testset "Solver Info Edge Cases" begin
             Test.@testset "Zero iterations" begin
                 stats = create_edge_case_stats(0.0, 0, 0.0, :first_order)
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
                     stats
                 )
                 Test.@test iter == 0
@@ -208,7 +216,7 @@ function test_error_cases()
 
             Test.@testset "Very large objective" begin
                 stats = create_edge_case_stats(1e100, 10, 1e-6, :first_order)
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
                     stats
                 )
                 Test.@test obj ≈ 1e100
@@ -217,7 +225,7 @@ function test_error_cases()
 
             Test.@testset "Very small constraint violation" begin
                 stats = create_edge_case_stats(1.0, 10, 1e-15, :first_order)
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
                     stats
                 )
                 Test.@test viol ≈ 1e-15
@@ -226,7 +234,7 @@ function test_error_cases()
 
             Test.@testset "Unknown status" begin
                 stats = create_edge_case_stats(1.0, 10, 1e-6, :unknown_status)
-                obj, iter, viol, msg, status, success = Optimization.extract_solver_infos(
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
                     stats
                 )
                 Test.@test status == :unknown_status
@@ -243,7 +251,7 @@ function test_error_cases()
 
             Test.@testset "build_model return type" begin
                 x0 = [1.0, 2.0]
-                nlp = Optimization.build_model(prob, x0, Modelers.ADNLP())
+                nlp = Optimization.build_model(prob, x0, Modelers.ADNLP()).nlp
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 Test.@test typeof(nlp) <: ADNLPModels.ADNLPModel
             end

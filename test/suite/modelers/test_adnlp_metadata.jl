@@ -1,6 +1,7 @@
 module TestADNLPMetadata
 
 using Test: Test
+import ExaModels: ExaModels  # trigger CTSolversExaModels extension
 import CTBase.Exceptions
 import CTSolvers.Modelers
 import CTBase.Strategies

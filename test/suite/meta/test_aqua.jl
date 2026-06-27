@@ -11,7 +11,10 @@ function test_aqua()
         Aqua.test_all(
             CTSolvers;
             ambiguities=false,
-            #stale_deps=(ignore=[:SomePackage],),
+            # KernelAbstractions is a hard dep used only by the CTSolversExaModels
+            # extension (so ExaModels alone triggers it, and CTDirect needn't load
+            # KernelAbstractions); it is not referenced by the main module.
+            stale_deps=(ignore=[:KernelAbstractions],),
             deps_compat=(ignore=[:LinearAlgebra, :Unicode],),
             piracies=true,
         )

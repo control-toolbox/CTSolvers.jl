@@ -1,8 +1,10 @@
 module TestExtMadNCL
 
 using Test: Test
+import ExaModels: ExaModels  # trigger CTSolversExaModels extension
 using CTSolvers: CTSolvers
 import CTSolvers.Optimization
+import CTSolvers.Solvers
 import CTSolvers.Modelers
 using MadNCL: MadNCL
 using MadNLP: MadNLP
@@ -35,7 +37,7 @@ function test_madncl_extract_solver_infos()
             ros = TestProblems.Rosenbrock()
 
             # Build NLP model
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(ros.init)
 
             # Configure MadNCL options
@@ -48,7 +50,7 @@ function test_madncl_extract_solver_infos()
             stats = MadNCL.solve!(solver)
 
             # Extract solver infos using CTSolvers extension
-            objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
+            objective, iterations, constraints_violation, message, status, successful = Solvers.extract_solver_infos(
                 stats
             )
 
@@ -70,7 +72,7 @@ function test_madncl_extract_solver_infos()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP model
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(max_prob.init)
 
             # Verify it's a maximization problem
@@ -86,7 +88,7 @@ function test_madncl_extract_solver_infos()
             stats = MadNCL.solve!(solver)
 
             # Extract solver infos
-            objective_extracted, _, _, _, _, _ = Optimization.extract_solver_infos(stats)
+            objective_extracted, _, _, _, _, _ = Solvers.extract_solver_infos(stats)
 
             # The extracted objective should be the true maximization objective (≈ 1.0)
             expected_objective = TestProblems.max1minusx2_objective(max_prob.sol)
@@ -123,7 +125,7 @@ function test_madncl_extract_solver_infos()
             # Unit test to verify that MadNCL does NOT flip the sign
             # (unlike MadNLP which has this bug)
             ros = TestProblems.Rosenbrock()
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(ros.init)
 
             # Configure MadNCL options
@@ -138,12 +140,12 @@ function test_madncl_extract_solver_infos()
             original_objective = stats.objective
 
             # Test case 1: minimization (should not flip)
-            obj_min, _, _, _, _, _ = Optimization.extract_solver_infos(stats)
+            obj_min, _, _, _, _, _ = Solvers.extract_solver_infos(stats)
             Test.@test obj_min ≈ original_objective atol=1e-10
 
             # Test case 2: maximization (MadNCL returns correct sign, so we should NOT flip)
             # This is different from MadNLP!
-            obj_max, _, _, _, _, _ = Optimization.extract_solver_infos(stats)
+            obj_max, _, _, _, _, _ = Solvers.extract_solver_infos(stats)
             Test.@test obj_max ≈ original_objective atol=1e-10  # Same value, no flip
 
             # Verify: for MadNCL, both should be equal (no flip)
@@ -153,7 +155,7 @@ function test_madncl_extract_solver_infos()
         Test.@testset "build_solution contract verification" begin
             # Test that extract_solver_infos returns types compatible with build_solution
             ros = TestProblems.Rosenbrock()
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(ros.init)
 
             # Configure MadNCL options
@@ -166,7 +168,7 @@ function test_madncl_extract_solver_infos()
             stats = MadNCL.solve!(solver)
 
             # Extract solver infos
-            objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
+            objective, iterations, constraints_violation, message, status, successful = Solvers.extract_solver_infos(
                 stats
             )
 
@@ -179,13 +181,13 @@ function test_madncl_extract_solver_infos()
             Test.@test successful isa Bool
 
             # Verify tuple structure
-            result = Optimization.extract_solver_infos(stats)
+            result = Solvers.extract_solver_infos(stats)
             Test.@test result isa Tuple
             Test.@test length(result) == 6
 
             # Test with maximization problem for contract compliance
             max_prob = TestProblems.Max1MinusX2()
-            adnlp_builder_max = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP())
+            adnlp_builder_max = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP()).nlp
             nlp_max = adnlp_builder_max(max_prob.init)
 
             # Configure MadNCL options
@@ -197,7 +199,7 @@ function test_madncl_extract_solver_infos()
             )
             stats_max = MadNCL.solve!(solver_max)
 
-            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Optimization.extract_solver_infos(
+            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Solvers.extract_solver_infos(
                 stats_max
             )
 
@@ -220,7 +222,7 @@ function test_madncl_extract_solver_infos()
 
             # Test with minimization (Rosenbrock)
             ros = TestProblems.Rosenbrock()
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP())
+            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(ros.init)
 
             # Configure MadNCL options
@@ -233,7 +235,7 @@ function test_madncl_extract_solver_infos()
             stats = MadNCL.solve!(solver)
 
             # Extract solver infos
-            objective, iterations, constraints_violation, message, status, successful = Optimization.extract_solver_infos(
+            objective, iterations, constraints_violation, message, status, successful = Solvers.extract_solver_infos(
                 stats
             )
 
@@ -256,7 +258,7 @@ function test_madncl_extract_solver_infos()
 
             # Test with maximization problem (Max1MinusX2)
             max_prob = TestProblems.Max1MinusX2()
-            adnlp_builder_max = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP())
+            adnlp_builder_max = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP()).nlp
             nlp_max = adnlp_builder_max(max_prob.init)
 
             # Configure MadNCL options
@@ -268,7 +270,7 @@ function test_madncl_extract_solver_infos()
             )
             stats_max = MadNCL.solve!(solver_max)
 
-            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Optimization.extract_solver_infos(
+            objective_max, iterations_max, constraints_violation_max, message_max, status_max, successful_max = Solvers.extract_solver_infos(
                 stats_max
             )
 

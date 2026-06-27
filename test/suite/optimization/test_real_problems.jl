@@ -31,7 +31,7 @@ function test_real_problems()
             ros = TestProblems.Rosenbrock()
 
             Test.@testset "build_model (ADNLP) with Rosenbrock" begin
-                nlp = Optimization.build_model(ros.prob, ros.init, Modelers.ADNLP())
+                nlp = Optimization.build_model(ros.prob, ros.init, Modelers.ADNLP()).nlp
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 Test.@test nlp.meta.x0 == ros.init
                 Test.@test nlp.meta.minimize == true
@@ -44,7 +44,7 @@ function test_real_problems()
             end
 
             Test.@testset "build_model (Exa, Float64) with Rosenbrock" begin
-                nlp64 = Optimization.build_model(ros.prob, ros.init, Modelers.Exa())
+                nlp64 = Optimization.build_model(ros.prob, ros.init, Modelers.Exa()).nlp
                 Test.@test nlp64 isa ExaModels.ExaModel{Float64}
                 Test.@test nlp64.meta.x0 == Float64.(ros.init)
                 Test.@test nlp64.meta.minimize == true
@@ -59,7 +59,7 @@ function test_real_problems()
             Test.@testset "build_model (Exa, Float32) with Rosenbrock" begin
                 nlp32 = Optimization.build_model(
                     ros.prob, ros.init, Modelers.Exa(; base_type=Float32)
-                )
+                ).nlp
                 Test.@test nlp32 isa ExaModels.ExaModel{Float32}
                 Test.@test nlp32.meta.x0 == Float32.(ros.init)
                 Test.@test eltype(nlp32.meta.x0) == Float32
@@ -80,7 +80,7 @@ function test_real_problems()
         Test.@testset "Integration with Real Problems" begin
             Test.@testset "Complete workflow - Rosenbrock ADNLP" begin
                 ros = TestProblems.Rosenbrock()
-                nlp = Optimization.build_model(ros.prob, ros.init, Modelers.ADNLP())
+                nlp = Optimization.build_model(ros.prob, ros.init, Modelers.ADNLP()).nlp
                 Test.@test nlp isa ADNLPModels.ADNLPModel
                 Test.@test nlp.meta.nvar == 2
                 Test.@test nlp.meta.ncon == 1
@@ -96,7 +96,7 @@ function test_real_problems()
 
             Test.@testset "Complete workflow - Rosenbrock Exa" begin
                 ros = TestProblems.Rosenbrock()
-                nlp = Optimization.build_model(ros.prob, ros.init, Modelers.Exa())
+                nlp = Optimization.build_model(ros.prob, ros.init, Modelers.Exa()).nlp
                 Test.@test nlp isa ExaModels.ExaModel{Float64}
                 Test.@test nlp.meta.nvar == 2
                 Test.@test nlp.meta.ncon == 1
