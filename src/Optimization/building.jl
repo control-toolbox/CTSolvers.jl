@@ -26,7 +26,7 @@ nlp = build_model(prob, initial_guess, modeler)
 
 See also: `build_solution`
 """
-function build_model(prob, initial_guess, modeler)
+function build_model(prob::AbstractOptimizationProblem, initial_guess, modeler)
     throw(
         Exceptions.NotImplemented(
             "Model building not implemented";
@@ -60,7 +60,7 @@ sol = build_solution(prob, nlp_stats, modeler)
 
 See also: `build_model`
 """
-function build_solution(prob, model_solution, modeler)
+function build_solution(prob::AbstractOptimizationProblem, model_solution, modeler)
     throw(
         Exceptions.NotImplemented(
             "Solution building not implemented";
