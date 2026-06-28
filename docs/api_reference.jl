@@ -25,20 +25,6 @@ function generate_api_reference(src_dir::String, ext_dir::String)
     pages = [
 
         # ───────────────────────────────────────────────────────────────────
-        # Core
-        # ───────────────────────────────────────────────────────────────────
-        CTBase.automatic_reference_documentation(;
-            subdirectory="api",
-            primary_modules=[CTSolvers.Core => src(joinpath("Core", "Core.jl"))],
-            exclude=EXCLUDE_SYMBOLS,
-            public=true,
-            private=true,
-            title="Core",
-            title_in_menu="Core",
-            filename="core",
-        ),
-
-        # ───────────────────────────────────────────────────────────────────
         # DOCP
         # ───────────────────────────────────────────────────────────────────
         CTBase.automatic_reference_documentation(;

@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.24-beta] - 2026-06-28
+
+### Changed
+
+- **Contract co-location** — each strategy family now has its `NotImplemented`
+  contract stub adjacent to its abstract type, mirroring the existing `DOCP/contract.jl`
+  precedent:
+  - `Modelers/contract.jl` (new): `build_model` / `build_solution` stubs, now typed
+    `::AbstractNLPModeler` (previously untyped third argument).
+  - `Solvers/contract.jl` (new): mid-level `CommonSolve.solve(nlp, ::AbstractNLPSolver)`
+    stub + `__display` helper; high-level orchestrator moved to `Solvers/orchestration.jl`.
+  - `DOCP/discretized_model.jl` (new): merger of `types.jl` + `accessors.jl`;
+    `DOCP/conveniences.jl` (rename of `building.jl`).
+- **Compat bumps** — `CTBase = "0.26"`, `CTModels = "0.14"` in `Project.toml` and
+  `docs/Project.toml`.
+
+---
+
 ## [0.4.23-beta] - 2026-06-27
 
 ### Changed
