@@ -31,10 +31,9 @@ using ..CTSolvers.Modelers
 
 # Submodules
 include(joinpath(@__DIR__, "abstract_discretizer.jl"))
-include(joinpath(@__DIR__, "types.jl"))
+include(joinpath(@__DIR__, "discretized_model.jl"))
 include(joinpath(@__DIR__, "contract.jl"))
-include(joinpath(@__DIR__, "accessors.jl"))
-include(joinpath(@__DIR__, "building.jl"))
+include(joinpath(@__DIR__, "conveniences.jl"))
 
 # Public API
 export AbstractDiscretizer

@@ -64,7 +64,8 @@ include(joinpath(@__DIR__, "madncl.jl"))
 include(joinpath(@__DIR__, "madnlpsuite.jl"))
 include(joinpath(@__DIR__, "knitro.jl"))
 include(joinpath(@__DIR__, "uno.jl"))
-include(joinpath(@__DIR__, "common_solve_api.jl"))
+include(joinpath(@__DIR__, "contract.jl"))
+include(joinpath(@__DIR__, "orchestration.jl"))
 include(joinpath(@__DIR__, "solver_info.jl"))
 
 # Public API - abstract and concrete types

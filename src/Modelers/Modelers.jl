@@ -31,6 +31,7 @@ using ..Optimization
 
 # Submodules
 include(joinpath(@__DIR__, "abstract_modeler.jl"))
+include(joinpath(@__DIR__, "contract.jl"))
 include(joinpath(@__DIR__, "validation.jl"))
 include(joinpath(@__DIR__, "adnlp.jl"))
 include(joinpath(@__DIR__, "exa.jl"))

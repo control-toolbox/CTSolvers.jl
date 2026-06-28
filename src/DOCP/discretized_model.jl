@@ -1,7 +1,7 @@
-# DOCP types
+# DiscretizedModel
 #
-# Defines the `DiscretizedModel` type: a thin pairing of an optimal control
-# problem with the discretizer that produced it, plus an optional backend cache.
+# The `DiscretizedModel` type — a thin pairing of an optimal control problem with the
+# discretizer that produced it, plus a backend cache — and its accessors.
 
 """
 $(TYPEDEF)
@@ -36,3 +36,23 @@ struct DiscretizedModel{
     discretizer::TD
     cache::TC
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Extract the original optimal control problem from a discretized problem.
+
+# Arguments
+- `docp::DiscretizedModel`: The discretized optimal control problem
+
+# Returns
+- The original optimal control problem
+
+# Example
+```julia
+ocp = ocp_model(docp)
+```
+
+See also: `DiscretizedModel`
+"""
+ocp_model(docp::DiscretizedModel) = docp.ocp

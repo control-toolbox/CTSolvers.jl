@@ -4,6 +4,7 @@ using Test: Test
 import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTSolvers.Optimization
+import CTSolvers.Modelers
 import CTSolvers.Solvers
 using NLPModels: NLPModels
 using SolverCore: SolverCore
@@ -31,8 +32,11 @@ struct MinimalProblem <: Optimization.AbstractOptimizationProblem end
 
 """
 Fake modeler for testing building functions; carries a backend selector.
+
+Subtypes `AbstractNLPModeler` so that an unimplemented `(problem, modeler)` pair
+falls through to the canonical `NotImplemented` contract stub in `Modelers`.
 """
-struct FakeModeler
+struct FakeModeler <: Modelers.AbstractNLPModeler
     backend::Symbol
 end
 
