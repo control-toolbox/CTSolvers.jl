@@ -182,17 +182,27 @@ end
 
 ## Integration with build_model / build_solution
 
-The `Optimization` module provides two generic functions that delegate to the modeler's callables:
+The `Optimization` module *owns* two generic functions, `build_model` and
+`build_solution`. Their canonical `NotImplemented` contract stubs — the modeler
+contract — live in the `Modelers` module, typed on `AbstractNLPModeler`; concrete
+methods are provided by the package supplying the problem (e.g. CTDirect),
+dispatched on the concrete `(problem, modeler)` pair. `build_model` returns an
+`Optimization.BuiltModel` (the NLP plus an immutable build-time cache), and
+`build_solution` dispatches on that bundle:
 
 ```julia
-# In src/Optimization/building.jl
+# In src/Modelers/contract.jl
 
-function build_model(prob, initial_guess, modeler)
-    return modeler(prob, initial_guess)
+function Optimization.build_model(
+    prob::Optimization.AbstractOptimizationProblem, initial_guess, modeler::AbstractNLPModeler
+)
+    throw(Exceptions.NotImplemented(...))   # implemented per (problem, modeler) downstream
 end
 
-function build_solution(prob, model_solution, modeler)
-    return modeler(prob, model_solution)
+function Optimization.build_solution(
+    built::Optimization.BuiltModel, model_solution, modeler::AbstractNLPModeler
+)
+    throw(Exceptions.NotImplemented(...))
 end
 ```
 

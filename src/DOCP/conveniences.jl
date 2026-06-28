@@ -1,7 +1,7 @@
-# DOCP building API
+# DOCP conveniences
 #
-# Convenience wrappers for building NLP models and OCP solutions from a
-# `DiscretizedModel`.
+# Convenience wrappers (`nlp_model`, `ocp_solution`) over the modeler contract,
+# specialized for `DiscretizedModel` / its `BuiltModel`.
 
 """
 $(TYPEDSIGNATURES)

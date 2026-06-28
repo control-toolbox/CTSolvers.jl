@@ -46,10 +46,10 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             primary_modules=[
                 CTSolvers.DOCP => src(
                     joinpath("DOCP", "DOCP.jl"),
-                    joinpath("DOCP", "accessors.jl"),
-                    joinpath("DOCP", "building.jl"),
-                    joinpath("DOCP", "contract_impl.jl"),
-                    joinpath("DOCP", "types.jl"),
+                    joinpath("DOCP", "abstract_discretizer.jl"),
+                    joinpath("DOCP", "discretized_model.jl"),
+                    joinpath("DOCP", "contract.jl"),
+                    joinpath("DOCP", "conveniences.jl"),
                 ),
             ],
             exclude=EXCLUDE_SYMBOLS,
@@ -69,6 +69,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                 CTSolvers.Modelers => src(
                     joinpath("Modelers", "Modelers.jl"),
                     joinpath("Modelers", "abstract_modeler.jl"),
+                    joinpath("Modelers", "contract.jl"),
                     joinpath("Modelers", "adnlp.jl"),
                     joinpath("Modelers", "exa.jl"),
                     joinpath("Modelers", "validation.jl"),
@@ -91,10 +92,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                 CTSolvers.Optimization => src(
                     joinpath("Optimization", "Optimization.jl"),
                     joinpath("Optimization", "abstract_types.jl"),
-                    joinpath("Optimization", "builders.jl"),
-                    joinpath("Optimization", "building.jl"),
-                    joinpath("Optimization", "contract.jl"),
-                    joinpath("Optimization", "solver_info.jl"),
+                    joinpath("Optimization", "built_model.jl"),
                 ),
             ],
             exclude=EXCLUDE_SYMBOLS,
@@ -114,7 +112,9 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                 CTSolvers.Solvers => src(
                     joinpath("Solvers", "Solvers.jl"),
                     joinpath("Solvers", "abstract_solver.jl"),
-                    joinpath("Solvers", "common_solve_api.jl"),
+                    joinpath("Solvers", "contract.jl"),
+                    joinpath("Solvers", "orchestration.jl"),
+                    joinpath("Solvers", "solver_info.jl"),
                     joinpath("Solvers", "ipopt.jl"),
                     joinpath("Solvers", "knitro.jl"),
                     joinpath("Solvers", "madncl.jl"),
