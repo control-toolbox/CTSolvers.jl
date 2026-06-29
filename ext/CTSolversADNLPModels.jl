@@ -213,7 +213,9 @@ function Modelers.build_adnlp_modeler(
     if haskey(kwargs, :adnlp_backend)
         @warn "adnlp_backend is deprecated, use backend instead" maxlog=1
     end
-    opts = Strategies.build_strategy_options(Modelers.ADNLP{parameter}; mode=mode, kwargs...)
+    opts = Strategies.build_strategy_options(
+        Modelers.ADNLP{parameter}; mode=mode, kwargs...
+    )
     return Modelers.ADNLP{parameter}(opts)
 end
 

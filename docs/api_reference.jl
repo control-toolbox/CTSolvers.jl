@@ -116,7 +116,6 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             title_in_menu="Solvers",
             filename="solvers",
         ),
-
     ]
 
     # ───────────────────────────────────────────────────────────────────

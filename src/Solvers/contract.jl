@@ -40,7 +40,7 @@ the `CTSolversIpopt` extension. This generic stub throws `NotImplemented`.
 See also: `AbstractNLPSolver`.
 """
 function CommonSolve.solve(nlp, solver::AbstractNLPSolver; display::Bool=__display())
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "Solve not implemented for this solver";
             required_method="CommonSolve.solve(nlp, solver::$(typeof(solver)); display)",

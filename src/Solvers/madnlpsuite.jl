@@ -25,7 +25,7 @@ Return the default linear solver for the given parameter type.
 - GPU implementation provided by CTSolversMadNLPGPU extension
 """
 function __madnlp_suite_default_linear_solver(::Type{<:GPU})
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :MadNLPGPU;
             message="to use GPU linear solver with MadNLP/MadNCL",
