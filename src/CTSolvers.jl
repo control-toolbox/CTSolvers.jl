@@ -32,6 +32,7 @@ CTSolvers is organized into specialized modules, each with clear responsibilitie
 - **Modelers**: Backend modeler implementations (Modelers.ADNLP, Modelers.Exa)
 - **Optimization**: General optimization abstractions and builders
 - **Solvers**: Solver integration and CommonSolve API
+- **Integrators**: ODE integrator strategies and CommonSolve API
 
 # Loading Order
 
@@ -66,5 +67,9 @@ using .DOCP
 # Solvers module - optimization solver implementations and CommonSolve API
 include(joinpath(@__DIR__, "Solvers", "Solvers.jl"))
 using .Solvers
+
+# Integrators module - ODE integrator strategies and CommonSolve API
+include(joinpath(@__DIR__, "Integrators", "Integrators.jl"))
+using .Integrators
 
 end
