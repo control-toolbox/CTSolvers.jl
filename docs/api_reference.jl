@@ -117,6 +117,30 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             filename="solvers",
         ),
 
+        # ───────────────────────────────────────────────────────────────────
+        # Integrators
+        # ───────────────────────────────────────────────────────────────────
+        CTBase.automatic_reference_documentation(;
+            subdirectory="api",
+            primary_modules=[
+                CTSolvers.Integrators => src(
+                    joinpath("Integrators", "Integrators.jl"),
+                    joinpath("Integrators", "abstract_integrator.jl"),
+                    joinpath("Integrators", "integration_result.jl"),
+                    joinpath("Integrators", "sciml.jl"),
+                    joinpath("Integrators", "contract.jl"),
+                    joinpath("Integrators", "conveniences.jl"),
+                    joinpath("Integrators", "internal_norm.jl"),
+                ),
+            ],
+            exclude=EXCLUDE_SYMBOLS,
+            public=true,
+            private=true,
+            title="Integrators",
+            title_in_menu="Integrators",
+            filename="integrators",
+        ),
+
     ]
 
     # ───────────────────────────────────────────────────────────────────
@@ -304,6 +328,69 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                 title="Zygote Extension",
                 title_in_menu="Zygote",
                 filename="ext_zygote",
+            ),
+        )
+    end
+
+    # ─────────────────────────────────────────────────────────────────--
+    # Extension: SciML Integrator
+    # ─────────────────────────────────────────────────────────────────--
+    CTSolversSciMLIntegrator = Base.get_extension(CTSolvers, :CTSolversSciMLIntegrator)
+    if !isnothing(CTSolversSciMLIntegrator)
+        push!(
+            pages,
+            CTBase.automatic_reference_documentation(;
+                subdirectory="api",
+                primary_modules=[CTSolversSciMLIntegrator => ext("CTSolversSciMLIntegrator.jl")],
+                external_modules_to_document=[CTSolvers],
+                exclude=EXCLUDE_SYMBOLS,
+                public=true,
+                private=true,
+                title="SciML Integrator Extension",
+                title_in_menu="SciML Integrator",
+                filename="ext_sciml_integrator",
+            ),
+        )
+    end
+
+    # ─────────────────────────────────────────────────────────────────--
+    # Extension: ForwardDiff
+    # ─────────────────────────────────────────────────────────────────--
+    CTSolversForwardDiff = Base.get_extension(CTSolvers, :CTSolversForwardDiff)
+    if !isnothing(CTSolversForwardDiff)
+        push!(
+            pages,
+            CTBase.automatic_reference_documentation(;
+                subdirectory="api",
+                primary_modules=[CTSolversForwardDiff => ext("CTSolversForwardDiff.jl")],
+                external_modules_to_document=[CTSolvers],
+                exclude=EXCLUDE_SYMBOLS,
+                public=true,
+                private=true,
+                title="ForwardDiff Extension",
+                title_in_menu="ForwardDiff",
+                filename="ext_forwarddiff",
+            ),
+        )
+    end
+
+    # ─────────────────────────────────────────────────────────────────--
+    # Extension: OrdinaryDiffEqTsit5
+    # ─────────────────────────────────────────────────────────────────--
+    CTSolversOrdinaryDiffEqTsit5 = Base.get_extension(CTSolvers, :CTSolversOrdinaryDiffEqTsit5)
+    if !isnothing(CTSolversOrdinaryDiffEqTsit5)
+        push!(
+            pages,
+            CTBase.automatic_reference_documentation(;
+                subdirectory="api",
+                primary_modules=[CTSolversOrdinaryDiffEqTsit5 => ext("CTSolversOrdinaryDiffEqTsit5.jl")],
+                external_modules_to_document=[CTSolvers],
+                exclude=EXCLUDE_SYMBOLS,
+                public=true,
+                private=true,
+                title="OrdinaryDiffEqTsit5 Extension",
+                title_in_menu="OrdinaryDiffEqTsit5",
+                filename="ext_ordinarydiffeqtsit5",
             ),
         )
     end
