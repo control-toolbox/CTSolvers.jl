@@ -315,8 +315,6 @@ function test_madncl_extension()
 
                     Test.@test solver isa Solvers.MadNCL
                 end
-            else
-                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
 
@@ -471,7 +469,7 @@ function test_madncl_extension()
         # ====================================================================
 
         Test.@testset "GPU Tests" begin
-            if is_cuda_on()
+            if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
                 gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
                 gpu_solver = Solvers.MadNCL(
                     max_iter=1000,
@@ -499,8 +497,6 @@ function test_madncl_extension()
                     Test.@test length(sol.solution) == 1
                     Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
                 end
-            else
-                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
 
@@ -509,7 +505,7 @@ function test_madncl_extension()
         # ====================================================================
 
         Test.@testset "GPU - solve_with_madncl" begin
-            if is_cuda_on()
+            if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
                 gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
                 madncl_options = Dict(
                     :max_iter => 1000,
@@ -537,8 +533,6 @@ function test_madncl_extension()
                     Test.@test length(sol.solution) == 1
                     Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
                 end
-            else
-                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
 
@@ -547,7 +541,7 @@ function test_madncl_extension()
         # ====================================================================
 
         Test.@testset "GPU - Initial Guess (max_iter=0)" begin
-            if is_cuda_on()
+            if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
                 gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
                 ncl_opts_0 = MadNCL.NCLOptions{Float64}(verbose=false, max_auglag_iter=0)
                 gpu_solver_0 = Solvers.MadNCL(
@@ -566,8 +560,6 @@ function test_madncl_extension()
                     expected = vcat(elec.init.x, elec.init.y, elec.init.z)
                     Test.@test Array(sol.solution) ≈ expected atol=1e-6
                 end
-            else
-                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
     end

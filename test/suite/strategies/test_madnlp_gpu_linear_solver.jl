@@ -124,13 +124,18 @@ function test_madnlp_gpu_linear_solver()
             Test.@test cpu_madnlp_validator(MadNLP.MumpsSolver) === MadNLP.MumpsSolver
             Test.@test cpu_madncl_validator(MadNLP.MumpsSolver) === MadNLP.MumpsSolver
 
-            # Test GPU solver validation with CPU parameter (should warn but work)
-            Test.@test_logs (:warn, r"Inconsistent linear solver") cpu_madnlp_validator(
-                MadNLPGPU.CUDSSSolver
-            )
-            Test.@test_logs (:warn, r"Inconsistent linear solver") cpu_madncl_validator(
-                MadNLPGPU.CUDSSSolver
-            )
+            # Test GPU solver validation with CPU parameter (should warn but work).
+            # Only meaningful when a concrete CUDSS solver type is available: some
+            # MadNLPGPU versions bind `CUDSSSolver` to `nothing` on machines without a
+            # functional GPU, in which case there is no GPU solver type to flag.
+            if MadNLPGPU.CUDSSSolver isa Type
+                Test.@test_logs (:warn, r"Inconsistent linear solver") cpu_madnlp_validator(
+                    MadNLPGPU.CUDSSSolver
+                )
+                Test.@test_logs (:warn, r"Inconsistent linear solver") cpu_madncl_validator(
+                    MadNLPGPU.CUDSSSolver
+                )
+            end
 
             # Test GPU metadata if MadNLPGPU is available
             if isdefined(Main, :MadNLPGPU)
@@ -203,13 +208,17 @@ function test_madnlp_gpu_linear_solver()
                 madncl_gpu_meta = Strategies.metadata(Solvers.MadNCL{Strategies.GPU})
                 Test.@test madncl_gpu_meta[:linear_solver].default == MadNLPGPU.CUDSSSolver
 
-                # Test warnings for inconsistent combinations
-                Test.@test_logs (:warn, r"Inconsistent linear solver") madnlp_cpu_meta[:linear_solver].validator(
-                    MadNLPGPU.CUDSSSolver
-                )
-                Test.@test_logs (:warn, r"Inconsistent linear solver") madncl_cpu_meta[:linear_solver].validator(
-                    MadNLPGPU.CUDSSSolver
-                )
+                # Test warnings for inconsistent combinations. The CPU-parameter /
+                # GPU-solver cases only apply when a concrete CUDSS solver type exists
+                # (see note above); the GPU-parameter / CPU-solver cases always apply.
+                if MadNLPGPU.CUDSSSolver isa Type
+                    Test.@test_logs (:warn, r"Inconsistent linear solver") madnlp_cpu_meta[:linear_solver].validator(
+                        MadNLPGPU.CUDSSSolver
+                    )
+                    Test.@test_logs (:warn, r"Inconsistent linear solver") madncl_cpu_meta[:linear_solver].validator(
+                        MadNLPGPU.CUDSSSolver
+                    )
+                end
                 Test.@test_logs (:warn, r"Inconsistent linear solver") madnlp_gpu_meta[:linear_solver].validator(
                     MadNLP.MumpsSolver
                 )

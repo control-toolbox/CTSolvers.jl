@@ -281,7 +281,7 @@ function test_madnlp_extension()
         # ====================================================================
 
         Test.@testset "GPU Tests" begin
-            if is_cuda_on()
+            if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
                 gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
                 gpu_solver = Solvers.MadNLP(
                     max_iter=1000,
@@ -319,8 +319,6 @@ function test_madnlp_extension()
                     Test.@test length(sol.solution) == 1
                     Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
                 end
-            else
-                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
 
@@ -654,7 +652,7 @@ function test_madnlp_extension()
         # ====================================================================
 
         Test.@testset "GPU - solve_with_madnlp" begin
-            if is_cuda_on()
+            if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
                 gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
                 madnlp_options = Dict(
                     :max_iter => 1000,
@@ -690,8 +688,6 @@ function test_madnlp_extension()
                     Test.@test length(sol.solution) == 1
                     Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
                 end
-            else
-                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
 
@@ -700,7 +696,7 @@ function test_madnlp_extension()
         # ====================================================================
 
         Test.@testset "GPU - Initial Guess (max_iter=0)" begin
-            if is_cuda_on()
+            if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
                 gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
                 gpu_solver_0 = Solvers.MadNLP(
                     max_iter=0,
@@ -726,8 +722,6 @@ function test_madnlp_extension()
                     expected = vcat(elec.init.x, elec.init.y, elec.init.z)
                     Test.@test Array(sol.solution) ≈ expected atol=1e-6
                 end
-            else
-                # CUDA not functional — skip silently (reported in runtests.jl)
             end
         end
     end

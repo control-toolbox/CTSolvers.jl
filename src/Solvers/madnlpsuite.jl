@@ -56,3 +56,19 @@ function __madnlp_suite_consistent_linear_solver(
 )
     return true
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Consistency check when the linear solver is unavailable (`nothing`).
+
+Some MadNLPGPU versions bind `MadNLPGPU.CUDSSSolver` (and hence the GPU default linear
+solver) to `nothing` when CUDA is not functional. In that case there is no concrete solver
+type to validate against, so the pair is treated as consistent (no warning). This keeps
+metadata construction and `describe` robust on machines without a functional GPU.
+"""
+function __madnlp_suite_consistent_linear_solver(
+    ::Type{<:AbstractStrategyParameter}, ::Nothing
+)
+    return true
+end

@@ -8,6 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.25-beta] - 2026-06-30
+
+### Added
+
+- **`Integrators` submodule** — ODE integrator strategies, a sibling of `Solvers`/`Modelers`/
+  `DOCP`, driven through the same `CommonSolve.solve(problem, strategy)` idiom. Mirrors the
+  `Solvers` core/extension split 1:1.
+  - Core (`src/Integrators/`): `AbstractIntegrator <: Strategies.AbstractStrategy`, the
+    `SciML`/`AbstractSciMLIntegrator`/`SciMLTag`/`Tsit5Tag` types, `AbstractIntegrationResult` with
+    `final_state`/`times`/`evaluate_at`, the `CommonSolve.solve(prob, integ)` + `merge` contract
+    stubs (`contract.jl`), `build_integrator` (`conveniences.jl`), the `options_point`/
+    `options_trajectory` accessors, and the `real_norm`/`deepvalue` grid-invariance fallbacks
+    (`internal_norm.jl`).
+  - Extensions: `CTSolversSciMLIntegrator` (metadata + builder + typed
+    `CommonSolve.solve(::AbstractODEProblem, ::SciML)` + `SciMLIntegrationResult` + `merge`),
+    `CTSolversForwardDiff` (dual-number `deepvalue`/`real_norm`), and
+    `CTSolversOrdinaryDiffEqTsit5` (default `Tsit5` algorithm).
+  - `SciMLBase`/`DiffEqBase`/`OrdinaryDiffEqTsit5`/`ForwardDiff` added as **weak** dependencies
+    (format = weak, typed-solve = extension).
+  - The domain glue that builds an `ODEProblem` from a control system/configuration
+    (`build_problem`/`build_options`) intentionally stays in the consuming package (e.g. CTFlows);
+    CTSolvers only integrates a ready-made `ODEProblem`. This is an additive change — no existing
+    behavior is affected.
+  - New developer guide `guides/implementing_an_integrator.md` and API-reference pages for the
+    submodule and its three extensions.
+
+---
+
 ## [0.4.24-beta] - 2026-06-28
 
 ### Changed
