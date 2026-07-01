@@ -65,7 +65,11 @@ function test_integrator_metadata()
         # ====================================================================
 
         Test.@testset "option validation" begin
+            # strict mode (default): invalid value rejected at construction
             Test.@test_throws Exceptions.IncorrectArgument Integrators.SciML(; alg=Tsit5(), reltol=-1.0)
+
+            # free mode: validation skipped, same value accepted
+            Test.@test_nowarn Integrators.SciML(; alg=Tsit5(), reltol=-1.0, mode=:free)
         end
     end
 end

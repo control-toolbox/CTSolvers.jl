@@ -71,6 +71,16 @@ function test_integrator_solve()
         end
 
         # ====================================================================
+        # evaluate_at at boundary points
+        # ====================================================================
+
+        Test.@testset "evaluate_at boundary points" begin
+            r = CommonSolve.solve(prob, integ)
+            Test.@test Integrators.evaluate_at(r, 0.0)[1] ≈ 1.0 atol=1e-10
+            Test.@test Integrators.evaluate_at(r, 1.0)[1] ≈ exp(-1) atol=1e-6
+        end
+
+        # ====================================================================
         # unsafe flag on a failing integration
         # ====================================================================
 
