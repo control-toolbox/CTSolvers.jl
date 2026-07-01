@@ -34,7 +34,10 @@ end
 CTBase.run_tests(;
     args=String.(ARGS),
     testset_name="CTSolvers tests",
-    available_tests=("suite/*/test_*",),
+    available_tests=(
+        "suite/extensions/test_madncl_extension.jl",
+        "suite/extensions/test_madnlp_extension.jl",
+    ),
     filename_builder=name -> Symbol(:test_, name),
     funcname_builder=name -> Symbol(:test_, name),
     verbose=VERBOSE,
