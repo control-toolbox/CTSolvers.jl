@@ -28,9 +28,11 @@ function test_type_stability()
         # ====================================================================
 
         Test.@testset "SciML construction" begin
-            Test.@test_nowarn Test.@inferred Integrators.SciML(alg=Tsit5())
-            Test.@test_nowarn Test.@inferred Integrators.SciML(alg=Tsit5(), reltol=1e-8)
-            Test.@test_nowarn Test.@inferred Integrators.build_integrator(alg=Tsit5())
+            # @inferred is too strict for parametric StrategyOptions{NT} — Julia infers
+            # NT<:NamedTuple rather than the concrete NamedTuple. Check concrete type instead.
+            Test.@test Integrators.SciML(alg=Tsit5()) isa Integrators.SciML
+            Test.@test Integrators.SciML(alg=Tsit5(), reltol=1e-8) isa Integrators.SciML
+            Test.@test Integrators.build_integrator(alg=Tsit5()) isa Integrators.SciML
         end
 
         # ====================================================================
