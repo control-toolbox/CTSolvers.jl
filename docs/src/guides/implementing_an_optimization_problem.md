@@ -40,37 +40,18 @@ You only need to implement the getters for the backends you support. If your pro
 
 ## The Builder Pattern
 
-Builders are **callable objects** that encapsulate the logic for constructing NLP models or solutions. They are defined in the `Optimization` module.
+Builders are **callable objects** that encapsulate the logic for constructing NLP models or solutions. They are defined in the `Optimization` module:
 
-```mermaid
-classDiagram
-    class AbstractBuilder {
-        <<abstract>>
-    }
-
-    class AbstractModelBuilder {
-        <<abstract>>
-        (builder)(x0; kwargs...) → NLP
-    }
-
-    class AbstractSolutionBuilder {
-        <<abstract>>
-        (builder)(stats) → Solution
-    }
-
-    class AbstractOCPSolutionBuilder {
-        <<abstract>>
-        (builder)(stats) → OCPSolution
-    }
-
-    AbstractBuilder <|-- AbstractModelBuilder
-    AbstractBuilder <|-- AbstractSolutionBuilder
-    AbstractSolutionBuilder <|-- AbstractOCPSolutionBuilder
-
-    AbstractModelBuilder <|-- ADNLPModelBuilder
-    AbstractModelBuilder <|-- ExaModelBuilder
-    AbstractOCPSolutionBuilder <|-- ADNLPSolutionBuilder
-    AbstractOCPSolutionBuilder <|-- ExaSolutionBuilder
+```text
+AbstractBuilder
+├─► AbstractModelBuilder
+│       ├─ (builder)(x0; kwargs...) → NLP
+│       ├─► ADNLPModelBuilder
+│       └─► ExaModelBuilder
+└─► AbstractSolutionBuilder
+        └─► AbstractOCPSolutionBuilder
+                ├─► ADNLPSolutionBuilder
+                └─► ExaSolutionBuilder
 ```
 
 ### ADNLPModelBuilder
@@ -116,7 +97,9 @@ sol_builder(:converged)  # call the builder
 ```
 
 !!! note "Why callable objects?"
-    Builders capture problem-specific data (closures) while presenting a uniform interface to modelers. The modeler doesn't need to know what data the builder needs — it just calls it with the standard arguments.
+    Builders capture problem-specific data (closures) while presenting a uniform interface to
+    modelers. The modeler doesn't need to know what data the builder needs — it just calls it
+    with the standard arguments.
 
 ## Implementing DiscretizedModel
 
@@ -148,10 +131,10 @@ Each getter simply returns the corresponding field:
 import CTSolvers.Optimization: get_adnlp_model_builder, get_exa_model_builder
 import CTSolvers.Optimization: get_adnlp_solution_builder, get_exa_solution_builder
 
-get_adnlp_model_builder(prob::DiscretizedModel) = prob.adnlp_model_builder
-get_exa_model_builder(prob::DiscretizedModel) = prob.exa_model_builder
+get_adnlp_model_builder(prob::DiscretizedModel)    = prob.adnlp_model_builder
+get_exa_model_builder(prob::DiscretizedModel)      = prob.exa_model_builder
 get_adnlp_solution_builder(prob::DiscretizedModel) = prob.adnlp_solution_builder
-get_exa_solution_builder(prob::DiscretizedModel) = prob.exa_solution_builder
+get_exa_solution_builder(prob::DiscretizedModel)   = prob.exa_solution_builder
 ```
 
 ### Step 3 — Construct with builders
@@ -179,34 +162,21 @@ end
 
 The complete data flow from user call to solution:
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Solve as CommonSolve.solve
-    participant Modeler as Modelers.ADNLP
-    participant Problem as DOCP
-    participant ModelBuilder as ADNLPModelBuilder
-    participant Solver as Solvers.Ipopt
-    participant SolBuilder as ADNLPSolutionBuilder
-
-    User->>Solve: solve(docp, x0, modeler, solver)
-    Solve->>Modeler: build_model(docp, x0, modeler)
-    Modeler->>Problem: get_adnlp_model_builder(docp)
-    Problem-->>Modeler: ADNLPModelBuilder
-    Modeler->>ModelBuilder: builder(x0; backend=:optimized, ...)
-    ModelBuilder-->>Modeler: ADNLPModel
-    Modeler-->>Solve: nlp
-
-    Solve->>Solver: solve(nlp, solver)
-    Solver-->>Solve: stats
-
-    Solve->>Modeler: build_solution(docp, stats, modeler)
-    Modeler->>Problem: get_adnlp_solution_builder(docp)
-    Problem-->>Modeler: ADNLPSolutionBuilder
-    Modeler->>SolBuilder: builder(stats)
-    SolBuilder-->>Modeler: OCPSolution
-    Modeler-->>Solve: solution
-    Solve-->>User: solution
+```text
+User
+ │
+ ▼  solve(docp, x0, modeler, solver)
+CommonSolve.solve
+ │
+ ├─► build_model(docp, x0, modeler)
+ │       ├─► get_adnlp_model_builder(docp) → ADNLPModelBuilder
+ │       └─► builder(x0; backend=:optimized, ...) → ADNLPModel
+ │
+ ├─► solve(nlp, solver) → ExecutionStats
+ │
+ └─► build_solution(docp, stats, modeler)
+         ├─► get_adnlp_solution_builder(docp) → ADNLPSolutionBuilder
+         └─► builder(stats) → OCPSolution
 ```
 
 The key insight is that the **problem provides the builders** and the **modeler orchestrates the calls**. This separation allows:

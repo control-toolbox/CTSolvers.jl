@@ -1,11 +1,9 @@
 # ==============================================================================
-# CTSolvers API Reference Generator
-# ==============================================================================
+# CTSolvers API Reference Manager
 #
-# This file generates the API reference documentation for CTSolvers.
-# It uses CTBase.automatic_reference_documentation to scan source files
-# and generate documentation pages.
-#
+# One CTBase.automatic_reference_documentation call per documented page.
+# Keep the file lists in sync with src/<Submodule>/ and ext/ when files
+# are added, removed, or renamed.
 # ==============================================================================
 
 """
@@ -15,385 +13,137 @@ Generate the API reference documentation for CTSolvers.
 Returns the list of pages.
 """
 function generate_api_reference(src_dir::String, ext_dir::String)
-    # Helper to build absolute paths
     src(files...) = [abspath(joinpath(src_dir, f)) for f in files]
     ext(files...) = [abspath(joinpath(ext_dir, f)) for f in files]
 
-    # Symbols to exclude from documentation
     EXCLUDE_SYMBOLS = Symbol[:include, :eval]
+    EXCLUDE_INTERNALS = vcat(
+        EXCLUDE_SYMBOLS,
+        Symbol[:DOCTYPE_ABSTRACT_TYPE, :DOCTYPE_CONSTANT, :DOCTYPE_FUNCTION,
+               :DOCTYPE_MACRO, :DOCTYPE_MODULE, :DOCTYPE_STRUCT],
+    )
 
-    pages = [
-
-        # ───────────────────────────────────────────────────────────────────
-        # DOCP
-        # ───────────────────────────────────────────────────────────────────
-        CTBase.automatic_reference_documentation(;
-            subdirectory="api",
-            primary_modules=[
-                CTSolvers.DOCP => src(
-                    joinpath("DOCP", "DOCP.jl"),
-                    joinpath("DOCP", "abstract_discretizer.jl"),
-                    joinpath("DOCP", "discretized_model.jl"),
-                    joinpath("DOCP", "contract.jl"),
-                    joinpath("DOCP", "conveniences.jl"),
-                ),
-            ],
-            exclude=EXCLUDE_SYMBOLS,
-            public=true,
-            private=true,
+    # ── Shared config: one entry per submodule ────────────────────────────────
+    modules_config = [
+        (
+            mod=CTSolvers.DOCP,
             title="DOCP",
-            title_in_menu="DOCP",
             filename="docp",
+            files=src(
+                joinpath("DOCP", "DOCP.jl"),
+                joinpath("DOCP", "abstract_discretizer.jl"),
+                joinpath("DOCP", "discretized_model.jl"),
+                joinpath("DOCP", "contract.jl"),
+                joinpath("DOCP", "conveniences.jl"),
+            ),
         ),
-
-        # ───────────────────────────────────────────────────────────────────
-        # Modelers
-        # ───────────────────────────────────────────────────────────────────
-        CTBase.automatic_reference_documentation(;
-            subdirectory="api",
-            primary_modules=[
-                CTSolvers.Modelers => src(
-                    joinpath("Modelers", "Modelers.jl"),
-                    joinpath("Modelers", "abstract_modeler.jl"),
-                    joinpath("Modelers", "contract.jl"),
-                    joinpath("Modelers", "adnlp.jl"),
-                    joinpath("Modelers", "exa.jl"),
-                    joinpath("Modelers", "validation.jl"),
-                ),
-            ],
-            exclude=EXCLUDE_SYMBOLS,
-            public=true,
-            private=true,
+        (
+            mod=CTSolvers.Modelers,
             title="Modelers",
-            title_in_menu="Modelers",
             filename="modelers",
+            files=src(
+                joinpath("Modelers", "Modelers.jl"),
+                joinpath("Modelers", "abstract_modeler.jl"),
+                joinpath("Modelers", "contract.jl"),
+                joinpath("Modelers", "adnlp.jl"),
+                joinpath("Modelers", "exa.jl"),
+                joinpath("Modelers", "validation.jl"),
+            ),
         ),
-
-        # ───────────────────────────────────────────────────────────────────
-        # Optimization
-        # ───────────────────────────────────────────────────────────────────
-        CTBase.automatic_reference_documentation(;
-            subdirectory="api",
-            primary_modules=[
-                CTSolvers.Optimization => src(
-                    joinpath("Optimization", "Optimization.jl"),
-                    joinpath("Optimization", "abstract_types.jl"),
-                    joinpath("Optimization", "built_model.jl"),
-                ),
-            ],
-            exclude=EXCLUDE_SYMBOLS,
-            public=true,
-            private=true,
+        (
+            mod=CTSolvers.Optimization,
             title="Optimization",
-            title_in_menu="Optimization",
             filename="optimization",
+            files=src(
+                joinpath("Optimization", "Optimization.jl"),
+                joinpath("Optimization", "abstract_types.jl"),
+                joinpath("Optimization", "built_model.jl"),
+            ),
         ),
-
-        # ───────────────────────────────────────────────────────────────────
-        # Solvers
-        # ───────────────────────────────────────────────────────────────────
-        CTBase.automatic_reference_documentation(;
-            subdirectory="api",
-            primary_modules=[
-                CTSolvers.Solvers => src(
-                    joinpath("Solvers", "Solvers.jl"),
-                    joinpath("Solvers", "abstract_solver.jl"),
-                    joinpath("Solvers", "contract.jl"),
-                    joinpath("Solvers", "orchestration.jl"),
-                    joinpath("Solvers", "solver_info.jl"),
-                    joinpath("Solvers", "ipopt.jl"),
-                    joinpath("Solvers", "knitro.jl"),
-                    joinpath("Solvers", "madncl.jl"),
-                    joinpath("Solvers", "madnlp.jl"),
-                    joinpath("Solvers", "madnlpsuite.jl"),
-                    joinpath("Solvers", "uno.jl"),
-                ),
-            ],
-            exclude=EXCLUDE_SYMBOLS,
-            public=true,
-            private=true,
+        (
+            mod=CTSolvers.Solvers,
             title="Solvers",
-            title_in_menu="Solvers",
             filename="solvers",
+            files=src(
+                joinpath("Solvers", "Solvers.jl"),
+                joinpath("Solvers", "abstract_solver.jl"),
+                joinpath("Solvers", "contract.jl"),
+                joinpath("Solvers", "orchestration.jl"),
+                joinpath("Solvers", "solver_info.jl"),
+                joinpath("Solvers", "ipopt.jl"),
+                joinpath("Solvers", "knitro.jl"),
+                joinpath("Solvers", "madncl.jl"),
+                joinpath("Solvers", "madnlp.jl"),
+                joinpath("Solvers", "madnlpsuite.jl"),
+                joinpath("Solvers", "uno.jl"),
+            ),
         ),
-
-        # ───────────────────────────────────────────────────────────────────
-        # Integrators
-        # ───────────────────────────────────────────────────────────────────
-        CTBase.automatic_reference_documentation(;
-            subdirectory="api",
-            primary_modules=[
-                CTSolvers.Integrators => src(
-                    joinpath("Integrators", "Integrators.jl"),
-                    joinpath("Integrators", "abstract_integrator.jl"),
-                    joinpath("Integrators", "integration_result.jl"),
-                    joinpath("Integrators", "sciml.jl"),
-                    joinpath("Integrators", "contract.jl"),
-                    joinpath("Integrators", "conveniences.jl"),
-                    joinpath("Integrators", "internal_norm.jl"),
-                ),
-            ],
-            exclude=EXCLUDE_SYMBOLS,
-            public=true,
-            private=true,
+        (
+            mod=CTSolvers.Integrators,
             title="Integrators",
-            title_in_menu="Integrators",
             filename="integrators",
+            files=src(
+                joinpath("Integrators", "Integrators.jl"),
+                joinpath("Integrators", "abstract_integrator.jl"),
+                joinpath("Integrators", "integration_result.jl"),
+                joinpath("Integrators", "sciml.jl"),
+                joinpath("Integrators", "contract.jl"),
+                joinpath("Integrators", "conveniences.jl"),
+                joinpath("Integrators", "internal_norm.jl"),
+            ),
         ),
-
     ]
 
-    # ───────────────────────────────────────────────────────────────────
-    # Extension: Ipopt
-    # ───────────────────────────────────────────────────────────────────
-    CTSolversIpopt = Base.get_extension(CTSolvers, :CTSolversIpopt)
-    if !isnothing(CTSolversIpopt)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversIpopt => ext("CTSolversIpopt.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="Ipopt Extension",
-                title_in_menu="Ipopt",
-                filename="ext_ipopt",
-            ),
-        )
+    # ── Public pages: one flat page per submodule ─────────────────────────────
+    pages = [
+        CTBase.automatic_reference_documentation(;
+            subdirectory="api",
+            primary_modules=[cfg.mod => cfg.files],
+            external_modules_to_document=[CTSolvers],
+            exclude=EXCLUDE_SYMBOLS,
+            public=true,
+            private=false,
+            title=cfg.title,
+            title_in_menu=cfg.title,
+            filename=cfg.filename,
+        ) for cfg in modules_config
+    ]
+
+    # ── Internals: all private symbols in one page, sections by module ────────
+    internals_modules = Any[cfg.mod => cfg.files for cfg in modules_config]
+
+    for (sym, files) in [
+        (:CTSolversIpopt,              ext("CTSolversIpopt.jl")),
+        (:CTSolversMadNLP,             ext("CTSolversMadNLP.jl")),
+        (:CTSolversMadNCL,             ext("CTSolversMadNCL.jl")),
+        (:CTSolversKnitro,             ext("CTSolversKnitro.jl")),
+        (:CTSolversUno,                ext("CTSolversUno.jl")),
+        (:CTSolversEnzyme,             ext("CTSolversEnzyme.jl")),
+        (:CTSolversCUDA,               ext("CTSolversCUDA.jl")),
+        (:CTSolversMadNLPGPU,          ext("CTSolversMadNLPGPU.jl")),
+        (:CTSolversZygote,             ext("CTSolversZygote.jl")),
+        (:CTSolversSciMLIntegrator,    ext("CTSolversSciMLIntegrator.jl")),
+        (:CTSolversForwardDiff,        ext("CTSolversForwardDiff.jl")),
+        (:CTSolversOrdinaryDiffEqTsit5, ext("CTSolversOrdinaryDiffEqTsit5.jl")),
+    ]
+        extmod = Base.get_extension(CTSolvers, sym)
+        isnothing(extmod) || push!(internals_modules, extmod => files)
     end
 
-    # ───────────────────────────────────────────────────────────────────
-    # Extension: MadNLP
-    # ───────────────────────────────────────────────────────────────────
-    CTSolversMadNLP = Base.get_extension(CTSolvers, :CTSolversMadNLP)
-    if !isnothing(CTSolversMadNLP)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversMadNLP => ext("CTSolversMadNLP.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="MadNLP Extension",
-                title_in_menu="MadNLP",
-                filename="ext_madnlp",
-            ),
-        )
-    end
-
-    # ───────────────────────────────────────────────────────────────────
-    # Extension: MadNCL
-    # ───────────────────────────────────────────────────────────────────
-    CTSolversMadNCL = Base.get_extension(CTSolvers, :CTSolversMadNCL)
-    if !isnothing(CTSolversMadNCL)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversMadNCL => ext("CTSolversMadNCL.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="MadNCL Extension",
-                title_in_menu="MadNCL",
-                filename="ext_madncl",
-            ),
-        )
-    end
-
-    # ───────────────────────────────────────────────────────────────────
-    # Extension: Knitro
-    # ───────────────────────────────────────────────────────────────────
-    CTSolversKnitro = Base.get_extension(CTSolvers, :CTSolversKnitro)
-    if !isnothing(CTSolversKnitro)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversKnitro => ext("CTSolversKnitro.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="Knitro Extension",
-                title_in_menu="Knitro",
-                filename="ext_knitro",
-            ),
-        )
-    end
-
-    # ───────────────────────────────────────────────────────────────────
-    # Extension: Uno
-    # ─────────────────────────────────────────────────────────────────--
-    CTSolversUno = Base.get_extension(CTSolvers, :CTSolversUno)
-    if !isnothing(CTSolversUno)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversUno => ext("CTSolversUno.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="Uno Extension",
-                title_in_menu="Uno",
-                filename="ext_uno",
-            ),
-        )
-    end
-
-    # ───────────────────────────────────────────────────────────────────
-    # Extension: Enzyme
-    # ─────────────────────────────────────────────────────────────────--
-    CTSolversEnzyme = Base.get_extension(CTSolvers, :CTSolversEnzyme)
-    if !isnothing(CTSolversEnzyme)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversEnzyme => ext("CTSolversEnzyme.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="Enzyme Extension",
-                title_in_menu="Enzyme",
-                filename="ext_enzyme",
-            ),
-        )
-    end
-
-    # ───────────────────────────────────────────────────────────────────
-    # Extension: CUDA
-    # ─────────────────────────────────────────────────────────────────--
-    CTSolversCUDA = Base.get_extension(CTSolvers, :CTSolversCUDA)
-    if !isnothing(CTSolversCUDA)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversCUDA => ext("CTSolversCUDA.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="CUDA Extension",
-                title_in_menu="CUDA",
-                filename="ext_cuda",
-            ),
-        )
-    end
-
-    # ───────────────────────────────────────────────────────────────────
-    # Extension: MadNLPGPU
-    # ─────────────────────────────────────────────────────────────────--
-    CTSolversMadNLPGPU = Base.get_extension(CTSolvers, :CTSolversMadNLPGPU)
-    if !isnothing(CTSolversMadNLPGPU)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversMadNLPGPU => ext("CTSolversMadNLPGPU.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="MadNLPGPU Extension",
-                title_in_menu="MadNLPGPU",
-                filename="ext_madnlpgpu",
-            ),
-        )
-    end
-
-    # ─────────────────────────────────────────────────────────────────--
-    # Extension: Zygote
-    # ─────────────────────────────────────────────────────────────────--
-    CTSolversZygote = Base.get_extension(CTSolvers, :CTSolversZygote)
-    if !isnothing(CTSolversZygote)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversZygote => ext("CTSolversZygote.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="Zygote Extension",
-                title_in_menu="Zygote",
-                filename="ext_zygote",
-            ),
-        )
-    end
-
-    # ─────────────────────────────────────────────────────────────────--
-    # Extension: SciML Integrator
-    # ─────────────────────────────────────────────────────────────────--
-    CTSolversSciMLIntegrator = Base.get_extension(CTSolvers, :CTSolversSciMLIntegrator)
-    if !isnothing(CTSolversSciMLIntegrator)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversSciMLIntegrator => ext("CTSolversSciMLIntegrator.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="SciML Integrator Extension",
-                title_in_menu="SciML Integrator",
-                filename="ext_sciml_integrator",
-            ),
-        )
-    end
-
-    # ─────────────────────────────────────────────────────────────────--
-    # Extension: ForwardDiff
-    # ─────────────────────────────────────────────────────────────────--
-    CTSolversForwardDiff = Base.get_extension(CTSolvers, :CTSolversForwardDiff)
-    if !isnothing(CTSolversForwardDiff)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversForwardDiff => ext("CTSolversForwardDiff.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="ForwardDiff Extension",
-                title_in_menu="ForwardDiff",
-                filename="ext_forwarddiff",
-            ),
-        )
-    end
-
-    # ─────────────────────────────────────────────────────────────────--
-    # Extension: OrdinaryDiffEqTsit5
-    # ─────────────────────────────────────────────────────────────────--
-    CTSolversOrdinaryDiffEqTsit5 = Base.get_extension(CTSolvers, :CTSolversOrdinaryDiffEqTsit5)
-    if !isnothing(CTSolversOrdinaryDiffEqTsit5)
-        push!(
-            pages,
-            CTBase.automatic_reference_documentation(;
-                subdirectory="api",
-                primary_modules=[CTSolversOrdinaryDiffEqTsit5 => ext("CTSolversOrdinaryDiffEqTsit5.jl")],
-                external_modules_to_document=[CTSolvers],
-                exclude=EXCLUDE_SYMBOLS,
-                public=true,
-                private=true,
-                title="OrdinaryDiffEqTsit5 Extension",
-                title_in_menu="OrdinaryDiffEqTsit5",
-                filename="ext_ordinarydiffeqtsit5",
-            ),
-        )
-    end
+    push!(
+        pages,
+        CTBase.automatic_reference_documentation(;
+            subdirectory="api",
+            primary_modules=internals_modules,
+            external_modules_to_document=[CTSolvers],
+            exclude=EXCLUDE_INTERNALS,
+            public=false,
+            private=true,
+            title="Internals",
+            title_in_menu="Internals",
+            filename="internals",
+        ),
+    )
 
     return pages
 end
@@ -408,24 +158,19 @@ function with_api_reference(f::Function, src_dir::String, ext_dir::String)
     try
         f(pages)
     finally
-        # Clean up generated files
         docs_src = abspath(joinpath(@__DIR__, "src"))
-        _cleanup_pages(docs_src, pages)
-    end
-end
-
-function _cleanup_pages(docs_src::String, pages)
-    for p in pages
-        val = last(p)
-        if val isa AbstractString
-            fname = endswith(val, ".md") ? val : val * ".md"
-            full_path = joinpath(docs_src, fname)
-            if isfile(full_path)
-                rm(full_path)
-                println("Removed temporary API doc: $full_path")
+        function cleanup(pages)
+            for p in pages
+                content = last(p)
+                if content isa AbstractString
+                    fname = endswith(content, ".md") ? content : content * ".md"
+                    full_path = joinpath(docs_src, fname)
+                    isfile(full_path) && rm(full_path)
+                elseif content isa Vector
+                    cleanup(content)
+                end
             end
-        elseif val isa AbstractVector
-            _cleanup_pages(docs_src, val)
         end
+        cleanup(pages)
     end
 end

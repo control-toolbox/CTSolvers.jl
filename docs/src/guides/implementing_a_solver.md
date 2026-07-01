@@ -17,25 +17,19 @@ A solver must satisfy **three contracts**:
 2. **Callable contract** — `(solver)(nlp; display) → ExecutionStats`
 3. **Tag Dispatch** — separates type definition from backend implementation
 
-```mermaid
-classDiagram
-    class AbstractStrategy {
-        <<abstract>>
-        id(::Type)::Symbol
-        metadata(::Type)::StrategyMetadata
-        options(instance)::StrategyOptions
-    }
+```text
+AbstractStrategy
+├─ id(::Type)       → Symbol
+├─ metadata(::Type) → StrategyMetadata
+└─ options(inst)    → StrategyOptions
 
-    class AbstractNLPSolver {
-        <<abstract>>
-        (solver)(nlp; display) → Stats
-    }
-
-    AbstractStrategy <|-- AbstractNLPSolver
-    AbstractNLPSolver <|-- Solvers.Ipopt
-    AbstractNLPSolver <|-- Solvers.MadNLP
-    AbstractNLPSolver <|-- Solvers.MadNCL
-    AbstractNLPSolver <|-- Solvers.Knitro
+AbstractNLPSolver <: AbstractStrategy
+└─ (solver)(nlp; display) → ExecutionStats
+   ├─► Solvers.Ipopt
+   ├─► Solvers.MadNLP
+   ├─► Solvers.MadNCL
+   ├─► Solvers.Knitro
+   └─► Solvers.Uno
 ```
 
 The default callable throws `NotImplemented` with guidance.
@@ -59,7 +53,7 @@ CTSolvers.Solvers.Ipopt()
 A **tag type** is a lightweight struct used for dispatch. It routes the constructor call to the right extension:
 
 ```julia
-# In src/Solvers/ipopt_solver.jl
+# In src/Solvers/ipopt.jl
 struct IpoptTag <: AbstractTag end
 ```
 
@@ -112,30 +106,24 @@ CTSolvers.Solvers.MadNLP()
 
 ## The Tag Dispatch Pattern
 
-```mermaid
-flowchart LR
-    subgraph src["src/Solvers/ipopt_solver.jl"]
-        Type["Solvers.Ipopt <: AbstractNLPSolver"]
-        Tag["IpoptTag <: AbstractTag"]
-        Ctor["Solvers.Ipopt(; kwargs...)\n→ build_ipopt_solver(IpoptTag(); kwargs...)"]
-        Stub["build_ipopt_solver(::AbstractTag)\n→ ExtensionError"]
-    end
+```text
+src/Solvers/ipopt.jl                    ext/CTSolversIpopt.jl
+────────────────────────────────────    ──────────────────────────────────────
+Solvers.Ipopt <: AbstractNLPSolver      metadata(::Type{<:Solvers.Ipopt})
+IpoptTag      <: AbstractTag              → StrategyMetadata(option defs...)
 
-    subgraph ext["ext/CTSolversIpopt.jl"]
-        Meta["metadata(::Type{<:Solvers.Ipopt})\n→ StrategyMetadata(...)"]
-        Build["build_ipopt_solver(::IpoptTag)\n→ Solvers.Ipopt(opts)"]
-        Call["(solver::Solvers.Ipopt)(nlp)\n→ ipopt(nlp; opts...)"]
-    end
+Solvers.Ipopt(; kwargs...)              build_ipopt_solver(::IpoptTag; kwargs...)
+  → build_ipopt_solver(IpoptTag(); …)     → Solvers.Ipopt(validated_opts)
 
-    Ctor -->|"tag dispatch"| Build
-    Stub -.->|"overridden by"| Build
+build_ipopt_solver(::AbstractTag; …)    (solver::Solvers.Ipopt)(nlp; display)
+  → ExtensionError(:NLPModelsIpopt)       → ipopt(nlp; opts...)
 ```
 
 The split is:
 
 | Location | Contains |
 |----------|----------|
-| `src/Solvers/ipopt_solver.jl` | Struct, `id`, tag, constructor stub, `ExtensionError` fallback |
+| `src/Solvers/ipopt.jl` | Struct, `id`, tag, constructor stub, `ExtensionError` fallback |
 | `ext/CTSolversIpopt.jl` | `metadata` (option definitions), `build_ipopt_solver` (real constructor), callable `(solver)(nlp)` |
 
 This keeps CTSolvers lightweight — `NLPModelsIpopt` is only loaded when the user does `using NLPModelsIpopt`.
@@ -144,7 +132,7 @@ This keeps CTSolvers lightweight — `NLPModelsIpopt` is only loaded when the us
 
 ### File structure
 
-```
+```text
 ext/
 └── CTSolversIpopt.jl    # Single-file extension module
 ```
@@ -230,26 +218,18 @@ end # module CTSolversIpopt
 
 CTSolvers provides a unified `CommonSolve.solve` interface at three levels:
 
-```mermaid
-flowchart TB
-    subgraph High["High-Level"]
-        H["solve(problem, x0, modeler, solver)"]
-    end
+```text
+High-level:  solve(problem, x0, modeler, solver)
+                │
+                ├─► build_model(problem, x0, modeler) → NLP
+                │
+                ├─► solve(nlp, solver) → ExecutionStats     ← Mid-level
+                │       └─► solver(nlp; display)
+                │
+                └─► build_solution(problem, stats, modeler) → OCP Solution
 
-    subgraph Mid["Mid-Level"]
-        M["solve(nlp, solver)"]
-    end
-
-    subgraph Low["Low-Level"]
-        L["solve(any, solver)"]
-    end
-
-    H -->|"build_model → NLP"| M
-    M -->|"solver(nlp)"| Callable["solver(nlp; display)"]
-    L -->|"solver(any)"| Callable
-    H -->|"build_solution → OCP Solution"| Result["OCP Solution"]
-    M --> Stats["ExecutionStats"]
-    L --> Any["Result"]
+Low-level:   solve(any, solver)
+                └─► solver(any; display)
 ```
 
 ### High-level: full pipeline
@@ -270,7 +250,7 @@ solution = solve(problem, x0, modeler, solver)
 using ADNLPModels
 
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-solver = Solvers.Ipopt(max_iter = 1000)
+solver = CTSolvers.Solvers.Ipopt(max_iter = 1000)
 stats = solve(nlp, solver; display = false)
 ```
 

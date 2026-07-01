@@ -17,24 +17,17 @@ A modeler must satisfy **three contracts**:
 2. **Model building callable** — `(modeler)(prob, initial_guess) → NLP model`
 3. **Solution building callable** — `(modeler)(prob, nlp_stats) → Solution`
 
-```mermaid
-classDiagram
-    class AbstractStrategy {
-        <<abstract>>
-        id(::Type)::Symbol
-        metadata(::Type)::StrategyMetadata
-        options(instance)::StrategyOptions
-    }
+```text
+AbstractStrategy
+├─ id(::Type)       → Symbol
+├─ metadata(::Type) → StrategyMetadata
+└─ options(inst)    → StrategyOptions
 
-    class AbstractNLPModeler {
-        <<abstract>>
-        (modeler)(prob, x0) → NLP
-        (modeler)(prob, stats) → Solution
-    }
-
-    AbstractStrategy <|-- AbstractNLPModeler
-    AbstractNLPModeler <|-- Modelers.ADNLP
-    AbstractNLPModeler <|-- Modelers.Exa
+AbstractNLPModeler <: AbstractStrategy
+├─ (modeler)(prob, x0)    → NLP model
+├─ (modeler)(prob, stats) → Solution
+├─► Modelers.ADNLP
+└─► Modelers.Exa
 ```
 
 Both callables have default implementations that throw `NotImplemented`.
@@ -113,7 +106,9 @@ function (modeler::Modelers.ADNLP)(
 end
 ```
 
-The key interaction is with the **Builder pattern**: the modeler doesn't know how to build the model itself — it asks the problem for a builder, then calls it. See [Implementing an Optimization Problem](@ref) for how builders work.
+The key interaction is with the **Builder pattern**: the modeler doesn't know how to build the
+model itself — it asks the problem for a builder, then calls it.
+See [Implementing an Optimization Problem](@ref) for how builders work.
 
 ### Step 6 — Solution building callable
 
@@ -178,53 +173,39 @@ end
 ```
 
 !!! note "Different builder signatures"
-    `ADNLPModelBuilder` takes `(initial_guess; kwargs...)` while `ExaModelBuilder` takes `(BaseType, initial_guess; kwargs...)`. Each modeler adapts the call to its builder's expected signature.
+    `ADNLPModelBuilder` takes `(initial_guess; kwargs...)` while `ExaModelBuilder` takes
+    `(BaseType, initial_guess; kwargs...)`. Each modeler adapts the call to its builder's expected signature.
 
 ## Integration with build_model / build_solution
 
-The `Optimization` module *owns* two generic functions, `build_model` and
-`build_solution`. Their canonical `NotImplemented` contract stubs — the modeler
-contract — live in the `Modelers` module, typed on `AbstractNLPModeler`; concrete
-methods are provided by the package supplying the problem (e.g. CTDirect),
-dispatched on the concrete `(problem, modeler)` pair. `build_model` returns an
-`Optimization.BuiltModel` (the NLP plus an immutable build-time cache), and
-`build_solution` dispatches on that bundle:
+The `Optimization` module owns two generic functions, `build_model` and `build_solution`.
+Their canonical `NotImplemented` contract stubs — the modeler contract — live in the `Modelers`
+module, typed on `AbstractNLPModeler`; concrete methods are provided by the package supplying
+the problem (e.g. CTDirect), dispatched on the concrete `(problem, modeler)` pair.
+`build_model` returns an `Optimization.BuiltModel` (the NLP plus an immutable build-time cache),
+and `build_solution` dispatches on that bundle.
 
-```julia
-# In src/Modelers/contract.jl
+The high-level `CommonSolve.solve` pipeline:
 
-function Optimization.build_model(
-    prob::Optimization.AbstractOptimizationProblem, initial_guess, modeler::AbstractNLPModeler
-)
-    throw(Exceptions.NotImplemented(...))   # implemented per (problem, modeler) downstream
-end
-
-function Optimization.build_solution(
-    built::Optimization.BuiltModel, model_solution, modeler::AbstractNLPModeler
-)
-    throw(Exceptions.NotImplemented(...))
-end
-```
-
-These are used by the high-level `CommonSolve.solve`:
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Solve as CommonSolve.solve
-    participant BuildModel as build_model
-    participant Modeler as Modelers.ADNLP
-    participant Problem as AbstractOptimizationProblem
-    participant Builder as ADNLPModelBuilder
-
-    User->>Solve: solve(problem, x0, modeler, solver)
-    Solve->>BuildModel: build_model(problem, x0, modeler)
-    BuildModel->>Modeler: modeler(problem, x0)
-    Modeler->>Problem: get_adnlp_model_builder(problem)
-    Problem-->>Modeler: ADNLPModelBuilder
-    Modeler->>Builder: builder(x0; show_time, backend, ...)
-    Builder-->>Modeler: ADNLPModel
-    Modeler-->>Solve: ADNLPModel
+```text
+User
+ │
+ ▼  solve(problem, x0, modeler, solver)
+CommonSolve.solve
+ │
+ ├─► build_model(problem, x0, modeler)
+ │       │
+ │       ├─► modeler(problem, x0)
+ │       │       ├─► get_adnlp_model_builder(problem)  →  ADNLPModelBuilder
+ │       │       └─► builder(x0; show_time, backend, ...)  →  ADNLPModel
+ │       └─► BuiltModel(nlp, cache)
+ │
+ ├─► solve(nlp, solver)  →  ExecutionStats
+ │
+ └─► build_solution(built_model, stats, modeler)
+         └─► modeler(problem, stats)
+                 ├─► get_adnlp_solution_builder(problem) → ADNLPSolutionBuilder
+                 └─► builder(stats)  →  OCP Solution
 ```
 
 ## Validation
@@ -233,16 +214,16 @@ Verify the three contract methods explicitly:
 
 ```julia
 # id is always available
-CTBase.Strategies.id(Modelers.ADNLP)    # => :adnlp
-CTBase.Strategies.id(Modelers.Exa)      # => :exa
+CTBase.Strategies.id(CTSolvers.Modelers.ADNLP)    # => :adnlp
+CTBase.Strategies.id(CTSolvers.Modelers.Exa)       # => :exa
 
 # metadata is available without extension
-CTBase.Strategies.metadata(Modelers.ADNLP) isa CTBase.Strategies.StrategyMetadata  # => true
-CTBase.Strategies.metadata(Modelers.Exa)   isa CTBase.Strategies.StrategyMetadata  # => true
+CTBase.Strategies.metadata(CTSolvers.Modelers.ADNLP) isa CTBase.Strategies.StrategyMetadata  # => true
+CTBase.Strategies.metadata(CTSolvers.Modelers.Exa)   isa CTBase.Strategies.StrategyMetadata  # => true
 
 # options requires a constructed instance
-modeler = Modelers.ADNLP()
-CTBase.Strategies.options(modeler) isa CTBase.Strategies.StrategyOptions            # => true
+modeler = CTSolvers.Modelers.ADNLP()
+CTBase.Strategies.options(modeler) isa CTBase.Strategies.StrategyOptions  # => true
 ```
 
 For the callables, test with a fake or real problem:
@@ -252,7 +233,7 @@ For the callables, test with a fake or real problem:
 prob = FakeOptimizationProblem(adnlp_builder, adnlp_solution_builder)
 
 # Test model building
-modeler = Modelers.ADNLP(backend = :optimized)
+modeler = CTSolvers.Modelers.ADNLP(backend = :optimized)
 nlp = modeler(prob, x0)
 @test nlp isa ADNLPModels.ADNLPModel
 
