@@ -8,7 +8,7 @@ module CTSolversUno
 
 import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Solvers
-import CommonSolve
+using CommonSolve: CommonSolve
 import CTBase.Strategies
 import CTBase.Options
 import CTBase.Core

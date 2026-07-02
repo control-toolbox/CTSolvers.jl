@@ -115,7 +115,7 @@ end
 
 # Define metadata with option conflicts
 function Strategies.metadata(::Type{RouteCollocation})
-    Strategies.StrategyMetadata(
+    return Strategies.StrategyMetadata(
         Options.OptionDefinition(;
             name=:grid_size, type=Int, default=100, description="Grid size"
         ),
@@ -123,7 +123,7 @@ function Strategies.metadata(::Type{RouteCollocation})
 end
 
 function Strategies.metadata(::Type{RouteADNLP})
-    Strategies.StrategyMetadata(
+    return Strategies.StrategyMetadata(
         Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:dense, description="Modeler backend"
         ),
@@ -134,7 +134,7 @@ function Strategies.metadata(::Type{RouteADNLP})
 end
 
 function Strategies.metadata(::Type{RouteIpopt})
-    Strategies.StrategyMetadata(
+    return Strategies.StrategyMetadata(
         Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:cpu, description="Solver backend"
         ),
@@ -148,7 +148,7 @@ function Strategies.metadata(::Type{RouteIpopt})
 end
 
 function Strategies.metadata(::Type{RouteMadNLP})
-    Strategies.StrategyMetadata(
+    return Strategies.StrategyMetadata(
         Options.OptionDefinition(;
             name=:backend, type=Symbol, default=:cpu, description="Solver backend"
         ),

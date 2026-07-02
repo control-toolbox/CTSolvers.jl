@@ -6,7 +6,7 @@ using CTSolvers: CTSolvers
 import CTSolvers.DOCP
 import CTSolvers.Optimization
 import CTSolvers.Modelers
-import CTBase
+using CTBase: CTBase
 using NLPModels: NLPModels
 using SolverCore: SolverCore
 using ADNLPModels: ADNLPModels
@@ -87,8 +87,9 @@ function Optimization.build_solution(
 end
 
 # Helper: build a DiscretizedModel around the fake OCP / discretizer / cache.
-fake_docp(name::String="test_ocp") =
-    DOCP.DiscretizedModel(FakeOCP(name), FakeDiscretizer(), FakeCache())
+function fake_docp(name::String="test_ocp")
+    return DOCP.DiscretizedModel(FakeOCP(name), FakeDiscretizer(), FakeCache())
+end
 
 # ============================================================================
 # TEST FUNCTION

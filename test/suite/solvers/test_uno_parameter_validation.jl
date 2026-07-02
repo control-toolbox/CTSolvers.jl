@@ -83,5 +83,5 @@ end
 end # module
 
 function test_uno_parameter_validation()
-    TestUnoParameterValidation.test_uno_parameter_validation()
+    return TestUnoParameterValidation.test_uno_parameter_validation()
 end

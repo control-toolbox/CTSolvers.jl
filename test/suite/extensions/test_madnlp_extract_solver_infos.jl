@@ -232,9 +232,7 @@ function test_madnlp_extract_solver_infos()
             stats_max = MadNLP.solve!(solver_max)
 
             # Extract solver infos
-            objective_extracted, _, _, _, _, _ = Solvers.extract_solver_infos(
-                stats_max
-            )
+            objective_extracted, _, _, _, _, _ = Solvers.extract_solver_infos(stats_max)
 
             # The extracted objective should be the true maximization objective (≈ 1.0)
             Test.@test objective_extracted ≈ 1.0 atol=1e-6

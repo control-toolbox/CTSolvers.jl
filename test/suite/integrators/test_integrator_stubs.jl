@@ -4,7 +4,7 @@ using Test: Test
 import CTBase.Core
 import CTBase.Exceptions
 import CTSolvers.Integrators
-import CommonSolve
+using CommonSolve: CommonSolve
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
@@ -33,7 +33,9 @@ function test_integrator_stubs()
         # ====================================================================
 
         Test.@testset "build_sciml_integrator stub" begin
-            Test.@test_throws Exceptions.ExtensionError Integrators.build_sciml_integrator(DummyTag)
+            Test.@test_throws Exceptions.ExtensionError Integrators.build_sciml_integrator(
+                DummyTag
+            )
 
             err = nothing
             try
@@ -60,7 +62,9 @@ function test_integrator_stubs()
         # ====================================================================
 
         Test.@testset "solve generic stub" begin
-            Test.@test_throws Exceptions.NotImplemented CommonSolve.solve(nothing, FakeIntegrator())
+            Test.@test_throws Exceptions.NotImplemented CommonSolve.solve(
+                nothing, FakeIntegrator()
+            )
         end
 
         # ====================================================================
@@ -76,9 +80,13 @@ function test_integrator_stubs()
         # ====================================================================
 
         Test.@testset "result accessor stubs" begin
-            Test.@test_throws Exceptions.NotImplemented Integrators.final_state(FakeResult())
+            Test.@test_throws Exceptions.NotImplemented Integrators.final_state(
+                FakeResult()
+            )
             Test.@test_throws Exceptions.NotImplemented Integrators.times(FakeResult())
-            Test.@test_throws Exceptions.NotImplemented Integrators.evaluate_at(FakeResult(), 0.0)
+            Test.@test_throws Exceptions.NotImplemented Integrators.evaluate_at(
+                FakeResult(), 0.0
+            )
         end
     end
 end
