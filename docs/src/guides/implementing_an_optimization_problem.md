@@ -4,23 +4,21 @@
 CurrentModule = CTSolvers
 ```
 
-This guide explains how to implement an optimization problem in CTSolvers. An optimization problem is a concrete type that carries all the data needed to build NLP models and extract solutions. We use **DiscretizedModel** (DOCP) as the reference example.
+This guide explains how to implement an optimization problem in CTSolvers. An optimization problem is a concrete subtype of `AbstractOptimizationProblem` that pairs problem data with a discretizer and a backend-opaque cache. We use **DiscretizedModel** (DOCP) as the reference implementation.
 
 !!! tip "Prerequisites"
-    Read [Architecture](@ref) and [Implementing a Modeler](@ref) first. The optimization problem provides the **builders** that modelers call.
+    Read [Architecture](@ref) and [Implementing a Modeler](@ref) first. The optimization problem is the data holder; the modeler and the package providing the problem (e.g. CTDirect) implement the NLP building logic.
 
 ## The AbstractOptimizationProblem Contract
 
-Every concrete optimization problem must implement **four builder getters** — one model builder and one solution builder per NLP backend:
+`AbstractOptimizationProblem` is a marker abstract type with **no required methods of its own**. The contract is expressed through two generic functions that must be implemented by **multiple dispatch** in the package providing the concrete problem:
 
-| Method | Returns | Used by |
-|--------|---------|---------|
-| `get_adnlp_model_builder(prob)` | `AbstractModelBuilder` | `Modelers.ADNLP` |
-| `get_exa_model_builder(prob)` | `AbstractModelBuilder` | `Modelers.Exa` |
-| `get_adnlp_solution_builder(prob)` | `AbstractSolutionBuilder` | `Modelers.ADNLP` |
-| `get_exa_solution_builder(prob)` | `AbstractSolutionBuilder` | `Modelers.Exa` |
+| Method | Signature | Returns | Implemented in |
+|--------|-----------|---------|----------------|
+| `build_model` | `(prob::MyProblem, init, modeler::ADNLP)` | `BuiltModel` | package providing `MyProblem` |
+| `build_solution` | `(built::BuiltModel{<:MyProblem}, stats, modeler::ADNLP)` | domain solution | package providing `MyProblem` |
 
-All four have default implementations that throw `NotImplemented`:
+The generic stubs in CTSolvers throw `NotImplemented` with guidance. Defining a subtype without these methods is valid — the error only fires when the pipeline is actually invoked:
 
 ```@example optprob
 using CTSolvers
@@ -28,150 +26,86 @@ struct EmptyProblem <: CTSolvers.Optimization.AbstractOptimizationProblem end
 nothing # hide
 ```
 
-```@repl optprob
-CTSolvers.Optimization.get_adnlp_model_builder(EmptyProblem())
+## BuiltModel and NoCache
+
+`build_model` does not return a raw NLP model. It returns a [`CTSolvers.Optimization.BuiltModel`](@ref) — an immutable bundle that carries everything `build_solution` needs:
+
+```text
+BuiltModel{TP <: AbstractOptimizationProblem, TN, TC <: AbstractCache}
+├─ problem::TP   — the original problem (gives access to ocp, discretizer, cache)
+├─ nlp::TN       — the backend NLP model (ADNLPModel, ExaModel, …)
+└─ cache::TC     — immutable build-time auxiliary
 ```
 
-```@repl optprob
-CTSolvers.Optimization.get_exa_solution_builder(EmptyProblem())
-```
-
-You only need to implement the getters for the backends you support. If your problem only supports ADNLPModels, leave the ExaModels getters unimplemented — they will throw a clear error if called.
-
-## The Builder Pattern
-
-Builders are **callable objects** that encapsulate the logic for constructing NLP models or solutions. They are defined in the `Optimization` module.
-
-```mermaid
-classDiagram
-    class AbstractBuilder {
-        <<abstract>>
-    }
-
-    class AbstractModelBuilder {
-        <<abstract>>
-        (builder)(x0; kwargs...) → NLP
-    }
-
-    class AbstractSolutionBuilder {
-        <<abstract>>
-        (builder)(stats) → Solution
-    }
-
-    class AbstractOCPSolutionBuilder {
-        <<abstract>>
-        (builder)(stats) → OCPSolution
-    }
-
-    AbstractBuilder <|-- AbstractModelBuilder
-    AbstractBuilder <|-- AbstractSolutionBuilder
-    AbstractSolutionBuilder <|-- AbstractOCPSolutionBuilder
-
-    AbstractModelBuilder <|-- ADNLPModelBuilder
-    AbstractModelBuilder <|-- ExaModelBuilder
-    AbstractOCPSolutionBuilder <|-- ADNLPSolutionBuilder
-    AbstractOCPSolutionBuilder <|-- ExaSolutionBuilder
-```
-
-### ADNLPModelBuilder
-
-Wraps a function that builds an `ADNLPModel` from an initial guess:
+[`CTSolvers.Optimization.NoCache`](@ref) is the default `cache` for backends that produce no auxiliary data:
 
 ```@example optprob
-using CTSolvers.Optimization: ADNLPModelBuilder
-
-builder = ADNLPModelBuilder(x0 -> "NLP from x0=$x0")
+CTSolvers.Optimization.NoCache()
 ```
-
-```@example optprob
-builder([1.0, 2.0])  # call the builder
-```
-
-### ExaModelBuilder
-
-Wraps a function that builds an `ExaModel` from a base type and initial guess:
-
-```@example optprob
-using CTSolvers.Optimization: ExaModelBuilder
-
-exa_builder = ExaModelBuilder((T, x0) -> "ExaModel{$T} from x0=$x0")
-```
-
-```@example optprob
-exa_builder(Float64, [1.0, 2.0])  # call the builder
-```
-
-### Solution Builders
-
-Same pattern for solution builders:
-
-```@example optprob
-using CTSolvers.Optimization: ADNLPSolutionBuilder
-
-sol_builder = ADNLPSolutionBuilder(stats -> "Solution from stats=$stats")
-```
-
-```@example optprob
-sol_builder(:converged)  # call the builder
-```
-
-!!! note "Why callable objects?"
-    Builders capture problem-specific data (closures) while presenting a uniform interface to modelers. The modeler doesn't need to know what data the builder needs — it just calls it with the standard arguments.
 
 ## Implementing DiscretizedModel
 
-### Step 1 — Define the struct
+`DiscretizedModel` is the canonical `AbstractOptimizationProblem` implementation in CTSolvers.
+It pairs an OCP with the discretizer that produced it and a backend-opaque cache:
 
-The DOCP stores the original OCP plus one builder per backend:
+### Step 1 — Define the struct
 
 ```julia
 struct DiscretizedModel{
-    TO <: AbstractModel,
-    TAMB <: AbstractModelBuilder,
-    TEMB <: AbstractModelBuilder,
-    TASB <: AbstractSolutionBuilder,
-    TESB <: AbstractSolutionBuilder,
+    TO <: CTModels.AbstractModel,
+    TD <: AbstractDiscretizer,
+    TC <: CTBase.Core.AbstractCache,
 } <: AbstractOptimizationProblem
-    optimal_control_problem::TO
-    adnlp_model_builder::TAMB
-    exa_model_builder::TEMB
-    adnlp_solution_builder::TASB
-    exa_solution_builder::TESB
+    ocp::TO          # original OCP
+    discretizer::TD  # e.g. Collocation
+    cache::TC        # opaque to CTSolvers; populated by the discretizing package
 end
 ```
 
-### Step 2 — Implement the contract
+The accessor `ocp_model(docp)` returns the original OCP.
 
-Each getter simply returns the corresponding field:
+### Step 2 — Construct via `discretize` (in CTDirect)
+
+`DiscretizedModel` is not constructed by calling the struct directly. CTSolvers owns a
+generic `CTSolvers.discretize` stub (`src/DOCP/contract.jl`) that throws `NotImplemented`;
+the package providing the discretizer implements the typed method. In CTDirect
+(`src/collocation.jl`) it preprocesses the OCP into a `DOCP` and wraps it in a cache:
 
 ```julia
-import CTSolvers.Optimization: get_adnlp_model_builder, get_exa_model_builder
-import CTSolvers.Optimization: get_adnlp_solution_builder, get_exa_solution_builder
-
-get_adnlp_model_builder(prob::DiscretizedModel) = prob.adnlp_model_builder
-get_exa_model_builder(prob::DiscretizedModel) = prob.exa_model_builder
-get_adnlp_solution_builder(prob::DiscretizedModel) = prob.adnlp_solution_builder
-get_exa_solution_builder(prob::DiscretizedModel) = prob.exa_solution_builder
+# In CTDirect — typed method for the Collocation discretizer
+function CTSolvers.discretize(ocp::AbstractModel, discretizer::Collocation)
+    docp = get_docp(discretizer, ocp)                        # problem-specific preprocessing
+    return CTSolvers.DiscretizedModel(ocp, discretizer, DOCPCache(docp))
+end
 ```
 
-### Step 3 — Construct with builders
+`DOCPCache` is a `CTBase.Core.AbstractCache` subtype defined in CTDirect — CTSolvers only
+requires the `cache` field to be `<: CTBase.Core.AbstractCache`.
 
-The DOCP is typically constructed by a discretization strategy (e.g., Collocation) that creates the builders from the OCP:
+### Step 3 — Implement build_model / build_solution (in CTDirect)
+
+CTSolvers owns the generic stubs; CTDirect owns the concrete methods via multiple dispatch:
 
 ```julia
-# In CTDirect.jl (external package)
-function discretize(ocp, discretizer::Collocation)
-    # Build the closures that know how to create NLP models from this OCP
-    adnlp_builder = ADNLPModelBuilder(x0 -> build_adnlp(ocp, discretizer, x0))
-    exa_builder = ExaModelBuilder((T, x0) -> build_exa(ocp, discretizer, T, x0))
+# In CTDirect — concrete methods for (DiscretizedModel + Collocation, ADNLP)
+function CTSolvers.build_model(
+    dm::CTSolvers.DiscretizedModel{<:Any,<:Collocation},
+    initial_guess::CTModels.AbstractInitialGuess,
+    modeler::CTSolvers.Modelers.ADNLP,
+)
+    docp = dm.cache.docp
+    options = Strategies.options_dict(modeler)         # the modeler's validated options
+    nlp = build_adnlp_model(docp, initial_guess; options...)  # ADNLPModel
+    return CTSolvers.BuiltModel(dm, nlp, CTSolvers.NoCache())  # ADNLP needs no aux cache
+end
 
-    # Build the closures that know how to extract solutions
-    adnlp_sol_builder = ADNLPSolutionBuilder(stats -> extract_solution(ocp, discretizer, stats))
-    exa_sol_builder = ExaSolutionBuilder(stats -> extract_solution(ocp, discretizer, stats))
-
-    return DiscretizedModel(
-        ocp, adnlp_builder, exa_builder, adnlp_sol_builder, exa_sol_builder,
-    )
+function CTSolvers.build_solution(
+    built::CTSolvers.BuiltModel{<:CTSolvers.DiscretizedModel{<:Any,<:Collocation}},
+    nlp_solution::SolverCore.AbstractExecutionStats,
+    ::CTSolvers.Modelers.ADNLP,
+)
+    docp = built.problem.cache.docp
+    return build_OCP_solution(docp, nlp_solution)      # OCP solution
 end
 ```
 
@@ -179,53 +113,35 @@ end
 
 The complete data flow from user call to solution:
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Solve as CommonSolve.solve
-    participant Modeler as Modelers.ADNLP
-    participant Problem as DOCP
-    participant ModelBuilder as ADNLPModelBuilder
-    participant Solver as Solvers.Ipopt
-    participant SolBuilder as ADNLPSolutionBuilder
-
-    User->>Solve: solve(docp, x0, modeler, solver)
-    Solve->>Modeler: build_model(docp, x0, modeler)
-    Modeler->>Problem: get_adnlp_model_builder(docp)
-    Problem-->>Modeler: ADNLPModelBuilder
-    Modeler->>ModelBuilder: builder(x0; backend=:optimized, ...)
-    ModelBuilder-->>Modeler: ADNLPModel
-    Modeler-->>Solve: nlp
-
-    Solve->>Solver: solve(nlp, solver)
-    Solver-->>Solve: stats
-
-    Solve->>Modeler: build_solution(docp, stats, modeler)
-    Modeler->>Problem: get_adnlp_solution_builder(docp)
-    Problem-->>Modeler: ADNLPSolutionBuilder
-    Modeler->>SolBuilder: builder(stats)
-    SolBuilder-->>Modeler: OCPSolution
-    Modeler-->>Solve: solution
-    Solve-->>User: solution
+```text
+User
+ │
+ ▼  solve(docp, x0, modeler, solver)
+CommonSolve.solve
+ │
+ ├─► build_model(docp, x0, modeler)
+ │       │
+ │       ├─► (CTDirect) build_adnlp_model(docp, x0)  →  ADNLPModel
+ │       └─► BuiltModel(docp, nlp, NoCache())
+ │
+ ├─► solve(nlp, solver) → ExecutionStats
+ │
+ └─► build_solution(built, stats, modeler)
+         └─► (CTDirect) extract_ocp_solution(docp, stats)  →  OCPSolution
 ```
 
-The key insight is that the **problem provides the builders** and the **modeler orchestrates the calls**. This separation allows:
+Separation of responsibilities:
 
-- Different problem types to provide different builders
-- The same modeler to work with any problem that implements the contract
-- Builders to capture problem-specific data without exposing it to the modeler
+- **CTSolvers** declares `build_model`/`build_solution` and owns the `NotImplemented` stubs
+- **CTDirect** provides the concrete methods dispatched on `(DiscretizedModel, ADNLP/Exa)`
+- **CTSolvers** orchestrates the pipeline in `CommonSolve.solve` without knowing NLP internals
 
 ## Summary: Adding a New Optimization Problem
 
-To add a new optimization problem type:
+To add a new optimization problem type that plugs into the CTSolvers pipeline:
 
-1. Define `MyProblem <: AbstractOptimizationProblem` with fields for your problem data and builders
-2. Implement `get_adnlp_model_builder(prob::MyProblem)` — return an `ADNLPModelBuilder`
-3. Implement `get_adnlp_solution_builder(prob::MyProblem)` — return an `ADNLPSolutionBuilder`
-4. Optionally implement `get_exa_model_builder` and `get_exa_solution_builder` for ExaModels support
-5. Create a construction function that builds the builders from your problem data
-
-The builders should be callable objects that:
-
-- **Model builders**: take `(initial_guess; kwargs...)` and return an NLP model
-- **Solution builders**: take `(nlp_stats)` and return a problem-specific solution
+1. Define `MyProblem <: AbstractOptimizationProblem` with your data fields
+2. Implement `CTSolvers.Optimization.build_model(prob::MyProblem, init, modeler::ADNLP)` returning a `BuiltModel`
+3. Implement `CTSolvers.Optimization.build_solution(built::BuiltModel{<:MyProblem}, stats, modeler::ADNLP)` returning your domain solution
+4. Optionally add methods for other modelers (`Exa`, future backends) following the same dispatch pattern
+5. If `build_model` produces auxiliary data needed by `build_solution`, store it in a custom `<: CTBase.Core.AbstractCache` subtype rather than `NoCache`

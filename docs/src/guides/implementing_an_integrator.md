@@ -17,27 +17,21 @@ An integrator must satisfy **three contracts**:
 2. **Solve contract** — `CommonSolve.solve(prob, integrator; options, unsafe) → AbstractIntegrationResult`
 3. **Tag Dispatch** — separates type definition from backend implementation
 
-```mermaid
-classDiagram
-    class AbstractStrategy {
-        <<abstract>>
-        id(::Type)::Symbol
-        metadata(::Type)::StrategyMetadata
-        options(instance)::StrategyOptions
-    }
+```text
+AbstractStrategy
+├─ id(::Type)       → Symbol
+├─ metadata(::Type) → StrategyMetadata
+└─ options(inst)    → StrategyOptions
 
-    class AbstractIntegrator {
-        <<abstract>>
-        solve(prob, integ; options, unsafe) → AbstractIntegrationResult
-        merge(segments) → AbstractIntegrationResult
-    }
-
-    AbstractStrategy <|-- AbstractIntegrator
-    AbstractIntegrator <|-- Integrators.AbstractSciMLIntegrator
-    Integrators.AbstractSciMLIntegrator <|-- Integrators.SciML
+AbstractIntegrator <: AbstractStrategy
+└─ solve(prob, integ; options, unsafe) → AbstractIntegrationResult
+   └─► AbstractSciMLIntegrator
+           └─► Integrators.SciML
 ```
 
-Unlike the NLP solver, there is **no callable** — the solve contract is expressed directly as `CommonSolve.solve` methods, problem-first, exactly like the mid-level `solve(nlp, solver)` of the NLP side. The generic stub throws `NotImplemented` with guidance.
+Unlike the NLP solver, there is **no callable** — the solve contract is expressed directly as
+`CommonSolve.solve` methods, problem-first, exactly like the mid-level `solve(nlp, solver)` of
+the NLP side. The generic stub throws `NotImplemented` with guidance.
 
 ```@example integrator
 using CTSolvers
@@ -48,12 +42,18 @@ nothing # hide
 Without the extension loaded, constructing an integrator throws `ExtensionError`:
 
 ```@repl integrator
+try # hide
 CTSolvers.Integrators.SciML()
+catch e # hide
+showerror(IOContext(stdout, :color => false), e) # hide
+end # hide
 ```
 
 ## The Integration Result
 
-An integrator does not return a raw ODE solution; it returns a subtype of [`Integrators.AbstractIntegrationResult`](@ref) that exposes three semantic accessors, decoupling consumers from the backend solution type:
+An integrator does not return a raw ODE solution; it returns a subtype of
+[`Integrators.AbstractIntegrationResult`](@ref) that exposes three semantic accessors,
+decoupling consumers from the backend solution type:
 
 - `final_state(r)` — the final state vector
 - `times(r)` — the vector of time points
@@ -74,7 +74,8 @@ struct SciMLTag <: Core.AbstractTag end
 
 ### Step 2 — Define the struct
 
-The integrator stores the validated `options` plus two pre-computed option dictionaries — one for *point* (final-state) integration and one for *trajectory* integration:
+The integrator stores the validated `options` plus two pre-computed option dictionaries —
+one for *point* (final-state) integration and one for *trajectory* integration:
 
 ```julia
 struct SciML{O,OP,OT} <: AbstractSciMLIntegrator
@@ -84,7 +85,9 @@ struct SciML{O,OP,OT} <: AbstractSciMLIntegrator
 end
 ```
 
-The two dictionaries are exposed through the [`options_point`](@ref) / [`options_trajectory`](@ref) accessors. Consumers (e.g. CTFlows) decide which one to pass to `solve` based on what they need; CTSolvers does not own that decision.
+The two dictionaries are exposed through the [`options_point`](@ref) / [`options_trajectory`](@ref)
+accessors. Consumers (e.g. CTFlows) decide which one to pass to `solve` based on what they need;
+CTSolvers does not own that decision.
 
 ### Step 3 — Implement `id`
 
@@ -119,25 +122,20 @@ end
 
 ## The Tag Dispatch Pattern
 
-```mermaid
-flowchart LR
-    subgraph src["src/Integrators/"]
-        Type["SciML <: AbstractSciMLIntegrator"]
-        Tag["SciMLTag <: Core.AbstractTag"]
-        Ctor["SciML(; kwargs...)\n→ build_sciml_integrator(SciMLTag; kwargs...)"]
-        Stub["build_sciml_integrator(::Type{<:AbstractTag})\n→ ExtensionError"]
-        SolveStub["solve(prob, ::AbstractIntegrator)\n→ NotImplemented"]
-    end
+```text
+src/Integrators/sciml.jl                ext/CTSolversSciMLIntegrator.jl
+────────────────────────────────────    ─────────────────────────────────────────
+SciML <: AbstractSciMLIntegrator        metadata(::Type{SciML})
+SciMLTag <: Core.AbstractTag              → StrategyMetadata(option defs...)
 
-    subgraph ext["ext/CTSolversSciMLIntegrator.jl"]
-        Meta["metadata(::Type{SciML})\n→ StrategyMetadata(...)"]
-        Build["build_sciml_integrator(::Type{SciMLTag})\n→ SciML(opts, ...)"]
-        Solve["solve(prob::AbstractODEProblem, ::SciML)\n→ SciMLIntegrationResult"]
-    end
+SciML(; kwargs...)                      build_sciml_integrator(::Type{SciMLTag}; …)
+  → build_sciml_integrator(SciMLTag; …)   → SciML(opts, options_point, options_traj)
 
-    Ctor -->|"tag dispatch"| Build
-    Stub -.->|"overridden by"| Build
-    SolveStub -.->|"overridden by"| Solve
+build_sciml_integrator(::AbstractTag)   solve(prob::AbstractODEProblem, ::SciML)
+  → ExtensionError(:OrdinaryDiffEqTsit5)  → SciMLIntegrationResult
+
+solve(prob, ::AbstractIntegrator)       SciMLIntegrationResult (with accessors)
+  → NotImplemented
 ```
 
 The split is:
@@ -154,7 +152,7 @@ This keeps CTSolvers lightweight — `SciMLBase`/`DiffEqBase` are only loaded wh
 
 ### File structure
 
-```
+```text
 ext/
 ├── CTSolversSciMLIntegrator.jl     # metadata + builder + solve + result + merge
 ├── CTSolversForwardDiff.jl         # deepvalue / real_norm for ForwardDiff.Dual
@@ -233,16 +231,19 @@ using CTSolvers
 using OrdinaryDiffEqTsit5     # activates CTSolversSciMLIntegrator + default Tsit5
 using CommonSolve
 
-integ = Integrators.SciML(alg = Tsit5())
+integ = CTSolvers.Integrators.SciML(alg = Tsit5())
 prob  = ODEProblem((u, p, t) -> -u, [1.0], (0.0, 1.0))
 
-r = solve(prob, integ)          # → SciMLIntegrationResult
-Integrators.final_state(r)      # ≈ [exp(-1)]
-Integrators.evaluate_at(r, 0.5) # ≈ [exp(-0.5)]
+r = solve(prob, integ)                  # → SciMLIntegrationResult
+CTSolvers.Integrators.final_state(r)    # ≈ [exp(-1)]
+CTSolvers.Integrators.evaluate_at(r, 0.5)  # ≈ [exp(-0.5)]
 ```
 
 !!! note "Where the domain glue lives"
-    Turning a control system/configuration into an `ODEProblem` (`build_problem`) and choosing point vs trajectory options (`build_options`) is **not** part of CTSolvers — it belongs to the consuming package (e.g. CTFlows). CTSolvers only integrates a ready-made `ODEProblem` and exposes the `options_point`/`options_trajectory` accessors.
+    Turning a control system/configuration into an `ODEProblem` (`build_problem`) and choosing
+    point vs trajectory options (`build_options`) is **not** part of CTSolvers — it belongs to
+    the consuming package (e.g. CTFlows). CTSolvers only integrates a ready-made `ODEProblem`
+    and exposes the `options_point`/`options_trajectory` accessors.
 
 ## Summary: Adding a New Integrator
 

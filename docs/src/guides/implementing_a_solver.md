@@ -7,50 +7,36 @@ CurrentModule = CTSolvers
 This guide explains how to implement an optimization solver in CTSolvers. Solvers are strategies that wrap NLP backend libraries (Ipopt, MadNLP, Knitro, etc.) behind a unified interface. We use **Solvers.Ipopt** as the reference example throughout.
 
 !!! tip "Prerequisites"
-    Read [Architecture](@ref) first. A solver is a strategy (see Implementing a Strategy in CTBase.jl documentation) with two additional requirements: a **callable interface** and a **Tag Dispatch** extension.
+    Read [Architecture](@ref) first. A solver is a strategy (see Implementing a Strategy in CTBase.jl documentation) with two additional requirements: a **solve contract** and a **Tag Dispatch** extension.
 
 ## The AbstractNLPSolver Contract
 
 A solver must satisfy **three contracts**:
 
-1. **Strategy contract** — `id`, `metadata`, `options` (inherited from `AbstractStrategy`)
-2. **Callable contract** — `(solver)(nlp; display) → ExecutionStats`
+1. **Strategy contract** — `id`, `metadata`, `options`, `_default_parameter` (inherited from `AbstractStrategy`)
+2. **Solve contract** — `CommonSolve.solve(nlp, solver; display) → ExecutionStats`
 3. **Tag Dispatch** — separates type definition from backend implementation
 
-```mermaid
-classDiagram
-    class AbstractStrategy {
-        <<abstract>>
-        id(::Type)::Symbol
-        metadata(::Type)::StrategyMetadata
-        options(instance)::StrategyOptions
-    }
+Solvers are **parameterized** by an execution parameter `P <: AbstractStrategyParameter`
+(see Strategy Parameters in CTBase.jl documentation). `Solvers.Ipopt{P<:CPU}` is CPU-only;
+`Solvers.MadNLP` and `Solvers.MadNCL` accept `Union{CPU,GPU}`.
 
-    class AbstractNLPSolver {
-        <<abstract>>
-        (solver)(nlp; display) → Stats
-    }
+```text
+AbstractStrategy
+├─ id(::Type)       → Symbol
+├─ metadata(::Type) → StrategyMetadata
+└─ options(inst)    → StrategyOptions
 
-    AbstractStrategy <|-- AbstractNLPSolver
-    AbstractNLPSolver <|-- Solvers.Ipopt
-    AbstractNLPSolver <|-- Solvers.MadNLP
-    AbstractNLPSolver <|-- Solvers.MadNCL
-    AbstractNLPSolver <|-- Solvers.Knitro
+AbstractNLPSolver <: AbstractStrategy
+└─ CommonSolve.solve(nlp, solver; display) → ExecutionStats
+   ├─► Solvers.Ipopt{P<:CPU}
+   ├─► Solvers.MadNLP{P<:Union{CPU,GPU}}
+   ├─► Solvers.MadNCL{P<:Union{CPU,GPU}}
+   ├─► Solvers.Knitro
+   └─► Solvers.Uno
 ```
 
-The default callable throws `NotImplemented` with guidance.
-
-```@example solver
-using CTSolvers
-using CTBase: CTBase
-nothing # hide
-```
-
-Without the extension loaded, constructing a solver throws `ExtensionError`:
-
-```@repl solver
-CTSolvers.Solvers.Ipopt()
-```
+The generic stub throws `NotImplemented` until a backend extension provides the typed method. Without the extension loaded, constructing a solver throws `ExtensionError`.
 
 ## Implementing the Solver Type
 
@@ -59,39 +45,60 @@ CTSolvers.Solvers.Ipopt()
 A **tag type** is a lightweight struct used for dispatch. It routes the constructor call to the right extension:
 
 ```julia
-# In src/Solvers/ipopt_solver.jl
+# In src/Solvers/ipopt.jl
 struct IpoptTag <: AbstractTag end
 ```
 
-### Step 2 — Define the struct
+### Step 2 — Define the parameterized struct
 
-Like any strategy, the solver has a single `options` field:
+Like any strategy, the solver has a single `options` field. It is parameterized by its
+execution parameter — Ipopt supports CPU only:
 
 ```julia
-struct Solvers.Ipopt <: AbstractNLPSolver
+# In module Solvers (src/Solvers/ipopt.jl)
+struct Ipopt{P<:CPU} <: AbstractNLPSolver
     options::CTBase.Strategies.StrategyOptions
 end
 ```
 
-### Step 3 — Implement `id`
+### Step 3 — Implement `id` and the default parameter
 
-The `id` is available even without the extension:
+The `id` is available even without the extension. `_default_parameter` tells the
+unparameterized constructor which parameter to use:
 
 ```@example solver
+using CTSolvers
+using CTBase
 CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)
 ```
 
-### Step 4 — Constructor with Tag Dispatch
+```julia
+CTBase.Strategies._default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+```
 
-The constructor delegates to a `build_*` function that dispatches on the tag. The stub in `src/` throws an `ExtensionError` if the extension is not loaded:
+### Step 4 — Constructors with Tag Dispatch
+
+The unparameterized constructor resolves the default parameter, then delegates to the
+parameterized one, which calls a `build_*` function dispatching on the **tag and parameter
+types** (passed as types, not instances). The stub in `src/` throws an `ExtensionError`
+until the extension is loaded:
 
 ```julia
+# Unparameterized → resolve the default parameter
 function Solvers.Ipopt(; mode::Symbol = :strict, kwargs...)
-    return build_ipopt_solver(IpoptTag(); mode = mode, kwargs...)
+    P = CTBase.Strategies._default_parameter(Solvers.Ipopt)
+    return Solvers.Ipopt{P}(; mode = mode, kwargs...)
+end
+
+# Parameterized → tag dispatch, IpoptTag and P passed as TYPES
+function Solvers.Ipopt{P}(; mode::Symbol = :strict, kwargs...) where {P<:CPU}
+    return build_ipopt_solver(IpoptTag, P; mode = mode, kwargs...)
 end
 
 # Stub — real implementation in ext/CTSolversIpopt.jl
-function build_ipopt_solver(::AbstractTag; kwargs...)
+function build_ipopt_solver(
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+)
     throw(Exceptions.ExtensionError(
         :NLPModelsIpopt;
         message = "to create Solvers.Ipopt, access options, and solve problems",
@@ -104,47 +111,84 @@ end
 Live demonstration of the `ExtensionError` for all solvers:
 
 ```@repl solver
+try # hide
 CTSolvers.Solvers.MadNLP()
+catch e # hide
+showerror(IOContext(stdout, :color => false), e) # hide
+end # hide
 ```
 
 !!! note "Why Tag Dispatch?"
-    The `metadata` (option definitions) and the callable (backend call) both live in the extension. The tag type allows the constructor in `src/` to dispatch to the extension without a direct dependency on the backend package.
+    The `metadata` (option definitions) and the solve method (backend call) both live in the extension. The tag type allows the constructor in `src/` to dispatch to the extension without a direct dependency on the backend package.
 
 ## The Tag Dispatch Pattern
 
-```mermaid
-flowchart LR
-    subgraph src["src/Solvers/ipopt_solver.jl"]
-        Type["Solvers.Ipopt <: AbstractNLPSolver"]
-        Tag["IpoptTag <: AbstractTag"]
-        Ctor["Solvers.Ipopt(; kwargs...)\n→ build_ipopt_solver(IpoptTag(); kwargs...)"]
-        Stub["build_ipopt_solver(::AbstractTag)\n→ ExtensionError"]
-    end
+**`src/Solvers/ipopt.jl`** — type definition and stubs, always loaded with CTSolvers:
 
-    subgraph ext["ext/CTSolversIpopt.jl"]
-        Meta["metadata(::Type{<:Solvers.Ipopt})\n→ StrategyMetadata(...)"]
-        Build["build_ipopt_solver(::IpoptTag)\n→ Solvers.Ipopt(opts)"]
-        Call["(solver::Solvers.Ipopt)(nlp)\n→ ipopt(nlp; opts...)"]
-    end
+```julia
+struct IpoptTag <: Core.AbstractTag end
 
-    Ctor -->|"tag dispatch"| Build
-    Stub -.->|"overridden by"| Build
+struct Ipopt{P<:CPU} <: AbstractNLPSolver
+    options::CTBase.Strategies.StrategyOptions
+end
+
+CTBase.Strategies.id(::Type{<:Solvers.Ipopt}) = :ipopt
+CTBase.Strategies._default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+
+# Constructors — resolve the parameter, then dispatch via tag (types, not instances)
+Solvers.Ipopt(; mode = :strict, kwargs...) =
+    Solvers.Ipopt{CTBase.Strategies._default_parameter(Solvers.Ipopt)}(; mode, kwargs...)
+
+Solvers.Ipopt{P}(; mode = :strict, kwargs...) where {P<:CPU} =
+    build_ipopt_solver(IpoptTag, P; mode, kwargs...)
+
+# Stub — throws until NLPModelsIpopt is loaded
+build_ipopt_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...) =
+    throw(Exceptions.ExtensionError(:NLPModelsIpopt))
 ```
 
-The split is:
+**`ext/CTSolversIpopt.jl`** — real implementations, loaded only with `using NLPModelsIpopt`:
 
-| Location | Contains |
-|----------|----------|
-| `src/Solvers/ipopt_solver.jl` | Struct, `id`, tag, constructor stub, `ExtensionError` fallback |
-| `ext/CTSolversIpopt.jl` | `metadata` (option definitions), `build_ipopt_solver` (real constructor), callable `(solver)(nlp)` |
+```julia
+# Option definitions (parameterized on P)
+CTBase.Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU} = StrategyMetadata(...)
+
+# Real constructor — validates options for the parameterized type and builds the struct
+build_ipopt_solver(::Type{Solvers.IpoptTag}, parameter::Type{<:AbstractStrategyParameter}; mode, kwargs...) =
+    Solvers.Ipopt{parameter}(CTBase.Strategies.build_strategy_options(Solvers.Ipopt{parameter}; mode, kwargs...))
+
+# Solve method — dispatches on NLP type and solver type
+CommonSolve.solve(nlp::NLPModels.AbstractNLPModel, solver::Solvers.Ipopt; display = true) =
+    solve_with_ipopt(nlp; options_dict(solver)...)
+```
 
 This keeps CTSolvers lightweight — `NLPModelsIpopt` is only loaded when the user does `using NLPModelsIpopt`.
+
+### Parameterization `{P}`
+
+The execution parameter `P` flows through the whole chain — constructor, `build_*`, and
+`metadata` — so a single implementation covers every supported backend. A GPU-capable
+solver simply widens the bound and provides GPU-specific defaults through the
+parameterized metadata:
+
+```julia
+struct MadNLP{P<:Union{CPU,GPU}} <: AbstractNLPSolver
+    options::CTBase.Strategies.StrategyOptions
+end
+
+# GPU-specific option defaults selected by the parameter
+CTBase.Strategies.metadata(::Type{Solvers.MadNLP{GPU}}) = StrategyMetadata(...)  # CUDA defaults
+
+Solvers.MadNLP{GPU}(max_iter = 1000)   # requires the CUDA-related extensions
+```
+
+See the Strategy Parameters guide in CTBase.jl documentation for the full parameter contract.
 
 ## Creating the Extension
 
 ### File structure
 
-```
+```text
 ext/
 └── CTSolversIpopt.jl    # Single-file extension module
 ```
@@ -163,7 +207,7 @@ CTSolversIpopt = "NLPModelsIpopt"
 
 The extension module provides three things:
 
-**1. Metadata** — option definitions with types, defaults, validators:
+**1. Metadata** — option definitions with types, defaults, validators (parameterized on `P`):
 
 ```julia
 module CTSolversIpopt
@@ -172,7 +216,7 @@ using CTSolvers, CTSolvers.Solvers, CTBase.Strategies, CTBase.Options
 using CTBase.Exceptions
 using NLPModelsIpopt, NLPModels, SolverCore
 
-function CTBase.Strategies.metadata(::Type{<:Solvers.Ipopt})
+function CTBase.Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
     return CTBase.Strategies.StrategyMetadata(
         CTBase.Options.OptionDefinition(
             name = :tol,
@@ -194,20 +238,26 @@ function CTBase.Strategies.metadata(::Type{<:Solvers.Ipopt})
 end
 ```
 
-**2. Constructor** — builds validated options and returns the solver:
+**2. Constructor** — builds validated options for the parameterized type and returns the solver:
 
 ```julia
-function Solvers.build_ipopt_solver(::Solvers.IpoptTag; mode::Symbol = :strict, kwargs...)
-    opts = CTBase.Strategies.build_strategy_options(Solvers.Ipopt; mode = mode, kwargs...)
-    return Solvers.Ipopt(opts)
+function Solvers.build_ipopt_solver(
+    ::Type{Solvers.IpoptTag},
+    parameter::Type{<:AbstractStrategyParameter};
+    mode::Symbol = :strict,
+    kwargs...,
+)
+    opts = CTBase.Strategies.build_strategy_options(Solvers.Ipopt{parameter}; mode = mode, kwargs...)
+    return Solvers.Ipopt{parameter}(opts)
 end
 ```
 
-**3. Callable** — solves the NLP problem using the backend:
+**3. Solve method** — implements `CommonSolve.solve` dispatching on the NLP type and solver type:
 
 ```julia
-function (solver::Solvers.Ipopt)(
-    nlp::NLPModels.AbstractNLPModel;
+function CommonSolve.solve(
+    nlp::NLPModels.AbstractNLPModel,
+    solver::Solvers.Ipopt;
     display::Bool = true,
 )::SolverCore.GenericExecutionStats
     options = CTBase.Strategies.options_dict(solver)
@@ -216,8 +266,8 @@ function (solver::Solvers.Ipopt)(
 end
 
 function solve_with_ipopt(nlp::NLPModels.AbstractNLPModel; kwargs...)
-    solver = NLPModelsIpopt.Solvers.Ipopt(nlp)
-    return NLPModelsIpopt.solve!(solver, nlp; kwargs...)
+    ipopt_solver = NLPModelsIpopt.IpoptSolver(nlp)
+    return NLPModelsIpopt.solve!(ipopt_solver, nlp; kwargs...)
 end
 
 end # module CTSolversIpopt
@@ -228,28 +278,19 @@ end # module CTSolversIpopt
 
 ## CommonSolve Integration
 
-CTSolvers provides a unified `CommonSolve.solve` interface at three levels:
+CTSolvers provides a unified `CommonSolve.solve` interface at two levels:
 
-```mermaid
-flowchart TB
-    subgraph High["High-Level"]
-        H["solve(problem, x0, modeler, solver)"]
-    end
+```text
+High-level:  solve(problem, x0, modeler, solver)          ← orchestration.jl
+                │
+                ├─► build_model(problem, x0, modeler)     → BuiltModel
+                │
+                ├─► CommonSolve.solve(built.nlp, solver)  → ExecutionStats
+                │
+                └─► build_solution(built, stats, modeler) → OCP Solution
 
-    subgraph Mid["Mid-Level"]
-        M["solve(nlp, solver)"]
-    end
-
-    subgraph Low["Low-Level"]
-        L["solve(any, solver)"]
-    end
-
-    H -->|"build_model → NLP"| M
-    M -->|"solver(nlp)"| Callable["solver(nlp; display)"]
-    L -->|"solver(any)"| Callable
-    H -->|"build_solution → OCP Solution"| Result["OCP Solution"]
-    M --> Stats["ExecutionStats"]
-    L --> Any["Result"]
+Mid-level:   CommonSolve.solve(nlp, solver; display)      ← backend extension
+                → ExecutionStats
 ```
 
 ### High-level: full pipeline
@@ -259,26 +300,19 @@ using CommonSolve
 
 solution = solve(problem, x0, modeler, solver)
 # Internally:
-#   1. nlp = build_model(problem, x0, modeler)
-#   2. stats = solve(nlp, solver)
-#   3. solution = build_solution(problem, stats, modeler)
+#   1. built = build_model(problem, x0, modeler)
+#   2. stats = CommonSolve.solve(built.nlp, solver)
+#   3. solution = build_solution(built, stats, modeler)
 ```
 
 ### Mid-level: NLP → Stats
 
 ```julia
-using ADNLPModels
+using ADNLPModels, NLPModelsIpopt
 
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-solver = Solvers.Ipopt(max_iter = 1000)
-stats = solve(nlp, solver; display = false)
-```
-
-### Low-level: flexible dispatch
-
-```julia
-stats = solve(any_compatible_object, solver; display = false)
-# Calls solver(any_compatible_object; display = false)
+solver = CTSolvers.Solvers.Ipopt(max_iter = 1000)
+stats = CommonSolve.solve(nlp, solver; display = false)
 ```
 
 ## Summary: Adding a New Solver
@@ -287,17 +321,17 @@ To add a new solver (e.g., `MySolver` backed by `MyBackend`):
 
 ### In `src/Solvers/`
 
-1. Define `MyTag <: AbstractTag`
-2. Define `MySolver <: AbstractNLPSolver` with `options::CTBase.Strategies.StrategyOptions`
-3. Implement `CTBase.Strategies.id(::Type{<:MySolver}) = :my_solver`
-4. Write constructor: `MySolver(; mode, kwargs...) = build_my_solver(MyTag(); mode, kwargs...)`
-5. Write stub: `build_my_solver(::AbstractTag; kwargs...) = throw(ExtensionError(...))`
+1. Define `MyTag <: Core.AbstractTag`
+2. Define the parameterized struct `MySolver{P<:CPU} <: AbstractNLPSolver` with `options::CTBase.Strategies.StrategyOptions` (widen the bound to `Union{CPU,GPU}` for GPU-capable backends)
+3. Implement `CTBase.Strategies.id(::Type{<:MySolver}) = :my_solver` and `CTBase.Strategies._default_parameter(::Type{<:MySolver}) = CPU`
+4. Write the constructor chain: `MySolver(; ...)` → `MySolver{P}(; ...)` → `build_my_solver(MyTag, P; mode, kwargs...)`
+5. Write stub: `build_my_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...) = throw(ExtensionError(...))`
 
 ### In `ext/CTSolversMyBackend.jl`
 
-6. Implement `CTBase.Strategies.metadata(::Type{<:MySolver})` with all option definitions
-7. Implement `Solvers.build_my_solver(::Solvers.MyTag; kwargs...)` — real constructor
-8. Implement `(solver::Solvers.MySolver)(nlp; display)` — callable that invokes the backend
+6. Implement `CTBase.Strategies.metadata(::Type{MySolver{P}}) where {P<:CPU}` with all option definitions
+7. Implement `Solvers.build_my_solver(::Type{Solvers.MyTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...)` — real constructor
+8. Implement `CommonSolve.solve(nlp, solver::MySolver; display)` — solve method invoking the backend
 
 ### In `Project.toml`
 
@@ -306,6 +340,5 @@ To add a new solver (e.g., `MySolver` backed by `MyBackend`):
 ### Tests
 
 10. **Contract test**: `CTBase.Strategies.id(MySolver)`, `CTBase.Strategies.metadata(MySolver)`, and `CTBase.Strategies.options(MySolver())` (requires extension loaded)
-11. **Callable test**: `solver(nlp; display = false)` returns `AbstractExecutionStats`
-12. **CommonSolve test**: `solve(nlp, solver)` works at mid-level
-13. **Extension error test**: without `using MyBackend`, `MySolver()` throws `ExtensionError`
+11. **Solve test**: `CommonSolve.solve(nlp, solver; display = false)` returns `AbstractExecutionStats`
+12. **Extension error test**: without `using MyBackend`, `MySolver()` throws `ExtensionError`

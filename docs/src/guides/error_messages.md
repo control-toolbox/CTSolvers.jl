@@ -37,7 +37,11 @@ nothing # hide
 ```
 
 ```@repl errors
+try # hide
 CTBase.Strategies.id(IncompleteStrategy)
+catch e # hide
+showerror(IOContext(stdout, :color => false), e) # hide
+end # hide
 ```
 
 **Fix**: Implement the missing method:
@@ -49,23 +53,39 @@ CTBase.Strategies.id(::Type{<:IncompleteStrategy}) = :my_strategy
 ### Strategy contract — missing `metadata`
 
 ```@repl errors
+try # hide
 CTBase.Strategies.metadata(IncompleteStrategy)
+catch e # hide
+showerror(IOContext(stdout, :color => false), e) # hide
+end # hide
 ```
 
-### Optimization problem contract — missing builder
+### Optimization problem contract — missing build_model
 
-```@example errors
+Define a problem type and a modeler, but no `(problem, modeler)` method. A dedicated block
+label (`optprob`) keeps these throwaway types out of the shared `errors` scope:
+
+```@example optprob
+using CTSolvers
 struct MinimalProblem <: CTSolvers.Optimization.AbstractOptimizationProblem end
+struct MinimalModeler <: CTSolvers.Modelers.AbstractNLPModeler end
 nothing # hide
 ```
 
-```@repl errors
-CTSolvers.Optimization.get_adnlp_model_builder(MinimalProblem())
+The generic stub in `Modelers/contract.jl` throws `NotImplemented` as soon as `build_model`
+is called with a `(problem, modeler)` pair for which no concrete method exists:
+
+```@repl optprob
+try # hide
+CTSolvers.Optimization.build_model(MinimalProblem(), nothing, MinimalModeler())
+catch e # hide
+showerror(IOContext(stdout, :color => false), e) # hide
+end # hide
 ```
 
-```@repl errors
-CTSolvers.Optimization.get_exa_model_builder(MinimalProblem())
-```
+**Fix**: Implement `build_model` and `build_solution` in the package providing the
+problem, dispatching on the concrete `(problem, modeler)` pair (see
+[Implementing an Optimization Problem](@ref)).
 
 ### Where it's thrown
 
@@ -74,10 +94,8 @@ CTSolvers.Optimization.get_exa_model_builder(MinimalProblem())
 | `CTBase.Strategies.id(::Type{T})` | Strategy type missing `id` |
 | `CTBase.Strategies.metadata(::Type{T})` | Strategy type missing `metadata` |
 | `CTBase.Strategies.options(strategy)` | Strategy instance has no `options` field and no custom getter |
-| `get_adnlp_model_builder(prob)` | Problem doesn't support ADNLPModels |
-| `get_exa_model_builder(prob)` | Problem doesn't support ExaModels |
-| `get_adnlp_solution_builder(prob)` | Problem doesn't support ADNLP solutions |
-| `get_exa_solution_builder(prob)` | Problem doesn't support Exa solutions |
+| `Optimization.build_model(prob, init, modeler)` | No concrete method for this `(problem, modeler)` pair |
+| `Optimization.build_solution(built, stats, modeler)` | No concrete method for this `(built, modeler)` pair |
 
 ## IncorrectArgument — Invalid Arguments
 
@@ -92,7 +110,11 @@ def = CTBase.Options.OptionDefinition(
     name = :max_iter, type = Integer, default = 100,
     description = "Maximum iterations",
 )
+try # hide
 CTBase.Options.extract_option((max_iter = "hello",), def)
+catch e # hide
+showerror(IOContext(stdout, :color => false), e) # hide
+end # hide
 ```
 
 **Fix**: Provide a value of the correct type.
@@ -117,7 +139,11 @@ nothing # hide
 ```
 
 ```@repl errors
+try # hide
 CTBase.Options.extract_option((tol = -1.0,), bad_def)
+catch e # hide
+showerror(IOContext(stdout, :color => false), e) # hide
+end # hide
 ```
 
 **Fix**: Provide a value that satisfies the validator constraint.
@@ -127,10 +153,14 @@ CTBase.Options.extract_option((tol = -1.0,), bad_def)
 When the default value doesn't match the declared type:
 
 ```@repl errors
+try # hide
 CTBase.Options.OptionDefinition(
     name = :count, type = Integer, default = "hello",
     description = "A count",
 )
+catch e # hide
+showerror(IOContext(stdout, :color => false), e) # hide
+end # hide
 ```
 
 **Fix**: Ensure the default value matches the declared type.
@@ -138,7 +168,11 @@ CTBase.Options.OptionDefinition(
 ### Invalid OptionValue source
 
 ```@repl errors
+try # hide
 CTBase.Options.OptionValue(42, :invalid_source)
+catch e # hide
+showerror(IOContext(stdout, :color => false), e) # hide
+end # hide
 ```
 
 **Fix**: Use `:default`, `:user`, or `:computed`.
@@ -148,14 +182,18 @@ CTBase.Options.OptionValue(42, :invalid_source)
 Thrown when a solver requires a package extension that hasn't been loaded.
 
 ```@repl errors
-CTSolvers.Solvers.Ipopt()
+try # hide
+CTSolvers.Solvers.MadNLP()
+catch e # hide
+showerror(IOContext(stdout, :color => false), e) # hide
+end # hide
 ```
 
 **Fix**: Load the required package before using the solver:
 
 ```julia
-using NLPModelsIpopt  # loads the CTSolversIpopt extension
-solver = Solvers.Ipopt(max_iter = 1000)
+using MadNLP  # loads the CTSolversMadNLP extension
+solver = Solvers.MadNLP(max_iter = 1000)
 ```
 
 ### Where it's thrown
@@ -166,62 +204,6 @@ solver = Solvers.Ipopt(max_iter = 1000)
 | `Solvers.MadNLP` | `MadNLP` |
 | `Solvers.Knitro` | `KNITRO` |
 | `Solvers.MadNCL` | `MadNCL` |
-
-## Display Examples
-
-### OptionDefinition display
-
-```@example errors
-CTBase.Options.OptionDefinition(
-    name = :max_iter, type = Integer, default = 1000,
-    description = "Maximum number of iterations",
-    aliases = (:maxiter,),
-)
-```
-
-### OptionValue display
-
-```@example errors
-CTBase.Options.OptionValue(1000, :user)
-```
-
-```@example errors
-CTBase.Options.OptionValue(1e-8, :default)
-```
-
-### NotProvided display
-
-```@example errors
-CTBase.Options.NotProvided
-```
-
-### Option extraction — successful
-
-```@example errors
-def = CTBase.Options.OptionDefinition(
-    name = :grid_size, type = Int, default = 100,
-    description = "Grid size", aliases = (:n,),
-)
-opt_value, remaining = CTBase.Options.extract_option((n = 200, tol = 1e-6), def)
-println("Extracted: ", opt_value)
-println("Remaining: ", remaining)
-```
-
-### Multiple option extraction
-
-```@example errors
-defs = [
-    CTBase.Options.OptionDefinition(
-        name = :grid_size, type = Int, default = 100, description = "Grid size",
-    ),
-    CTBase.Options.OptionDefinition(
-        name = :tol, type = Float64, default = 1e-6, description = "Tolerance",
-    ),
-]
-extracted, remaining = CTBase.Options.extract_options((grid_size = 200, max_iter = 1000), defs)
-println("Extracted: ", extracted)
-println("Remaining: ", remaining)
-```
 
 ## Best Practices for Error Messages
 
