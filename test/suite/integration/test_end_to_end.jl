@@ -70,9 +70,7 @@ function test_end_to_end()
                 result = MadNLP.solve!(solver)
 
                 # Step 10: Extract solver info
-                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
-                    result
-                )
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(result)
 
                 Test.@test obj isa Float64
                 Test.@test iter isa Int
@@ -189,7 +187,8 @@ function test_end_to_end()
                 # Test with different backends (all valid ADNLPModels backends)
                 for backend in [:optimized, :generic, :default]
                     modeler_backend = Modelers.ADNLP(backend=backend, show_time=false)
-                    nlp_backend = Optimization.build_model(prob, ros.init, modeler_backend).nlp
+                    nlp_backend =
+                        Optimization.build_model(prob, ros.init, modeler_backend).nlp
 
                     Test.@test nlp_backend isa ADNLPModels.ADNLPModel
                     obj = NLPModels.obj(nlp_backend, ros.init)

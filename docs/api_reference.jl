@@ -140,7 +140,6 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             title_in_menu="Integrators",
             filename="integrators",
         ),
-
     ]
 
     # ───────────────────────────────────────────────────────────────────
@@ -341,7 +340,9 @@ function generate_api_reference(src_dir::String, ext_dir::String)
             pages,
             CTBase.automatic_reference_documentation(;
                 subdirectory="api",
-                primary_modules=[CTSolversSciMLIntegrator => ext("CTSolversSciMLIntegrator.jl")],
+                primary_modules=[
+                    CTSolversSciMLIntegrator => ext("CTSolversSciMLIntegrator.jl")
+                ],
                 external_modules_to_document=[CTSolvers],
                 exclude=EXCLUDE_SYMBOLS,
                 public=true,
@@ -377,13 +378,17 @@ function generate_api_reference(src_dir::String, ext_dir::String)
     # ─────────────────────────────────────────────────────────────────--
     # Extension: OrdinaryDiffEqTsit5
     # ─────────────────────────────────────────────────────────────────--
-    CTSolversOrdinaryDiffEqTsit5 = Base.get_extension(CTSolvers, :CTSolversOrdinaryDiffEqTsit5)
+    CTSolversOrdinaryDiffEqTsit5 = Base.get_extension(
+        CTSolvers, :CTSolversOrdinaryDiffEqTsit5
+    )
     if !isnothing(CTSolversOrdinaryDiffEqTsit5)
         push!(
             pages,
             CTBase.automatic_reference_documentation(;
                 subdirectory="api",
-                primary_modules=[CTSolversOrdinaryDiffEqTsit5 => ext("CTSolversOrdinaryDiffEqTsit5.jl")],
+                primary_modules=[
+                    CTSolversOrdinaryDiffEqTsit5 => ext("CTSolversOrdinaryDiffEqTsit5.jl")
+                ],
                 external_modules_to_document=[CTSolvers],
                 exclude=EXCLUDE_SYMBOLS,
                 public=true,

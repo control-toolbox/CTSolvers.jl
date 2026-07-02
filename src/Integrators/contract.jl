@@ -43,7 +43,7 @@ in the `CTSolversSciMLIntegrator` extension. This generic stub throws `NotImplem
 See also: [`CTSolvers.Integrators.AbstractIntegrator`](@ref).
 """
 function CommonSolve.solve(prob, integ::AbstractIntegrator; kwargs...)
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "Solve not implemented for this integrator";
             required_method="CommonSolve.solve(prob, integ::$(typeof(integ)); options, unsafe)",
@@ -75,7 +75,7 @@ implement this method for their specific result types, typically in a backend ex
 See also: [`CTSolvers.Integrators.AbstractIntegrator`](@ref), [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref).
 """
 function merge(segments::AbstractVector{T}) where {T<:AbstractIntegrationResult}
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "merge not implemented for this integration result";
             required_method="merge(segments::Vector{<:$(T)})",

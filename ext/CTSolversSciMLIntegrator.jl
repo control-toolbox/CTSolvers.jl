@@ -19,7 +19,7 @@ The domain glue that turns a control system/config into an `ODEProblem` (`build_
 module CTSolversSciMLIntegrator
 
 import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
-import CommonSolve
+using CommonSolve: CommonSolve
 import CTBase.Exceptions
 import CTBase.Strategies
 import CTBase.Core
@@ -45,7 +45,9 @@ and `DiffEqBase.ODE_DEFAULT_NORM` to compute the norm.
 
 See also: [`CTSolvers.Integrators.deepvalue`](@ref), [`CTSolvers.Integrators.real_norm`](@ref).
 """
-Integrators.real_norm(u::AbstractArray, t) = DiffEqBase.ODE_DEFAULT_NORM(Integrators.deepvalue.(u), t)
+function Integrators.real_norm(u::AbstractArray, t)
+    return DiffEqBase.ODE_DEFAULT_NORM(Integrators.deepvalue.(u), t)
+end
 
 # =============================================================================
 # Strategies.metadata — option definitions for SciML
@@ -62,201 +64,201 @@ part of ForwardDiff dual numbers to ensure grid invariance (IND) when ForwardDif
 function Strategies.metadata(::Type{Integrators.SciML})
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
-            name = :alg,
-            type = SciMLBase.AbstractDEAlgorithm,
-            default = Integrators.__default_sciml_algorithm(Integrators.Tsit5Tag),
-            description = "ODE algorithm (e.g. Tsit5(), Vern6()).",
-            aliases = (:algorithm, :solver),
+            name=:alg,
+            type=SciMLBase.AbstractDEAlgorithm,
+            default=Integrators.__default_sciml_algorithm(Integrators.Tsit5Tag),
+            description="ODE algorithm (e.g. Tsit5(), Vern6()).",
+            aliases=(:algorithm, :solver),
         ),
         Strategies.OptionDefinition(;
-            name = :reltol,
-            type = Real,
-            default = 1e-8,
-            description = "Relative tolerance for the ODE solver.",
-            aliases = (:rtol, :rel_tol),
-            validator = x ->
+            name=:reltol,
+            type=Real,
+            default=1e-8,
+            description="Relative tolerance for the ODE solver.",
+            aliases=(:rtol, :rel_tol),
+            validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(
                         "Invalid reltol value";
-                        got = "reltol=$x",
-                        expected = "positive real number (> 0)",
-                        suggestion = "Provide a positive tolerance (e.g., 1e-8, 1e-10).",
-                        context = "SciML reltol validation",
+                        got="reltol=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive tolerance (e.g., 1e-8, 1e-10).",
+                        context="SciML reltol validation",
                     ),
                 ),
         ),
         Strategies.OptionDefinition(;
-            name = :abstol,
-            type = Real,
-            default = 1e-8,
-            description = "Absolute tolerance for the ODE solver.",
-            aliases = (:atol, :abs_tol),
-            validator = x ->
+            name=:abstol,
+            type=Real,
+            default=1e-8,
+            description="Absolute tolerance for the ODE solver.",
+            aliases=(:atol, :abs_tol),
+            validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(
                         "Invalid abstol value";
-                        got = "abstol=$x",
-                        expected = "positive real number (> 0)",
-                        suggestion = "Provide a positive tolerance (e.g., 1e-8, 1e-10).",
-                        context = "SciML abstol validation",
+                        got="abstol=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive tolerance (e.g., 1e-8, 1e-10).",
+                        context="SciML abstol validation",
                     ),
                 ),
         ),
         Strategies.OptionDefinition(;
-            name = :maxiters,
-            type = Integer,
-            default = Core.NotProvided,
-            description = "Maximum number of solver iterations.",
+            name=:maxiters,
+            type=Integer,
+            default=Core.NotProvided,
+            description="Maximum number of solver iterations.",
             aliases=(:max_iters, :max_iter, :maxiter, :max_iterations, :maxit),
-            validator = x ->
+            validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(
                         "Invalid maxiters value";
-                        got = "maxiters=$x",
-                        expected = "positive integer (> 0)",
-                        suggestion = "Provide a positive iteration count (e.g., 10^5).",
-                        context = "SciML maxiters validation",
+                        got="maxiters=$x",
+                        expected="positive integer (> 0)",
+                        suggestion="Provide a positive iteration count (e.g., 10^5).",
+                        context="SciML maxiters validation",
                     ),
                 ),
         ),
         Strategies.OptionDefinition(;
-            name = :dt,
-            type = Real,
-            default = Core.NotProvided,
-            description = "Fixed step size (used when adaptive=false).",
-            aliases = (:dt0, :timestep),
-            validator = x ->
+            name=:dt,
+            type=Real,
+            default=Core.NotProvided,
+            description="Fixed step size (used when adaptive=false).",
+            aliases=(:dt0, :timestep),
+            validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(
                         "Invalid dt value";
-                        got = "dt=$x",
-                        expected = "positive real number (> 0)",
-                        suggestion = "Provide a positive step size (e.g., 0.01).",
-                        context = "SciML dt validation",
+                        got="dt=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive step size (e.g., 0.01).",
+                        context="SciML dt validation",
                     ),
                 ),
         ),
         Strategies.OptionDefinition(;
-            name = :adaptive,
-            type = Bool,
-            default = Core.NotProvided,
-            description = "Whether to use adaptive step-size control.",
-            aliases = (:adaptive_step, :adaptive_stepping),
+            name=:adaptive,
+            type=Bool,
+            default=Core.NotProvided,
+            description="Whether to use adaptive step-size control.",
+            aliases=(:adaptive_step, :adaptive_stepping),
         ),
         Strategies.OptionDefinition(;
-            name = :save_everystep,
-            type = Union{Bool, Symbol},
-            default = :auto,
-            description = "Save the solution at every solver step. Set `true`/`false` to force, or `:auto` to resolve to `false` for point integration and `true` for trajectory integration.",
+            name=:save_everystep,
+            type=Union{Bool,Symbol},
+            default=:auto,
+            description="Save the solution at every solver step. Set `true`/`false` to force, or `:auto` to resolve to `false` for point integration and `true` for trajectory integration.",
         ),
         Strategies.OptionDefinition(;
-            name = :saveat,
-            type = Union{Real, AbstractVector},
-            default = Core.NotProvided,
-            description = "Times at which to save the solution (Vector or range).",
-            aliases = (:save_at, :save_times),
+            name=:saveat,
+            type=Union{Real,AbstractVector},
+            default=Core.NotProvided,
+            description="Times at which to save the solution (Vector or range).",
+            aliases=(:save_at, :save_times),
         ),
         Strategies.OptionDefinition(;
-            name = :dense,
-            type = Union{Bool, Symbol},
-            default = :auto,
-            description = "Dense output. Set `true`/`false` to force, or `:auto` to resolve to `false` for point integration and `true` for trajectory integration.",
+            name=:dense,
+            type=Union{Bool,Symbol},
+            default=:auto,
+            description="Dense output. Set `true`/`false` to force, or `:auto` to resolve to `false` for point integration and `true` for trajectory integration.",
         ),
         Strategies.OptionDefinition(;
-            name = :save_idxs,
-            type = AbstractVector{<:Integer},
-            default = Core.NotProvided,
-            description = "Indices of components to save (Vector of integers).",
-            aliases = (:saveindices, :save_indices),
+            name=:save_idxs,
+            type=AbstractVector{<:Integer},
+            default=Core.NotProvided,
+            description="Indices of components to save (Vector of integers).",
+            aliases=(:saveindices, :save_indices),
         ),
         Strategies.OptionDefinition(;
-            name = :tstops,
-            type = AbstractVector{<:Real},
-            default = Core.NotProvided,
-            description = "Extra times the solver must step to (for discontinuities).",
-            aliases = (:t_stops, :stop_times),
+            name=:tstops,
+            type=AbstractVector{<:Real},
+            default=Core.NotProvided,
+            description="Extra times the solver must step to (for discontinuities).",
+            aliases=(:t_stops, :stop_times),
         ),
         Strategies.OptionDefinition(;
-            name = :d_discontinuities,
-            type = AbstractVector{<:Real},
-            default = Core.NotProvided,
-            description = "Locations of discontinuities in low-order derivatives.",
+            name=:d_discontinuities,
+            type=AbstractVector{<:Real},
+            default=Core.NotProvided,
+            description="Locations of discontinuities in low-order derivatives.",
         ),
         Strategies.OptionDefinition(;
-            name = :dtmax,
-            type = Real,
-            default = Core.NotProvided,
-            description = "Maximum step size for adaptive timestepping.",
-            aliases = (:max_dt, :dt_max),
-            validator = x ->
+            name=:dtmax,
+            type=Real,
+            default=Core.NotProvided,
+            description="Maximum step size for adaptive timestepping.",
+            aliases=(:max_dt, :dt_max),
+            validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(
                         "Invalid dtmax value";
-                        got = "dtmax=$x",
-                        expected = "positive real number (> 0)",
-                        suggestion = "Provide a positive maximum step size (e.g., 0.1).",
-                        context = "SciML dtmax validation",
+                        got="dtmax=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive maximum step size (e.g., 0.1).",
+                        context="SciML dtmax validation",
                     ),
                 ),
         ),
         Strategies.OptionDefinition(;
-            name = :dtmin,
-            type = Real,
-            default = Core.NotProvided,
-            description = "Minimum step size for adaptive timestepping.",
-            aliases = (:min_dt, :dt_min),
-            validator = x ->
+            name=:dtmin,
+            type=Real,
+            default=Core.NotProvided,
+            description="Minimum step size for adaptive timestepping.",
+            aliases=(:min_dt, :dt_min),
+            validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(
                         "Invalid dtmin value";
-                        got = "dtmin=$x",
-                        expected = "positive real number (> 0)",
-                        suggestion = "Provide a positive minimum step size (e.g., 1e-6).",
-                        context = "SciML dtmin validation",
+                        got="dtmin=$x",
+                        expected="positive real number (> 0)",
+                        suggestion="Provide a positive minimum step size (e.g., 1e-6).",
+                        context="SciML dtmin validation",
                     ),
                 ),
         ),
         Strategies.OptionDefinition(;
-            name = :force_dtmin,
-            type = Bool,
-            default = Core.NotProvided,
-            description = "Whether to continue forcing minimum dt usage.",
+            name=:force_dtmin,
+            type=Bool,
+            default=Core.NotProvided,
+            description="Whether to continue forcing minimum dt usage.",
         ),
         Strategies.OptionDefinition(;
-            name = :callback,
-            type = Any,
-            default = Core.NotProvided,
-            description = "Callback function for event handling.",
-            aliases = (:callbacks, :cb),
+            name=:callback,
+            type=Any,
+            default=Core.NotProvided,
+            description="Callback function for event handling.",
+            aliases=(:callbacks, :cb),
         ),
         Strategies.OptionDefinition(;
-            name = :progress,
-            type = Bool,
-            default = Core.NotProvided,
-            description = "Whether to show progress bar.",
-            aliases = (:verbose,),
+            name=:progress,
+            type=Bool,
+            default=Core.NotProvided,
+            description="Whether to show progress bar.",
+            aliases=(:verbose,),
         ),
         Strategies.OptionDefinition(;
-            name = :save_start,
-            type = Union{Bool, Symbol},
-            default = :auto,
-            description = "Save initial condition in solution. Set `true`/`false` to force, or `:auto` to resolve to `false` for point integration and `true` for trajectory integration.",
+            name=:save_start,
+            type=Union{Bool,Symbol},
+            default=:auto,
+            description="Save initial condition in solution. Set `true`/`false` to force, or `:auto` to resolve to `false` for point integration and `true` for trajectory integration.",
         ),
         Strategies.OptionDefinition(;
-            name = :save_end,
-            type = Bool,
-            default = Core.NotProvided,
-            description = "Whether to force saving the final timepoint.",
+            name=:save_end,
+            type=Bool,
+            default=Core.NotProvided,
+            description="Whether to force saving the final timepoint.",
         ),
         Strategies.OptionDefinition(;
-            name = :internalnorm,
-            type = Function,
-            default = Integrators.real_norm,
-            description = "Internal norm for adaptive step-size control. " *
-                          "Defaults to `real_norm`, which extracts the primal (Float64) " *
-                          "part of ForwardDiff dual numbers to ensure grid invariance (IND) " *
-                          "when ForwardDiff is loaded. Set to `DiffEqBase.ODE_DEFAULT_NORM` to use the SciML default.",
-            aliases = (:internal_norm, :norm),
+            name=:internalnorm,
+            type=Function,
+            default=Integrators.real_norm,
+            description="Internal norm for adaptive step-size control. " *
+                        "Defaults to `real_norm`, which extracts the primal (Float64) " *
+                        "part of ForwardDiff dual numbers to ensure grid invariance (IND) " *
+                        "when ForwardDiff is loaded. Set to `DiffEqBase.ODE_DEFAULT_NORM` to use the SciML default.",
+            aliases=(:internal_norm, :norm),
         ),
     )
 end
@@ -309,9 +311,9 @@ cached dictionaries `options_point` (`:auto` → `false`) and `options_trajector
 See also: [`CTSolvers.Integrators.SciML`](@ref).
 """
 function Integrators.build_sciml_integrator(
-    ::Type{Integrators.SciMLTag}; mode::Symbol = :strict, kwargs...,
+    ::Type{Integrators.SciMLTag}; mode::Symbol=:strict, kwargs...
 )
-    opts = Strategies.build_strategy_options(Integrators.SciML; mode = mode, kwargs...)
+    opts = Strategies.build_strategy_options(Integrators.SciML; mode=mode, kwargs...)
     raw = Strategies.options_dict(opts)
 
     # Check if algorithm is missing and raise PreconditionError
@@ -320,11 +322,11 @@ function Integrators.build_sciml_integrator(
         throw(
             Exceptions.PreconditionError(
                 "No ODE algorithm specified and OrdinaryDiffEqTsit5 is not loaded";
-                reason = "alg is missing",
-                suggestion = "Load OrdinaryDiffEqTsit5: using OrdinaryDiffEqTsit5\n" *
-                            "Or specify an algorithm explicitly: SciML(alg=Vern6())\n" *
-                            "Note: when specifying an algorithm, also load its package (e.g., using OrdinaryDiffEqVerner for Vern6)",
-                context = "SciML integrator construction",
+                reason="alg is missing",
+                suggestion="Load OrdinaryDiffEqTsit5: using OrdinaryDiffEqTsit5\n" *
+                           "Or specify an algorithm explicitly: SciML(alg=Vern6())\n" *
+                           "Note: when specifying an algorithm, also load its package (e.g., using OrdinaryDiffEqVerner for Vern6)",
+                context="SciML integrator construction",
             ),
         )
     end
@@ -341,7 +343,7 @@ function Integrators.build_sciml_integrator(
         get(options_trajectory, key, :auto) === :auto && (options_trajectory[key] = true)
     end
 
-    return Integrators.SciML{typeof(opts), typeof(options_point), typeof(options_trajectory)}(
+    return Integrators.SciML{typeof(opts),typeof(options_point),typeof(options_trajectory)}(
         opts, options_point, options_trajectory
     )
 end
@@ -361,7 +363,8 @@ interface.
 # Fields
 - `ode_sol::S`: The raw SciML ODE solution.
 """
-struct SciMLIntegrationResult{S<:SciMLBase.AbstractODESolution} <: Integrators.AbstractIntegrationResult
+struct SciMLIntegrationResult{S<:SciMLBase.AbstractODESolution} <:
+       Integrators.AbstractIntegrationResult
     ode_sol::S
 end
 
@@ -400,12 +403,14 @@ function Integrators.merge(segments::AbstractVector{<:SciMLIntegrationResult})
     ode_sols = [r.ode_sol for r in segments]
 
     if isempty(ode_sols)
-        throw(Exceptions.IncorrectArgument(
-            "Cannot merge empty sequence of segments";
-            got = "0 segments",
-            expected = "at least 1 segment",
-            context = "SciML merge",
-        ))
+        throw(
+            Exceptions.IncorrectArgument(
+                "Cannot merge empty sequence of segments";
+                got="0 segments",
+                expected="at least 1 segment",
+                context="SciML merge",
+            ),
+        )
     end
 
     if length(ode_sols) == 1
@@ -423,9 +428,12 @@ function Integrators.merge(segments::AbstractVector{<:SciMLIntegrationResult})
 
     sol1 = ode_sols[1]
     merged_sol = DiffEqBase.build_solution(
-        sol1.prob, sol1.alg, t_merged, u_merged;
-        retcode = SciMLBase.ReturnCode.Success,
-        dense = false,
+        sol1.prob,
+        sol1.alg,
+        t_merged,
+        u_merged;
+        retcode=SciMLBase.ReturnCode.Success,
+        dense=false,
     )
 
     return SciMLIntegrationResult(merged_sol)
@@ -445,12 +453,14 @@ Check the return code of a SciML ODE solution and throw `SolverFailure` if integ
 """
 function _check_retcode(sol, unsafe)
     if !unsafe && !SciMLBase.successful_retcode(sol.retcode)
-        throw(Exceptions.SolverFailure(
-            "ODE integration failed";
-            retcode = string(sol.retcode),
-            suggestion = "Try tightening tolerances (reltol, abstol) or changing the solver algorithm.",
-            context = "SciML solve",
-        ))
+        throw(
+            Exceptions.SolverFailure(
+                "ODE integration failed";
+                retcode=string(sol.retcode),
+                suggestion="Try tightening tolerances (reltol, abstol) or changing the solver algorithm.",
+                context="SciML solve",
+            ),
+        )
     end
 end
 
@@ -472,8 +482,8 @@ Returns a [`SciMLIntegrationResult`](@ref) wrapping the raw `ODESolution`.
 function CommonSolve.solve(
     prob::SciMLBase.AbstractODEProblem,
     integ::Integrators.SciML;
-    options = Integrators.options_trajectory(integ),
-    unsafe = Integrators.__unsafe(),
+    options=Integrators.options_trajectory(integ),
+    unsafe=Integrators.__unsafe(),
 )
     ode_sol = SciMLBase.solve(prob; options...)
     _check_retcode(ode_sol, unsafe)

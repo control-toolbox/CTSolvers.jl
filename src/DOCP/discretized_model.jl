@@ -28,9 +28,7 @@ multiple dispatch on `(DiscretizedModel, modeler)` through the `build_model` /
 See also: `ocp_model`, `discretize`, `build_model`, `build_solution`.
 """
 struct DiscretizedModel{
-    TO<:CTModels.AbstractModel,
-    TD<:AbstractDiscretizer,
-    TC<:Core.AbstractCache,
+    TO<:CTModels.AbstractModel,TD<:AbstractDiscretizer,TC<:Core.AbstractCache
 } <: AbstractOptimizationProblem
     ocp::TO
     discretizer::TD

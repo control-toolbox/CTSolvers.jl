@@ -6,7 +6,7 @@ import CTBase.Strategies
 using OrdinaryDiffEqTsit5: OrdinaryDiffEqTsit5, Tsit5
 using SciMLBase: SciMLBase, ODEProblem
 using DiffEqBase: DiffEqBase
-import CommonSolve
+using CommonSolve: CommonSolve
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
@@ -44,7 +44,8 @@ function test_type_stability()
             Test.@test_nowarn Test.@inferred Integrators.options_point(integ)
             Test.@test_nowarn Test.@inferred Integrators.options_trajectory(integ)
             Test.@test Test.@inferred(Integrators.options_point(integ)) isa Dict{Symbol,Any}
-            Test.@test Test.@inferred(Integrators.options_trajectory(integ)) isa Dict{Symbol,Any}
+            Test.@test Test.@inferred(Integrators.options_trajectory(integ)) isa
+                Dict{Symbol,Any}
         end
 
         # ====================================================================

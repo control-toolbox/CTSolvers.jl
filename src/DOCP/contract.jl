@@ -23,7 +23,7 @@ concrete type, e.g. `CTSolvers.discretize(ocp, ::Collocation)` in CTDirect.
 See also: `build_model`, `build_solution`.
 """
 function discretize(ocp::CTModels.AbstractModel, discretizer::AbstractDiscretizer)
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "discretize not implemented";
             required_method="CTSolvers.discretize(ocp, ::$(typeof(discretizer)))",
