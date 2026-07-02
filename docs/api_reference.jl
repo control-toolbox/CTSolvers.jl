@@ -58,6 +58,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                 joinpath("Optimization", "Optimization.jl"),
                 joinpath("Optimization", "abstract_types.jl"),
                 joinpath("Optimization", "built_model.jl"),
+                joinpath("Optimization", "building.jl"),
             ),
         ),
         (
