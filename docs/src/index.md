@@ -1,24 +1,16 @@
 # CTSolvers.jl
 
-```@meta
-CurrentModule = CTSolvers
-```
+`CTSolvers.jl` is the **resolution layer** of the [control-toolbox](https://github.com/control-toolbox) ecosystem. It provides the infrastructure — solvers, modelers, integrators, and abstract problem types — used by upstream packages to solve optimal control problems.
 
-The `CTSolvers.jl` package is part of the [control-toolbox ecosystem](https://github.com/control-toolbox).
-It provides the **solution layer** for optimal control problems:
+!!! info "CTSolvers and its consumers"
+    **CTSolvers** provides the *resolution infrastructure*; it does not call it directly.
+    Two packages build on top of it:
 
-- **CTBase.Options** — flexible configuration with provenance tracking and validation
-- **CTBase.Strategies** — two-level contract pattern for configurable components
-- **CTBase.Orchestration** — automatic option routing across multi-strategy pipelines
-- **Optimization** — abstract problem types and callable builder pattern
-- **Modelers** — NLP backend adapters (ADNLPModels, ExaModels)
-- **DOCP** — discretized optimal control problem types
-- **Solvers** — NLP solver integration (Ipopt, MadNLP, Knitro) via tag dispatch
-
-!!! info "CTSolvers vs CTModels"
-    **CTSolvers** focuses on **solving** optimal control problems (discretization, NLP backends, optimization strategies).
-    For **defining** these problems and representing their solutions,
-    see [CTModels.jl](https://github.com/control-toolbox/CTModels.jl).
+    - [CTDirect.jl](https://github.com/control-toolbox/CTDirect.jl) — **direct methods**:
+      discretizes continuous-time OCPs (defined in [CTModels.jl](https://github.com/control-toolbox/CTModels.jl))
+      into finite-dimensional NLPs, then uses CTSolvers' `Solvers` and `Modelers` to solve them.
+    - [CTFlows.jl](https://github.com/control-toolbox/CTFlows.jl) — **flows for indirect methods**:
+      builds Hamiltonian flows from ODE systems and integrates them with CTSolvers' `Integrators`.
 
 !!! note
     The root package is [OptimalControl.jl](https://github.com/control-toolbox/OptimalControl.jl) which aims
@@ -31,54 +23,34 @@ It provides the **solution layer** for optimal control problems:
 
     ```julia
     using CTSolvers
-    CTBase.Options.extract_options(kwargs, defs)   # ✓ Qualified
-    CTBase.Strategies.id(Solvers.Ipopt)              # ✓ Qualified
+    CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)   # ✓ Qualified
+    CTSolvers.Optimization.build_model(prob, x0, m)  # ✓ Qualified
     ```
 
-## Modules
+## Module overview
 
-| Module | Purpose |
-|--------|---------|
+| Module | Responsibility |
+|--------|---------------|
 | `CTBase.Options` | Option definition, extraction, validation, provenance tracking |
 | `CTBase.Strategies` | Abstract strategy contract, metadata, options, registry |
 | `CTBase.Orchestration` | Option routing, disambiguation, method tuple handling |
-| `Optimization` | Abstract problem types, builder pattern, build/solve API |
-| `Modelers` | Modelers.ADNLP, Modelers.Exa — NLP backend adapters |
-| `DOCP` | DiscretizedModel — concrete problem type |
-| `Solvers` | Solvers.Ipopt, Solvers.MadNLP, Solvers.MadNCL, Solvers.Knitro — NLP solver wrappers |
+| `Optimization` | Abstract problem types (`AbstractOptimizationProblem`, `BuiltModel`, `NoCache`), `build_model`/`build_solution` generic functions |
+| `Modelers` | `Modelers.ADNLP`, `Modelers.Exa` — NLP backend adapters |
+| `DOCP` | `DiscretizedModel` — concrete problem type, pairs OCP with its discretizer (from [CTDirect.jl](https://github.com/control-toolbox/CTDirect.jl)) |
+| `Solvers` | `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, `Solvers.Uno` — NLP solver wrappers |
+| `Integrators` | `Integrators.SciML` — ODE integrator wrapper |
 
-## Documentation
+## How this documentation is organized
 
-### Developer Guides
+- **Getting Started** — installation and a quick-start walkthrough.
+- **Architecture** — module overview, type hierarchies, data flow, and design patterns.
+- **Developer Guides** — step-by-step tutorials for implementing each component type:
+  - [Implementing a Solver](@ref) — tag dispatch, extension pattern, CommonSolve integration
+  - [Implementing an Integrator](@ref) — SciML wrapper, integration result types
+  - [Implementing a Modeler](@ref) — callable contracts, `build_model`/`build_solution` dispatch
+  - [Implementing an Optimization Problem](@ref) — `AbstractOptimizationProblem` contract, `DiscretizedModel`
+  - [Error Messages Reference](@ref) — all exception types with examples and fixes
+- **API Reference** — auto-generated documentation for all public and private symbols.
 
-- [Architecture](@ref) — module overview, type hierarchy, data flow
-- [Implementing a Solver](@ref) — tag dispatch, extension pattern, CommonSolve integration
-- [Implementing a Modeler](@ref) — callable contracts, builder interaction
-- [Implementing an Optimization Problem](@ref) — builder pattern, DOCP example
-- [Error Messages Reference](@ref) — all exception types with examples and fixes
-
-!!! note "Generic infrastructure guides"
-    The guides for Options, Strategies, Orchestration, and Strategy Parameters have moved to
-    [CTBase.jl documentation](https://github.com/control-toolbox/CTBase.jl) where these
-    modules now live.
-
-### API Reference
-
-Auto-generated documentation for all public and private symbols, organized by module.
-
-## Quick Start
-
-```julia
-using CTSolvers
-using NLPModelsIpopt  # loads the Ipopt extension
-
-# Create a solver with validated options
-solver = CTSolvers.Solvers.Ipopt(max_iter = 1000, tol = 1e-8)
-
-# Create a modeler
-modeler = CTSolvers.Modelers.ADNLP(backend = :optimized)
-
-# Solve (high-level API)
-using CommonSolve
-solution = solve(problem, initial_guess, modeler, solver; display = false)
-```
+!!! tip "Ask DeepWiki"
+    [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/control-toolbox/CTSolvers.jl) offers an interactive, AI-generated overview of this codebase. Answers may be inaccurate — use this reference documentation as the source of truth.

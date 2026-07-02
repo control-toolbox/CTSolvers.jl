@@ -34,7 +34,7 @@ in the `CTSolversSciMLIntegrator` extension. This generic stub throws `NotImplem
 - `unsafe::Bool`: If `true`, bypass retcode checking (default: `false`).
 
 # Returns
-- An [`AbstractIntegrationResult`](@ref).
+- An [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref).
 
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): until a backend extension provides the
@@ -66,7 +66,7 @@ implement this method for their specific result types, typically in a backend ex
   `T <: AbstractIntegrationResult`.
 
 # Returns
-- A single [`AbstractIntegrationResult`](@ref) representing the merged trajectory.
+- A single [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref) representing the merged trajectory.
 
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): until a backend extension provides the

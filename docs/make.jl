@@ -1,9 +1,15 @@
-# julia --project -e 'include("docs/make.jl")'
+# to run the documentation generation: julia --project=docs docs/make.jl
+# to serve the documentation (option 1 — handles clean URLs natively):
+#   npx serve docs/build/1 --listen 5173
+# to serve the documentation (option 2 — Julia only):
+#   julia --project=docs -e 'using LiveServer; LiveServer.serve(dir="docs/build/1", single_page=true)'
+# note: single_page=true is required so that reloading /getting-started serves the correct HTML
 pushfirst!(LOAD_PATH, joinpath(@__DIR__))
 pushfirst!(LOAD_PATH, joinpath(@__DIR__, ".."))
 
 using Documenter
-using DocumenterMermaid
+using DocumenterVitepress
+using DocumenterInterLinks
 using CTSolvers
 using CTBase
 using Markdown
@@ -12,10 +18,24 @@ using MarkdownAST: MarkdownAST
 # ═══════════════════════════════════════════════════════════════════════════════
 # Configuration
 # ═══════════════════════════════════════════════════════════════════════════════
-draft = false  # Draft mode: if true, @example blocks in markdown are not executed
+draft = false # Draft mode: if true, @example blocks in markdown are not executed
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Load extensions
+# Cross-package links (InterLinks)
+# ═══════════════════════════════════════════════════════════════════════════════
+links = InterLinks(
+    "CTBase" => (
+        "https://control-toolbox.org/CTBase.jl/dev/",
+        "https://control-toolbox.org/CTBase.jl/dev/objects.inv",
+    ),
+    "CTModels" => (
+        "https://control-toolbox.org/CTModels.jl/dev/",
+        "https://control-toolbox.org/CTModels.jl/dev/objects.inv",
+    ),
+)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Extensions
 # ═══════════════════════════════════════════════════════════════════════════════
 const DocumenterReference = Base.get_extension(CTBase, :DocumenterReference)
 
@@ -37,33 +57,39 @@ include("api_reference.jl")
 # Build documentation
 # ═══════════════════════════════════════════════════════════════════════════════
 with_api_reference(src_dir, ext_dir) do api_pages
-    makedocs(;
+    return makedocs(;
         draft=draft,
-        remotes=nothing, # Disable remote links. Needed for DocumenterReference
-        warnonly=true,
+        remotes=nothing,
+        warnonly=[:cross_references, :external_cross_references],
         sitename="CTSolvers.jl",
-        format=Documenter.HTML(;
-            repolink="https://" * repo_url,
-            prettyurls=false,
-            assets=[
-                asset("https://control-toolbox.org/assets/css/documentation.css"),
-                asset("https://control-toolbox.org/assets/js/documentation.js"),
-            ],
+        format=DocumenterVitepress.MarkdownVitepress(;
+            repo=repo_url, devbranch="main", devurl="dev", sidebar_drawer=true
         ),
         pages=[
-            "Introduction" => "index.md",
-            "Architecture" => "architecture.md",
+            # index.md is the VitePress root — not listed here
+            "Getting Started"  => "getting-started.md",
+            "Architecture"     => "architecture.md",
             "Developer Guides" => [
-                "Implementing a Solver" => "guides/implementing_a_solver.md",
-                "Implementing an Integrator" => "guides/implementing_an_integrator.md",
-                "Implementing a Modeler" => "guides/implementing_a_modeler.md",
+                "Implementing a Solver"                => "guides/implementing_a_solver.md",
+                "Implementing an Integrator"           => "guides/implementing_an_integrator.md",
+                "Implementing a Modeler"               => "guides/implementing_a_modeler.md",
                 "Implementing an Optimization Problem" => "guides/implementing_an_optimization_problem.md",
-                "Error Messages Reference" => "guides/error_messages.md",
+                "Error Messages Reference"             => "guides/error_messages.md",
             ],
-            "API Reference" => api_pages,
+            "API Reference"    => api_pages,
         ],
+        plugins=[links],
     )
 end
 
 # ═══════════════════════════════════════════════════════════════════════════════
-deploydocs(; repo=repo_url * ".git", devbranch="main")
+# Deploy documentation to GitHub Pages
+# ═══════════════════════════════════════════════════════════════════════════════
+bases_file = joinpath(@__DIR__, "build", "bases.txt")
+if isfile(bases_file)
+    DocumenterVitepress.deploydocs(;
+        repo=repo_url * ".git", devbranch="main", push_preview=true
+    )
+else
+    @info "Skipping deployment: no bases were built (prerelease with existing higher stable release)."
+end
