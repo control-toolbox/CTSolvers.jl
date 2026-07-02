@@ -19,88 +19,104 @@ Pkg.add("CTSolvers")
 
 ## Mental Model
 
-CTSolvers is the **resolution layer** of the control-toolbox ecosystem. It sits between
-[CTModels.jl](https://github.com/control-toolbox/CTModels.jl) (which defines the problem)
-and the NLP backends (Ipopt, MadNLP, Knitro, …) that do the heavy lifting.
+CTSolvers provides the **resolution infrastructure** of the control-toolbox ecosystem,
+consumed by upstream packages:
 
-The resolution pipeline has three stages:
+- [CTDirect.jl](https://github.com/control-toolbox/CTDirect.jl) discretizes OCPs
+  (defined in [CTModels.jl](https://github.com/control-toolbox/CTModels.jl)) and uses
+  CTSolvers' `Solvers` and `Modelers` to solve them.
+- [CTFlows.jl](https://github.com/control-toolbox/CTFlows.jl) uses CTSolvers'
+  `Integrators` to build Hamiltonian flows for indirect methods.
+
+The resolution pipeline once CTDirect has discretized the problem:
 
 ```text
-CTModels.Model              CTSolvers                    NLP backend
-(problem definition)  →  (discretize + model)  →  (solve)  →  solution
+DiscretizedModel    CTSolvers.Modelers     NLP backend      CTSolvers.Solvers
+(docp)          →  (build NLP model)  →  (NLP problem)  →  (solve)  →  solution
 ```
 
-Two things to keep in mind:
+All symbols are accessed via **qualified module paths** — `using CTSolvers` brings
+nothing into scope directly.
 
-1. **No top-level exports.** `using CTSolvers` loads the package but brings no symbols
-   into scope. Every symbol is accessed via its qualified path:
-   ```julia
-   CTSolvers.Solvers.Ipopt(max_iter = 1000)
-   CTSolvers.Modelers.ADNLP(backend = :optimized)
-   CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)
-   ```
+## Extension Loading
 
-2. **Strategy pattern throughout.** Modelers and solvers are *strategies* — configurable
-   components with validated options and provenance tracking.
-   Options are passed as keyword arguments and rejected with clear errors if unknown.
+CTSolvers loads no backend at startup. Each constructor throws `ExtensionError` until
+the corresponding package is loaded:
 
-## Quick Start
+```@example gs
+using CTSolvers
+try # hide
+CTSolvers.Solvers.Ipopt()
+catch e # hide
+showerror(IOContext(stdout, :color => true), e) # hide
+end # hide
+```
 
-Solve a discretized optimal control problem with Ipopt and ADNLPModels:
+```@example gs
+try # hide
+CTSolvers.Integrators.SciML()
+catch e # hide
+showerror(IOContext(stdout, :color => true), e) # hide
+end # hide
+```
+
+Strategy identifiers and type information are always available, without any extension:
+
+```@repl gs
+using CTBase
+CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)
+CTBase.Strategies.id(CTSolvers.Modelers.ADNLP)
+CTBase.Strategies.id(CTSolvers.Integrators.SciML)
+```
+
+Load a backend to unlock its constructor:
 
 ```julia
-using CTSolvers
-using NLPModelsIpopt       # loads CTSolversIpopt extension → enables Solvers.Ipopt
+using NLPModelsIpopt       # loads CTSolversIpopt       → enables Solvers.Ipopt
+using ADNLPModels          # loads CTSolversADNLPModels  → enables Modelers.ADNLP
 using OrdinaryDiffEqTsit5  # loads CTSolversSciMLIntegrator → enables Integrators.SciML
-using CommonSolve
-
-# Build a solver with validated options
-solver = CTSolvers.Solvers.Ipopt(max_iter = 500, tol = 1e-8)
-
-# Build a modeler (NLP backend adapter)
-modeler = CTSolvers.Modelers.ADNLP(backend = :optimized)
-
-# Build an integrator
-integrator = CTSolvers.Integrators.SciML()
-
-# Solve (docp is a CTSolvers.DOCP.DiscretizedModel, x0 is an initial guess)
-solution = solve(docp, x0, modeler, solver)
 ```
-
-Extension loading is the key step: nothing from `Solvers.Ipopt`, `Integrators.SciML`,
-or similar requires `NLPModelsIpopt`/`OrdinaryDiffEqTsit5` to be loaded at package load
-time — they are loaded on demand when you `using` the backend package.
 
 ## Configuring Options
 
-Every strategy constructor accepts keyword arguments for its options.
-Unknown options are rejected with a Levenshtein suggestion:
-
-```julia
-# Valid option
-solver = CTSolvers.Solvers.Ipopt(max_iter = 1000, tol = 1e-8)
-
-# Typo → error with suggestion
-solver = CTSolvers.Solvers.Ipopt(max_itr = 1000)
-# ERROR: IncorrectArgument: Unknown option :max_itr
-#   Did you mean: :max_iter?
-
-# Permissive mode: accepts unknown options with a warning
-solver = CTSolvers.Solvers.Ipopt(max_itr = 1000; mode = :permissive)
+```@setup co
+using CTSolvers
+using NLPModelsIpopt
+using CTBase
+nothing
 ```
 
-Inspect all available options via `metadata`:
+Options are validated at construction. Unknown options are rejected with a Levenshtein
+suggestion; wrong types raise `IncorrectArgument`.
 
-```julia
-CTBase.Strategies.metadata(CTSolvers.Solvers.Ipopt)
+Without `NLPModelsIpopt` loaded, all constructor calls raise `ExtensionError` before
+option validation runs. A valid construction with the extension loaded:
+
+```@example co
+using NLPModelsIpopt
+CTSolvers.Solvers.Ipopt(max_iter = 1000, tol = 1e-8)
 ```
 
-## Checking an Installed Instance
+An unknown option name — with the extension loaded this raises `IncorrectArgument` with
+a Levenshtein suggestion (`Did you mean: :max_iter?`):
 
-```julia
-solver = CTSolvers.Solvers.Ipopt(max_iter = 500)
-CTBase.Strategies.options(solver)      # StrategyOptions with provenance
-CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)  # :ipopt
+```@example co
+try # hide
+CTSolvers.Solvers.Ipopt(max_itr = 1000)
+catch e # hide
+showerror(IOContext(stdout, :color => true), e) # hide
+end # hide
+```
+
+Pass `mode = :permissive` to warn rather than error on unknown options. Introspect the
+full option schema and read back values with provenance:
+
+```@example co
+CTBase.Strategies.metadata(CTSolvers.Solvers.Ipopt)    # inspect all option definitions
+```
+
+```@example co
+CTBase.Strategies.options(CTSolvers.Solvers.Ipopt())   # actual values with provenance
 ```
 
 ## Next Steps

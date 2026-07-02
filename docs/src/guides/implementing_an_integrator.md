@@ -42,7 +42,11 @@ nothing # hide
 Without the extension loaded, constructing an integrator throws `ExtensionError`:
 
 ```@repl integrator
+try # hide
 CTSolvers.Integrators.SciML()
+catch e # hide
+showerror(IOContext(stdout, :color => false), e) # hide
+end # hide
 ```
 
 ## The Integration Result

@@ -31,9 +31,6 @@
 
 | Module | Responsibility |
 |--------|---------------|
-| `CTBase.Options` | Option definition, extraction, validation, provenance tracking |
-| `CTBase.Strategies` | Abstract strategy contract, metadata, options, registry |
-| `CTBase.Orchestration` | Option routing, disambiguation, method tuple handling |
 | `Optimization` | Abstract problem types (`AbstractOptimizationProblem`, `BuiltModel`, `NoCache`), `build_model`/`build_solution` generic functions |
 | `Modelers` | `Modelers.ADNLP`, `Modelers.Exa` — NLP backend adapters |
 | `DOCP` | `DiscretizedModel` — concrete problem type, pairs OCP with its discretizer (from [CTDirect.jl](https://github.com/control-toolbox/CTDirect.jl)) |
@@ -47,7 +44,7 @@
 - **Developer Guides** — step-by-step tutorials for implementing each component type:
   - [Implementing a Solver](@ref) — tag dispatch, extension pattern, CommonSolve integration
   - [Implementing an Integrator](@ref) — SciML wrapper, integration result types
-  - [Implementing a Modeler](@ref) — callable contracts, `build_model`/`build_solution` dispatch
+  - [Implementing a Modeler](@ref) — strategy options, `build_model`/`build_solution` dispatch
   - [Implementing an Optimization Problem](@ref) — `AbstractOptimizationProblem` contract, `DiscretizedModel`
   - [Error Messages Reference](@ref) — all exception types with examples and fixes
 - **API Reference** — auto-generated documentation for all public and private symbols.

@@ -4,44 +4,34 @@
 CurrentModule = CTSolvers
 ```
 
-CTSolvers is the **resolution layer** of the [control-toolbox](https://github.com/control-toolbox) ecosystem. It transforms optimal control problems (defined in [CTModels.jl](https://github.com/control-toolbox/CTModels.jl)) into NLP models, solves them, and converts the results back into optimal control solutions.
+CTSolvers provides the **resolution infrastructure** of the [control-toolbox](https://github.com/control-toolbox) ecosystem — solvers, modelers, integrators, and abstract problem types — consumed by [CTDirect.jl](https://github.com/control-toolbox/CTDirect.jl) (direct methods) and [CTFlows.jl](https://github.com/control-toolbox/CTFlows.jl) (flows for indirect methods).
 
 This page provides the complete architectural overview. Read it before diving into any specific guide.
 
 ## Module Overview
 
-CTSolvers relies on **CTBase** for its generic infrastructure and adds CTSolvers-specific modules:
-
-### Generic infrastructure (provided by CTBase)
-
-| Module | Responsibility |
-|--------|---------------|
-| `CTBase.Options` | Configuration primitives: `OptionDefinition`, `OptionValue`, extraction, validation |
-| `CTBase.Strategies` | Strategy contract (`AbstractStrategy`), registry, metadata, options building |
-| `CTBase.Orchestration` | Multi-strategy option routing and disambiguation |
-
-### CTSolvers-specific modules, loaded in dependency order
+CTSolvers modules, loaded in dependency order:
 
 | # | Module | Responsibility |
 |---|--------|---------------|
-| 1 | `Optimization` | Abstract optimization types (`AbstractOptimizationProblem`), builders, `build_model`/`build_solution` |
-| 2 | `Modelers` | NLP model backends: `Modelers.ADNLP`, `Modelers.Exa` |
-| 3 | `DOCP` | `DiscretizedModel` — bridges CTModels and CTSolvers |
-| 4 | `Solvers` | Solver integration: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, CommonSolve API |
-| 5 | `Integrators` | ODE integration: `Integrators.SciML` — wraps the SciML stack |
+| 1 | `Optimization` | Abstract problem types (`AbstractOptimizationProblem`), `BuiltModel`/`NoCache`, `build_model`/`build_solution` |
+| 2 | `Modelers` | NLP backend adapters: `Modelers.ADNLP`, `Modelers.Exa` |
+| 3 | `DOCP` | `DiscretizedModel` — pairs an OCP with its discretizer (provided by CTDirect) |
+| 4 | `Solvers` | NLP solver wrappers: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, `Solvers.Uno` |
+| 5 | `Integrators` | ODE integrator wrapper: `Integrators.SciML` |
 
-All access is **qualified** — neither CTBase nor CTSolvers export symbols at the top level:
+CTSolvers relies on **CTBase** for its generic infrastructure (`CTBase.Options`, `CTBase.Strategies`, `CTBase.Orchestration`). See the [CTBase documentation](https://control-toolbox.org/CTBase.jl/dev/) for details on the strategy contract, option system, and orchestration.
+
+All access is **qualified** — CTSolvers does not export symbols at the top level:
 
 ```julia
 using CTSolvers
-using CTBase
 
-# Correct: qualified access
-CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)
-CTBase.Options.OptionDefinition(name=:x, type=Int, default=1, description="...")
+CTSolvers.Solvers.Ipopt(max_iter = 1000)           # ✓ qualified
+CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)      # ✓ qualified
+CTSolvers.Optimization.build_model(docp, x0, m)    # ✓ qualified
 
-# Wrong: not exported
-id(MyStrategy)  # ERROR: UndefVarError
+id(CTSolvers.Solvers.Ipopt)   # ERROR: UndefVarError — not exported
 ```
 
 ## Type Hierarchies
@@ -58,16 +48,16 @@ AbstractStrategy
 ├─ options(inst)    → StrategyOptions
 │
 ├─► AbstractNLPModeler
-│       ├─ (modeler)(prob, x0)    → NLP model
-│       ├─ (modeler)(prob, stats) → Solution
-│       ├─► Modelers.ADNLP
-│       └─► Modelers.Exa
+│       ├─ build_model(prob, x0, modeler)           → BuiltModel
+│       ├─ build_solution(built, stats, modeler)    → OCP Solution
+│       ├─► Modelers.ADNLP{P<:CPU}
+│       └─► Modelers.Exa{P<:Union{CPU,GPU}}
 │
 ├─► AbstractNLPSolver
-│       ├─ (solver)(nlp; display) → ExecutionStats
-│       ├─► Solvers.Ipopt
-│       ├─► Solvers.MadNLP
-│       ├─► Solvers.MadNCL
+│       ├─ solve(nlp, solver; display) → ExecutionStats
+│       ├─► Solvers.Ipopt{P<:CPU}
+│       ├─► Solvers.MadNLP{P<:Union{CPU,GPU}}
+│       ├─► Solvers.MadNCL{P<:Union{CPU,GPU}}
 │       ├─► Solvers.Knitro
 │       └─► Solvers.Uno
 │
@@ -84,27 +74,24 @@ AbstractStrategy
     These external strategies follow the same `AbstractStrategy` contract.
     See the Implementing a Strategy guide in CTBase.jl documentation for a complete tutorial.
 
-### Optimization / Builder Branch
+### Optimization Branch
 
-The optimization module defines the **problem–builder** pattern: problems provide builders, modelers use them.
+`AbstractOptimizationProblem` is a **marker type** with no required methods. The
+`build_model` / `build_solution` contract is satisfied by multiple dispatch: external
+packages (e.g. CTDirect) implement the typed methods for their own problem types.
 
 ```text
-AbstractOptimizationProblem
-├─ get_adnlp_model_builder(prob)     → AbstractModelBuilder
-├─ get_exa_model_builder(prob)       → AbstractModelBuilder
-├─ get_adnlp_solution_builder(prob)  → AbstractSolutionBuilder
-├─ get_exa_solution_builder(prob)    → AbstractSolutionBuilder
-└─► DiscretizedModel  (concrete implementation, in DOCP)
+AbstractOptimizationProblem                 (marker — no interface methods)
+└─► DiscretizedModel  (in DOCP module, concrete implementation from CTDirect)
 
-AbstractBuilder
-├─► AbstractModelBuilder
-│       ├─ (builder)(x0; kwargs...) → NLP
-│       ├─► ADNLPModelBuilder
-│       └─► ExaModelBuilder
-└─► AbstractSolutionBuilder
-        └─► AbstractOCPSolutionBuilder
-                ├─► ADNLPSolutionBuilder
-                └─► ExaSolutionBuilder
+build_model(prob, x0, modeler)    → BuiltModel   (generic stub; CTDirect provides typed methods)
+build_solution(built, stats, modeler) → Solution  (generic stub; CTDirect provides typed methods)
+
+BuiltModel{TP, TN, TC}                      (problem + NLP + cache, immutable)
+├─ .problem  → TP <: AbstractOptimizationProblem
+├─ .nlp      → TN  (backend NLP model, e.g. ADNLPModel)
+└─ .cache    → TC <: AbstractCache
+       └─► NoCache  (for backends needing no auxiliary storage)
 ```
 
 ## Module Dependencies
@@ -133,22 +120,17 @@ The complete resolution pipeline, from user call to optimal control solution:
 ```text
 User
  │
- ▼  solve(docp, x0, modeler, solver)
+ ▼  solve(docp, x0, modeler, solver)          ← orchestration.jl
 CommonSolve.solve
  │
- ├─► build_model(docp, x0, modeler)
- │       │
- │       ├─► get_adnlp_model_builder(docp)  →  ADNLPModelBuilder
- │       └─► builder(x0; options...)        →  ADNLPModel (NLP)
+ ├─► build_model(docp, x0, modeler)           →  BuiltModel
+ │       (CTDirect provides typed method for DiscretizedModel + modeler pair)
  │
- ├─► solve(nlp, solver)
- │       │
- │       └─► solver(nlp; display)           →  ExecutionStats
+ ├─► CommonSolve.solve(built.nlp, solver)     →  ExecutionStats
+ │       (backend extension provides typed method, e.g. CTSolversIpopt)
  │
- └─► build_solution(docp, stats, modeler)
-         │
-         ├─► get_adnlp_solution_builder(docp)  →  ADNLPSolutionBuilder
-         └─► builder(stats)                    →  OCP Solution
+ └─► build_solution(built, stats, modeler)    →  OCP Solution
+         (CTDirect provides typed method for DiscretizedModel + modeler pair)
 ```
 
 The three levels of `CommonSolve.solve`:
@@ -156,8 +138,7 @@ The three levels of `CommonSolve.solve`:
 | Level | Signature | Purpose |
 |-------|-----------|---------|
 | **High** | `solve(problem, x0, modeler, solver)` | Full pipeline: build NLP → solve → build solution |
-| **Mid** | `solve(nlp, solver)` | Solve an NLP model directly |
-| **Low** | `solve(any, solver)` | Flexible dispatch for custom types |
+| **Mid** | `CommonSolve.solve(nlp, solver; display)` | Solve an NLP directly; implemented by each backend extension |
 
 ## Architectural Patterns
 
@@ -198,9 +179,12 @@ AbstractStrategyParameter
 ├─► CPU  (singleton type)
 └─► GPU  (singleton type)
 
-metadata(Solvers.MadNLP, CPU)  →  CPU defaults  →  MadNLP(CPU; max_iter=1000)
-metadata(Solvers.MadNLP, GPU)  →  GPU defaults  →  MadNLP(GPU; max_iter=1000)
+metadata(Solvers.MadNLP{CPU})  →  CPU defaults  →  Solvers.MadNLP{CPU}(max_iter=1000)
+metadata(Solvers.MadNLP{GPU})  →  GPU defaults  →  Solvers.MadNLP{GPU}(max_iter=1000)
 ```
+
+The parameter is a **type parameter** of the strategy (`Solvers.MadNLP{P}`), not a separate
+argument. `Solvers.MadNLP(...)` resolves `P` from `_default_parameter` (here `CPU`).
 
 See the Strategy Parameters guide in CTBase.jl documentation for a complete guide.
 
@@ -223,25 +207,37 @@ no silent failures or incorrect defaults.
 ### Tag Dispatch
 
 Solvers (and integrators) use **Tag Dispatch** to separate type definitions (in `src/Solvers/`)
-from backend implementations (in `ext/`):
+from backend implementations (in `ext/`).
 
-```text
-src/Solvers/ipopt.jl                    ext/CTSolversIpopt.jl
-─────────────────────                   ─────────────────────
-Solvers.Ipopt <: AbstractNLPSolver      metadata(::Type{<:Solvers.Ipopt})
-IpoptTag      <: AbstractTag              → StrategyMetadata(option defs...)
-                                        build_ipopt_solver(::IpoptTag; kwargs...)
-Solvers.Ipopt(; kwargs...)                → Solvers.Ipopt(validated_opts)
-  → build_ipopt_solver(IpoptTag(); …)   (solver::Solvers.Ipopt)(nlp; display)
-                                          → ipopt(nlp; opts...)
-build_ipopt_solver(::AbstractTag; …)
-  → ExtensionError(:NLPModelsIpopt)
+**`src/Solvers/ipopt.jl`** — type definition and stubs (always loaded):
+
+```julia
+struct Ipopt{P<:CPU} <: AbstractNLPSolver
+    options::StrategyOptions
+end
+struct IpoptTag <: Core.AbstractTag end
+
+CTBase.Strategies.id(::Type{<:Solvers.Ipopt}) = :ipopt
+CTBase.Strategies._default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+
+# Constructor chain: resolve P, then dispatch on the tag and parameter TYPES
+Solvers.Ipopt(; kwargs...) =
+    Solvers.Ipopt{CTBase.Strategies._default_parameter(Solvers.Ipopt)}(; kwargs...)
+Solvers.Ipopt{P}(; kwargs...) where {P<:CPU} = build_ipopt_solver(IpoptTag, P; kwargs...)
+build_ipopt_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...) =
+    throw(ExtensionError(:NLPModelsIpopt))
 ```
 
-- **`src/Solvers/`**: defines the solver type, its id, and a constructor that dispatches on a tag.
-- **`ext/CTSolversXxx/`**: implements metadata, the real constructor, and the callable.
-  Loaded only when the backend package is available.
-- This keeps CTSolvers lightweight — backend dependencies are optional weak deps.
+**`ext/CTSolversIpopt.jl`** — real implementations (loaded only with `using NLPModelsIpopt`):
+
+```julia
+metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU} = StrategyMetadata(...)
+build_ipopt_solver(::Type{Solvers.IpoptTag}, P::Type{<:AbstractStrategyParameter}; kwargs...) =
+    Solvers.Ipopt{P}(validated_opts)
+CommonSolve.solve(nlp, solver::Solvers.Ipopt; display) = ipopt(nlp; options_dict(solver)...)
+```
+
+This keeps CTSolvers lightweight — backend dependencies are optional weak deps loaded on demand.
 
 ### Qualified Access
 
@@ -249,56 +245,7 @@ CTSolvers does **not** export symbols at the top level. All access goes through 
 
 ```julia
 CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)
-CTBase.Options.OptionDefinition(...)
 CTSolvers.Optimization.build_model(problem, x0, modeler)
 ```
 
 This ensures namespace clarity, avoids conflicts with other packages, and makes dependencies explicit.
-
-## Conventions
-
-### Naming
-
-- **Types**: `PascalCase` — `StrategyOptions`, `ADNLPModelBuilder`
-- **Modules**: `PascalCase` — `Options`, `Strategies`, `Orchestration`
-- **Functions**: `snake_case` — `build_strategy_options`, `option_value`
-- **Strategy IDs**: `snake_case` symbols — `:collocation`, `:adnlp`, `:ipopt`
-- **Private defaults**: `__name()` pattern — `__grid_size()`, `__scheme()`
-
-### Constructor Pattern
-
-Every strategy constructor follows the same pattern:
-
-```julia
-function MyStrategy(; mode::Symbol = :strict, kwargs...)
-    opts = CTBase.Strategies.build_strategy_options(MyStrategy; mode = mode, kwargs...)
-    return MyStrategy(opts)
-end
-```
-
-- `mode = :strict` (default): rejects unknown options with Levenshtein suggestions.
-- `mode = :permissive`: accepts unknown options with a warning.
-
-### OptionDefinition Pattern
-
-Options are declared via `OptionDefinition` in the `metadata` method:
-
-```julia
-CTBase.Strategies.metadata(::Type{<:MyStrategy}) = CTBase.Strategies.StrategyMetadata(
-    CTBase.Options.OptionDefinition(
-        name = :max_iter,
-        type = Int,
-        default = 1000,
-        description = "Maximum number of iterations",
-    ),
-    CTBase.Options.OptionDefinition(
-        name = :tol,
-        type = Float64,
-        default = 1e-8,
-        description = "Convergence tolerance",
-        aliases = [:tolerance],
-    ),
-)
-```
-
-Each definition specifies: `name`, `type`, `default`, `description`, and optionally `aliases` and `validator`.

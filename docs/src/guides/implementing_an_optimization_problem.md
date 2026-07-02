@@ -28,7 +28,7 @@ nothing # hide
 
 ## BuiltModel and NoCache
 
-`build_model` does not return a raw NLP model. It returns a [`Optimization.BuiltModel`](@ref) — an immutable bundle that carries everything `build_solution` needs:
+`build_model` does not return a raw NLP model. It returns a [`CTSolvers.Optimization.BuiltModel`](@ref) — an immutable bundle that carries everything `build_solution` needs:
 
 ```text
 BuiltModel{TP <: AbstractOptimizationProblem, TN, TC <: AbstractCache}
@@ -37,7 +37,7 @@ BuiltModel{TP <: AbstractOptimizationProblem, TN, TC <: AbstractCache}
 └─ cache::TC     — immutable build-time auxiliary
 ```
 
-[`Optimization.NoCache`](@ref) is the default `cache` for backends that produce no auxiliary data:
+[`CTSolvers.Optimization.NoCache`](@ref) is the default `cache` for backends that produce no auxiliary data:
 
 ```@example optprob
 CTSolvers.Optimization.NoCache()
@@ -66,36 +66,46 @@ The accessor `ocp_model(docp)` returns the original OCP.
 
 ### Step 2 — Construct via `discretize` (in CTDirect)
 
-`DiscretizedModel` is not constructed by calling the struct directly. The `discretize`
-function in `CTDirect.jl` creates it after preprocessing the OCP:
+`DiscretizedModel` is not constructed by calling the struct directly. CTSolvers owns a
+generic `CTSolvers.discretize` stub (`src/DOCP/contract.jl`) that throws `NotImplemented`;
+the package providing the discretizer implements the typed method. In CTDirect
+(`src/collocation.jl`) it preprocesses the OCP into a `DOCP` and wraps it in a cache:
 
 ```julia
-# In CTDirect.jl (external package)
-function discretize(ocp, discretizer::Collocation)
-    cache = DOCPCache(ocp, discretizer)   # problem-specific preprocessing
-    return CTSolvers.DOCP.DiscretizedModel(ocp, discretizer, cache)
+# In CTDirect — typed method for the Collocation discretizer
+function CTSolvers.discretize(ocp::AbstractModel, discretizer::Collocation)
+    docp = get_docp(discretizer, ocp)                        # problem-specific preprocessing
+    return CTSolvers.DiscretizedModel(ocp, discretizer, DOCPCache(docp))
 end
 ```
+
+`DOCPCache` is a `CTBase.Core.AbstractCache` subtype defined in CTDirect — CTSolvers only
+requires the `cache` field to be `<: CTBase.Core.AbstractCache`.
 
 ### Step 3 — Implement build_model / build_solution (in CTDirect)
 
 CTSolvers owns the generic stubs; CTDirect owns the concrete methods via multiple dispatch:
 
 ```julia
-# In CTDirect.jl — concrete methods for (DiscretizedModel, ADNLP)
-import CTSolvers.Optimization: build_model, build_solution, BuiltModel, NoCache
-
-function build_model(docp::DiscretizedModel, initial_guess, ::CTSolvers.Modelers.ADNLP)
-    nlp = build_adnlp_model(docp, initial_guess)   # ADNLPModel built from cache
-    return BuiltModel(docp, nlp, NoCache())
+# In CTDirect — concrete methods for (DiscretizedModel + Collocation, ADNLP)
+function CTSolvers.build_model(
+    dm::CTSolvers.DiscretizedModel{<:Any,<:Collocation},
+    initial_guess::CTModels.AbstractInitialGuess,
+    modeler::CTSolvers.Modelers.ADNLP,
+)
+    docp = dm.cache.docp
+    options = Strategies.options_dict(modeler)         # the modeler's validated options
+    nlp = build_adnlp_model(docp, initial_guess; options...)  # ADNLPModel
+    return CTSolvers.BuiltModel(dm, nlp, CTSolvers.NoCache())  # ADNLP needs no aux cache
 end
 
-function build_solution(
-    built::BuiltModel{<:DiscretizedModel},
-    stats,
+function CTSolvers.build_solution(
+    built::CTSolvers.BuiltModel{<:CTSolvers.DiscretizedModel{<:Any,<:Collocation}},
+    nlp_solution::SolverCore.AbstractExecutionStats,
     ::CTSolvers.Modelers.ADNLP,
 )
-    return extract_ocp_solution(built.problem, stats)   # OCPSolution
+    docp = built.problem.cache.docp
+    return build_OCP_solution(docp, nlp_solution)      # OCP solution
 end
 ```
 
