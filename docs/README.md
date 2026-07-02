@@ -1,6 +1,6 @@
 # docs/
 
-Documentation site for CTBase.jl, built with
+Documentation site for CTSolvers.jl, built with
 [DocumenterVitepress](https://github.com/LuxDL/DocumenterVitepress.jl).
 
 Build (from the package root):
