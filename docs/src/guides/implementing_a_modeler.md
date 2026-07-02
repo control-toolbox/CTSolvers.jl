@@ -68,22 +68,24 @@ CTBase.Strategies.id(CTSolvers.Modelers.ADNLP)
 
 ### Step 3 — Define defaults and metadata
 
-The metadata defines all configurable options with types, defaults, and validators:
+The metadata defines all configurable options with types, defaults, and validators.
+It is defined in `ext/CTSolversADNLPModels.jl` and requires `ADNLPModels` to be loaded:
 
-```@example modeler
+```julia
+# requires: using ADNLPModels
 CTBase.Strategies.metadata(CTSolvers.Modelers.ADNLP)
+# → StrategyMetadata with options: backend, show_time, ...
 ```
 
 ### Step 4 — Constructor and options accessor
 
-The constructor validates options and stores them:
+The constructor validates options and stores them. It also requires the extension:
 
-```@example modeler
+```julia
+# requires: using ADNLPModels
 modeler = CTSolvers.Modelers.ADNLP(backend = :optimized)
-```
-
-```@example modeler
 CTBase.Strategies.options(modeler)
+# → StrategyOptions with backend = :optimized
 ```
 
 ### Step 5 — Model building callable

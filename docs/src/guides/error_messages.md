@@ -192,7 +192,7 @@ CTBase.Options.OptionValue(1e-8, :default)
 ### NotProvided display
 
 ```@example errors
-CTBase.Options.NotProvided
+CTBase.Core.NotProvided
 ```
 
 ### Option extraction — successful
