@@ -40,7 +40,7 @@ end
 Strategies.id(::Type{MockStrategyWithAliases}) = :mock_with_aliases
 
 function Strategies.metadata(::Type{MockStrategyWithAliases})
-    Strategies.StrategyMetadata(
+    return Strategies.StrategyMetadata(
         Options.OptionDefinition(;
             name=:max_iter,
             type=Int,

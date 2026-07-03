@@ -19,8 +19,14 @@ function generate_api_reference(src_dir::String, ext_dir::String)
     EXCLUDE_SYMBOLS = Symbol[:include, :eval]
     EXCLUDE_INTERNALS = vcat(
         EXCLUDE_SYMBOLS,
-        Symbol[:DOCTYPE_ABSTRACT_TYPE, :DOCTYPE_CONSTANT, :DOCTYPE_FUNCTION,
-               :DOCTYPE_MACRO, :DOCTYPE_MODULE, :DOCTYPE_STRUCT],
+        Symbol[
+            :DOCTYPE_ABSTRACT_TYPE,
+            :DOCTYPE_CONSTANT,
+            :DOCTYPE_FUNCTION,
+            :DOCTYPE_MACRO,
+            :DOCTYPE_MODULE,
+            :DOCTYPE_STRUCT,
+        ],
     )
 
     # ── Shared config: one entry per submodule ────────────────────────────────
@@ -114,17 +120,17 @@ function generate_api_reference(src_dir::String, ext_dir::String)
     internals_modules = Any[cfg.mod => cfg.files for cfg in modules_config]
 
     for (sym, files) in [
-        (:CTSolversIpopt,              ext("CTSolversIpopt.jl")),
-        (:CTSolversMadNLP,             ext("CTSolversMadNLP.jl")),
-        (:CTSolversMadNCL,             ext("CTSolversMadNCL.jl")),
-        (:CTSolversKnitro,             ext("CTSolversKnitro.jl")),
-        (:CTSolversUno,                ext("CTSolversUno.jl")),
-        (:CTSolversEnzyme,             ext("CTSolversEnzyme.jl")),
-        (:CTSolversCUDA,               ext("CTSolversCUDA.jl")),
-        (:CTSolversMadNLPGPU,          ext("CTSolversMadNLPGPU.jl")),
-        (:CTSolversZygote,             ext("CTSolversZygote.jl")),
-        (:CTSolversSciMLIntegrator,    ext("CTSolversSciMLIntegrator.jl")),
-        (:CTSolversForwardDiff,        ext("CTSolversForwardDiff.jl")),
+        (:CTSolversIpopt, ext("CTSolversIpopt.jl")),
+        (:CTSolversMadNLP, ext("CTSolversMadNLP.jl")),
+        (:CTSolversMadNCL, ext("CTSolversMadNCL.jl")),
+        (:CTSolversKnitro, ext("CTSolversKnitro.jl")),
+        (:CTSolversUno, ext("CTSolversUno.jl")),
+        (:CTSolversEnzyme, ext("CTSolversEnzyme.jl")),
+        (:CTSolversCUDA, ext("CTSolversCUDA.jl")),
+        (:CTSolversMadNLPGPU, ext("CTSolversMadNLPGPU.jl")),
+        (:CTSolversZygote, ext("CTSolversZygote.jl")),
+        (:CTSolversSciMLIntegrator, ext("CTSolversSciMLIntegrator.jl")),
+        (:CTSolversForwardDiff, ext("CTSolversForwardDiff.jl")),
         (:CTSolversOrdinaryDiffEqTsit5, ext("CTSolversOrdinaryDiffEqTsit5.jl")),
     ]
         extmod = Base.get_extension(CTSolvers, sym)

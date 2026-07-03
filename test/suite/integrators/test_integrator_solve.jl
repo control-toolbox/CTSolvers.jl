@@ -3,7 +3,7 @@ module TestIntegratorSolve
 using Test: Test
 import CTBase.Exceptions
 import CTSolvers.Integrators
-import CommonSolve
+using CommonSolve: CommonSolve
 using OrdinaryDiffEqTsit5: OrdinaryDiffEqTsit5, Tsit5
 using SciMLBase: SciMLBase, ODEProblem
 using DiffEqBase: DiffEqBase
@@ -21,7 +21,6 @@ against the known analytic solution u' = -u, u(0) = 1 ⇒ u(1) = exp(-1).
 """
 function test_integrator_solve()
     Test.@testset "Integrator Solve (end-to-end)" verbose=VERBOSE showtiming=SHOWTIMING begin
-
         integ = Integrators.SciML(; alg=Tsit5())
         prob = ODEProblem((u, p, t) -> -u, [1.0], (0.0, 1.0))
 
@@ -88,11 +87,12 @@ function test_integrator_solve()
             # maxiters=1 forces an unsuccessful retcode
             bad = ODEProblem((u, p, t) -> -u, [1.0], (0.0, 1.0))
             Test.@test_throws Exceptions.SolverFailure CommonSolve.solve(
-                bad, integ; options=Dict{Symbol,Any}(:alg => Tsit5(), :maxiters => 1),
+                bad, integ; options=Dict{Symbol,Any}(:alg => Tsit5(), :maxiters => 1)
             )
             # unsafe=true bypasses the check
             r = CommonSolve.solve(
-                bad, integ;
+                bad,
+                integ;
                 options=Dict{Symbol,Any}(:alg => Tsit5(), :maxiters => 1),
                 unsafe=true,
             )

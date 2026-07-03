@@ -14,7 +14,7 @@ ForwardDiff dual numbers.
 module CTSolversForwardDiff
 
 import DocStringExtensions: TYPEDSIGNATURES
-import ForwardDiff
+using ForwardDiff: ForwardDiff
 
 using CTSolvers.Integrators: Integrators
 
@@ -40,6 +40,8 @@ numbers, ensuring grid invariance (IND) when integrating ODEs with dual numbers.
 
 See also: [`CTSolvers.Integrators.real_norm`](@ref), [`CTSolvers.Integrators.deepvalue`](@ref).
 """
-Integrators.real_norm(u::ForwardDiff.Dual, t) = Integrators.real_norm(Integrators.deepvalue(u), t)
+function Integrators.real_norm(u::ForwardDiff.Dual, t)
+    return Integrators.real_norm(Integrators.deepvalue(u), t)
+end
 
 end # module CTSolversForwardDiff

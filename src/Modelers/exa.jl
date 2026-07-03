@@ -72,7 +72,7 @@ and returns an appropriate CUDA backend.
 - Uses CUDA.CUDABackend() for GPU execution
 """
 function __get_cuda_backend(::Type{<:GPU})
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :CUDA;
             message="to use GPU backend with Exa modeler",
@@ -237,8 +237,8 @@ $(TYPEDSIGNATURES)
 Return the description for the Exa modeler.
 """
 function Strategies.description(::Type{<:Modelers.Exa})
-    "NLP modeler using ExaModels, supporting CPU and GPU execution.\n" *
-    "See: https://exanauts.github.io/ExaModels.jl"
+    return "NLP modeler using ExaModels, supporting CPU and GPU execution.\n" *
+           "See: https://exanauts.github.io/ExaModels.jl"
 end
 
 """
@@ -269,7 +269,7 @@ Stub — real implementation provided by the CTSolversExaModels extension.
 See also: `Modelers.Exa`, `Strategies.StrategyMetadata`
 """
 function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU,GPU}}
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :ExaModels;
             message="to access Exa{$P} options metadata",
@@ -340,7 +340,7 @@ See also: `Modelers.Exa`, `Strategies.metadata`
 function build_exa_modeler(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :ExaModels;
             message="to create Exa, access options, and build NLP models",
