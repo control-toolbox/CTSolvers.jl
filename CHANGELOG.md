@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.26-beta] - 2026-07-09
+
+### Changed
+
+- **Compat bumps** — `CTBase = "0.26, 0.27"`, `CTModels = "0.14, 0.15"` in `Project.toml` and
+  `docs/Project.toml`.
+
+---
+
 ## [0.4.25-beta] - 2026-06-30
 
 ### Added

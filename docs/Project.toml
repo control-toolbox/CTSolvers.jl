@@ -8,7 +8,7 @@ MarkdownAST = "d0879d2d-cac2-40c8-9cee-1863dc0c7391"
 NLPModelsIpopt = "f4238b75-b362-5c4c-b852-0801c9a21d71"
 
 [compat]
-CTBase = "0.26"
+CTBase = "0.26, 0.27"
 Documenter = "1"
 DocumenterInterLinks = "1"
 DocumenterVitepress = "0.3"

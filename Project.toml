@@ -1,6 +1,6 @@
 name = "CTSolvers"
 uuid = "d3e8d392-8e4b-4d9b-8e92-d7d4e3650ef6"
-version = "0.4.25-beta"
+version = "0.4.26-beta"
 authors = ["Olivier Cots <olivier.cots@toulouse-inp.fr>"]
 
 [deps]
@@ -49,8 +49,8 @@ CTSolversZygote = "Zygote"
 ADNLPModels = "0.8"
 Aqua = "0.8"
 BenchmarkTools = "1"
-CTBase = "0.26"
-CTModels = "0.14"
+CTBase = "0.26, 0.27"
+CTModels = "0.14, 0.15"
 CUDA = "5, 6"
 CommonSolve = "0.2"
 DiffEqBase = "6, 7"
