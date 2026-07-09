@@ -5,6 +5,22 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.26-beta (2026-07-09)
+
+**No breaking changes.**
+
+This release widens compat for CTBase and CTModels.
+
+### Summary - v0.4.26-beta
+
+- Widen compat: `CTBase = "0.26, 0.27"`, `CTModels = "0.14, 0.15"`
+
+### Migration - v0.4.26-beta
+
+**No action required.** All existing code continues to work without changes.
+
+---
+
 ## v0.4.23-beta (2026-06-27)
 
 **Breaking change:** `build_model` returns an immutable `BuiltModel` bundle (not a
