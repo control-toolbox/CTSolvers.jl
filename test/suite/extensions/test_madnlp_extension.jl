@@ -5,6 +5,7 @@ import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTSolvers.Solvers
 import CTBase.Strategies
+using CTBase.Strategies: GPU
 import CTBase.Options
 import CTBase.Core
 import CTSolvers.Modelers
