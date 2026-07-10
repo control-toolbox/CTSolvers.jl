@@ -5,7 +5,6 @@ import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTSolvers.Solvers
 import CTBase.Strategies
-using CTBase.Strategies: GPU
 import CTBase.Options
 import CTBase.Core
 import CTSolvers.Modelers
@@ -654,7 +653,7 @@ function test_madnlp_extension()
 
         Test.@testset "GPU - solve_with_madnlp" begin
             if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
-                gpu_modeler = Modelers.Exa{GPU}()
+                gpu_modeler = Modelers.Exa{Strategies.GPU}()
                 madnlp_options = Dict(
                     :max_iter => 1000,
                     :tol => 1e-6,
@@ -698,8 +697,8 @@ function test_madnlp_extension()
 
         Test.@testset "GPU - Initial Guess (max_iter=0)" begin
             if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
-                gpu_modeler = Modelers.Exa{GPU}()
-                gpu_solver_0 = Solvers.MadNLP{GPU}(
+                gpu_modeler = Modelers.Exa{Strategies.GPU}()
+                gpu_solver_0 = Solvers.MadNLP{Strategies.GPU}(
                     max_iter=0,
                     print_level=MadNLP.ERROR,
                     linear_solver=MadNLPGPU.CUDSSSolver,

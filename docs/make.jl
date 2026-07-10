@@ -15,6 +15,34 @@ using CTBase
 using Markdown
 using MarkdownAST: MarkdownAST
 
+# trigger extensions
+using ADNLPModels
+using CUDA
+using DiffEqBase
+using Enzyme
+using ExaModels
+using ForwardDiff
+using MadNCL
+using MadNLP
+using MadNLPGPU
+using NLPModels
+using NLPModelsIpopt
+using NLPModelsKnitro
+using OrdinaryDiffEqTsit5
+using SciMLBase
+using UnoSolver
+using Zygote
+
+# Make extension modules available in Main so that @docs blocks can resolve
+# qualified bindings like CTFlowsSciMLIntegrator.SciMLIntegrationResult.
+for _ext_sym in
+    (:CTSolversADNLPModels, :CTSolversCUDA, :CTSolversEnzyme, :CTSolversExaModels, :CTSolversForwardDiff,
+     :CTSolversIpopt, :CTSolversKnitro, :CTSolversMadNCL, :CTSolversMadNLP, :CTSolversMadNLPGPU,
+     :CTSolversOrdinaryDiffEqTsit5, :CTSolversSciMLIntegrator, :CTSolversUno, :CTSolversZygote)
+    _m = Base.get_extension(CTSolvers, _ext_sym)
+    isnothing(_m) || @eval Main const $_ext_sym = $_m
+end
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Configuration
 # ═══════════════════════════════════════════════════════════════════════════════

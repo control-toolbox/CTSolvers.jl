@@ -6,7 +6,6 @@ import CTBase.Exceptions
 using CTSolvers: CTSolvers
 import CTSolvers.Solvers
 import CTBase.Strategies
-using CTBase.Strategies: GPU
 import CTBase.Options
 import CTBase.Core
 import CTSolvers.Modelers
@@ -471,8 +470,8 @@ function test_madncl_extension()
 
         Test.@testset "GPU Tests" begin
             if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
-                gpu_modeler = Modelers.Exa{GPU}()
-                gpu_solver = Solvers.MadNCL{GPU}(
+                gpu_modeler = Modelers.Exa{Strategies.GPU}()
+                gpu_solver = Solvers.MadNCL{Strategies.GPU}(
                     max_iter=1000,
                     tol=1e-6,
                     print_level=MadNLP.ERROR,
@@ -507,7 +506,7 @@ function test_madncl_extension()
 
         Test.@testset "GPU - solve_with_madncl" begin
             if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
-                gpu_modeler = Modelers.Exa{GPU}()
+                gpu_modeler = Modelers.Exa{Strategies.GPU}()
                 madncl_options = Dict(
                     :max_iter => 1000,
                     :tol => 1e-6,
@@ -543,9 +542,9 @@ function test_madncl_extension()
 
         Test.@testset "GPU - Initial Guess (max_iter=0)" begin
             if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
-                gpu_modeler = Modelers.Exa{GPU}()
+                gpu_modeler = Modelers.Exa{Strategies.GPU}()
                 ncl_opts_0 = MadNCL.NCLOptions{Float64}(verbose=false, max_auglag_iter=0)
-                gpu_solver_0 = Solvers.MadNCL{GPU}(
+                gpu_solver_0 = Solvers.MadNCL{Strategies.GPU}(
                     max_iter=0,
                     print_level=MadNLP.ERROR,
                     linear_solver=MadNLPGPU.CUDSSSolver,

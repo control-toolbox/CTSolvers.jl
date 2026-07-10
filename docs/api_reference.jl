@@ -128,6 +128,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
         (:CTSolversOrdinaryDiffEqTsit5, ext("CTSolversOrdinaryDiffEqTsit5.jl")),
     ]
         extmod = Base.get_extension(CTSolvers, sym)
+        isnothing(extmod) && @warn "Extension $sym is not loaded"
         isnothing(extmod) || push!(internals_modules, extmod => files)
     end
 
