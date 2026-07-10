@@ -653,7 +653,7 @@ function test_madnlp_extension()
 
         Test.@testset "GPU - solve_with_madnlp" begin
             if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
-                gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
+                gpu_modeler = Modelers.Exa{GPU}()
                 madnlp_options = Dict(
                     :max_iter => 1000,
                     :tol => 1e-6,
@@ -697,8 +697,8 @@ function test_madnlp_extension()
 
         Test.@testset "GPU - Initial Guess (max_iter=0)" begin
             if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
-                gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
-                gpu_solver_0 = Solvers.MadNLP(
+                gpu_modeler = Modelers.Exa{GPU}()
+                gpu_solver_0 = Solvers.MadNLP{GPU}(
                     max_iter=0,
                     print_level=MadNLP.ERROR,
                     linear_solver=MadNLPGPU.CUDSSSolver,
