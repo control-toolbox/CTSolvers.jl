@@ -290,9 +290,7 @@ dictionaries.
 
 Options in `_AUTO_OPTION_KEYS` support the `:auto` sentinel value, resolved here into the two
 cached dictionaries `options_point` (`:auto` → `false`) and `options_trajectory`
-(`:auto` → `true`). The caller selects which dictionary to pass to
-[`CommonSolve.solve`](@ref) via [`CTSolvers.Integrators.options_point`](@ref) /
-[`CTSolvers.Integrators.options_trajectory`](@ref).
+(`:auto` → `true`).
 
 # Arguments
 - `::Type{Integrators.SciMLTag}`: The SciML integrator tag type.
