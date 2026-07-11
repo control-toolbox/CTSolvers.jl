@@ -9,7 +9,7 @@ module CTSolversMadNLP
 import DocStringExtensions: TYPEDSIGNATURES
 import CTSolvers.Optimization
 import CTSolvers.Solvers
-import CommonSolve
+using CommonSolve: CommonSolve
 import CTBase.Strategies
 import CTBase.Options
 import CTBase.Core

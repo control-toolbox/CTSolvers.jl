@@ -131,8 +131,8 @@ $(TYPEDSIGNATURES)
 Return the description for the Knitro solver.
 """
 function Strategies.description(::Type{<:Solvers.Knitro})
-    "Commercial NLP solver by Artelys (requires license).\n" *
-    "See: https://www.artelys.com/app/docs/knitro/3_referenceManual/userOptions.html"
+    return "Commercial NLP solver by Artelys (requires license).\n" *
+           "See: https://www.artelys.com/app/docs/knitro/3_referenceManual/userOptions.html"
 end
 
 """
@@ -232,7 +232,7 @@ See also: `Knitro`, `Strategies.metadata`
 function build_knitro_solver(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :NLPModelsKnitro;
             message="to create Knitro, access options, and solve problems",
@@ -257,7 +257,7 @@ See also: `Knitro`, `Strategies.StrategyMetadata`
 """
 function Strategies.metadata(::Type{<:Solvers.Knitro{P}}) where {P<:CPU}
     # Extension is missing
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :NLPModelsKnitro;
             message="to access Knitro{$P} options metadata",

@@ -39,9 +39,11 @@ generic stub throws [`CTBase.Exceptions.NotImplemented`](@extref).
 See also: [`CTSolvers.Optimization.build_solution`](@ref), [`CTSolvers.Optimization.BuiltModel`](@ref).
 """
 function Optimization.build_model(
-    prob::Optimization.AbstractOptimizationProblem, initial_guess, modeler::AbstractNLPModeler
+    prob::Optimization.AbstractOptimizationProblem,
+    initial_guess,
+    modeler::AbstractNLPModeler,
 )
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "Model building not implemented";
             required_method="Optimization.build_model(prob::$(typeof(prob)), initial_guess, modeler::$(typeof(modeler)))",
@@ -85,7 +87,7 @@ See also: [`CTSolvers.Optimization.build_model`](@ref), [`CTSolvers.Optimization
 function Optimization.build_solution(
     built::Optimization.BuiltModel, model_solution, modeler::AbstractNLPModeler
 )
-    throw(
+    return throw(
         Exceptions.NotImplemented(
             "Solution building not implemented";
             required_method="Optimization.build_solution(built::BuiltModel{$(typeof(built.problem))}, model_solution, modeler::$(typeof(modeler)))",
