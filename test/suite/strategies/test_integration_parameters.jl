@@ -27,6 +27,11 @@ end
 Strategies.id(::Type{<:IntegrationStratA}) = :integrationstrata
 Strategies.id(::Type{<:IntegrationStratB}) = :integrationstratb
 
+# Parameter contract
+Strategies.parameter(::Type{<:IntegrationStratA}) = nothing
+Strategies.parameter(::Type{<:IntegrationStratB{P}}) where {P<:Strategies.AbstractStrategyParameter} = P
+Strategies.default_parameter(::Type{<:IntegrationStratB}) = Strategies.CPU
+
 # Simple metadata
 function Strategies.metadata(::Type{T}) where {T<:IntegrationStratA}
     Strategies.StrategyMetadata(
@@ -226,8 +231,8 @@ function test_integration_parameters()
             )
             Test.@test m_type === Modelers.Exa{Strategies.CPU}
             Test.@test s_type === Solvers.MadNLP{Strategies.CPU}
-            Test.@test Strategies.get_parameter_type(m_type) === Strategies.CPU
-            Test.@test Strategies.get_parameter_type(s_type) === Strategies.CPU
+            Test.@test Strategies.parameter(m_type) === Strategies.CPU
+            Test.@test Strategies.parameter(s_type) === Strategies.CPU
 
             # If a parameter token is present but unused (no selected strategy accepts it), it's an error
             Test.@test_throws Exceptions.IncorrectArgument Strategies.extract_global_parameter_from_method(

@@ -5,7 +5,7 @@ import ExaModels: ExaModels  # trigger CTSolversExaModels extension
 using Test
 using CTSolvers
 using CTBase.Strategies
-using CTBase.Strategies: _default_parameter
+using CTBase.Strategies: default_parameter, parameter
 using CTBase.Exceptions
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
@@ -25,7 +25,7 @@ struct FakeStrategyWithoutContract <: AbstractStrategy
     options::StrategyOptions
 end
 
-# Intentionally DO NOT implement _default_parameter to test the fallback behavior
+# Intentionally DO NOT implement default_parameter or parameter to test the fallback behavior
 
 # ============================================================================
 # Test function
@@ -49,18 +49,32 @@ function test_parameter_contract()
         # ====================================================================
 
         Test.@testset "Fallback implementations throw NotImplemented" begin
-            Test.@testset "_default_parameter fallback" begin
+            Test.@testset "default_parameter fallback" begin
                 err = try
-                    _default_parameter(FakeStrategyWithoutContract)
+                    default_parameter(FakeStrategyWithoutContract)
                 catch e
                     e
                 end
 
                 Test.@test err isa NotImplemented
-                Test.@test occursin("must implement _default_parameter", err.msg)
-                Test.@test occursin("Strategies._default_parameter", err.required_method)
-                Test.@test occursin("Strategies._default_parameter", err.suggestion)
+                Test.@test occursin("must implement default_parameter", err.msg)
+                Test.@test occursin("Strategies.default_parameter", err.required_method)
+                Test.@test occursin("Strategies.default_parameter", err.suggestion)
                 Test.@test occursin("parameter contract", lowercase(err.context))
+            end
+
+            Test.@testset "parameter fallback" begin
+                err = try
+                    parameter(FakeStrategyWithoutContract)
+                catch e
+                    e
+                end
+
+                Test.@test err isa NotImplemented
+                Test.@test occursin("parameter", lowercase(err.msg))
+                Test.@test occursin("parameter", err.required_method)
+                Test.@test occursin("parameter", err.suggestion)
+                Test.@test occursin("parameter", lowercase(err.context))
             end
         end
 
@@ -82,7 +96,7 @@ function test_parameter_contract()
             for (strategy_type, name) in strategies
                 Test.@testset "$name implements contract" begin
                     # Should not throw NotImplemented
-                    default = Test.@test_nowarn _default_parameter(strategy_type)
+                    default = Test.@test_nowarn default_parameter(strategy_type)
                     Test.@test default == CPU  # All current strategies default to CPU
 
                     # Type constraints enforce parameter validation at compile-time
@@ -99,7 +113,7 @@ function test_parameter_contract()
             Test.@testset "Cannot use FakeStrategyWithoutContract in registry" begin
                 # Attempting to query default parameter for a strategy without contract
                 # should fail with NotImplemented
-                Test.@test_throws NotImplemented _default_parameter(
+                Test.@test_throws NotImplemented default_parameter(
                     FakeStrategyWithoutContract
                 )
             end

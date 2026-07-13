@@ -26,6 +26,11 @@ end
 Strategies.id(::Type{<:TestStratA}) = :teststrata
 Strategies.id(::Type{<:TestStratB}) = :teststratb
 
+# Parameter contract
+Strategies.parameter(::Type{<:TestStratA}) = nothing
+Strategies.parameter(::Type{<:TestStratB{P}}) where {P<:Strategies.AbstractStrategyParameter} = P
+Strategies.default_parameter(::Type{<:TestStratB}) = Strategies.CPU
+
 # Simple metadata
 Strategies.metadata(::Type{T}) where {T<:TestStratA} = Strategies.StrategyMetadata()
 Strategies.metadata(::Type{T}) where {T<:TestStratB} = Strategies.StrategyMetadata()
@@ -70,7 +75,7 @@ function test_backward_compatibility()
             Test.@test Modelers.Exa() isa Modelers.Exa{Strategies.CPU}
 
             # Test that default constructors use CPU parameter
-            Test.@test Strategies.get_parameter_type(typeof(Modelers.Exa())) ==
+            Test.@test Strategies.parameter(typeof(Modelers.Exa())) ==
                 Strategies.CPU
         end
 
@@ -136,10 +141,10 @@ function test_backward_compatibility()
 
         # Test.@testset "Type stability" begin
         #     # Test that parameter extraction is type stable
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Modelers.Exa{Strategies.CPU})
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Modelers.Exa{Strategies.GPU})
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.CPU})
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.GPU})
+        #     Test.@test_nowarn Test.@inferred Strategies.parameter(Modelers.Exa{Strategies.CPU})
+        #     Test.@test_nowarn Test.@inferred Strategies.parameter(Modelers.Exa{Strategies.GPU})
+        #     Test.@test_nowarn Test.@inferred Strategies.parameter(Solvers.MadNLP{Strategies.CPU})
+        #     Test.@test_nowarn Test.@inferred Strategies.parameter(Solvers.MadNLP{Strategies.GPU})
         # end
     end
 end

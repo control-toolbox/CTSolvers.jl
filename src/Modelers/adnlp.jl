@@ -245,7 +245,22 @@ implemented by all parameterized strategies.
 
 See also: `ADNLP`, `CPU`
 """
-Strategies._default_parameter(::Type{<:Modelers.ADNLP}) = CPU
+Strategies.default_parameter(::Type{<:Modelers.ADNLP}) = CPU
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the execution parameter type of an `ADNLP` strategy.
+
+Extracts the type parameter `P` from `ADNLP{P}`, which is always `CPU` since
+ADNLP is CPU-only.
+
+# Returns
+- `Type{CPU}`: the execution parameter type.
+
+See also: [`CTSolvers.Modelers.ADNLP`](@ref), [`CTBase.Strategies.CPU`](@extref)
+"""
+Strategies.parameter(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU} = P
 
 # Strategy metadata with option definitions (parameterized)
 """
@@ -272,7 +287,7 @@ end
 # Fallback metadata for non-parameterized type (delegates to CPU)
 function Strategies.metadata(::Type{Modelers.ADNLP})
     return Strategies.metadata(
-        Modelers.ADNLP{Strategies._default_parameter(Modelers.ADNLP)}
+        Modelers.ADNLP{Strategies.default_parameter(Modelers.ADNLP)}
     )
 end
 
@@ -364,7 +379,7 @@ modeler = Modelers.ADNLP(backend=:optimized, custom_option=123; mode=:permissive
 See also: `Modelers.ADNLP`, `Modelers.ADNLP{CPU}`, `build_adnlp_modeler`
 """
 function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
-    P = Strategies._default_parameter(Modelers.ADNLP)
+    P = Strategies.default_parameter(Modelers.ADNLP)
     return Modelers.ADNLP{P}(; mode=mode, kwargs...)
 end
 

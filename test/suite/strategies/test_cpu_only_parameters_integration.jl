@@ -174,8 +174,8 @@ function test_cpu_only_parameters_integration()
 
         Test.@testset "Default parameters for CPU-only strategies" begin
             # Verify default parameters
-            Test.@test Strategies._default_parameter(Modelers.ADNLP) == Strategies.CPU
-            Test.@test Strategies._default_parameter(Solvers.Ipopt) == Strategies.CPU
+            Test.@test Strategies.default_parameter(Modelers.ADNLP) == Strategies.CPU
+            Test.@test Strategies.default_parameter(Solvers.Ipopt) == Strategies.CPU
         end
 
         # ====================================================================
@@ -210,7 +210,7 @@ function test_cpu_only_parameters_integration()
 
             for (strategy_type, name) in strategies_to_test
                 # Default parameter should be CPU
-                Test.@test Strategies._default_parameter(strategy_type) == Strategies.CPU
+                Test.@test Strategies.default_parameter(strategy_type) == Strategies.CPU
 
                 # Type constraints enforce parameter validation at compile-time
                 # GPU and custom parameters will throw TypeError when attempting to construct

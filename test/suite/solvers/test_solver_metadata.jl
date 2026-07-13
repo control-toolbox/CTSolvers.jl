@@ -84,7 +84,7 @@ function test_solver_metadata()
         # ====================================================================
 
         Test.@testset "Default Parameters" begin
-            # Test _default_parameter functions (internal, but affects constructor behavior)
+            # Test default_parameter functions (internal, but affects constructor behavior)
             # These are called when constructing without explicit parameter
 
             # Verify default constructors use CPU parameter

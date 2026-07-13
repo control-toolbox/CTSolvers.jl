@@ -13,7 +13,7 @@ This guide explains how to implement an optimization modeler in CTSolvers. Model
 
 A modeler must satisfy **two contracts**:
 
-1. **Strategy contract** — `id`, `metadata`, `options`, `_default_parameter` (inherited from `AbstractStrategy`)
+1. **Strategy contract** — `id`, `metadata`, `options`, `parameter`, `default_parameter` (inherited from `AbstractStrategy`)
 2. **Modeler contract** — the generic functions `Optimization.build_model` / `Optimization.build_solution`, dispatched on the `(problem, modeler)` pair
 
 ```text
@@ -79,11 +79,13 @@ CTBase.Strategies.description(::Type{<:Modelers.ADNLP}) =
     "NLP modeler using ADNLPModels with automatic differentiation.\n" *
     "See: https://jso.dev/ADNLPModels.jl"
 
-CTBase.Strategies._default_parameter(::Type{<:Modelers.ADNLP}) = CPU
+CTBase.Strategies.default_parameter(::Type{<:Modelers.ADNLP}) = CPU
+CTBase.Strategies.parameter(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU} = P
 ```
 
-`_default_parameter` is part of the parameterized-strategy contract: it tells the
-unparameterized constructor `Modelers.ADNLP(...)` which parameter to use.
+`default_parameter` is part of the parameterized-strategy contract: it tells the
+unparameterized constructor `Modelers.ADNLP(...)` which parameter to use. `parameter`
+declares the parameter type of the strategy.
 
 ### Step 3 — Declare `metadata` (stub in `src/`, real in `ext/`)
 
@@ -101,7 +103,7 @@ end
 # Fallback for the unparameterized type: delegate to the default parameter
 function CTBase.Strategies.metadata(::Type{Modelers.ADNLP})
     return CTBase.Strategies.metadata(
-        Modelers.ADNLP{CTBase.Strategies._default_parameter(Modelers.ADNLP)}
+        Modelers.ADNLP{CTBase.Strategies.default_parameter(Modelers.ADNLP)}
     )
 end
 ```
@@ -115,7 +117,7 @@ dispatched on the **tag and parameter types** (not instances). The builder is a 
 ```julia
 # Unparameterized constructor → resolve the default parameter
 function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
-    P = CTBase.Strategies._default_parameter(Modelers.ADNLP)
+    P = CTBase.Strategies.default_parameter(Modelers.ADNLP)
     return Modelers.ADNLP{P}(; mode=mode, kwargs...)
 end
 
@@ -225,7 +227,8 @@ struct Exa{P<:Union{CPU,GPU}} <: AbstractNLPModeler
 end
 
 CTBase.Strategies.id(::Type{<:Modelers.Exa}) = :exa
-CTBase.Strategies._default_parameter(::Type{<:Modelers.Exa}) = CPU
+CTBase.Strategies.default_parameter(::Type{<:Modelers.Exa}) = CPU
+CTBase.Strategies.parameter(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU,GPU}} = P
 
 function Modelers.Exa{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
     return build_exa_modeler(ExaTag, P; mode=mode, kwargs...)
@@ -333,7 +336,7 @@ To add a new modeler (e.g., `MyModeler` for a new NLP backend):
 1. Define the tag: `struct MyModelerTag <: CTBase.Core.AbstractTag end`
 2. Define the parameterized struct: `MyModeler{P<:CPU} <: AbstractNLPModeler` with `options::CTBase.Strategies.StrategyOptions`
 3. Implement `CTBase.Strategies.id(::Type{<:MyModeler}) = :my_backend` and `CTBase.Strategies.description`
-4. Implement `CTBase.Strategies._default_parameter(::Type{<:MyModeler}) = CPU`
+4. Implement `CTBase.Strategies.default_parameter(::Type{<:MyModeler}) = CPU` and `CTBase.Strategies.parameter(::Type{<:MyModeler{P}}) where {P<:CPU} = P`
 5. Declare the `metadata` stub in `src/` (throws `ExtensionError`); implement the real option definitions in the backend extension
 6. Write the constructor chain: `MyModeler(; ...)` → `MyModeler{P}(; ...)` → `build_my_modeler(MyModelerTag, P; ...)`, with the builder stub in `src/` and the real builder in the extension
 7. Implement `CTBase.Strategies.options(m::MyModeler) = m.options`

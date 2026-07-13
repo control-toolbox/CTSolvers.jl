@@ -5,6 +5,81 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.27-beta (2026-07-13)
+
+**Breaking change:** Migration to CTBase 0.28 strategy parameter contract.
+`Strategies._default_parameter` is renamed to `Strategies.default_parameter`, a new
+`Strategies.parameter` contract method must be implemented by every strategy, and the
+removed `Strategies.get_parameter_type` is replaced by `Strategies.parameter`.
+
+### Summary - v0.4.27-beta
+
+- `Strategies._default_parameter` renamed to `Strategies.default_parameter` in all strategies
+- New `Strategies.parameter(::Type{<:S{P}}) where {P<:Bound} = P` implemented for all 7
+  parameterized strategies (`ADNLP`, `Exa`, `Ipopt`, `Knitro`, `MadNLP`, `MadNCL`, `Uno`)
+- `Strategies.parameter(::Type{<:SciML}) = nothing` added for the non-parameterized `SciML`
+  integrator
+- `Strategies.get_parameter_type` calls replaced by `Strategies.parameter` in all tests
+- CTBase compat bumped to `0.28`, CTModels compat bumped to `0.15`
+
+### Breaking Changes - v0.4.27-beta
+
+#### 1. `_default_parameter` renamed to `default_parameter`
+
+**Before:**
+
+```julia
+Strategies._default_parameter(::Type{<:MyStrategy}) = CPU
+```
+
+**After:**
+
+```julia
+Strategies.default_parameter(::Type{<:MyStrategy}) = CPU
+```
+
+#### 2. New `parameter` contract method required
+
+**Before:** No explicit `parameter` method was required.
+
+**After:** Every strategy must implement `parameter`:
+
+```julia
+# For parameterized strategies
+Strategies.parameter(::Type{<:MyStrategy{P}}) where {P<:AbstractStrategyParameter} = P
+
+# For non-parameterized strategies
+Strategies.parameter(::Type{<:MyStrategy}) = nothing
+```
+
+#### 3. `get_parameter_type` removed
+
+**Before:**
+
+```julia
+Strategies.get_parameter_type(MyStrategy{CPU})  # → CPU
+```
+
+**After:**
+
+```julia
+Strategies.parameter(MyStrategy{CPU})  # → CPU
+```
+
+### Migration - v0.4.27-beta
+
+1. Rename `Strategies._default_parameter` to `Strategies.default_parameter` in all strategy
+   implementations.
+2. Add a `Strategies.parameter` method for every strategy (returning `P` for parameterized
+   strategies, `nothing` for non-parameterized ones).
+3. Replace all `Strategies.get_parameter_type(T)` calls with `Strategies.parameter(T)`.
+4. Update CTBase compat to `0.28` and CTModels compat to `0.15`.
+
+See the [CTBase.jl v0.28.0-beta breaking changes](https://github.com/control-toolbox/CTBase.jl/blob/v0.28.0-beta/BREAKING.md)
+for full details on the upstream changes.
+
+---
+
 ## v0.4.26-beta (2026-07-09)
 
 **No breaking changes.**
@@ -839,25 +914,25 @@ modeler = ADNLP{CPU}()
 
 ```julia
 # Required for all strategy implementations
-function Strategies._supported_parameters(::Type{<:MyStrategy})
-    return (CPU,)  # or (CPU, GPU) depending on support
+function Strategies.parameter(::Type{<:MyStrategy{P}}) where {P<:AbstractStrategyParameter}
+    return P
 end
 
-function Strategies._default_parameter(::Type{<:MyStrategy})
+function Strategies.default_parameter(::Type{<:MyStrategy})
     return CPU  # or GPU depending on default
 end
 ```
 
 #### 3. Fallback methods removed
 
-**Before:** Default implementations existed for `_supported_parameters` and `_default_parameter`.
+**Before:** Default implementations existed for `parameter` and `default_parameter`.
 
 **After:** These methods now throw `NotImplemented` with detailed error messages:
 
 ```julia
 # Now throws: NotImplemented with required_method, suggestion, and context
-Strategies._supported_parameters(MyStrategy)  # → NotImplemented
-Strategies._default_parameter(MyStrategy)     # → NotImplemented
+Strategies.parameter(MyStrategy)         # → NotImplemented
+Strategies.default_parameter(MyStrategy)  # → NotImplemented
 ```
 
 #### 4. Non-parameterized strategies rejected
@@ -894,11 +969,11 @@ struct MyStrategy{P<:AbstractStrategyParameter} <: AbstractStrategy
 end
 
 # Required contract methods
-function Strategies._supported_parameters(::Type{<:MyStrategy})
-    return (CPU,)  # Specify which parameters you support
+function Strategies.parameter(::Type{<:MyStrategy{P}}) where {P<:AbstractStrategyParameter}
+    return P  # Declare the parameter type
 end
 
-function Strategies._default_parameter(::Type{<:MyStrategy})
+function Strategies.default_parameter(::Type{<:MyStrategy})
     return CPU  # Specify your default parameter
 end
 ```
@@ -907,11 +982,11 @@ end
 
 ```julia
 # Support both CPU and GPU
-function Strategies._supported_parameters(::Type{<:MyGPUStrategy})
-    return (CPU, GPU)
+function Strategies.parameter(::Type{<:MyGPUStrategy{P}}) where {P<:Union{CPU,GPU}}
+    return P
 end
 
-function Strategies._default_parameter(::Type{<:MyGPUStrategy})
+function Strategies.default_parameter(::Type{<:MyGPUStrategy})
     return CPU  # Default to CPU for compatibility
 end
 ```

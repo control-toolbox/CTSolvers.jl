@@ -184,7 +184,7 @@ metadata(Solvers.MadNLP{GPU})  →  GPU defaults  →  Solvers.MadNLP{GPU}(max_i
 ```
 
 The parameter is a **type parameter** of the strategy (`Solvers.MadNLP{P}`), not a separate
-argument. `Solvers.MadNLP(...)` resolves `P` from `_default_parameter` (here `CPU`).
+argument. `Solvers.MadNLP(...)` resolves `P` from `default_parameter` (here `CPU`).
 
 See the Strategy Parameters guide in CTBase.jl documentation for a complete guide.
 
@@ -218,11 +218,12 @@ end
 struct IpoptTag <: Core.AbstractTag end
 
 CTBase.Strategies.id(::Type{<:Solvers.Ipopt}) = :ipopt
-CTBase.Strategies._default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+CTBase.Strategies.default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+CTBase.Strategies.parameter(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU} = P
 
 # Constructor chain: resolve P, then dispatch on the tag and parameter TYPES
 Solvers.Ipopt(; kwargs...) =
-    Solvers.Ipopt{CTBase.Strategies._default_parameter(Solvers.Ipopt)}(; kwargs...)
+    Solvers.Ipopt{CTBase.Strategies.default_parameter(Solvers.Ipopt)}(; kwargs...)
 Solvers.Ipopt{P}(; kwargs...) where {P<:CPU} = build_ipopt_solver(IpoptTag, P; kwargs...)
 build_ipopt_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...) =
     throw(ExtensionError(:NLPModelsIpopt))

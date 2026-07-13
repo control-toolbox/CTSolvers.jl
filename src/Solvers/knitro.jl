@@ -149,7 +149,22 @@ implemented by all parameterized strategies.
 
 See also: `Knitro`, `CPU`
 """
-Strategies._default_parameter(::Type{<:Solvers.Knitro}) = CPU
+Strategies.default_parameter(::Type{<:Solvers.Knitro}) = CPU
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the execution parameter type of a `Knitro` strategy.
+
+Extracts the type parameter `P` from `Knitro{P}`, which is always `CPU` since
+Knitro is CPU-only.
+
+# Returns
+- `Type{CPU}`: the execution parameter type.
+
+See also: [`CTSolvers.Solvers.Knitro`](@ref), [`CTBase.Strategies.CPU`](@extref)
+"""
+Strategies.parameter(::Type{<:Solvers.Knitro{P}}) where {P<:CPU} = P
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -183,7 +198,7 @@ solver_permissive = Knitro(maxit=1000, custom_option=123; mode=:permissive)
 See also: `Knitro`, `build_knitro_solver`
 """
 function Solvers.Knitro(; mode::Symbol=:strict, kwargs...)
-    P = Strategies._default_parameter(Solvers.Knitro)
+    P = Strategies.default_parameter(Solvers.Knitro)
     return Solvers.Knitro{P}(; mode=mode, kwargs...)
 end
 
@@ -287,6 +302,6 @@ See also: `Knitro`, `Strategies.metadata`
 """
 function Strategies.metadata(::Type{Solvers.Knitro})
     return Strategies.metadata(
-        Solvers.Knitro{Strategies._default_parameter(Solvers.Knitro)}
+        Solvers.Knitro{Strategies.default_parameter(Solvers.Knitro)}
     )
 end

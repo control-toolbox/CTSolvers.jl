@@ -146,7 +146,22 @@ implemented by all parameterized strategies.
 
 See also: `Ipopt`, `CPU`
 """
-Strategies._default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+Strategies.default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the execution parameter type of an `Ipopt` strategy.
+
+Extracts the type parameter `P` from `Ipopt{P}`, which is always `CPU` since
+Ipopt is CPU-only.
+
+# Returns
+- `Type{CPU}`: the execution parameter type.
+
+See also: [`CTSolvers.Solvers.Ipopt`](@ref), [`CTBase.Strategies.CPU`](@extref)
+"""
+Strategies.parameter(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU} = P
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -180,7 +195,7 @@ solver_permissive = Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
 See also: `Ipopt`, `build_ipopt_solver`
 """
 function Solvers.Ipopt(; mode::Symbol=:strict, kwargs...)
-    P = Strategies._default_parameter(Solvers.Ipopt)
+    P = Strategies.default_parameter(Solvers.Ipopt)
     return Solvers.Ipopt{P}(; mode=mode, kwargs...)
 end
 
@@ -283,5 +298,5 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 See also: `Ipopt`, `Strategies.metadata`
 """
 function Strategies.metadata(::Type{Solvers.Ipopt})
-    return Strategies.metadata(Solvers.Ipopt{Strategies._default_parameter(Solvers.Ipopt)})
+    return Strategies.metadata(Solvers.Ipopt{Strategies.default_parameter(Solvers.Ipopt)})
 end
