@@ -38,6 +38,7 @@ struct MockStrategyWithAliases <: Strategies.AbstractStrategy
 end
 
 Strategies.id(::Type{MockStrategyWithAliases}) = :mock_with_aliases
+Strategies.parameter(::Type{MockStrategyWithAliases}) = nothing
 
 function Strategies.metadata(::Type{MockStrategyWithAliases})
     Strategies.StrategyMetadata(

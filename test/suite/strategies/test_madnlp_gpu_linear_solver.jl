@@ -24,7 +24,7 @@ function test_madnlp_gpu_linear_solver()
             # But we can test the type exists and parameter extraction works
             Test.@test Solvers.MadNLP{Strategies.CPU} isa
                 Type{Solvers.MadNLP{Strategies.CPU}}
-            Test.@test Strategies.get_parameter_type(Solvers.MadNLP{Strategies.CPU}) ==
+            Test.@test Strategies.parameter(Solvers.MadNLP{Strategies.CPU}) ==
                 Strategies.CPU
             Test.@test Strategies.id(Solvers.MadNLP{Strategies.CPU}) == :madnlp
         end
@@ -36,7 +36,7 @@ function test_madnlp_gpu_linear_solver()
         Test.@testset "MadNLP{Strategies.GPU} type" begin
             Test.@test Solvers.MadNLP{Strategies.GPU} isa
                 Type{Solvers.MadNLP{Strategies.GPU}}
-            Test.@test Strategies.get_parameter_type(Solvers.MadNLP{Strategies.GPU}) ==
+            Test.@test Strategies.parameter(Solvers.MadNLP{Strategies.GPU}) ==
                 Strategies.GPU
             Test.@test Strategies.id(Solvers.MadNLP{Strategies.GPU}) == :madnlp
         end
@@ -48,7 +48,7 @@ function test_madnlp_gpu_linear_solver()
         Test.@testset "MadNCL{Strategies.CPU} defaults" begin
             Test.@test Solvers.MadNCL{Strategies.CPU} isa
                 Type{Solvers.MadNCL{Strategies.CPU}}
-            Test.@test Strategies.get_parameter_type(Solvers.MadNCL{Strategies.CPU}) ==
+            Test.@test Strategies.parameter(Solvers.MadNCL{Strategies.CPU}) ==
                 Strategies.CPU
             Test.@test Strategies.id(Solvers.MadNCL{Strategies.CPU}) == :madncl
         end
@@ -60,7 +60,7 @@ function test_madnlp_gpu_linear_solver()
         Test.@testset "MadNCL{Strategies.GPU} type" begin
             Test.@test Solvers.MadNCL{Strategies.GPU} isa
                 Type{Solvers.MadNCL{Strategies.GPU}}
-            Test.@test Strategies.get_parameter_type(Solvers.MadNCL{Strategies.GPU}) ==
+            Test.@test Strategies.parameter(Solvers.MadNCL{Strategies.GPU}) ==
                 Strategies.GPU
             Test.@test Strategies.id(Solvers.MadNCL{Strategies.GPU}) == :madncl
         end
@@ -177,10 +177,10 @@ function test_madnlp_gpu_linear_solver()
 
         # Test.@testset "Type stability" begin
         #     # Test that parameter extraction is type stable
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.CPU})
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNLP{Strategies.GPU})
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNCL{Strategies.CPU})
-        #     Test.@test_nowarn Test.@inferred Strategies.get_parameter_type(Solvers.MadNCL{Strategies.GPU})
+        #     Test.@test_nowarn Test.@inferred Strategies.parameter(Solvers.MadNLP{Strategies.CPU})
+        #     Test.@test_nowarn Test.@inferred Strategies.parameter(Solvers.MadNLP{Strategies.GPU})
+        #     Test.@test_nowarn Test.@inferred Strategies.parameter(Solvers.MadNCL{Strategies.CPU})
+        #     Test.@test_nowarn Test.@inferred Strategies.parameter(Solvers.MadNCL{Strategies.GPU})
         # end
 
         # ====================================================================

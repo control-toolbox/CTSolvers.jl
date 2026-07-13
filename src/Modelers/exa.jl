@@ -255,7 +255,22 @@ implemented by all parameterized strategies.
 
 See also: `Exa`, `CPU`
 """
-Strategies._default_parameter(::Type{<:Modelers.Exa}) = CPU
+Strategies.default_parameter(::Type{<:Modelers.Exa}) = CPU
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the execution parameter type of an `Exa` strategy.
+
+Extracts the type parameter `P` from `Exa{P}`, which can be either `CPU` or
+`GPU` since Exa supports both execution backends.
+
+# Returns
+- `Type{<:Union{CPU,GPU}}`: the execution parameter type.
+
+See also: [`CTSolvers.Modelers.Exa`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
+"""
+Strategies.parameter(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU,GPU}} = P
 
 # Strategy metadata with option definitions (parameterized)
 """
@@ -291,7 +306,7 @@ is not specified. The call will delegate to `metadata(Exa{CPU})`.
 - `StrategyMetadata`: Metadata for `Exa{CPU}`
 """
 function Strategies.metadata(::Type{Modelers.Exa})
-    return Strategies.metadata(Modelers.Exa{Strategies._default_parameter(Modelers.Exa)})
+    return Strategies.metadata(Modelers.Exa{Strategies.default_parameter(Modelers.Exa)})
 end
 
 # ============================================================================
@@ -374,7 +389,7 @@ Requires the CTSolversExaModels extension to be loaded.
 See also: `Modelers.Exa`, `Modelers.Exa{CPU}`, `Modelers.Exa{GPU}`, `build_exa_modeler`
 """
 function Modelers.Exa(; mode::Symbol=:strict, kwargs...)
-    P = Strategies._default_parameter(Modelers.Exa)
+    P = Strategies.default_parameter(Modelers.Exa)
     return Modelers.Exa{P}(; mode=mode, kwargs...)
 end
 

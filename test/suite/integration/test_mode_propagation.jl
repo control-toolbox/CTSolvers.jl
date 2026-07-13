@@ -28,6 +28,7 @@ end
 
 # Required method for strategy registration
 Strategies.id(::Type{FakeStrategy}) = :fake
+Strategies.parameter(::Type{FakeStrategy}) = nothing
 
 """Fake strategy metadata for testing."""
 function Strategies.metadata(::Type{FakeStrategy})

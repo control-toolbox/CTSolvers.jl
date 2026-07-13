@@ -76,6 +76,21 @@ Strategies.id(::Type{<:SciML}) = :sciml
 """
 $(TYPEDSIGNATURES)
 
+Return the execution parameter type of the `SciML` integrator.
+
+Returns `nothing` because `SciML` is a non-parameterized strategy: it has no
+execution parameter and does not require one.
+
+# Returns
+- `Nothing`: `SciML` is not parameterized.
+
+See also: [`CTSolvers.Integrators.SciML`](@ref)
+"""
+Strategies.parameter(::Type{<:SciML}) = nothing
+
+"""
+$(TYPEDSIGNATURES)
+
 Return the description for the SciML integrator.
 """
 function Strategies.description(::Type{<:SciML})

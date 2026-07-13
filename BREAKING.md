@@ -839,25 +839,25 @@ modeler = ADNLP{CPU}()
 
 ```julia
 # Required for all strategy implementations
-function Strategies._supported_parameters(::Type{<:MyStrategy})
-    return (CPU,)  # or (CPU, GPU) depending on support
+function Strategies.parameter(::Type{<:MyStrategy{P}}) where {P<:AbstractStrategyParameter}
+    return P
 end
 
-function Strategies._default_parameter(::Type{<:MyStrategy})
+function Strategies.default_parameter(::Type{<:MyStrategy})
     return CPU  # or GPU depending on default
 end
 ```
 
 #### 3. Fallback methods removed
 
-**Before:** Default implementations existed for `_supported_parameters` and `_default_parameter`.
+**Before:** Default implementations existed for `parameter` and `default_parameter`.
 
 **After:** These methods now throw `NotImplemented` with detailed error messages:
 
 ```julia
 # Now throws: NotImplemented with required_method, suggestion, and context
-Strategies._supported_parameters(MyStrategy)  # → NotImplemented
-Strategies._default_parameter(MyStrategy)     # → NotImplemented
+Strategies.parameter(MyStrategy)         # → NotImplemented
+Strategies.default_parameter(MyStrategy)  # → NotImplemented
 ```
 
 #### 4. Non-parameterized strategies rejected
@@ -894,11 +894,11 @@ struct MyStrategy{P<:AbstractStrategyParameter} <: AbstractStrategy
 end
 
 # Required contract methods
-function Strategies._supported_parameters(::Type{<:MyStrategy})
-    return (CPU,)  # Specify which parameters you support
+function Strategies.parameter(::Type{<:MyStrategy{P}}) where {P<:AbstractStrategyParameter}
+    return P  # Declare the parameter type
 end
 
-function Strategies._default_parameter(::Type{<:MyStrategy})
+function Strategies.default_parameter(::Type{<:MyStrategy})
     return CPU  # Specify your default parameter
 end
 ```
@@ -907,11 +907,11 @@ end
 
 ```julia
 # Support both CPU and GPU
-function Strategies._supported_parameters(::Type{<:MyGPUStrategy})
-    return (CPU, GPU)
+function Strategies.parameter(::Type{<:MyGPUStrategy{P}}) where {P<:Union{CPU,GPU}}
+    return P
 end
 
-function Strategies._default_parameter(::Type{<:MyGPUStrategy})
+function Strategies.default_parameter(::Type{<:MyGPUStrategy})
     return CPU  # Default to CPU for compatibility
 end
 ```

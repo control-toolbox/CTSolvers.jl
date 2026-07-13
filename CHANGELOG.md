@@ -566,9 +566,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking Changes
 
-- **Strategy parameter contract enforcement** - All strategies must now explicitly implement `_supported_parameters` and `_default_parameter` methods
+- **Strategy parameter contract enforcement** - All strategies must now explicitly implement `parameter` and `default_parameter` methods
 - **Non-parameterized strategies disallowed** - Attempting to create non-parameterized strategies now throws `IncorrectArgument`
-- **Fallback methods removed** - Default implementations of `_supported_parameters` and `_default_parameter` now throw `NotImplemented`
+- **Fallback methods removed** - Default implementations of `parameter` and `default_parameter` now throw `NotImplemented`
 
 ### Added
 
@@ -602,11 +602,11 @@ solver = Ipopt{CPU}()
 
 ```julia
 # Must now implement these methods
-function Strategies._supported_parameters(::Type{<:MyStrategy})
-    return (CPU,)  # or (CPU, GPU)
+function Strategies.parameter(::Type{<:MyStrategy{P}}) where {P<:AbstractStrategyParameter}
+    return P  # or (CPU, GPU)
 end
 
-function Strategies._default_parameter(::Type{<:MyStrategy})
+function Strategies.default_parameter(::Type{<:MyStrategy})
     return CPU  # or GPU
 end
 ```

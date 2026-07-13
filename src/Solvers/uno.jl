@@ -175,7 +175,22 @@ implemented by all parameterized strategies.
 
 See also: `Uno`, `CPU`
 """
-Strategies._default_parameter(::Type{<:Solvers.Uno}) = CPU
+Strategies.default_parameter(::Type{<:Solvers.Uno}) = CPU
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the execution parameter type of a `Uno` strategy.
+
+Extracts the type parameter `P` from `Uno{P}`, which is always `CPU` since
+Uno is CPU-only.
+
+# Returns
+- `Type{CPU}`: the execution parameter type.
+
+See also: [`CTSolvers.Solvers.Uno`](@ref), [`CTBase.Strategies.CPU`](@extref)
+"""
+Strategies.parameter(::Type{<:Solvers.Uno{P}}) where {P<:CPU} = P
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -209,7 +224,7 @@ solver_permissive = Uno(max_iter=1000, custom_option=123; mode=:permissive)
 See also: `Uno`, `build_uno_solver`
 """
 function Solvers.Uno(; mode::Symbol=:strict, kwargs...)
-    P = Strategies._default_parameter(Solvers.Uno)
+    P = Strategies.default_parameter(Solvers.Uno)
     return Solvers.Uno{P}(; mode=mode, kwargs...)
 end
 
@@ -312,5 +327,5 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 See also: `Uno`, `Strategies.metadata`
 """
 function Strategies.metadata(::Type{Solvers.Uno})
-    return Strategies.metadata(Solvers.Uno{Strategies._default_parameter(Solvers.Uno)})
+    return Strategies.metadata(Solvers.Uno{Strategies.default_parameter(Solvers.Uno)})
 end

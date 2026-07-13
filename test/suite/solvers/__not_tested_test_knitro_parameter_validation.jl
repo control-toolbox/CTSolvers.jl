@@ -159,8 +159,8 @@ function test_knitro_parameter_validation()
 
             Test.@test_throws Exceptions.ExtensionError Solvers.Knitro()
 
-            # Verify _default_parameter returns CPU
-            Test.@test Solvers._default_parameter(Solvers.Knitro) == Strategies.CPU
+            # Verify default_parameter returns CPU
+            Test.@test Solvers.default_parameter(Solvers.Knitro) == Strategies.CPU
         end
     end
 end

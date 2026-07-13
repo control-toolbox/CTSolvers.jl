@@ -13,7 +13,7 @@ This guide explains how to implement an optimization solver in CTSolvers. Solver
 
 A solver must satisfy **three contracts**:
 
-1. **Strategy contract** — `id`, `metadata`, `options`, `_default_parameter` (inherited from `AbstractStrategy`)
+1. **Strategy contract** — `id`, `metadata`, `options`, `parameter`, `default_parameter` (inherited from `AbstractStrategy`)
 2. **Solve contract** — `CommonSolve.solve(nlp, solver; display) → ExecutionStats`
 3. **Tag Dispatch** — separates type definition from backend implementation
 
@@ -63,8 +63,9 @@ end
 
 ### Step 3 — Implement `id` and the default parameter
 
-The `id` is available even without the extension. `_default_parameter` tells the
-unparameterized constructor which parameter to use:
+The `id` is available even without the extension. `default_parameter` tells the
+unparameterized constructor which parameter to use, and `parameter` declares the
+parameter type of the strategy:
 
 ```@example solver
 using CTSolvers
@@ -73,7 +74,8 @@ CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)
 ```
 
 ```julia
-CTBase.Strategies._default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+CTBase.Strategies.default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+CTBase.Strategies.parameter(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU} = P
 ```
 
 ### Step 4 — Constructors with Tag Dispatch
@@ -86,7 +88,7 @@ until the extension is loaded:
 ```julia
 # Unparameterized → resolve the default parameter
 function Solvers.Ipopt(; mode::Symbol = :strict, kwargs...)
-    P = CTBase.Strategies._default_parameter(Solvers.Ipopt)
+    P = CTBase.Strategies.default_parameter(Solvers.Ipopt)
     return Solvers.Ipopt{P}(; mode = mode, kwargs...)
 end
 
@@ -133,11 +135,12 @@ struct Ipopt{P<:CPU} <: AbstractNLPSolver
 end
 
 CTBase.Strategies.id(::Type{<:Solvers.Ipopt}) = :ipopt
-CTBase.Strategies._default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+CTBase.Strategies.default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+CTBase.Strategies.parameter(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU} = P
 
 # Constructors — resolve the parameter, then dispatch via tag (types, not instances)
 Solvers.Ipopt(; mode = :strict, kwargs...) =
-    Solvers.Ipopt{CTBase.Strategies._default_parameter(Solvers.Ipopt)}(; mode, kwargs...)
+    Solvers.Ipopt{CTBase.Strategies.default_parameter(Solvers.Ipopt)}(; mode, kwargs...)
 
 Solvers.Ipopt{P}(; mode = :strict, kwargs...) where {P<:CPU} =
     build_ipopt_solver(IpoptTag, P; mode, kwargs...)
@@ -323,7 +326,7 @@ To add a new solver (e.g., `MySolver` backed by `MyBackend`):
 
 1. Define `MyTag <: Core.AbstractTag`
 2. Define the parameterized struct `MySolver{P<:CPU} <: AbstractNLPSolver` with `options::CTBase.Strategies.StrategyOptions` (widen the bound to `Union{CPU,GPU}` for GPU-capable backends)
-3. Implement `CTBase.Strategies.id(::Type{<:MySolver}) = :my_solver` and `CTBase.Strategies._default_parameter(::Type{<:MySolver}) = CPU`
+3. Implement `CTBase.Strategies.id(::Type{<:MySolver}) = :my_solver`, `CTBase.Strategies.default_parameter(::Type{<:MySolver}) = CPU`, and `CTBase.Strategies.parameter(::Type{<:MySolver{P}}) where {P<:CPU} = P`
 4. Write the constructor chain: `MySolver(; ...)` → `MySolver{P}(; ...)` → `build_my_solver(MyTag, P; mode, kwargs...)`
 5. Write stub: `build_my_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...) = throw(ExtensionError(...))`
 

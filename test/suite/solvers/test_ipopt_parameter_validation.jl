@@ -71,8 +71,8 @@ function test_ipopt_parameter_validation()
         # Note: Error ordering tests removed - validation is tested above
 
         Test.@testset "Default parameter behavior" begin
-            # Verify _default_parameter returns CPU
-            Test.@test Strategies._default_parameter(Solvers.Ipopt) == Strategies.CPU
+            # Verify default_parameter returns CPU
+            Test.@test Strategies.default_parameter(Solvers.Ipopt) == Strategies.CPU
 
             # Note: We don't test Solvers.Ipopt() here because:
             # - When extension is NOT loaded: throws ExtensionError

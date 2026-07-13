@@ -69,8 +69,8 @@ function test_uno_parameter_validation()
         # ====================================================================
 
         Test.@testset "Default parameter behavior" begin
-            # Verify _default_parameter returns CPU
-            Test.@test Strategies._default_parameter(Solvers.Uno) == Strategies.CPU
+            # Verify default_parameter returns CPU
+            Test.@test Strategies.default_parameter(Solvers.Uno) == Strategies.CPU
 
             # Note: We don't test Solvers.Uno() here because:
             # - When extension is NOT loaded: throws ExtensionError
