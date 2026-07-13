@@ -92,6 +92,11 @@ Strategies.id(::Type{RouteADNLP}) = :adnlp
 Strategies.id(::Type{RouteIpopt}) = :ipopt
 Strategies.id(::Type{RouteMadNLP}) = :madnlp
 
+Strategies.parameter(::Type{<:RouteCollocation}) = nothing
+Strategies.parameter(::Type{<:RouteADNLP}) = nothing
+Strategies.parameter(::Type{<:RouteIpopt}) = nothing
+Strategies.parameter(::Type{<:RouteMadNLP}) = nothing
+
 # Add constructors for mock strategies
 function RouteCollocation(; mode=:strict, kwargs...)
     options = Strategies.build_strategy_options(RouteCollocation; mode=mode, kwargs...)
@@ -175,6 +180,7 @@ const MOCK_REGISTRY = Strategies.create_registry(
 # Test method and families
 const MOCK_METHOD = (:collocation, :adnlp, :ipopt)
 const MOCK_METHOD_MULTI = (:collocation, :adnlp, :ipopt)
+const REAL_METHOD = (:collocation, :adnlp, :ipopt, :cpu)
 
 const MOCK_FAMILIES = (
     discretizer=RouteTestDiscretizer, modeler=RouteTestModeler, solver=RouteTestSolver
@@ -500,7 +506,7 @@ function test_route_to_comprehensive()
             Test.@testset "Real Modelers.ADNLP" begin
                 real_registry = Strategies.create_registry(
                     RouteTestDiscretizer => (RouteCollocation,),
-                    Modelers.AbstractNLPModeler => (Modelers.ADNLP,),
+                    Modelers.AbstractNLPModeler => ((Modelers.ADNLP, [Strategies.CPU]),),
                     RouteTestSolver => (RouteIpopt,),
                 )
 
@@ -518,12 +524,12 @@ function test_route_to_comprehensive()
                 )
 
                 routed = Orchestration.route_all_options(
-                    MOCK_METHOD, real_families, ACTION_DEFS, kwargs, real_registry
+                    REAL_METHOD, real_families, ACTION_DEFS, kwargs, real_registry
                 )
 
                 # Build real modeler
                 resolved = Orchestration.resolve_method(
-                    MOCK_METHOD, real_families, real_registry
+                    REAL_METHOD, real_families, real_registry
                 )
                 real_modeler = Orchestration.build_strategy_from_resolved(
                     resolved,
@@ -543,7 +549,7 @@ function test_route_to_comprehensive()
                     real_registry = Strategies.create_registry(
                         RouteTestDiscretizer => (RouteCollocation,),
                         RouteTestModeler => (RouteADNLP,),
-                        Solvers.AbstractNLPSolver => (Solvers.Uno,),
+                        Solvers.AbstractNLPSolver => ((Solvers.Uno, [Strategies.CPU]),),
                     )
 
                     real_families = (
@@ -553,7 +559,7 @@ function test_route_to_comprehensive()
                     )
 
                     # Use :uno in method tuple, not :ipopt
-                    uno_method = (:collocation, :adnlp, :uno)
+                    uno_method = (:collocation, :adnlp, :uno, :cpu)
 
                     kwargs = (
                         grid_size=200,
@@ -594,7 +600,7 @@ function test_route_to_comprehensive()
                     real_registry = Strategies.create_registry(
                         RouteTestDiscretizer => (RouteCollocation,),
                         RouteTestModeler => (RouteADNLP,),
-                        Solvers.AbstractNLPSolver => (Solvers.Ipopt,),
+                        Solvers.AbstractNLPSolver => ((Solvers.Ipopt, [Strategies.CPU]),),
                     )
 
                     real_families = (
@@ -611,12 +617,12 @@ function test_route_to_comprehensive()
                     )
 
                     routed = Orchestration.route_all_options(
-                        MOCK_METHOD, real_families, ACTION_DEFS, kwargs, real_registry
+                        REAL_METHOD, real_families, ACTION_DEFS, kwargs, real_registry
                     )
 
                     # Build real solver
                     resolved = Orchestration.resolve_method(
-                        MOCK_METHOD, real_families, real_registry
+                        REAL_METHOD, real_families, real_registry
                     )
                     real_solver = Orchestration.build_strategy_from_resolved(
                         resolved,
@@ -626,7 +632,7 @@ function test_route_to_comprehensive()
                         routed.strategies.solver...,
                     )
 
-                    # Verify real solver has the routed options 
+                    # Verify real solver has the routed options
                     test_option_routing(real_solver, :tol, 1e-6)
                     test_option_routing(real_solver, :max_iter, 1000)
                 end
@@ -637,7 +643,7 @@ function test_route_to_comprehensive()
                     real_registry = Strategies.create_registry(
                         RouteTestDiscretizer => (RouteCollocation,),
                         RouteTestModeler => (RouteADNLP,),
-                        Solvers.AbstractNLPSolver => (Solvers.Ipopt,),
+                        Solvers.AbstractNLPSolver => ((Solvers.Ipopt, [Strategies.CPU]),),
                     )
 
                     real_families = (
@@ -655,12 +661,12 @@ function test_route_to_comprehensive()
                     )
 
                     routed = Orchestration.route_all_options(
-                        MOCK_METHOD, real_families, ACTION_DEFS, kwargs, real_registry
+                        REAL_METHOD, real_families, ACTION_DEFS, kwargs, real_registry
                     )
 
                     # Build real solver
                     resolved = Orchestration.resolve_method(
-                        MOCK_METHOD, real_families, real_registry
+                        REAL_METHOD, real_families, real_registry
                     )
                     real_solver = Orchestration.build_strategy_from_resolved(
                         resolved,

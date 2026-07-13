@@ -197,9 +197,9 @@ function test_strategy_construction(
 
         Test.@testset "build_strategy_from_resolved()" begin
             method = if family == Modelers.AbstractNLPModeler
-                (:collocation, strategy_id, :ipopt)
+                (:collocation, strategy_id, :ipopt, :cpu)
             else
-                (:collocation, :adnlp, strategy_id)
+                (:collocation, :adnlp, strategy_id, :cpu)
             end
 
             families = (strategy=family,)
@@ -331,16 +331,19 @@ function test_comprehensive_validation()
 
         # Create registries for testing
         modeler_registry = Strategies.create_registry(
-            Modelers.AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa)
+            Modelers.AbstractNLPModeler => (
+                (Modelers.ADNLP, [Strategies.CPU]),
+                (Modelers.Exa, [Strategies.CPU, Strategies.GPU]),
+            )
         )
 
         # Create solver registry based on available extensions
         solver_types = []
-        IPOPT_AVAILABLE && push!(solver_types, Solvers.Ipopt)
-        MADNLP_AVAILABLE && push!(solver_types, Solvers.MadNLP)
-        MADNCL_AVAILABLE && push!(solver_types, Solvers.MadNCL)
-        UNO_AVAILABLE && push!(solver_types, Solvers.Uno)
-        # KNITRO_AVAILABLE && push!(solver_types, Solvers.Knitro)  # Never available - no license
+        IPOPT_AVAILABLE && push!(solver_types, (Solvers.Ipopt, [Strategies.CPU]))
+        MADNLP_AVAILABLE && push!(solver_types, (Solvers.MadNLP, [Strategies.CPU, Strategies.GPU]))
+        MADNCL_AVAILABLE && push!(solver_types, (Solvers.MadNCL, [Strategies.CPU, Strategies.GPU]))
+        UNO_AVAILABLE && push!(solver_types, (Solvers.Uno, [Strategies.CPU]))
+        # KNITRO_AVAILABLE && push!(solver_types, (Solvers.Knitro, [Strategies.CPU]))  # Never available - no license
 
         solver_registry = if isempty(solver_types)
             Strategies.create_registry(Solvers.AbstractNLPSolver => ())
@@ -711,7 +714,7 @@ function test_comprehensive_validation()
                 )
                 # Test.@test modeler2.options.mode == :permissive  # WRONG - mode should NOT be stored
 
-                method = (:collocation, :adnlp, :ipopt)
+                method = (:collocation, :adnlp, :ipopt, :cpu)
                 families = (modeler=Modelers.AbstractNLPModeler,)
                 resolved = Orchestration.resolve_method(method, families, registry)
                 modeler3 = Orchestration.build_strategy_from_resolved(
@@ -759,7 +762,10 @@ function test_comprehensive_validation()
                 local unknown_options = (test_consistency=42)
 
                 local registry = Strategies.create_registry(
-                    Modelers.AbstractNLPModeler => (Modelers.ADNLP, Modelers.Exa)
+                    Modelers.AbstractNLPModeler => (
+                        (Modelers.ADNLP, [Strategies.CPU]),
+                        (Modelers.Exa, [Strategies.CPU, Strategies.GPU]),
+                    )
                 )
 
                 # Create strategies with different methods - redirect stderr to hide warnings
@@ -780,7 +786,7 @@ function test_comprehensive_validation()
                         mode=:permissive,
                     )
 
-                    method = (:collocation, :adnlp, :ipopt)
+                    method = (:collocation, :adnlp, :ipopt, :cpu)
                     families = (modeler=Modelers.AbstractNLPModeler,)
                     resolved = Orchestration.resolve_method(method, families, registry)
                     modeler3 = Orchestration.build_strategy_from_resolved(
