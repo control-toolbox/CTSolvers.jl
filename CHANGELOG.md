@@ -8,6 +8,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.27-beta] - 2026-07-13
+
+### Breaking Changes
+
+- **Strategy parameter contract migration** — Adapted all strategies to CTBase 0.28 breaking changes:
+  `Strategies._default_parameter` renamed to `Strategies.default_parameter`, new
+  `Strategies.parameter` contract method implemented for every strategy, and
+  `Strategies.get_parameter_type` (removed in CTBase 0.28) replaced by `Strategies.parameter`
+  throughout the codebase and tests.
+
+### Changed
+
+- **Compat bumps** — `CTBase = "0.28"`, `CTModels = "0.15"` in `Project.toml` and
+  `docs/Project.toml`.
+- **Source** — Renamed `_default_parameter` → `default_parameter` and added `parameter` method
+  for all 7 parameterized strategies (`ADNLP`, `Exa`, `Ipopt`, `Knitro`, `MadNLP`, `MadNCL`,
+  `Uno`) and the non-parameterized `SciML` integrator.
+- **Tests** — Updated all references from `_default_parameter` to `default_parameter` and from
+  `get_parameter_type` to `parameter`; added `parameter` contract to fake test strategies.
+- **Docs** — Updated guides (`implementing_a_solver.md`, `implementing_a_modeler.md`,
+  `architecture.md`) and historical `BREAKING.md` / `CHANGELOG.md` entries to use the new
+  method names.
+- **Docstrings** — Added docstrings for every `parameter` method following Handbook templates.
+
+---
+
 ## [0.4.26-beta] - 2026-07-09
 
 ### Changed

@@ -5,6 +5,81 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.27-beta (2026-07-13)
+
+**Breaking change:** Migration to CTBase 0.28 strategy parameter contract.
+`Strategies._default_parameter` is renamed to `Strategies.default_parameter`, a new
+`Strategies.parameter` contract method must be implemented by every strategy, and the
+removed `Strategies.get_parameter_type` is replaced by `Strategies.parameter`.
+
+### Summary - v0.4.27-beta
+
+- `Strategies._default_parameter` renamed to `Strategies.default_parameter` in all strategies
+- New `Strategies.parameter(::Type{<:S{P}}) where {P<:Bound} = P` implemented for all 7
+  parameterized strategies (`ADNLP`, `Exa`, `Ipopt`, `Knitro`, `MadNLP`, `MadNCL`, `Uno`)
+- `Strategies.parameter(::Type{<:SciML}) = nothing` added for the non-parameterized `SciML`
+  integrator
+- `Strategies.get_parameter_type` calls replaced by `Strategies.parameter` in all tests
+- CTBase compat bumped to `0.28`, CTModels compat bumped to `0.15`
+
+### Breaking Changes - v0.4.27-beta
+
+#### 1. `_default_parameter` renamed to `default_parameter`
+
+**Before:**
+
+```julia
+Strategies._default_parameter(::Type{<:MyStrategy}) = CPU
+```
+
+**After:**
+
+```julia
+Strategies.default_parameter(::Type{<:MyStrategy}) = CPU
+```
+
+#### 2. New `parameter` contract method required
+
+**Before:** No explicit `parameter` method was required.
+
+**After:** Every strategy must implement `parameter`:
+
+```julia
+# For parameterized strategies
+Strategies.parameter(::Type{<:MyStrategy{P}}) where {P<:AbstractStrategyParameter} = P
+
+# For non-parameterized strategies
+Strategies.parameter(::Type{<:MyStrategy}) = nothing
+```
+
+#### 3. `get_parameter_type` removed
+
+**Before:**
+
+```julia
+Strategies.get_parameter_type(MyStrategy{CPU})  # → CPU
+```
+
+**After:**
+
+```julia
+Strategies.parameter(MyStrategy{CPU})  # → CPU
+```
+
+### Migration - v0.4.27-beta
+
+1. Rename `Strategies._default_parameter` to `Strategies.default_parameter` in all strategy
+   implementations.
+2. Add a `Strategies.parameter` method for every strategy (returning `P` for parameterized
+   strategies, `nothing` for non-parameterized ones).
+3. Replace all `Strategies.get_parameter_type(T)` calls with `Strategies.parameter(T)`.
+4. Update CTBase compat to `0.28` and CTModels compat to `0.15`.
+
+See the [CTBase.jl v0.28.0-beta breaking changes](https://github.com/control-toolbox/CTBase.jl/blob/v0.28.0-beta/BREAKING.md)
+for full details on the upstream changes.
+
+---
+
 ## v0.4.26-beta (2026-07-09)
 
 **No breaking changes.**
