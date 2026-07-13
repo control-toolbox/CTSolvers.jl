@@ -51,6 +51,10 @@ Strategies.id(::Type{FakeSolver}) = :fake_solver
 Strategies.id(::Type{FakeModeler}) = :fake_modeler
 Strategies.id(::Type{FakeDiscretizer}) = :fake_discretizer
 
+Strategies.parameter(::Type{<:FakeSolver}) = nothing
+Strategies.parameter(::Type{<:FakeModeler}) = nothing
+Strategies.parameter(::Type{<:FakeDiscretizer}) = nothing
+
 # Metadata for FakeSolver
 function Strategies.metadata(::Type{FakeSolver})
     return Strategies.StrategyMetadata(
