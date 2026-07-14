@@ -46,7 +46,7 @@ end
 function FakeStrategy(; mode::Symbol=:strict, kwargs...)
     # Redirect warnings to avoid polluting test output
     opts = redirect_stderr(devnull) do
-        Strategies.build_strategy_options(FakeStrategy; mode=mode, kwargs...)
+        return Strategies.build_strategy_options(FakeStrategy; mode=mode, kwargs...)
     end
     return FakeStrategy(opts)
 end

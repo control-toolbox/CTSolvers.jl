@@ -70,12 +70,10 @@ function test_madncl_extension()
             Test.@test :jacobian_constant in keys(meta)
             Test.@test Options.default(meta[:bound_push]) isa Core.NotProvidedType
             Test.@test Options.default(meta[:bound_fac]) isa Core.NotProvidedType
-            Test.@test Options.default(meta[:constr_mult_init_max]) isa
-                Core.NotProvidedType
+            Test.@test Options.default(meta[:constr_mult_init_max]) isa Core.NotProvidedType
             Test.@test Options.default(meta[:fixed_variable_treatment]) isa
                 Core.NotProvidedType
-            Test.@test Options.default(meta[:equality_treatment]) isa
-                Core.NotProvidedType
+            Test.@test Options.default(meta[:equality_treatment]) isa Core.NotProvidedType
             Test.@test :kkt_system in keys(meta)
             Test.@test :hessian_approximation in keys(meta)
             Test.@test :mu_init in keys(meta)
@@ -210,7 +208,9 @@ function test_madncl_extension()
         Test.@testset "MadNLP Option Pass-through" begin
             # Create a simple dummy problem
             ros = TestProblems.Rosenbrock()
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
+            adnlp_builder =
+                (init; kwargs...) ->
+                    Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(ros.init)
 
             # checking that it runs without error with these options
@@ -230,7 +230,9 @@ function test_madncl_extension()
             # MadNCL requires problems with constraints
             # Using Elec problem which has constraints
             elec = TestProblems.Elec()
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP()).nlp
+            adnlp_builder =
+                (init; kwargs...) ->
+                    Optimization.build_model(elec.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(elec.init)
 
             # Test with display=false sets print_level=MadNLP.ERROR
@@ -250,7 +252,9 @@ function test_madncl_extension()
             ros = TestProblems.Rosenbrock()
 
             # Build NLP model
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
+            adnlp_builder =
+                (init; kwargs...) ->
+                    Optimization.build_model(ros.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(ros.init)
 
             solver = Solvers.MadNCL(max_iter=1000, tol=1e-6, print_level=MadNLP.ERROR)
@@ -266,7 +270,9 @@ function test_madncl_extension()
             elec = TestProblems.Elec()
 
             # Build NLP model
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP()).nlp
+            adnlp_builder =
+                (init; kwargs...) ->
+                    Optimization.build_model(elec.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(elec.init)
 
             solver = Solvers.MadNCL(max_iter=3000, tol=1e-6, print_level=MadNLP.ERROR)
@@ -282,7 +288,9 @@ function test_madncl_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP model
-            adnlp_builder = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP()).nlp
+            adnlp_builder =
+                (init; kwargs...) ->
+                    Optimization.build_model(max_prob.prob, init, Modelers.ADNLP()).nlp
             nlp = adnlp_builder(max_prob.init)
 
             solver = Solvers.MadNCL(max_iter=1000, tol=1e-6, print_level=MadNLP.ERROR)
@@ -350,10 +358,14 @@ function test_madncl_extension()
             max_prob = TestProblems.Max1MinusX2()
 
             # Build NLP models
-            adnlp_builder1 = (init; kwargs...) -> Optimization.build_model(elec.prob, init, Modelers.ADNLP()).nlp
+            adnlp_builder1 =
+                (init; kwargs...) ->
+                    Optimization.build_model(elec.prob, init, Modelers.ADNLP()).nlp
             nlp1 = adnlp_builder1(elec.init)
 
-            adnlp_builder2 = (init; kwargs...) -> Optimization.build_model(max_prob.prob, init, Modelers.ADNLP()).nlp
+            adnlp_builder2 =
+                (init; kwargs...) ->
+                    Optimization.build_model(max_prob.prob, init, Modelers.ADNLP()).nlp
             nlp2 = adnlp_builder2(max_prob.init)
 
             stats1 = CommonSolve.solve(nlp1, solver; display=false)
@@ -431,7 +443,8 @@ function test_madncl_extension()
                     for (linear_solver, linear_solver_name) in
                         zip(linear_solvers, linear_solver_names)
                         Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
-                            nlp = Optimization.build_model(elec.prob, elec.init, modeler).nlp
+                            nlp =
+                                Optimization.build_model(elec.prob, elec.init, modeler).nlp
                             sol = CTSolversMadNCL.solve_with_madncl(
                                 nlp; linear_solver=linear_solver, madncl_options...
                             )
@@ -525,9 +538,8 @@ function test_madncl_extension()
 
                 Test.@testset "Max1MinusX2 - GPU" begin
                     max_prob = TestProblems.Max1MinusX2()
-                    nlp = Optimization.build_model(
-                        max_prob.prob, max_prob.init, gpu_modeler
-                    ).nlp
+                    nlp =
+                        Optimization.build_model(max_prob.prob, max_prob.init, gpu_modeler).nlp
                     sol = CTSolversMadNCL.solve_with_madncl(nlp; madncl_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test length(sol.solution) == 1

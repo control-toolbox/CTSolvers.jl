@@ -53,7 +53,8 @@ To activate the extension, load any of:
 
 $(TYPEDFIELDS)
 """
-struct SciML{O<:Strategies.StrategyOptions, OP<:Dict{Symbol, Any}, OT<:Dict{Symbol, Any}} <: AbstractSciMLIntegrator
+struct SciML{O<:Strategies.StrategyOptions,OP<:Dict{Symbol,Any},OT<:Dict{Symbol,Any}} <:
+       AbstractSciMLIntegrator
     "Validated option bundle."
     options::O
     "Pre-computed options for point (final-state) integration."
@@ -94,9 +95,9 @@ $(TYPEDSIGNATURES)
 Return the description for the SciML integrator.
 """
 function Strategies.description(::Type{<:SciML})
-    "SciML ODE integrator.\n" *
-    "See: https://docs.sciml.ai/DiffEqDocs\n" *
-    "Solver options: https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/"
+    return "SciML ODE integrator.\n" *
+           "See: https://docs.sciml.ai/DiffEqDocs\n" *
+           "Solver options: https://docs.sciml.ai/DiffEqDocs/stable/basics/common_solver_opts/"
 end
 
 # ============================================================================
@@ -140,8 +141,8 @@ is overridden by the `CTSolversSciMLIntegrator` package extension.
 
 See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators.build_sciml_integrator`](@ref).
 """
-function SciML(; mode::Symbol = :strict, kwargs...)
-    return build_sciml_integrator(SciMLTag; mode = mode, kwargs...)
+function SciML(; mode::Symbol=:strict, kwargs...)
+    return build_sciml_integrator(SciMLTag; mode=mode, kwargs...)
 end
 
 """
@@ -152,12 +153,12 @@ Stub builder for `SciML`. The real implementation is provided by
 is loaded.
 """
 function build_sciml_integrator(::Type{<:Core.AbstractTag}; kwargs...)
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :OrdinaryDiffEqTsit5;
-            message = "to construct a SciML integrator",
-            feature = "ODE integration via SciML",
-            context = "Load OrdinaryDiffEqTsit5, OrdinaryDiffEq, or DifferentialEquations to activate the CTSolversSciMLIntegrator extension.",
+            message="to construct a SciML integrator",
+            feature="ODE integration via SciML",
+            context="Load OrdinaryDiffEqTsit5, OrdinaryDiffEq, or DifferentialEquations to activate the CTSolversSciMLIntegrator extension.",
         ),
     )
 end
@@ -174,7 +175,7 @@ not loaded. The real metadata implementation is provided by the extension.
 See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.StrategyMetadata`](@extref).
 """
 function Strategies.metadata(::Type{<:AbstractSciMLIntegrator})
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :OrdinaryDiffEqTsit5;
             message="to access SciML options metadata",

@@ -29,18 +29,22 @@ Strategies.id(::Type{<:IntegrationStratB}) = :integrationstratb
 
 # Parameter contract
 Strategies.parameter(::Type{<:IntegrationStratA}) = nothing
-Strategies.parameter(::Type{<:IntegrationStratB{P}}) where {P<:Strategies.AbstractStrategyParameter} = P
+function Strategies.parameter(
+    ::Type{<:IntegrationStratB{P}}
+) where {P<:Strategies.AbstractStrategyParameter}
+    return P
+end
 Strategies.default_parameter(::Type{<:IntegrationStratB}) = Strategies.CPU
 
 # Simple metadata
 function Strategies.metadata(::Type{T}) where {T<:IntegrationStratA}
-    Strategies.StrategyMetadata(
+    return Strategies.StrategyMetadata(
         Options.OptionDefinition(; name=:opt1, type=Int, default=10, description="Option 1")
     )
 end
 
 function Strategies.metadata(::Type{T}) where {T<:IntegrationStratB}
-    Strategies.StrategyMetadata(
+    return Strategies.StrategyMetadata(
         Options.OptionDefinition(;
             name=:opt1, type=Int, default=20, description="Option 1"
         ),

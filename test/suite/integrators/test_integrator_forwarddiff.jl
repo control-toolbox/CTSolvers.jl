@@ -1,9 +1,9 @@
 module TestIntegratorForwardDiff
 
 using Test: Test
-import ForwardDiff
+using ForwardDiff: ForwardDiff
 import CTSolvers.Integrators
-import CommonSolve
+using CommonSolve: CommonSolve
 using OrdinaryDiffEqTsit5: OrdinaryDiffEqTsit5, Tsit5
 using SciMLBase: SciMLBase, ODEProblem
 using DiffEqBase: DiffEqBase

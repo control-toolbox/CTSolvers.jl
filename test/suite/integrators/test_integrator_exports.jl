@@ -24,11 +24,8 @@ function test_integrator_exports()
         # ====================================================================
 
         Test.@testset "Exported abstract types" begin
-            for sym in (
-                :AbstractIntegrator,
-                :AbstractSciMLIntegrator,
-                :AbstractIntegrationResult,
-            )
+            for sym in
+                (:AbstractIntegrator, :AbstractSciMLIntegrator, :AbstractIntegrationResult)
                 Test.@testset "$sym" begin
                     Test.@test sym in names(Integrators)
                     Test.@test isdefined(Integrators, sym)
@@ -76,12 +73,7 @@ function test_integrator_exports()
         # ====================================================================
 
         Test.@testset "Internal symbols (not exported)" begin
-            for sym in (
-                :__unsafe,
-                :__default_sciml_algorithm,
-                :deepvalue,
-                :real_norm,
-            )
+            for sym in (:__unsafe, :__default_sciml_algorithm, :deepvalue, :real_norm)
                 Test.@testset "$sym" begin
                     Test.@test isdefined(Integrators, sym)
                     Test.@test !(sym in names(Integrators))
@@ -95,10 +87,17 @@ function test_integrator_exports()
 
         Test.@testset "No top-level re-exports from CTSolvers" begin
             for sym in (
-                :SciML, :SciMLTag, :Tsit5Tag,
-                :AbstractIntegrator, :AbstractIntegrationResult,
-                :final_state, :times, :evaluate_at,
-                :build_integrator, :options_point, :options_trajectory,
+                :SciML,
+                :SciMLTag,
+                :Tsit5Tag,
+                :AbstractIntegrator,
+                :AbstractIntegrationResult,
+                :final_state,
+                :times,
+                :evaluate_at,
+                :build_integrator,
+                :options_point,
+                :options_trajectory,
             )
                 Test.@test !(sym in names(CTSolvers))
             end

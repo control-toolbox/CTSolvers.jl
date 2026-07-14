@@ -46,5 +46,5 @@ end
 end # module
 
 function test_internal_defaults_coverage()
-    TestInternalDefaultsCoverage.test_internal_defaults_coverage()
+    return TestInternalDefaultsCoverage.test_internal_defaults_coverage()
 end
