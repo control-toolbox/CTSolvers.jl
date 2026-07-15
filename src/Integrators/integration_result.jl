@@ -13,8 +13,10 @@ Subtypes must implement:
 - `final_state(r::SubType)`: Return the final state vector.
 - `times(r::SubType)`: Return the vector of time points.
 - `evaluate_at(r::SubType, t::Real)`: Evaluate the continuous solution at time `t`.
+- `status(r::SubType)`: Return the termination status as a `Symbol`.
+- `successful(r::SubType)`: Return whether the integration succeeded.
 
-See also: [`CTSolvers.Integrators.final_state`](@ref), [`CTSolvers.Integrators.times`](@ref), [`CTSolvers.Integrators.evaluate_at`](@ref).
+See also: [`CTSolvers.Integrators.final_state`](@ref), [`CTSolvers.Integrators.times`](@ref), [`CTSolvers.Integrators.evaluate_at`](@ref), [`CTSolvers.Integrators.status`](@ref), [`CTSolvers.Integrators.successful`](@ref).
 """
 abstract type AbstractIntegrationResult end
 
@@ -87,6 +89,54 @@ function evaluate_at(r::AbstractIntegrationResult, t::Real)
             required_method="evaluate_at(r::$(typeof(r)), t::Real)",
             suggestion="Implement evaluate_at(r, t) for your integration result type.",
             context="AbstractIntegrationResult - evaluate_at implementation",
+        ),
+    )
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the termination status of the integration result, as a `Symbol`.
+
+# Arguments
+- `r::AbstractIntegrationResult`: The integration result.
+
+# Throws
+- [`CTBase.Exceptions.NotImplemented`](@extref): If not implemented by the concrete type.
+
+See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTSolvers.Integrators.successful`](@ref).
+"""
+function status(r::AbstractIntegrationResult)::Symbol
+    return throw(
+        Exceptions.NotImplemented(
+            "status not implemented";
+            required_method="status(r::$(typeof(r)))",
+            suggestion="Implement status(r) for your integration result type.",
+            context="AbstractIntegrationResult - status implementation",
+        ),
+    )
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return whether the integration terminated successfully.
+
+# Arguments
+- `r::AbstractIntegrationResult`: The integration result.
+
+# Throws
+- [`CTBase.Exceptions.NotImplemented`](@extref): If not implemented by the concrete type.
+
+See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTSolvers.Integrators.status`](@ref).
+"""
+function successful(r::AbstractIntegrationResult)::Bool
+    return throw(
+        Exceptions.NotImplemented(
+            "successful not implemented";
+            required_method="successful(r::$(typeof(r)))",
+            suggestion="Implement successful(r) for your integration result type.",
+            context="AbstractIntegrationResult - successful implementation",
         ),
     )
 end

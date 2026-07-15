@@ -10,7 +10,8 @@ This extension provides:
 - `build_sciml_integrator` — constructs a `SciML` integrator with pre-computed option caches
 - `SciMLIntegrationResult` — wraps `SciMLBase.AbstractODESolution`
 - `CommonSolve.solve(prob::AbstractODEProblem, integ::SciML)` — integrates and returns a result
-- `merge` — concatenates a sequence of integration results (multi-phase)
+- `status`/`successful` — termination status derived from the ODE solution's `retcode`
+- `merge` — concatenates a sequence of integration results (multi-phase), aggregating `retcode`
 
 The domain glue that turns a control system/config into an `ODEProblem` (`build_problem`,
 `build_options`) is intentionally **not** part of CTSolvers; it lives in the consuming package
@@ -387,9 +388,42 @@ Evaluate the SciML ODE solution at a specific time `t` using its interpolation.
 """
 Integrators.evaluate_at(r::SciMLIntegrationResult, t::Real) = r.ode_sol(t)
 
+"""
+$(TYPEDSIGNATURES)
+
+Return the termination status of the SciML ODE solution, as a `Symbol` derived from its
+`retcode` (e.g. `:Success`, `:MaxIters`).
+"""
+Integrators.status(r::SciMLIntegrationResult) = Symbol(r.ode_sol.retcode)
+
+"""
+$(TYPEDSIGNATURES)
+
+Return whether the SciML ODE solution terminated successfully, per
+`SciMLBase.successful_retcode`.
+"""
+Integrators.successful(r::SciMLIntegrationResult) =
+    SciMLBase.successful_retcode(r.ode_sol.retcode)
+
 # =============================================================================
 # merge — concatenate SciML integration results (multi-phase trajectories)
 # =============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the retcode to report for a merged multi-phase solution: the first non-successful
+retcode among `ode_sols`, or `SciMLBase.ReturnCode.Success` if every segment succeeded.
+
+This keeps `Integrators.status`/`Integrators.successful` on a merged result truthful even
+when a segment was solved with `unsafe=true` (bypassing the retcode check at `solve` time).
+"""
+function _merged_retcode(ode_sols)
+    for sol in ode_sols
+        SciMLBase.successful_retcode(sol.retcode) || return sol.retcode
+    end
+    return SciMLBase.ReturnCode.Success
+end
 
 """
 $(TYPEDSIGNATURES)
@@ -430,7 +464,7 @@ function Integrators.merge(segments::AbstractVector{<:SciMLIntegrationResult})
         sol1.alg,
         t_merged,
         u_merged;
-        retcode=SciMLBase.ReturnCode.Success,
+        retcode=_merged_retcode(ode_sols),
         dense=false,
     )
 
