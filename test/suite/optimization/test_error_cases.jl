@@ -60,7 +60,9 @@ function Optimization.build_model(prob::SquaresProblem, initial_guess, ::Modeler
     return Optimization.BuiltModel(prob, nlp, Optimization.NoCache())
 end
 
-function Optimization.build_model(prob::SquaresProblem, initial_guess, modeler::Modelers.Exa)
+function Optimization.build_model(
+    prob::SquaresProblem, initial_guess, modeler::Modelers.Exa
+)
     T = modeler[:base_type]
     x = T.(initial_guess)
     m = ExaModels.ExaCore(T; concrete=Val(true))
@@ -207,36 +209,28 @@ function test_error_cases()
         Test.@testset "Solver Info Edge Cases" begin
             Test.@testset "Zero iterations" begin
                 stats = create_edge_case_stats(0.0, 0, 0.0, :first_order)
-                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
-                    stats
-                )
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(stats)
                 Test.@test iter == 0
                 Test.@test success == true
             end
 
             Test.@testset "Very large objective" begin
                 stats = create_edge_case_stats(1e100, 10, 1e-6, :first_order)
-                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
-                    stats
-                )
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(stats)
                 Test.@test obj ≈ 1e100
                 Test.@test success == true
             end
 
             Test.@testset "Very small constraint violation" begin
                 stats = create_edge_case_stats(1.0, 10, 1e-15, :first_order)
-                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
-                    stats
-                )
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(stats)
                 Test.@test viol ≈ 1e-15
                 Test.@test success == true
             end
 
             Test.@testset "Unknown status" begin
                 stats = create_edge_case_stats(1.0, 10, 1e-6, :unknown_status)
-                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
-                    stats
-                )
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(stats)
                 Test.@test status == :unknown_status
                 Test.@test success == false  # Not :first_order or :acceptable
             end

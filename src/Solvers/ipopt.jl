@@ -128,8 +128,8 @@ $(TYPEDSIGNATURES)
 Return the description for the Ipopt solver.
 """
 function Strategies.description(::Type{<:Solvers.Ipopt})
-    "Interior-point NLP solver (COIN-OR Ipopt).\n" *
-    "See: https://coin-or.github.io/Ipopt/OPTIONS.html"
+    return "Interior-point NLP solver (COIN-OR Ipopt).\n" *
+           "See: https://coin-or.github.io/Ipopt/OPTIONS.html"
 end
 
 """
@@ -244,7 +244,7 @@ See also: `Ipopt`, `Strategies.metadata`
 function build_ipopt_solver(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :NLPModelsIpopt;
             message="to create Ipopt, access options, and solve problems",
@@ -269,7 +269,7 @@ See also: `Ipopt`, `Strategies.StrategyMetadata`
 """
 function Strategies.metadata(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU}
     # Extension is missing
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :NLPModelsIpopt;
             message="to access Ipopt{$P} options metadata",

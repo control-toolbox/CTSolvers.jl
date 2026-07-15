@@ -39,7 +39,7 @@ See also: [`CTSolvers.Modelers.get_adnlp_available_backends`](@ref),
 [`CTSolvers.Modelers.ADNLPTag`](@ref)
 """
 function __get_adnlp_available_backends(::Type{<:Core.AbstractTag})
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :ADNLPModels;
             message="to list available ADNLP backends",
@@ -227,8 +227,8 @@ $(TYPEDSIGNATURES)
 Return the description for the ADNLP modeler.
 """
 function Strategies.description(::Type{<:Modelers.ADNLP})
-    "NLP modeler using ADNLPModels with automatic differentiation.\n" *
-    "See: https://jso.dev/ADNLPModels.jl"
+    return "NLP modeler using ADNLPModels with automatic differentiation.\n" *
+           "See: https://jso.dev/ADNLPModels.jl"
 end
 
 """
@@ -274,7 +274,7 @@ Stub — real implementation provided by the CTSolversADNLPModels extension.
 See also: `Modelers.ADNLP`, `Strategies.StrategyMetadata`
 """
 function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :ADNLPModels;
             message="to access ADNLP{$P} options metadata",
@@ -286,9 +286,7 @@ end
 
 # Fallback metadata for non-parameterized type (delegates to CPU)
 function Strategies.metadata(::Type{Modelers.ADNLP})
-    return Strategies.metadata(
-        Modelers.ADNLP{Strategies.default_parameter(Modelers.ADNLP)}
-    )
+    return Strategies.metadata(Modelers.ADNLP{Strategies.default_parameter(Modelers.ADNLP)})
 end
 
 # ============================================================================
@@ -335,7 +333,7 @@ See also: `Modelers.ADNLP`, `Strategies.metadata`
 function build_adnlp_modeler(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :ADNLPModels;
             message="to create ADNLP, access options, and build NLP models",

@@ -334,14 +334,16 @@ function test_comprehensive_validation()
             Modelers.AbstractNLPModeler => (
                 (Modelers.ADNLP, [Strategies.CPU]),
                 (Modelers.Exa, [Strategies.CPU, Strategies.GPU]),
-            )
+            ),
         )
 
         # Create solver registry based on available extensions
         solver_types = []
         IPOPT_AVAILABLE && push!(solver_types, (Solvers.Ipopt, [Strategies.CPU]))
-        MADNLP_AVAILABLE && push!(solver_types, (Solvers.MadNLP, [Strategies.CPU, Strategies.GPU]))
-        MADNCL_AVAILABLE && push!(solver_types, (Solvers.MadNCL, [Strategies.CPU, Strategies.GPU]))
+        MADNLP_AVAILABLE &&
+            push!(solver_types, (Solvers.MadNLP, [Strategies.CPU, Strategies.GPU]))
+        MADNCL_AVAILABLE &&
+            push!(solver_types, (Solvers.MadNCL, [Strategies.CPU, Strategies.GPU]))
         UNO_AVAILABLE && push!(solver_types, (Solvers.Uno, [Strategies.CPU]))
         # KNITRO_AVAILABLE && push!(solver_types, (Solvers.Knitro, [Strategies.CPU]))  # Never available - no license
 
@@ -765,7 +767,7 @@ function test_comprehensive_validation()
                     Modelers.AbstractNLPModeler => (
                         (Modelers.ADNLP, [Strategies.CPU]),
                         (Modelers.Exa, [Strategies.CPU, Strategies.GPU]),
-                    )
+                    ),
                 )
 
                 # Create strategies with different methods - redirect stderr to hide warnings
@@ -865,5 +867,5 @@ end # module
 
 # Redefine in outer scope for TestRunner
 function test_comprehensive_validation()
-    TestComprehensiveValidation.test_comprehensive_validation()
+    return TestComprehensiveValidation.test_comprehensive_validation()
 end

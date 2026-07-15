@@ -66,16 +66,18 @@ function test_integrator_metadata()
 
         Test.@testset "option validation" begin
             # strict mode (default): invalid value rejected at construction
-            Test.@test_throws Exceptions.IncorrectArgument Integrators.SciML(; alg=Tsit5(), reltol=-1.0)
+            Test.@test_throws Exceptions.IncorrectArgument Integrators.SciML(;
+                alg=Tsit5(), reltol=-1.0
+            )
 
             # strict mode: unknown option also rejected
             Test.@test_throws Exceptions.IncorrectArgument Integrators.SciML(;
-                alg=Tsit5(), unknown_option=42,
+                alg=Tsit5(), unknown_option=42
             )
 
             # permissive mode: unknown options accepted (with warning), value validation still applies
             Test.@test_logs (:warn, r"") match_mode=:any Integrators.SciML(;
-                alg=Tsit5(), unknown_option=42, mode=:permissive,
+                alg=Tsit5(), unknown_option=42, mode=:permissive
             )
         end
     end

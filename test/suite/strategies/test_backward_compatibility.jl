@@ -28,7 +28,11 @@ Strategies.id(::Type{<:TestStratB}) = :teststratb
 
 # Parameter contract
 Strategies.parameter(::Type{<:TestStratA}) = nothing
-Strategies.parameter(::Type{<:TestStratB{P}}) where {P<:Strategies.AbstractStrategyParameter} = P
+function Strategies.parameter(
+    ::Type{<:TestStratB{P}}
+) where {P<:Strategies.AbstractStrategyParameter}
+    return P
+end
 Strategies.default_parameter(::Type{<:TestStratB}) = Strategies.CPU
 
 # Simple metadata
@@ -75,8 +79,7 @@ function test_backward_compatibility()
             Test.@test Modelers.Exa() isa Modelers.Exa{Strategies.CPU}
 
             # Test that default constructors use CPU parameter
-            Test.@test Strategies.parameter(typeof(Modelers.Exa())) ==
-                Strategies.CPU
+            Test.@test Strategies.parameter(typeof(Modelers.Exa())) == Strategies.CPU
         end
 
         # ====================================================================

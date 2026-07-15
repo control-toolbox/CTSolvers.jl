@@ -90,8 +90,8 @@ $(TYPEDSIGNATURES)
 Return the description for the MadNCL solver.
 """
 function Strategies.description(::Type{<:Solvers.MadNCL})
-    "Augmented Lagrangian NLP solver built on MadNLP.\n" *
-    "See: https://github.com/MadNLP/MadNCL.jl"
+    return "Augmented Lagrangian NLP solver built on MadNLP.\n" *
+           "See: https://github.com/MadNLP/MadNCL.jl"
 end
 
 """
@@ -204,7 +204,7 @@ See also: `MadNCL`, `Strategies.metadata`
 function build_madncl_solver(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :MadNCL,
             :MadNLP;
@@ -231,7 +231,7 @@ See also: `MadNCL`, `Strategies.StrategyMetadata`
 function Strategies.metadata(
     ::Type{<:Solvers.MadNCL{P}}
 ) where {P<:AbstractStrategyParameter}
-    throw(
+    return throw(
         Exceptions.ExtensionError(
             :MadNCL,
             :MadNLP;
@@ -261,7 +261,5 @@ either use the extension implementation (if loaded) or throw an ExtensionError
 See also: `MadNCL`, `Strategies.metadata`
 """
 function Strategies.metadata(::Type{Solvers.MadNCL})
-    return Strategies.metadata(
-        Solvers.MadNCL{Strategies.default_parameter(Solvers.MadNCL)}
-    )
+    return Strategies.metadata(Solvers.MadNCL{Strategies.default_parameter(Solvers.MadNCL)})
 end

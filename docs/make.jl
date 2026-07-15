@@ -35,10 +35,22 @@ using Zygote
 
 # Make extension modules available in Main so that @docs blocks can resolve
 # qualified bindings like CTFlowsSciMLIntegrator.SciMLIntegrationResult.
-for _ext_sym in
-    (:CTSolversADNLPModels, :CTSolversCUDA, :CTSolversEnzyme, :CTSolversExaModels, :CTSolversForwardDiff,
-     :CTSolversIpopt, :CTSolversKnitro, :CTSolversMadNCL, :CTSolversMadNLP, :CTSolversMadNLPGPU,
-     :CTSolversOrdinaryDiffEqTsit5, :CTSolversSciMLIntegrator, :CTSolversUno, :CTSolversZygote)
+for _ext_sym in (
+    :CTSolversADNLPModels,
+    :CTSolversCUDA,
+    :CTSolversEnzyme,
+    :CTSolversExaModels,
+    :CTSolversForwardDiff,
+    :CTSolversIpopt,
+    :CTSolversKnitro,
+    :CTSolversMadNCL,
+    :CTSolversMadNLP,
+    :CTSolversMadNLPGPU,
+    :CTSolversOrdinaryDiffEqTsit5,
+    :CTSolversSciMLIntegrator,
+    :CTSolversUno,
+    :CTSolversZygote,
+)
     _m = Base.get_extension(CTSolvers, _ext_sym)
     isnothing(_m) || @eval Main const $_ext_sym = $_m
 end
@@ -95,16 +107,16 @@ with_api_reference(src_dir, ext_dir) do api_pages
         ),
         pages=[
             # index.md is the VitePress root — not listed here
-            "Getting Started"  => "getting-started.md",
-            "Architecture"     => "architecture.md",
+            "Getting Started" => "getting-started.md",
+            "Architecture" => "architecture.md",
             "Developer Guides" => [
-                "Implementing a Solver"                => "guides/implementing_a_solver.md",
-                "Implementing an Integrator"           => "guides/implementing_an_integrator.md",
-                "Implementing a Modeler"               => "guides/implementing_a_modeler.md",
+                "Implementing a Solver" => "guides/implementing_a_solver.md",
+                "Implementing an Integrator" => "guides/implementing_an_integrator.md",
+                "Implementing a Modeler" => "guides/implementing_a_modeler.md",
                 "Implementing an Optimization Problem" => "guides/implementing_an_optimization_problem.md",
-                "Error Messages Reference"             => "guides/error_messages.md",
+                "Error Messages Reference" => "guides/error_messages.md",
             ],
-            "API Reference"    => api_pages,
+            "API Reference" => api_pages,
         ],
         plugins=[links],
     )

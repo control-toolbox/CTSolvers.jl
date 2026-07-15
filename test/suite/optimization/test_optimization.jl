@@ -137,7 +137,9 @@ function test_optimization()
             )
             built = Optimization.BuiltModel(prob, nothing, Optimization.NoCache())
             Test.@test_throws Exceptions.NotImplemented Optimization.build_solution(
-                built, create_mock_execution_stats(1.0, 1, 1e-6, :first_order), FakeModeler(:adnlp)
+                built,
+                create_mock_execution_stats(1.0, 1, 1e-6, :first_order),
+                FakeModeler(:adnlp),
             )
         end
 
@@ -189,9 +191,7 @@ function test_optimization()
         Test.@testset "Solver Info Extraction" begin
             Test.@testset "extract_solver_infos - first_order status" begin
                 stats = create_mock_execution_stats(1.23, 15, 1.0e-6, :first_order)
-                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
-                    stats
-                )
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(stats)
                 Test.@test obj ≈ 1.23
                 Test.@test iter == 15
                 Test.@test viol ≈ 1.0e-6
@@ -203,9 +203,7 @@ function test_optimization()
 
             Test.@testset "extract_solver_infos - acceptable status" begin
                 stats = create_mock_execution_stats(2.34, 20, 1.0e-5, :acceptable)
-                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
-                    stats
-                )
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(stats)
                 Test.@test obj ≈ 2.34
                 Test.@test status == :acceptable
                 Test.@test success == true
@@ -213,9 +211,7 @@ function test_optimization()
 
             Test.@testset "extract_solver_infos - failure status" begin
                 stats = create_mock_execution_stats(3.45, 5, 1.0e-3, :max_iter)
-                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
-                    stats
-                )
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(stats)
                 Test.@test obj ≈ 3.45
                 Test.@test status == :max_iter
                 Test.@test success == false
@@ -241,9 +237,7 @@ function test_optimization()
                 Test.@test sol.obj ≈ 5.0
                 Test.@test sol.status == :first_order
 
-                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(
-                    stats
-                )
+                obj, iter, viol, msg, status, success = Solvers.extract_solver_infos(stats)
                 Test.@test obj ≈ 5.0
                 Test.@test success == true
             end

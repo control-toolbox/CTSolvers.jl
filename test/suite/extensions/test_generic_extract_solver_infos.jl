@@ -102,9 +102,7 @@ function test_generic_extract_solver_infos()
 
             # Test successful status: :acceptable
             stats_acceptable = create_mock_stats(1.5, 5, 1e-6, :acceptable)
-            _, _, _, _, stat2, success2 = Solvers.extract_solver_infos(
-                stats_acceptable
-            )
+            _, _, _, _, stat2, success2 = Solvers.extract_solver_infos(stats_acceptable)
 
             Test.@test success2 == true
             Test.@test stat2 == :acceptable
@@ -118,9 +116,7 @@ function test_generic_extract_solver_infos()
 
             # Test unsuccessful status: :infeasible
             stats_infeasible = create_mock_stats(1.5, 50, 1e-1, :infeasible)
-            _, _, _, _, stat4, success4 = Solvers.extract_solver_infos(
-                stats_infeasible
-            )
+            _, _, _, _, stat4, success4 = Solvers.extract_solver_infos(stats_infeasible)
 
             Test.@test success4 == false
             Test.@test stat4 == :infeasible

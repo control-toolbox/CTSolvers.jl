@@ -53,7 +53,8 @@ function test_real_problems()
                 Test.@test obj_val ≈ TestProblems.rosenbrock_objective(Float64.(ros.init))
 
                 cons_val = NLPModels.cons(nlp64, nlp64.meta.x0)
-                Test.@test cons_val[1] ≈ TestProblems.rosenbrock_constraint(Float64.(ros.init))
+                Test.@test cons_val[1] ≈
+                    TestProblems.rosenbrock_constraint(Float64.(ros.init))
             end
 
             Test.@testset "build_model (Exa, Float32) with Rosenbrock" begin
@@ -69,7 +70,8 @@ function test_real_problems()
                 Test.@test obj_val ≈ TestProblems.rosenbrock_objective(Float32.(ros.init))
 
                 cons_val = NLPModels.cons(nlp32, nlp32.meta.x0)
-                Test.@test cons_val[1] ≈ TestProblems.rosenbrock_constraint(Float32.(ros.init))
+                Test.@test cons_val[1] ≈
+                    TestProblems.rosenbrock_constraint(Float32.(ros.init))
             end
         end
 

@@ -2,7 +2,7 @@ module TestInternalNorm
 
 using Test: Test
 import CTSolvers.Integrators
-import ForwardDiff
+using ForwardDiff: ForwardDiff
 using DiffEqBase: DiffEqBase   # activates the array real_norm overload
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
@@ -50,7 +50,8 @@ function test_internal_norm()
         Test.@testset "array grid invariance" begin
             u_real = [1.0, 2.0, 3.0]
             u_dual = ForwardDiff.Dual{:T}.(u_real, ones(3))
-            Test.@test Integrators.real_norm(u_real, 0.0) ≈ Integrators.real_norm(u_dual, 0.0)
+            Test.@test Integrators.real_norm(u_real, 0.0) ≈
+                Integrators.real_norm(u_dual, 0.0)
         end
     end
 end
