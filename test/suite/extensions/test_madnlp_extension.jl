@@ -286,8 +286,8 @@ function test_madnlp_extension()
 
         Test.@testset "GPU Tests" begin
             if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
-                gpu_modeler = Modelers.Exa(backend=CUDA.CUDABackend())
-                gpu_solver = Solvers.MadNLP(
+                gpu_modeler = Modelers.Exa{Strategies.GPU}()
+                gpu_solver = Solvers.MadNLP{Strategies.GPU}(
                     max_iter=1000,
                     tol=1e-6,
                     print_level=MadNLP.ERROR,
