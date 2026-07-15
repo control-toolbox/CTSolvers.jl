@@ -36,3 +36,4 @@ tmp/
 .vscode/
 .extras/
 .coverage/
+.claude/
