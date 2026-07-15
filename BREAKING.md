@@ -5,6 +5,44 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.29-beta (2026-07-15)
+
+**No breaking changes.**
+
+This release adds `status`/`successful` contract accessors to `AbstractIntegrationResult`
+and fixes the `Integrators.merge` retcode aggregation.
+
+### Summary - v0.4.29-beta
+
+- New `status` and `successful` accessors on `AbstractIntegrationResult` (additive,
+  `NotImplemented` stubs in core, implemented for `SciMLIntegrationResult`)
+- `Integrators.merge` (SciML) no longer hard-codes `retcode=Success`; it aggregates the
+  first non-successful segment's retcode (or `Success` if all segments succeeded)
+
+### Migration - v0.4.29-beta
+
+**No action required.** All existing code continues to work without changes.
+
+---
+
+## v0.4.28-beta (2026-07-15)
+
+**No breaking changes.**
+
+This release fixes a modeler options forwarding bug and applies JuliaFormatter normalization.
+
+### Summary - v0.4.28-beta
+
+- Fixed `OptimizationProblem`'s `build_model` methods to forward all modeler options
+  (including `:backend`) to the wrapped builder closures, not just `base_type` or nothing
+- JuliaFormatter run on all `.jl` source and test files (style normalization)
+
+### Migration - v0.4.28-beta
+
+**No action required.** All existing code continues to work without changes.
+
+---
+
 ## v0.4.27-beta (2026-07-13)
 
 **Breaking change:** Migration to CTBase 0.28 strategy parameter contract.
