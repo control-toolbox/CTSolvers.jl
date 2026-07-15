@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.29-beta] - 2026-07-15
+
+### Added
+
+- **`status`/`successful` on `AbstractIntegrationResult`** — new contract accessors
+  (`NotImplemented` stubs, same shape as `final_state`/`times`/`evaluate_at`) returning
+  the termination status (`Symbol`) and whether the integration succeeded (`Bool`).
+  Implemented for `SciMLIntegrationResult` via the wrapped `ODESolution`'s `retcode`.
+  Lets downstream consumers (e.g. CTFlows building a `CTModels.Solution` from a flow
+  integration) surface the real solver termination status instead of a hard-coded
+  `successful=true`.
+
+### Fixed
+
+- **`Integrators.merge` (SciML) retcode** — a merged multi-phase result no longer
+  hard-codes `retcode=Success`; it now aggregates the first non-successful segment's
+  retcode (or `Success` if all segments succeeded), keeping the new `status`/`successful`
+  accessors truthful on merged results solved with `unsafe=true`.
+
+---
+
 ## [0.4.28-beta] - 2026-07-15
 
 ### Fixed

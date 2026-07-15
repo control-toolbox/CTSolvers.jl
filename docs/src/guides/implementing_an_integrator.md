@@ -52,14 +52,18 @@ end # hide
 ## The Integration Result
 
 An integrator does not return a raw ODE solution; it returns a subtype of
-[`Integrators.AbstractIntegrationResult`](@ref) that exposes three semantic accessors,
+[`Integrators.AbstractIntegrationResult`](@ref) that exposes semantic accessors,
 decoupling consumers from the backend solution type:
 
 - `final_state(r)` — the final state vector
 - `times(r)` — the vector of time points
 - `evaluate_at(r, t)` — the continuous solution at time `t`
+- `status(r)` — the termination status, as a `Symbol`
+- `successful(r)` — whether the integration succeeded
 
-For multi-phase trajectories, `merge(segments)` concatenates a sequence of results.
+For multi-phase trajectories, `merge(segments)` concatenates a sequence of results,
+aggregating `status`/`successful` so a merged result stays truthful even if one segment
+was solved with `unsafe = true`.
 
 ## Implementing the Integrator Type
 
@@ -237,6 +241,8 @@ prob  = ODEProblem((u, p, t) -> -u, [1.0], (0.0, 1.0))
 r = solve(prob, integ)                  # → SciMLIntegrationResult
 CTSolvers.Integrators.final_state(r)    # ≈ [exp(-1)]
 CTSolvers.Integrators.evaluate_at(r, 0.5)  # ≈ [exp(-0.5)]
+CTSolvers.Integrators.successful(r)     # true
+CTSolvers.Integrators.status(r)         # :Success
 ```
 
 !!! note "Where the domain glue lives"
@@ -261,7 +267,7 @@ To add a new integrator (e.g. `MyIntegrator` backed by `MyBackend`):
 
 6. Implement `CTBase.Strategies.metadata(::Type{<:MyIntegrator})` with all option definitions
 7. Implement `Integrators.build_my_integrator(::Type{MyTag}; kwargs...)` — real constructor
-8. Implement `CommonSolve.solve(prob::ExternalProblem, integ::MyIntegrator; options, unsafe)` returning an `AbstractIntegrationResult`, plus its `final_state`/`times`/`evaluate_at` (and `merge`)
+8. Implement `CommonSolve.solve(prob::ExternalProblem, integ::MyIntegrator; options, unsafe)` returning an `AbstractIntegrationResult`, plus its `final_state`/`times`/`evaluate_at`/`status`/`successful` (and `merge`)
 
 ### In `Project.toml`
 
@@ -270,5 +276,5 @@ To add a new integrator (e.g. `MyIntegrator` backed by `MyBackend`):
 ### Tests
 
 10. **Contract test**: `id`, `metadata` (extension loaded), and `options`
-11. **Solve test**: `solve(prob, integ)` returns an `AbstractIntegrationResult` with correct `final_state`/`times`/`evaluate_at`
+11. **Solve test**: `solve(prob, integ)` returns an `AbstractIntegrationResult` with correct `final_state`/`times`/`evaluate_at`/`status`/`successful`
 12. **Extension error test**: without `using MyBackend`, `MyIntegrator()` throws `ExtensionError`, and the generic `solve`/`merge` stubs throw `NotImplemented`
