@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.28-beta] - 2026-07-15
+
+### Fixed
+
+- **Modeler options forwarding** — `OptimizationProblem`'s `build_model` methods
+  only forwarded `base_type` (Exa) or nothing (ADNLP) to the wrapped builder
+  closures, silently dropping every other modeler option, including `:backend`.
+  GPU-strategy tests kept building CPU-resident ExaModels even when
+  `Modelers.Exa{GPU}` correctly resolved a CUDA backend. Full option forwarding
+  restored via `Strategies.options_dict`, matching the pre-refactor behavior
+  (v0.4.17). Added a contract-level regression test that catches this bug class
+  on CPU-only CI.
+
+### Changed
+
+- **Formatting** — JuliaFormatter run on all `.jl` source and test files (style
+  normalization: explicit `return` keywords, spacing in keyword arguments).
+
+---
+
 ## [0.4.27-beta] - 2026-07-13
 
 ### Breaking Changes
