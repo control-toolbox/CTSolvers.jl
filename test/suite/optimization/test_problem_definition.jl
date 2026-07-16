@@ -36,10 +36,11 @@ function test_problem_definition()
 
         Test.@testset "Exa modeler forwards backend (GPU)" begin
             received = Ref{Any}(nothing)
-            build_exa = (base_type, initial_guess; kwargs...) -> begin
-                received[] = (base_type, NamedTuple(kwargs))
-                return initial_guess
-            end
+            build_exa =
+                (base_type, initial_guess; kwargs...) -> begin
+                    received[] = (base_type, NamedTuple(kwargs))
+                    return initial_guess
+                end
             prob = TestProblems.OptimizationProblem(nothing, build_exa)
 
             modeler = Modelers.Exa{Strategies.GPU}()
@@ -54,10 +55,11 @@ function test_problem_definition()
 
         Test.@testset "Exa modeler forwards backend (CPU)" begin
             received = Ref{Any}(nothing)
-            build_exa = (base_type, initial_guess; kwargs...) -> begin
-                received[] = (base_type, NamedTuple(kwargs))
-                return initial_guess
-            end
+            build_exa =
+                (base_type, initial_guess; kwargs...) -> begin
+                    received[] = (base_type, NamedTuple(kwargs))
+                    return initial_guess
+                end
             prob = TestProblems.OptimizationProblem(nothing, build_exa)
 
             modeler = Modelers.Exa{Strategies.CPU}()

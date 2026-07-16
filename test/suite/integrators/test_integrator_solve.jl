@@ -86,9 +86,7 @@ function test_integrator_solve()
                 options=Dict{Symbol,Any}(:alg => Tsit5(), :maxiters => 1),
                 unsafe=true,
             )
-            r_ok = CommonSolve.solve(
-                ODEProblem((u, p, t) -> -u, [1.0], (0.5, 1.0)), integ
-            )
+            r_ok = CommonSolve.solve(ODEProblem((u, p, t) -> -u, [1.0], (0.5, 1.0)), integ)
             Test.@test Integrators.successful(r_bad) == false
 
             merged = Integrators.merge([r_bad, r_ok])

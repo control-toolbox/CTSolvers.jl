@@ -88,9 +88,7 @@ function test_integrator_stubs()
                 FakeResult(), 0.0
             )
             Test.@test_throws Exceptions.NotImplemented Integrators.status(FakeResult())
-            Test.@test_throws Exceptions.NotImplemented Integrators.successful(
-                FakeResult()
-            )
+            Test.@test_throws Exceptions.NotImplemented Integrators.successful(FakeResult())
         end
     end
 end
