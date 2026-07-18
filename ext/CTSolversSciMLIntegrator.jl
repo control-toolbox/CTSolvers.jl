@@ -402,8 +402,9 @@ $(TYPEDSIGNATURES)
 Return whether the SciML ODE solution terminated successfully, per
 `SciMLBase.successful_retcode`.
 """
-Integrators.successful(r::SciMLIntegrationResult) =
-    SciMLBase.successful_retcode(r.ode_sol.retcode)
+function Integrators.successful(r::SciMLIntegrationResult)
+    return SciMLBase.successful_retcode(r.ode_sol.retcode)
+end
 
 # =============================================================================
 # merge — concatenate SciML integration results (multi-phase trajectories)
