@@ -57,12 +57,18 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Return metadata defining `Integrators.SciML` options and their specifications.
+Return metadata defining `Integrators.SciML{P}` options and their specifications.
 
 The `internalnorm` option defaults to `real_norm`, which extracts the primal (Float64)
 part of ForwardDiff dual numbers to ensure grid invariance (IND) when ForwardDiff is loaded.
+
+The metadata is specialized on the execution device `P` (`CPU`/`GPU`); the option set is
+currently identical for both — `P` marks the seam where GPU-specific defaults/validators land
+as they are discovered. The bare `metadata(SciML)` (core) delegates here through `SciML{CPU}`.
 """
-function Strategies.metadata(::Type{Integrators.SciML})
+function Strategies.metadata(
+    ::Type{Integrators.SciML{P}}
+) where {P<:Union{Strategies.CPU,Strategies.GPU}}
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:alg,
@@ -297,6 +303,7 @@ cached dictionaries `options_point` (`:auto` → `false`) and `options_trajector
 
 # Arguments
 - `::Type{Integrators.SciMLTag}`: The SciML integrator tag type.
+- `::Type{P}`: The execution device parameter (`CPU`/`GPU`); threaded into the built `SciML{P}`.
 - `mode::Symbol`: Validation mode for strategy options (`:strict` or `:permissive`).
 - `kwargs...`: User-provided option values. Explicit `true`/`false` override `:auto` resolution.
 
@@ -310,9 +317,9 @@ cached dictionaries `options_point` (`:auto` → `false`) and `options_trajector
 See also: [`CTSolvers.Integrators.SciML`](@ref).
 """
 function Integrators.build_sciml_integrator(
-    ::Type{Integrators.SciMLTag}; mode::Symbol=:strict, kwargs...
-)
-    opts = Strategies.build_strategy_options(Integrators.SciML; mode=mode, kwargs...)
+    ::Type{Integrators.SciMLTag}, ::Type{P}; mode::Symbol=:strict, kwargs...
+) where {P<:Strategies.AbstractStrategyParameter}
+    opts = Strategies.build_strategy_options(Integrators.SciML{P}; mode=mode, kwargs...)
     raw = Strategies.options_dict(opts)
 
     # Check if algorithm is missing and raise PreconditionError
@@ -342,7 +349,7 @@ function Integrators.build_sciml_integrator(
         get(options_trajectory, key, :auto) === :auto && (options_trajectory[key] = true)
     end
 
-    return Integrators.SciML{typeof(opts),typeof(options_point),typeof(options_trajectory)}(
+    return Integrators.SciML{P,typeof(opts),typeof(options_point),typeof(options_trajectory)}(
         opts, options_point, options_trajectory
     )
 end

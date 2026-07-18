@@ -3,6 +3,7 @@ module TestIntegratorExtensionStubs
 using Test: Test
 import CTBase.Core
 import CTBase.Exceptions
+import CTBase.Strategies
 import CTSolvers.Integrators
 using CommonSolve: CommonSolve
 
@@ -34,12 +35,12 @@ function test_integrator_stubs()
 
         Test.@testset "build_sciml_integrator stub" begin
             Test.@test_throws Exceptions.ExtensionError Integrators.build_sciml_integrator(
-                DummyTag
+                DummyTag, Strategies.CPU
             )
 
             err = nothing
             try
-                Integrators.build_sciml_integrator(DummyTag)
+                Integrators.build_sciml_integrator(DummyTag, Strategies.CPU)
             catch e
                 err = e
             end

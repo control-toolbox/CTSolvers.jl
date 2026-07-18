@@ -1,13 +1,15 @@
 """
 CTSolversCUDA Extension
 
-Extension providing CUDA backend functionality for Exa modeler.
-Implements GPU-specific backend defaults and consistency validation.
+Extension providing CUDA functionality for CTSolvers:
+- `Modelers.Exa` GPU backend defaults and backend consistency validation;
+- `Integrators.SciML{P}` initial-condition/device consistency validation.
 """
 
 module CTSolversCUDA
 
 import CTSolvers.Modelers
+import CTSolvers.Integrators
 import CTBase.Strategies
 using CUDA: CUDA
 using DocStringExtensions: DocStringExtensions
@@ -88,6 +90,43 @@ Check if CUDA backend is consistent with GPU parameter.
 - Other backends fall through to default implementation (returns true)
 """
 function Modelers.__consistent_backend(::Type{Strategies.GPU}, backend::CUDA.CUDABackend)
+    return true
+end
+
+# ============================================================================
+# SciML integrator — initial-condition / device consistency
+# ============================================================================
+
+"""
+$(DocStringExtensions.TYPEDSIGNATURES)
+
+A device `CuArray` initial condition is inconsistent with a `SciML{CPU}` integrator.
+
+Overrides the `true`-returning stub in `CTSolvers.Integrators`. Other host-array cases fall
+through to the default (returns `true`).
+"""
+function Integrators.__consistent_initial_condition(::Type{Strategies.CPU}, u0::CUDA.AnyCuArray)
+    return false
+end
+
+"""
+$(DocStringExtensions.TYPEDSIGNATURES)
+
+A host `Array` initial condition is inconsistent with a `SciML{GPU}` integrator (the state
+must live on the device).
+
+Overrides the `true`-returning stub in `CTSolvers.Integrators`.
+"""
+function Integrators.__consistent_initial_condition(::Type{Strategies.GPU}, u0::Array)
+    return false
+end
+
+"""
+$(DocStringExtensions.TYPEDSIGNATURES)
+
+A device `CuArray` initial condition is consistent with a `SciML{GPU}` integrator.
+"""
+function Integrators.__consistent_initial_condition(::Type{Strategies.GPU}, u0::CUDA.AnyCuArray)
     return true
 end
 
