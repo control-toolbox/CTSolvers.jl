@@ -44,6 +44,13 @@ and solve) is provided by the `CTSolversSciMLIntegrator` package extension; this
 file declares the type and **stubs** that throw `ExtensionError` until the
 extension is loaded.
 
+Parameterized on the execution device `P`:
+- `SciML{CPU}`: CPU execution (default);
+- `SciML{GPU}`: GPU execution (state on device arrays, e.g. `CuArray`).
+
+`SciML(...)` builds a `SciML{CPU}` — the device parameterization is fully backward
+compatible with existing call sites.
+
 To activate the extension, load any of:
 - `using OrdinaryDiffEqTsit5` (minimal)
 - `using OrdinaryDiffEq`
@@ -53,7 +60,7 @@ To activate the extension, load any of:
 
 $(TYPEDFIELDS)
 """
-struct SciML{O<:Strategies.StrategyOptions,OP<:Dict{Symbol,Any},OT<:Dict{Symbol,Any}} <:
+struct SciML{P<:Union{CPU,GPU},O<:Strategies.StrategyOptions,OP<:Dict{Symbol,Any},OT<:Dict{Symbol,Any}} <:
        AbstractSciMLIntegrator
     "Validated option bundle."
     options::O
@@ -77,17 +84,29 @@ Strategies.id(::Type{<:SciML}) = :sciml
 """
 $(TYPEDSIGNATURES)
 
-Return the execution parameter type of the `SciML` integrator.
+Return the execution parameter type of a `SciML` integrator.
 
-Returns `nothing` because `SciML` is a non-parameterized strategy: it has no
-execution parameter and does not require one.
+Extracts the type parameter `P` from `SciML{P}`, which can be either `CPU` or `GPU`
+since `SciML` supports both execution devices.
 
 # Returns
-- `Nothing`: `SciML` is not parameterized.
+- `Type{<:Union{CPU,GPU}}`: the execution parameter type.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref)
+See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
 """
-Strategies.parameter(::Type{<:SciML}) = nothing
+Strategies.parameter(::Type{<:SciML{P}}) where {P<:Union{CPU,GPU}} = P
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the default execution parameter for `SciML` when none is specified.
+
+Returns `CPU`, so `SciML(...)` builds a `SciML{CPU}` and every existing call site is
+unaffected by the device parameterization.
+
+See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.CPU`](@extref)
+"""
+Strategies.default_parameter(::Type{<:SciML}) = CPU
 
 """
 $(TYPEDSIGNATURES)
@@ -129,8 +148,8 @@ options_trajectory(integ::SciML) = integ.options_trajectory
 """
 $(TYPEDSIGNATURES)
 
-Construct a `SciML` integrator. Delegates to `build_sciml_integrator`, which
-is overridden by the `CTSolversSciMLIntegrator` package extension.
+Construct a `SciML{CPU}` integrator (the default device). Equivalent to
+`SciML{CPU}(...)`; delegates through [`CTBase.Strategies.default_parameter`](@extref).
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`).
@@ -142,7 +161,28 @@ is overridden by the `CTSolversSciMLIntegrator` package extension.
 See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators.build_sciml_integrator`](@ref).
 """
 function SciML(; mode::Symbol=:strict, kwargs...)
-    return build_sciml_integrator(SciMLTag; mode=mode, kwargs...)
+    P = Strategies.default_parameter(SciML)
+    return SciML{P}(; mode=mode, kwargs...)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Construct a parameterized `SciML{P}` integrator for the execution device `P`
+(`CPU` or `GPU`). Delegates to `build_sciml_integrator`, which is overridden by the
+`CTSolversSciMLIntegrator` package extension.
+
+# Arguments
+- `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`).
+- `kwargs...`: Options forwarded to the integrator builder (see extension documentation).
+
+# Throws
+- `CTBase.Exceptions.ExtensionError`: If the `CTSolversSciMLIntegrator` extension is not loaded.
+
+See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators.build_sciml_integrator`](@ref).
+"""
+function SciML{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
+    return build_sciml_integrator(SciMLTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -152,7 +192,9 @@ Stub builder for `SciML`. The real implementation is provided by
 `CTSolversSciMLIntegrator`; this stub throws `ExtensionError` until the extension
 is loaded.
 """
-function build_sciml_integrator(::Type{<:Core.AbstractTag}; kwargs...)
+function build_sciml_integrator(
+    ::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...
+)
     return throw(
         Exceptions.ExtensionError(
             :OrdinaryDiffEqTsit5;
@@ -188,6 +230,21 @@ end
 """
 $(TYPEDSIGNATURES)
 
+Fallback for the non-parameterized `SciML` type that delegates to `SciML{CPU}`.
+
+Preserves backward compatibility for `metadata(SciML)` once the extension defines only
+the parameterized `metadata(SciML{P})`. Delegates through
+[`CTBase.Strategies.default_parameter`](@extref).
+
+See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.StrategyMetadata`](@extref).
+"""
+function Strategies.metadata(::Type{SciML})
+    return Strategies.metadata(SciML{Strategies.default_parameter(SciML)})
+end
+
+"""
+$(TYPEDSIGNATURES)
+
 Return the default SciML ODE algorithm for the given tag type.
 
 This stub returns `missing` for the abstract tag type. The actual implementation
@@ -200,4 +257,29 @@ See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators.Tsit5Ta
 """
 function __default_sciml_algorithm(::Type{<:Core.AbstractTag})
     return missing
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Check whether an initial condition `u0` is consistent with the execution parameter `P`
+of a `SciML{P}` integrator.
+
+Mirrors `Modelers.__consistent_backend`: the default returns `true` (all combinations
+allowed); the `CTSolversCUDA` extension adds the device-aware methods that flag a `CuArray`
+`u0` under `SciML{CPU}`, or a host `Array` `u0` under `SciML{GPU}`. The seam is defined here,
+next to the integrator; the consuming package (e.g. CTFlows) calls it where a concrete `u0`
+is available (problem construction / solve), since `SciML` does not receive `u0` at build time.
+
+# Arguments
+- `parameter_type::Type{<:AbstractStrategyParameter}`: `CPU` or `GPU`.
+- `u0`: The initial condition array to check.
+
+# Returns
+- `Bool`: `true` if consistent, `false` otherwise.
+
+See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref).
+"""
+function __consistent_initial_condition(::Type{<:AbstractStrategyParameter}, u0)
+    return true
 end
