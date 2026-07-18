@@ -84,10 +84,26 @@ Strategies.id(::Type{<:SciML}) = :sciml
 """
 $(TYPEDSIGNATURES)
 
-Return the execution parameter type of a `SciML` integrator.
+Return the execution parameter of the non-parameterized `SciML` type: `nothing`.
+
+The bare `SciML` (device unspecified) resolves to `nothing`, matching the general
+`AbstractStrategy` contract and preserving backward compatibility for consumers that
+register `SciML` without a parameter (e.g. CTFlows' flow registry) and query
+`parameter` on the bare type. A concrete `SciML{P}` resolves to `P` via the more
+specific method below.
+
+See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.default_parameter`](@extref)
+"""
+Strategies.parameter(::Type{<:SciML}) = nothing
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the execution parameter type of a parameterized `SciML{P}` integrator.
 
 Extracts the type parameter `P` from `SciML{P}`, which can be either `CPU` or `GPU`
-since `SciML` supports both execution devices.
+since `SciML` supports both execution devices. More specific than the bare
+`parameter(::Type{<:SciML})` above, so it wins for a concrete `SciML{P}`.
 
 # Returns
 - `Type{<:Union{CPU,GPU}}`: the execution parameter type.

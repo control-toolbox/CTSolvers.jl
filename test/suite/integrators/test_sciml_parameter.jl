@@ -37,6 +37,11 @@ function test_sciml_parameter()
         # ====================================================================
 
         Test.@testset "parameter contract" begin
+            # Bare (device-unspecified) SciML resolves to `nothing` — required by consumers
+            # that register SciML without a parameter (e.g. CTFlows' flow registry) and query
+            # `parameter` on the bare type. Regression guard for the removed-then-restored method.
+            Test.@test Strategies.parameter(Integrators.SciML) === nothing
+
             Test.@test Strategies.parameter(Integrators.SciML{Strategies.CPU}) ==
                 Strategies.CPU
             Test.@test Strategies.parameter(Integrators.SciML{Strategies.GPU}) ==
