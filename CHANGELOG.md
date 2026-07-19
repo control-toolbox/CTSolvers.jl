@@ -8,6 +8,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.30-beta] - 2026-07-19
+
+### Added
+
+- **`Integrators.SciML{P<:Union{CPU,GPU}}` device parameterization** — the SciML ODE
+  integrator is now parameterized on the execution device, mirroring the existing
+  `Modelers.Exa{P}` / `Solvers.MadNLP{P}` pattern. `SciML() ≡ SciML{CPU}` — zero
+  breakage for every current caller. This is phase 1 of the CTFlows GPU roadmap:
+  `(:sciml, :gpu)` is now reachable in registries/descriptions so downstream packages
+  can resolve a `GPU` integrator through the existing strategy machinery.
+  - `SciML` struct gains a leading device parameter `SciML{P,O,OP,OT}`;
+    `Strategies.parameter(SciML{P})` extracts `P`; `Strategies.default_parameter(SciML)`
+    returns `CPU`; parameterized `SciML{P}(...)` constructor + bare `SciML(...)`
+    delegating through `default_parameter`.
+  - `Strategies.metadata(SciML{P})` specialized on the device (option set currently
+    identical for both — `P` marks the seam where GPU-specific defaults/validators
+    land later); bare `metadata(SciML)` delegates through `SciML{CPU}`.
+  - `build_sciml_integrator(SciMLTag, P; …)` builds a `SciML{P,…}`.
+  - `__consistent_initial_condition(parameter_type, u0)` stub (core, returns `true`);
+    the `CTSolversCUDA` extension adds device-aware methods: a `CuArray` `u0` is
+    inconsistent with `SciML{CPU}`, a host `Array` `u0` inconsistent with `SciML{GPU}`.
+  - New test file `test/suite/integrators/test_sciml_parameter.jl` covering the
+    parameter contract, per-parameter metadata, per-device construction, registry
+    `[CPU, GPU]` registration, and the device consistency validators.
+
+---
+
 ## [0.4.29-beta] - 2026-07-15
 
 ### Added

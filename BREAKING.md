@@ -5,6 +5,34 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.30-beta (2026-07-19)
+
+**No breaking changes.**
+
+This release parameterizes the `Integrators.SciML` ODE integrator on the execution
+device (`SciML{P<:Union{CPU,GPU}}`), mirroring the existing `Modelers.Exa{P}` /
+`Solvers.MadNLP{P}` pattern. `SciML() ≡ SciML{CPU}` — zero breakage for every current
+caller.
+
+### Summary - v0.4.30-beta
+
+- `SciML` struct gains a leading device parameter `P`; `SciML()` builds a `SciML{CPU}`
+- `Strategies.parameter(SciML{P})` extracts `P`; `Strategies.default_parameter(SciML)`
+  returns `CPU`; bare `Strategies.parameter(SciML)` returns `nothing` (back-compat)
+- `Strategies.metadata(SciML{P})` specialized on the device; bare `metadata(SciML)`
+  delegates through `SciML{CPU}`
+- `build_sciml_integrator(SciMLTag, P; …)` takes the device parameter
+- `__consistent_initial_condition(parameter_type, u0)` stub added to core;
+  device-aware methods added in the `CTSolversCUDA` extension
+
+### Migration - v0.4.30-beta
+
+**No action required.** All existing code continues to work without changes.
+`SciML(...)` still builds a CPU integrator, and the bare `parameter(SciML)` still
+returns `nothing` for consumers that register `SciML` without a parameter.
+
+---
+
 ## v0.4.29-beta (2026-07-15)
 
 **No breaking changes.**
