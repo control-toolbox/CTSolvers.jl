@@ -105,7 +105,9 @@ A device `CuArray` initial condition is inconsistent with a `SciML{CPU}` integra
 Overrides the `true`-returning stub in `CTSolvers.Integrators`. Other host-array cases fall
 through to the default (returns `true`).
 """
-function Integrators.__consistent_initial_condition(::Type{Strategies.CPU}, u0::CUDA.AnyCuArray)
+function Integrators.__consistent_initial_condition(
+    ::Type{Strategies.CPU}, u0::CUDA.AnyCuArray
+)
     return false
 end
 
@@ -126,7 +128,9 @@ $(DocStringExtensions.TYPEDSIGNATURES)
 
 A device `CuArray` initial condition is consistent with a `SciML{GPU}` integrator.
 """
-function Integrators.__consistent_initial_condition(::Type{Strategies.GPU}, u0::CUDA.AnyCuArray)
+function Integrators.__consistent_initial_condition(
+    ::Type{Strategies.GPU}, u0::CUDA.AnyCuArray
+)
     return true
 end
 

@@ -60,8 +60,12 @@ To activate the extension, load any of:
 
 $(TYPEDFIELDS)
 """
-struct SciML{P<:Union{CPU,GPU},O<:Strategies.StrategyOptions,OP<:Dict{Symbol,Any},OT<:Dict{Symbol,Any}} <:
-       AbstractSciMLIntegrator
+struct SciML{
+    P<:Union{CPU,GPU},
+    O<:Strategies.StrategyOptions,
+    OP<:Dict{Symbol,Any},
+    OT<:Dict{Symbol,Any},
+} <: AbstractSciMLIntegrator
     "Validated option bundle."
     options::O
     "Pre-computed options for point (final-state) integration."
