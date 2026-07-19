@@ -122,10 +122,12 @@ function test_sciml_parameter()
             host = [1.0, 2.0]
 
             # Core default: a host array is consistent with CPU.
-            Test.@test Integrators.__consistent_initial_condition(Strategies.CPU, host) == true
+            Test.@test Integrators.__consistent_initial_condition(Strategies.CPU, host) ==
+                true
 
             # CTSolversCUDA (loaded via `using CUDA`): a host array is inconsistent with GPU.
-            Test.@test Integrators.__consistent_initial_condition(Strategies.GPU, host) == false
+            Test.@test Integrators.__consistent_initial_condition(Strategies.GPU, host) ==
+                false
 
             if is_cuda_on()
                 dev = CUDA.cu(host)

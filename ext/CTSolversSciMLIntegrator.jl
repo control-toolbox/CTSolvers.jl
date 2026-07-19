@@ -349,7 +349,9 @@ function Integrators.build_sciml_integrator(
         get(options_trajectory, key, :auto) === :auto && (options_trajectory[key] = true)
     end
 
-    return Integrators.SciML{P,typeof(opts),typeof(options_point),typeof(options_trajectory)}(
+    return Integrators.SciML{
+        P,typeof(opts),typeof(options_point),typeof(options_trajectory)
+    }(
         opts, options_point, options_trajectory
     )
 end
