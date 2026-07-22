@@ -333,12 +333,12 @@ Requires the CTSolversExaModels extension to be loaded.
 - `CTBase.Exceptions.ExtensionError`: If the ExaModels extension is not loaded
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 
-See also: `Modelers.Exa`, `build_exa_modeler`
+See also: `Modelers.Exa`, `_build_exa_modeler`
 """
 function Modelers.Exa{P}(;
     mode::Symbol=:strict, kwargs...
 ) where {P<:AbstractStrategyParameter}
-    return build_exa_modeler(ExaTag, P; mode=mode, kwargs...)
+    return _build_exa_modeler(ExaTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -352,7 +352,7 @@ Real implementation provided by the extension.
 
 See also: `Modelers.Exa`, `Strategies.metadata`
 """
-function build_exa_modeler(
+function _build_exa_modeler(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     return throw(
@@ -386,7 +386,7 @@ Requires the CTSolversExaModels extension to be loaded.
 - `CTBase.Exceptions.ExtensionError`: If the ExaModels extension is not loaded
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 
-See also: `Modelers.Exa`, `Modelers.Exa{CPU}`, `Modelers.Exa{GPU}`, `build_exa_modeler`
+See also: `Modelers.Exa`, `Modelers.Exa{CPU}`, `Modelers.Exa{GPU}`, `_build_exa_modeler`
 """
 function Modelers.Exa(; mode::Symbol=:strict, kwargs...)
     P = Strategies.default_parameter(Modelers.Exa)

@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.32-beta] - 2026-07-22
+
+### Changed
+
+- **Internal builder stubs renamed with `_` prefix** — all `build_*_solver`,
+  `build_*_modeler`, and `build_sciml_integrator` functions are renamed to
+  `_build_*_solver`, `_build_*_modeler`, and `_build_sciml_integrator`
+  respectively, following the Handbook convention for unexported internal
+  functions. `build_sciml_integrator` is also removed from `Integrators`
+  exports (it was the only one still exported).
+  **Breaking** (for direct callers of the stub): use the public constructors
+  (`SciML(...)`, `ADNLP(...)`, `Ipopt(...)`, etc.) instead.
+
+---
+
 ## [0.4.31-beta] - 2026-07-22
 
 ### Removed
@@ -36,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `Strategies.metadata(SciML{P})` specialized on the device (option set currently
     identical for both — `P` marks the seam where GPU-specific defaults/validators
     land later); bare `metadata(SciML)` delegates through `SciML{CPU}`.
-  - `build_sciml_integrator(SciMLTag, P; …)` builds a `SciML{P,…}`.
+  - `_build_sciml_integrator(SciMLTag, P; …)` builds a `SciML{P,…}`.
   - `__consistent_initial_condition(parameter_type, u0)` stub (core, returns `true`);
     the `CTSolversCUDA` extension adds device-aware methods: a `CuArray` `u0` is
     inconsistent with `SciML{CPU}`, a host `Array` `u0` inconsistent with `SciML{GPU}`.
@@ -215,7 +230,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     their existing solver-backend trigger) since they dispatch on
     `NLPModels.AbstractNLPModel`.
   - Core modeler stubs follow the Ipopt tag-dispatch pattern:
-    `build_adnlp_modeler` / `build_exa_modeler` throw `ExtensionError` when their
+    `_build_adnlp_modeler` / `_build_exa_modeler` throw `ExtensionError` when their
     respective extension is not loaded; `Strategies.metadata` stubs do the same.
   - `validate_backend_override` in core is rewritten to use two tag-dispatch helpers
     (`__is_adbackend_type` / `__is_adbackend_instance`) so it no longer references

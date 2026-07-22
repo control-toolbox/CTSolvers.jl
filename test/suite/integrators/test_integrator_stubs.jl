@@ -10,7 +10,7 @@ using CommonSolve: CommonSolve
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
-# Fake tag never implemented by any extension: build_sciml_integrator stub must throw
+# Fake tag never implemented by any extension: _build_sciml_integrator stub must throw
 # even when the SciML extension is loaded (it only implements the concrete SciMLTag).
 struct DummyTag <: Core.AbstractTag end
 
@@ -30,17 +30,17 @@ function test_integrator_stubs()
     Test.@testset "Integrator Extension Stubs" verbose=VERBOSE showtiming=SHOWTIMING begin
 
         # ====================================================================
-        # build_sciml_integrator stub (DummyTag never implemented)
+        # _build_sciml_integrator stub (DummyTag never implemented)
         # ====================================================================
 
-        Test.@testset "build_sciml_integrator stub" begin
-            Test.@test_throws Exceptions.ExtensionError Integrators.build_sciml_integrator(
+        Test.@testset "_build_sciml_integrator stub" begin
+            Test.@test_throws Exceptions.ExtensionError Integrators._build_sciml_integrator(
                 DummyTag, Strategies.CPU
             )
 
             err = nothing
             try
-                Integrators.build_sciml_integrator(DummyTag, Strategies.CPU)
+                Integrators._build_sciml_integrator(DummyTag, Strategies.CPU)
             catch e
                 err = e
             end

@@ -560,13 +560,13 @@ Build an Ipopt with validated options.
 
 ```julia
 # Conceptual usage
-solver = build_ipopt_solver(IpoptTag; max_iter=1000)
-solver_permissive = build_ipopt_solver(IpoptTag; max_iter=1000, custom_option=123; mode=:permissive)
+solver = _build_ipopt_solver(IpoptTag; max_iter=1000)
+solver_permissive = _build_ipopt_solver(IpoptTag; max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
 See also: `Solvers.Ipopt`, `Strategies.build_strategy_options`
 """
-function Solvers.build_ipopt_solver(
+function Solvers._build_ipopt_solver(
     ::Type{Solvers.IpoptTag},
     parameter::Type{<:AbstractStrategyParameter};
     mode::Symbol=:strict,

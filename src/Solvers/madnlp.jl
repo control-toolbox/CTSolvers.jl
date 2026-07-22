@@ -155,7 +155,7 @@ solver_permissive = MadNLP(max_iter=1000, custom_option=123; mode=:permissive)
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
 
-See also: `MadNLP`, `build_madnlp_solver`
+See also: `MadNLP`, `_build_madnlp_solver`
 """
 function Solvers.MadNLP(; mode::Symbol=:strict, kwargs...)
     P = Strategies.default_parameter(Solvers.MadNLP)
@@ -193,7 +193,7 @@ See also: `MadNLP`, `CPU`, `GPU`
 function Solvers.MadNLP{P}(;
     mode::Symbol=:strict, kwargs...
 ) where {P<:AbstractStrategyParameter}
-    return build_madnlp_solver(MadNLPTag, P; mode=mode, kwargs...)
+    return _build_madnlp_solver(MadNLPTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -207,7 +207,7 @@ Real implementation provided by the extension.
 
 See also: `MadNLP`, `Strategies.metadata`
 """
-function build_madnlp_solver(
+function _build_madnlp_solver(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     return throw(

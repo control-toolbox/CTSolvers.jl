@@ -471,11 +471,11 @@ Build a MadNLP with validated options.
 
 ```julia
 # Conceptual usage
-solver_cpu = build_madnlp_solver(MadNLPTag(), CPU(); max_iter=1000)
-solver_gpu = build_madnlp_solver(MadNLPTag(), GPU(); max_iter=1000)  # requires MadNLPGPU
+solver_cpu = _build_madnlp_solver(MadNLPTag(), CPU(); max_iter=1000)
+solver_gpu = _build_madnlp_solver(MadNLPTag(), GPU(); max_iter=1000)  # requires MadNLPGPU
 ```
 """
-function Solvers.build_madnlp_solver(
+function Solvers._build_madnlp_solver(
     ::Type{Solvers.MadNLPTag},
     parameter::Type{<:AbstractStrategyParameter};
     mode::Symbol=:strict,

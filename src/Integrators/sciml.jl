@@ -178,7 +178,7 @@ Construct a `SciML{CPU}` integrator (the default device). Equivalent to
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the `CTSolversSciMLIntegrator` extension is not loaded.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators.build_sciml_integrator`](@ref).
+See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators._build_sciml_integrator`](@ref).
 """
 function SciML(; mode::Symbol=:strict, kwargs...)
     P = Strategies.default_parameter(SciML)
@@ -189,7 +189,7 @@ end
 $(TYPEDSIGNATURES)
 
 Construct a parameterized `SciML{P}` integrator for the execution device `P`
-(`CPU` or `GPU`). Delegates to `build_sciml_integrator`, which is overridden by the
+(`CPU` or `GPU`). Delegates to `_build_sciml_integrator`, which is overridden by the
 `CTSolversSciMLIntegrator` package extension.
 
 # Arguments
@@ -199,10 +199,10 @@ Construct a parameterized `SciML{P}` integrator for the execution device `P`
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the `CTSolversSciMLIntegrator` extension is not loaded.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators.build_sciml_integrator`](@ref).
+See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators._build_sciml_integrator`](@ref).
 """
 function SciML{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
-    return build_sciml_integrator(SciMLTag, P; mode=mode, kwargs...)
+    return _build_sciml_integrator(SciMLTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -212,7 +212,7 @@ Stub builder for `SciML`. The real implementation is provided by
 `CTSolversSciMLIntegrator`; this stub throws `ExtensionError` until the extension
 is loaded.
 """
-function build_sciml_integrator(
+function _build_sciml_integrator(
     ::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...
 )
     return throw(

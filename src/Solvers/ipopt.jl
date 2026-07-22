@@ -192,7 +192,7 @@ solver_permissive = Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
 
-See also: `Ipopt`, `build_ipopt_solver`
+See also: `Ipopt`, `_build_ipopt_solver`
 """
 function Solvers.Ipopt(; mode::Symbol=:strict, kwargs...)
     P = Strategies.default_parameter(Solvers.Ipopt)
@@ -227,7 +227,7 @@ solver_cpu = Solvers.Ipopt{CPU}(max_iter=1000, tol=1e-6)
 See also: `Ipopt`, `CPU`
 """
 function Solvers.Ipopt{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
-    return build_ipopt_solver(IpoptTag, P; mode=mode, kwargs...)
+    return _build_ipopt_solver(IpoptTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -241,7 +241,7 @@ Real implementation provided by the extension.
 
 See also: `Ipopt`, `Strategies.metadata`
 """
-function build_ipopt_solver(
+function _build_ipopt_solver(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     return throw(

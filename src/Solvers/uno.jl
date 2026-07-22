@@ -221,7 +221,7 @@ solver_permissive = Uno(max_iter=1000, custom_option=123; mode=:permissive)
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the UnoSolver extension is not loaded
 
-See also: `Uno`, `build_uno_solver`
+See also: `Uno`, `_build_uno_solver`
 """
 function Solvers.Uno(; mode::Symbol=:strict, kwargs...)
     P = Strategies.default_parameter(Solvers.Uno)
@@ -256,7 +256,7 @@ solver_cpu = Solvers.Uno{CPU}(max_iter=1000, tol=1e-6)
 See also: `Uno`, `CPU`
 """
 function Solvers.Uno{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
-    return build_uno_solver(UnoTag, P; mode=mode, kwargs...)
+    return _build_uno_solver(UnoTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -270,7 +270,7 @@ Real implementation provided by the extension.
 
 See also: `Uno`, `Strategies.metadata`
 """
-function build_uno_solver(
+function _build_uno_solver(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     return throw(
