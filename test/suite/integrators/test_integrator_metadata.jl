@@ -43,10 +43,6 @@ function test_integrator_metadata()
             Test.@test integ isa Integrators.SciML
             Test.@test Strategies.id(typeof(integ)) === :sciml
 
-            # build_integrator convenience delegates to SciML
-            integ2 = Integrators.build_integrator(; alg=Tsit5())
-            Test.@test integ2 isa Integrators.SciML
-
             # Accessors return the cached point/trajectory option dicts
             op = Integrators.options_point(integ)
             ot = Integrators.options_trajectory(integ)

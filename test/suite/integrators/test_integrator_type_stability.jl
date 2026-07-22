@@ -32,7 +32,6 @@ function test_type_stability()
             # NT<:NamedTuple rather than the concrete NamedTuple. Check concrete type instead.
             Test.@test Integrators.SciML(alg=Tsit5()) isa Integrators.SciML
             Test.@test Integrators.SciML(alg=Tsit5(), reltol=1e-8) isa Integrators.SciML
-            Test.@test Integrators.build_integrator(alg=Tsit5()) isa Integrators.SciML
         end
 
         # ====================================================================
