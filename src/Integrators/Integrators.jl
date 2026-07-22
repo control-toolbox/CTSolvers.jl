@@ -47,7 +47,6 @@ include(joinpath(@__DIR__, "abstract_integrator.jl"))
 include(joinpath(@__DIR__, "integration_result.jl"))
 include(joinpath(@__DIR__, "sciml.jl"))
 include(joinpath(@__DIR__, "contract.jl"))
-include(joinpath(@__DIR__, "conveniences.jl"))
 include(joinpath(@__DIR__, "internal_norm.jl"))
 
 # Public API - abstract and concrete types
@@ -57,7 +56,7 @@ export AbstractIntegrator, AbstractSciMLIntegrator, SciML, SciMLTag, Tsit5Tag
 export AbstractIntegrationResult, final_state, times, evaluate_at, status, successful
 
 # Public API - construction and accessors
-export build_integrator, build_sciml_integrator
+export build_sciml_integrator
 export options_point, options_trajectory
 
 # Public API - multi-phase

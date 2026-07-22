@@ -57,7 +57,6 @@ function test_integrator_exports()
                 :evaluate_at,
                 :status,
                 :successful,
-                :build_integrator,
                 :build_sciml_integrator,
                 :options_point,
                 :options_trajectory,
@@ -99,7 +98,6 @@ function test_integrator_exports()
                 :evaluate_at,
                 :status,
                 :successful,
-                :build_integrator,
                 :options_point,
                 :options_trajectory,
             )

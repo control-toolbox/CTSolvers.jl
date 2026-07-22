@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.31-beta] - 2026-07-22
+
+### Removed
+
+- **`Integrators.build_integrator`** — the convenience wrapper that delegated to
+  `SciML(; kwargs...)` is removed. Use `Integrators.SciML(...)` directly.
+  **Breaking**: any call to `Integrators.build_integrator(...)` must be replaced
+  with `Integrators.SciML(...)`.
+
+---
+
 ## [0.4.30-beta] - 2026-07-19
 
 ### Added
@@ -121,7 +132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Core (`src/Integrators/`): `AbstractIntegrator <: Strategies.AbstractStrategy`, the
     `SciML`/`AbstractSciMLIntegrator`/`SciMLTag`/`Tsit5Tag` types, `AbstractIntegrationResult` with
     `final_state`/`times`/`evaluate_at`, the `CommonSolve.solve(prob, integ)` + `merge` contract
-    stubs (`contract.jl`), `build_integrator` (`conveniences.jl`), the `options_point`/
+    stubs (`contract.jl`), the `options_point`/
     `options_trajectory` accessors, and the `real_norm`/`deepvalue` grid-invariance fallbacks
     (`internal_norm.jl`).
   - Extensions: `CTSolversSciMLIntegrator` (metadata + builder + typed
