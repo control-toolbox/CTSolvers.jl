@@ -224,8 +224,8 @@ CTBase.Strategies.parameter(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU} = P
 # Constructor chain: resolve P, then dispatch on the tag and parameter TYPES
 Solvers.Ipopt(; kwargs...) =
     Solvers.Ipopt{CTBase.Strategies.default_parameter(Solvers.Ipopt)}(; kwargs...)
-Solvers.Ipopt{P}(; kwargs...) where {P<:CPU} = build_ipopt_solver(IpoptTag, P; kwargs...)
-build_ipopt_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...) =
+Solvers.Ipopt{P}(; kwargs...) where {P<:CPU} = _build_ipopt_solver(IpoptTag, P; kwargs...)
+_build_ipopt_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...) =
     throw(ExtensionError(:NLPModelsIpopt))
 ```
 
@@ -233,7 +233,7 @@ build_ipopt_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParamete
 
 ```julia
 metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU} = StrategyMetadata(...)
-build_ipopt_solver(::Type{Solvers.IpoptTag}, P::Type{<:AbstractStrategyParameter}; kwargs...) =
+_build_ipopt_solver(::Type{Solvers.IpoptTag}, P::Type{<:AbstractStrategyParameter}; kwargs...) =
     Solvers.Ipopt{P}(validated_opts)
 CommonSolve.solve(nlp, solver::Solvers.Ipopt; display) = ipopt(nlp; options_dict(solver)...)
 ```

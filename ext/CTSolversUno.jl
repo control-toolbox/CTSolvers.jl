@@ -304,13 +304,13 @@ Build a Uno solver with validated options.
 
 ```julia
 # Conceptual usage
-solver = build_uno_solver(UnoTag; max_iterations=1000)
-solver_permissive = build_uno_solver(UnoTag; max_iterations=1000, custom_option=123; mode=:permissive)
+solver = _build_uno_solver(UnoTag; max_iterations=1000)
+solver_permissive = _build_uno_solver(UnoTag; max_iterations=1000, custom_option=123; mode=:permissive)
 ```
 
 See also: `Solvers.Uno`, `Strategies.build_strategy_options`
 """
-function Solvers.build_uno_solver(
+function Solvers._build_uno_solver(
     ::Type{Solvers.UnoTag},
     parameter::Type{<:AbstractStrategyParameter};
     mode::Symbol=:strict,

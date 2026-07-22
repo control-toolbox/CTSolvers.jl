@@ -94,11 +94,11 @@ end
 
 # Parameterized → tag dispatch, IpoptTag and P passed as TYPES
 function Solvers.Ipopt{P}(; mode::Symbol = :strict, kwargs...) where {P<:CPU}
-    return build_ipopt_solver(IpoptTag, P; mode = mode, kwargs...)
+    return _build_ipopt_solver(IpoptTag, P; mode = mode, kwargs...)
 end
 
 # Stub — real implementation in ext/CTSolversIpopt.jl
-function build_ipopt_solver(
+function _build_ipopt_solver(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     throw(Exceptions.ExtensionError(
@@ -143,10 +143,10 @@ Solvers.Ipopt(; mode = :strict, kwargs...) =
     Solvers.Ipopt{CTBase.Strategies.default_parameter(Solvers.Ipopt)}(; mode, kwargs...)
 
 Solvers.Ipopt{P}(; mode = :strict, kwargs...) where {P<:CPU} =
-    build_ipopt_solver(IpoptTag, P; mode, kwargs...)
+    _build_ipopt_solver(IpoptTag, P; mode, kwargs...)
 
 # Stub — throws until NLPModelsIpopt is loaded
-build_ipopt_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...) =
+_build_ipopt_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...) =
     throw(Exceptions.ExtensionError(:NLPModelsIpopt))
 ```
 
@@ -157,7 +157,7 @@ build_ipopt_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParamete
 CTBase.Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU} = StrategyMetadata(...)
 
 # Real constructor — validates options for the parameterized type and builds the struct
-build_ipopt_solver(::Type{Solvers.IpoptTag}, parameter::Type{<:AbstractStrategyParameter}; mode, kwargs...) =
+_build_ipopt_solver(::Type{Solvers.IpoptTag}, parameter::Type{<:AbstractStrategyParameter}; mode, kwargs...) =
     Solvers.Ipopt{parameter}(CTBase.Strategies.build_strategy_options(Solvers.Ipopt{parameter}; mode, kwargs...))
 
 # Solve method — dispatches on NLP type and solver type
@@ -244,7 +244,7 @@ end
 **2. Constructor** — builds validated options for the parameterized type and returns the solver:
 
 ```julia
-function Solvers.build_ipopt_solver(
+function Solvers._build_ipopt_solver(
     ::Type{Solvers.IpoptTag},
     parameter::Type{<:AbstractStrategyParameter};
     mode::Symbol = :strict,

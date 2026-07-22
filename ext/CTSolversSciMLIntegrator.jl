@@ -7,7 +7,7 @@ Activated automatically when `DiffEqBase` and `SciMLBase` are loaded together wi
 This extension provides:
 - `real_norm` overload for grid invariance (array case)
 - `Strategies.metadata` for `Integrators.SciML` options
-- `build_sciml_integrator` — constructs a `SciML` integrator with pre-computed option caches
+- `_build_sciml_integrator` — constructs a `SciML` integrator with pre-computed option caches
 - `SciMLIntegrationResult` — wraps `SciMLBase.AbstractODESolution`
 - `CommonSolve.solve(prob::AbstractODEProblem, integ::SciML)` — integrates and returns a result
 - `status`/`successful` — termination status derived from the ODE solution's `retcode`
@@ -271,7 +271,7 @@ function Strategies.metadata(
 end
 
 # =============================================================================
-# build_sciml_integrator — actual implementation
+# _build_sciml_integrator — actual implementation
 # =============================================================================
 
 """
@@ -287,7 +287,7 @@ integrator construction into two cached dictionaries:
 Users can override automatic resolution by providing explicit `true`/`false` values
 when constructing the integrator.
 
-See also: [`CTSolvers.Integrators.build_sciml_integrator`](@ref).
+See also: [`CTSolvers.Integrators._build_sciml_integrator`](@ref).
 """
 const _AUTO_OPTION_KEYS = (:dense, :save_everystep, :save_start)
 
@@ -316,7 +316,7 @@ cached dictionaries `options_point` (`:auto` → `false`) and `options_trajector
 
 See also: [`CTSolvers.Integrators.SciML`](@ref).
 """
-function Integrators.build_sciml_integrator(
+function Integrators._build_sciml_integrator(
     ::Type{Integrators.SciMLTag}, ::Type{P}; mode::Symbol=:strict, kwargs...
 ) where {P<:Strategies.AbstractStrategyParameter}
     opts = Strategies.build_strategy_options(Integrators.SciML{P}; mode=mode, kwargs...)

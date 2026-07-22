@@ -57,7 +57,6 @@ function test_integrator_exports()
                 :evaluate_at,
                 :status,
                 :successful,
-                :build_sciml_integrator,
                 :options_point,
                 :options_trajectory,
                 :merge,
@@ -74,7 +73,7 @@ function test_integrator_exports()
         # ====================================================================
 
         Test.@testset "Internal symbols (not exported)" begin
-            for sym in (:__unsafe, :__default_sciml_algorithm, :deepvalue, :real_norm)
+            for sym in (:__unsafe, :__default_sciml_algorithm, :deepvalue, :real_norm, :_build_sciml_integrator)
                 Test.@testset "$sym" begin
                     Test.@test isdefined(Integrators, sym)
                     Test.@test !(sym in names(Integrators))

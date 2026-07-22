@@ -123,12 +123,12 @@ end
 
 # Parameterized constructor → tag dispatch, tag and parameter passed as TYPES
 function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
-    return build_adnlp_modeler(ADNLPTag, P; mode=mode, kwargs...)
+    return _build_adnlp_modeler(ADNLPTag, P; mode=mode, kwargs...)
 end
 
 # Stub — throws until ADNLPModels is loaded; the extension provides the
-# typed method build_adnlp_modeler(::Type{ADNLPTag}, ::Type{<:CPU}; ...)
-function build_adnlp_modeler(
+# typed method _build_adnlp_modeler(::Type{ADNLPTag}, ::Type{<:CPU}; ...)
+function _build_adnlp_modeler(
     ::Type{<:CTBase.Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter};
     kwargs...,
 )
@@ -146,7 +146,7 @@ showerror(IOContext(stdout, :color => false), e) # hide
 end # hide
 ```
 
-With `using ADNLPModels`, the extension's `build_adnlp_modeler` validates the options
+With `using ADNLPModels`, the extension's `_build_adnlp_modeler` validates the options
 against the metadata and returns the configured instance:
 
 ```julia
@@ -231,7 +231,7 @@ CTBase.Strategies.default_parameter(::Type{<:Modelers.Exa}) = CPU
 CTBase.Strategies.parameter(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU,GPU}} = P
 
 function Modelers.Exa{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
-    return build_exa_modeler(ExaTag, P; mode=mode, kwargs...)
+    return _build_exa_modeler(ExaTag, P; mode=mode, kwargs...)
 end
 ```
 

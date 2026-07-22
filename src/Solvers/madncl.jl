@@ -149,7 +149,7 @@ solver_permissive = Solvers.MadNCL(max_iter=1000, custom_option=123; mode=:permi
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the MadNCL extension is not loaded
 
-See also: `MadNCL`, `build_madncl_solver`
+See also: `MadNCL`, `_build_madncl_solver`
 """
 function Solvers.MadNCL(; mode::Symbol=:strict, kwargs...)
     P = Strategies.default_parameter(Solvers.MadNCL)
@@ -187,7 +187,7 @@ See also: `MadNCL`, `CPU`, `GPU`
 function Solvers.MadNCL{P}(;
     mode::Symbol=:strict, kwargs...
 ) where {P<:AbstractStrategyParameter}
-    return build_madncl_solver(MadNCLTag, P; mode=mode, kwargs...)
+    return _build_madncl_solver(MadNCLTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -201,7 +201,7 @@ Real implementation provided by the extension.
 
 See also: `MadNCL`, `Strategies.metadata`
 """
-function build_madncl_solver(
+function _build_madncl_solver(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     return throw(

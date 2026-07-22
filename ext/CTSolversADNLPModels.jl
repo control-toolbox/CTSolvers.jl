@@ -91,7 +91,7 @@ AD backend overrides for individual derivative operations.
 - `CTBase.Strategies.StrategyMetadata`: metadata object with all option definitions
 
 See also: [`CTSolvers.Modelers.ADNLP`](@ref),
-[`CTSolvers.Modelers.build_adnlp_modeler`](@ref)
+[`CTSolvers.Modelers._build_adnlp_modeler`](@ref)
 """
 function Strategies.metadata(::Type{Modelers.ADNLP{P}}) where {P<:CPU}
     return Strategies.StrategyMetadata(
@@ -202,9 +202,9 @@ and `:backend` should be used instead.
 - `CTSolvers.Modelers.ADNLP{parameter}`: configured modeler instance
 
 See also: [`CTSolvers.Modelers.ADNLP`](@ref),
-[`CTSolvers.Modelers.build_adnlp_modeler`](@ref)
+[`CTSolvers.Modelers._build_adnlp_modeler`](@ref)
 """
-function Modelers.build_adnlp_modeler(
+function Modelers._build_adnlp_modeler(
     ::Type{Modelers.ADNLPTag},
     parameter::Type{<:AbstractStrategyParameter};
     mode::Symbol=:strict,

@@ -195,7 +195,7 @@ solver_permissive = Knitro(maxit=1000, custom_option=123; mode=:permissive)
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
 
-See also: `Knitro`, `build_knitro_solver`
+See also: `Knitro`, `_build_knitro_solver`
 """
 function Solvers.Knitro(; mode::Symbol=:strict, kwargs...)
     P = Strategies.default_parameter(Solvers.Knitro)
@@ -230,7 +230,7 @@ solver_cpu = Solvers.Knitro{CPU}(maxit=1000, outlev=2)
 See also: `Knitro`, `CPU`
 """
 function Solvers.Knitro{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
-    return build_knitro_solver(KnitroTag, P; mode=mode, kwargs...)
+    return _build_knitro_solver(KnitroTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -244,7 +244,7 @@ Real implementation provided by the extension.
 
 See also: `Knitro`, `Strategies.metadata`
 """
-function build_knitro_solver(
+function _build_knitro_solver(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     return throw(

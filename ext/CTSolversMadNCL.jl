@@ -371,11 +371,11 @@ Build a MadNCL with validated options.
 
 ```julia
 # Conceptual usage
-solver_cpu = build_madncl_solver(MadNCLTag(), CPU(); max_iter=1000)
-solver_gpu = build_madncl_solver(MadNCLTag(), GPU(); max_iter=1000)  # requires MadNLPGPU
+solver_cpu = _build_madncl_solver(MadNCLTag(), CPU(); max_iter=1000)
+solver_gpu = _build_madncl_solver(MadNCLTag(), GPU(); max_iter=1000)  # requires MadNLPGPU
 ```
 """
-function Solvers.build_madncl_solver(
+function Solvers._build_madncl_solver(
     ::Type{Solvers.MadNCLTag},
     parameter::Type{<:AbstractStrategyParameter};
     mode::Symbol=:strict,

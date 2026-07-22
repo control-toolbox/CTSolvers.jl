@@ -313,10 +313,10 @@ Requires the CTSolversADNLPModels extension to be loaded.
 - `CTBase.Exceptions.ExtensionError`: If the ADNLPModels extension is not loaded
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 
-See also: `Modelers.ADNLP`, `build_adnlp_modeler`
+See also: `Modelers.ADNLP`, `_build_adnlp_modeler`
 """
 function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
-    return build_adnlp_modeler(ADNLPTag, P; mode=mode, kwargs...)
+    return _build_adnlp_modeler(ADNLPTag, P; mode=mode, kwargs...)
 end
 
 """
@@ -330,7 +330,7 @@ Real implementation provided by the extension.
 
 See also: `Modelers.ADNLP`, `Strategies.metadata`
 """
-function build_adnlp_modeler(
+function _build_adnlp_modeler(
     ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
 )
     return throw(
@@ -374,7 +374,7 @@ modeler = Modelers.ADNLP(backend=:optimized, custom_option=123; mode=:permissive
 - `CTBase.Exceptions.ExtensionError`: If the ADNLPModels extension is not loaded
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 
-See also: `Modelers.ADNLP`, `Modelers.ADNLP{CPU}`, `build_adnlp_modeler`
+See also: `Modelers.ADNLP`, `Modelers.ADNLP{CPU}`, `_build_adnlp_modeler`
 """
 function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
     P = Strategies.default_parameter(Modelers.ADNLP)

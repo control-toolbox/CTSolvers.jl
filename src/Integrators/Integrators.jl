@@ -56,7 +56,6 @@ export AbstractIntegrator, AbstractSciMLIntegrator, SciML, SciMLTag, Tsit5Tag
 export AbstractIntegrationResult, final_state, times, evaluate_at, status, successful
 
 # Public API - construction and accessors
-export build_sciml_integrator
 export options_point, options_trajectory
 
 # Public API - multi-phase

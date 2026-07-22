@@ -107,11 +107,11 @@ The constructor delegates to a `build_*` function that dispatches on the tag. Th
 
 ```julia
 function SciML(; mode::Symbol = :strict, kwargs...)
-    return build_sciml_integrator(SciMLTag; mode = mode, kwargs...)
+    return _build_sciml_integrator(SciMLTag; mode = mode, kwargs...)
 end
 
 # Stub — real implementation in ext/CTSolversSciMLIntegrator.jl
-function build_sciml_integrator(::Type{<:Core.AbstractTag}; kwargs...)
+function _build_sciml_integrator(::Type{<:Core.AbstractTag}; kwargs...)
     throw(Exceptions.ExtensionError(
         :OrdinaryDiffEqTsit5;
         message = "to construct a SciML integrator",
@@ -132,10 +132,10 @@ src/Integrators/sciml.jl                ext/CTSolversSciMLIntegrator.jl
 SciML <: AbstractSciMLIntegrator        metadata(::Type{SciML})
 SciMLTag <: Core.AbstractTag              → StrategyMetadata(option defs...)
 
-SciML(; kwargs...)                      build_sciml_integrator(::Type{SciMLTag}; …)
-  → build_sciml_integrator(SciMLTag; …)   → SciML(opts, options_point, options_traj)
+SciML(; kwargs...)                      _build_sciml_integrator(::Type{SciMLTag}; …)
+  → _build_sciml_integrator(SciMLTag; …)   → SciML(opts, options_point, options_traj)
 
-build_sciml_integrator(::AbstractTag)   solve(prob::AbstractODEProblem, ::SciML)
+_build_sciml_integrator(::AbstractTag)   solve(prob::AbstractODEProblem, ::SciML)
   → ExtensionError(:OrdinaryDiffEqTsit5)  → SciMLIntegrationResult
 
 solve(prob, ::AbstractIntegrator)       SciMLIntegrationResult (with accessors)
@@ -148,7 +148,7 @@ The split is:
 |----------|----------|
 | `src/Integrators/sciml.jl` | Struct, `id`/`description`, tag, constructor stub, `metadata`/`build` stubs, accessors |
 | `src/Integrators/contract.jl` | Generic `solve` stub, `merge` stub, `__unsafe` default |
-| `ext/CTSolversSciMLIntegrator.jl` | `metadata`, `build_sciml_integrator`, `SciMLIntegrationResult`, the typed `solve`, `merge` |
+| `ext/CTSolversSciMLIntegrator.jl` | `metadata`, `_build_sciml_integrator`, `SciMLIntegrationResult`, the typed `solve`, `merge` |
 
 This keeps CTSolvers lightweight — `SciMLBase`/`DiffEqBase` are only loaded when the user loads an ODE backend.
 
@@ -199,7 +199,7 @@ end
 **2. Constructor** — builds validated options and resolves the `:auto` sentinel into the cached point/trajectory dictionaries:
 
 ```julia
-function Integrators.build_sciml_integrator(::Type{Integrators.SciMLTag}; mode = :strict, kwargs...)
+function Integrators._build_sciml_integrator(::Type{Integrators.SciMLTag}; mode = :strict, kwargs...)
     opts = CTBase.Strategies.build_strategy_options(Integrators.SciML; mode = mode, kwargs...)
     raw  = CTBase.Strategies.options_dict(opts)
     options_point = copy(raw); options_trajectory = copy(raw)

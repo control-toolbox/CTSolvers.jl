@@ -33,7 +33,7 @@ are loaded. Covers `:base_type` (floating-point precision) and `:backend`
 - `CTBase.Strategies.StrategyMetadata`: metadata object with all option definitions
 
 See also: [`CTSolvers.Modelers.Exa`](@ref),
-[`CTSolvers.Modelers.build_exa_modeler`](@ref)
+[`CTSolvers.Modelers._build_exa_modeler`](@ref)
 """
 function Strategies.metadata(::Type{Modelers.Exa{P}}) where {P<:Union{CPU,GPU}}
     return Strategies.StrategyMetadata(
@@ -86,9 +86,9 @@ is issued and `:backend` should be used instead.
 - `CTSolvers.Modelers.Exa{parameter}`: configured modeler instance
 
 See also: [`CTSolvers.Modelers.Exa`](@ref),
-[`CTSolvers.Modelers.build_exa_modeler`](@ref)
+[`CTSolvers.Modelers._build_exa_modeler`](@ref)
 """
-function Modelers.build_exa_modeler(
+function Modelers._build_exa_modeler(
     ::Type{Modelers.ExaTag},
     parameter::Type{<:AbstractStrategyParameter};
     mode::Symbol=:strict,

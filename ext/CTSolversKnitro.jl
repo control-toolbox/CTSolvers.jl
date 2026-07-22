@@ -213,11 +213,11 @@ Build a Knitro with validated options.
 
 ```julia
 # Conceptual usage
-solver = build_knitro_solver(KnitroTag; max_iter=1000)
-solver_permissive = build_knitro_solver(KnitroTag; max_iter=1000, custom_option=123; mode=:permissive)
+solver = _build_knitro_solver(KnitroTag; max_iter=1000)
+solver_permissive = _build_knitro_solver(KnitroTag; max_iter=1000, custom_option=123; mode=:permissive)
 ```
 """
-function Solvers.build_knitro_solver(
+function Solvers._build_knitro_solver(
     ::Type{Solvers.KnitroTag},
     parameter::Type{<:AbstractStrategyParameter};
     mode::Symbol=:strict,
