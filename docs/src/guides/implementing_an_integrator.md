@@ -39,14 +39,18 @@ using CTBase: CTBase
 nothing # hide
 ```
 
-Without the extension loaded, constructing an integrator throws `ExtensionError`:
+Without the extension loaded, constructing an integrator throws `ExtensionError`. Loading `OrdinaryDiffEqTsit5` activates the extension and provides `Tsit5()` as the default algorithm:
 
-```@repl integrator
-try # hide
+```@example integrator
+using OrdinaryDiffEqTsit5
 CTSolvers.Integrators.SciML()
-catch e # hide
-showerror(IOContext(stdout, :color => false), e) # hide
-end # hide
+```
+
+To use a different algorithm, load the corresponding backend package and pass it via `alg`:
+
+```@example integrator
+using OrdinaryDiffEqVerner
+CTSolvers.Integrators.SciML(; alg = Vern6())
 ```
 
 ## The Integration Result
