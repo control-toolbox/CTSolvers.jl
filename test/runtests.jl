@@ -30,6 +30,20 @@ else
     println("⚠️  CUDA not functional, GPU tests will be skipped")
 end
 
+# Capability constants computed once, here, where a top-level `using` is guaranteed to bind
+# into Main. Test files must read Main.TestCapabilities.* instead of `isdefined(Main, :X)`
+# checks: `using X` inside a suite/*/test_*.jl file's own module binds X into that submodule,
+# not into Main, so such checks are always false regardless of what is actually loaded.
+module TestCapabilities
+using CUDA: CUDA
+using CUDSS: CUDSS          # with CUDA, arms MadNLPGPUCUDAExt
+using MadNLPGPU: MadNLPGPU
+
+const CUDA_FUNCTIONAL = CUDA.functional()
+const GPU_SOLVER_ARMED = MadNLPGPU.CUDSSSolver isa Type
+const GPU_SOLVER = GPU_SOLVER_ARMED ? MadNLPGPU.CUDSSSolver : nothing
+end
+
 # Run tests using the TestRunner extension
 CTBase.run_tests(;
     args=String.(ARGS),
