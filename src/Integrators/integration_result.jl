@@ -98,6 +98,10 @@ $(TYPEDSIGNATURES)
 
 Return the termination status of the integration result, as a `Symbol`.
 
+This generic is owned by `CTModels.Solutions`; `CTSolvers.Integrators` contributes the
+methods for `AbstractIntegrationResult` subtypes so that a single `status` works uniformly
+on OCP solutions and on integration results.
+
 # Arguments
 - `r::AbstractIntegrationResult`: The integration result.
 
@@ -106,7 +110,7 @@ Return the termination status of the integration result, as a `Symbol`.
 
 See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTSolvers.Integrators.successful`](@ref).
 """
-function status(r::AbstractIntegrationResult)::Symbol
+function Solutions.status(r::AbstractIntegrationResult)::Symbol
     return throw(
         Exceptions.NotImplemented(
             "status not implemented";
@@ -122,6 +126,10 @@ $(TYPEDSIGNATURES)
 
 Return whether the integration terminated successfully.
 
+This generic is owned by `CTModels.Solutions`; `CTSolvers.Integrators` contributes the
+methods for `AbstractIntegrationResult` subtypes so that a single `successful` works
+uniformly on OCP solutions and on integration results.
+
 # Arguments
 - `r::AbstractIntegrationResult`: The integration result.
 
@@ -130,7 +138,7 @@ Return whether the integration terminated successfully.
 
 See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTSolvers.Integrators.status`](@ref).
 """
-function successful(r::AbstractIntegrationResult)::Bool
+function Solutions.successful(r::AbstractIntegrationResult)::Bool
     return throw(
         Exceptions.NotImplemented(
             "successful not implemented";

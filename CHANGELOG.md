@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.33-beta] - 2026-07-28
+
+### Changed
+
+- **`Integrators.status`/`Integrators.successful` are now `CTModels.Solutions` generics** —
+  CTSolvers no longer owns these two generic functions; it adds methods for
+  `AbstractIntegrationResult` (and, via the SciML extension, `SciMLIntegrationResult`) to the
+  generics already owned by `CTModels.Solutions`. This lets a single `status`/`successful`
+  work uniformly on an OCP solution and on an integration result. **Non-breaking**: every
+  existing call site keeps working; only `parentmodule(Integrators.status)` changes, and
+  importing both `CTSolvers.Integrators: status` and `CTModels.Solutions: status` into the
+  same module now succeeds instead of erroring.
+
+---
+
 ## [0.4.32-beta] - 2026-07-22
 
 ### Changed

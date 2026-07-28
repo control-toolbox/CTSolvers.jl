@@ -37,6 +37,8 @@ import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES, TYPEDFIELDS
 using CommonSolve: CommonSolve
 import CTBase.Exceptions
 import CTBase.Core
+import CTModels.Solutions
+import CTModels.Solutions: status, successful
 
 # CTBase generic infrastructure
 using CTBase.Strategies

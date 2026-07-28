@@ -5,6 +5,8 @@ import CTBase.Core
 import CTBase.Exceptions
 import CTBase.Strategies
 import CTSolvers.Integrators
+import CTModels.Solutions
+import CTModels.Components
 using CommonSolve: CommonSolve
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
@@ -90,6 +92,16 @@ function test_integrator_stubs()
             )
             Test.@test_throws Exceptions.NotImplemented Integrators.status(FakeResult())
             Test.@test_throws Exceptions.NotImplemented Integrators.successful(FakeResult())
+        end
+
+        # ====================================================================
+        # status/successful are CTModels.Solutions generics, not CTSolvers ones
+        # ====================================================================
+
+        Test.@testset "status/successful unified with CTModels.Solutions" begin
+            Test.@test Integrators.status === Solutions.status
+            Test.@test Integrators.successful === Solutions.successful
+            Test.@test Integrators.times !== Components.times
         end
     end
 end
