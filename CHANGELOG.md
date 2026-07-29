@@ -8,6 +8,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.34-beta] - 2026-07-29
+
+### Fixed
+
+- **`CTSolversMadNLPGPU` extension: dispatch freeze on `Type{MadNLPGPU.CUDSSSolver}`** —
+  two `__madnlp_suite_consistent_linear_solver` methods dispatched on
+  `Type{MadNLPGPU.CUDSSSolver}`, a value baked in at the extension's precompile time.
+  Since Julia does not guarantee `MadNLPGPUCUDAExt` (which arms `CUDSSSolver`)
+  precompiles before this sibling extension, the signature could freeze against
+  `Type{nothing}` and silently stop matching for the rest of the session. Both methods
+  now dispatch on an unbounded `linear_solver::Type` and compare
+  `=== MadNLPGPU.CUDSSSolver` at call time.
+
+### Added
+
+- **`CUDSS` as a weak dependency** — `CUDSS` is now in `[weakdeps]`, `[compat]`,
+  `[extras]`, and `[targets]`. The `CTSolversMadNLPGPU` extension now triggers on
+  `["MadNLPGPU", "CUDA", "CUDSS"]` instead of just `"MadNLPGPU"`, ensuring CUDSS is
+  loaded when the GPU solver extension is armed.
+- **Test-environment contract** — new `Main.TestCapabilities` module (computed once in
+  `test/runtests.jl`) that all suite files read instead of `isdefined(Main, ...)`
+  checks. New test file `test/suite/environment/test_environment_contract.jl` asserts
+  the GPU solver extension is armed on every runner and requires `CUDA.functional()` on
+  the self-hosted kkt runner. A meta-test guards against the `isdefined(Main, ...)`
+  anti-pattern returning elsewhere in the suite.
+
+### Changed
+
+- **GPU test assertions are now non-vacuous** — `test_madnlp_gpu_linear_solver.jl`'s
+  `isdefined(Main, :MadNLPGPU)` guards were always false (MadNLPGPU is only `using`'d
+  inside the test's own submodule, never leaking into `Main`), and unguarded
+  `== MadNLPGPU.CUDSSSolver` comparisons passed vacuously as `nothing == nothing`.
+  ~100 lines of GPU assertions never ran on any runner. All guards now use
+  `TestCapabilities` and a non-vacuous `isa` Type assertion precedes every
+  `== CUDSSSolver` comparison.
+
+### Removed
+
+- **`test/README.md`** — deleted (150-line internal test README, no longer needed).
+
+---
+
 ## [0.4.33-beta] - 2026-07-28
 
 ### Changed

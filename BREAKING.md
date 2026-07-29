@@ -5,6 +5,124 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.4.34-beta (2026-07-29)
+
+**No breaking changes.**
+
+This release fixes a dispatch freeze bug in the `CTSolversMadNLPGPU` extension, adds
+`CUDSS` as a weak dependency for the GPU solver extension, and makes GPU test assertions
+non-vacuous with a new test-environment contract.
+
+### Summary - v0.4.34-beta
+
+- `__madnlp_suite_consistent_linear_solver` methods in `CTSolversMadNLPGPU.jl` now
+  dispatch on unbounded `linear_solver::Type` with runtime `=== MadNLPGPU.CUDSSSolver`
+  comparison (was `Type{MadNLPGPU.CUDSSSolver}` in the dispatch signature, which could
+  freeze against `Type{nothing}` at precompile time)
+- `CUDSS` added to `[weakdeps]`, `[compat]`, `[extras]`, `[targets]`; the
+  `CTSolversMadNLPGPU` extension now triggers on `["MadNLPGPU", "CUDA", "CUDSS"]`
+- New `Main.TestCapabilities` module and `test/suite/environment/test_environment_contract.jl`
+- GPU test assertions in `test_madnlp_gpu_linear_solver.jl` fixed to be non-vacuous
+- `test/README.md` removed
+
+### Migration - v0.4.34-beta
+
+**No action required.** All existing code continues to work without changes.
+
+---
+
+## v0.4.33-beta (2026-07-28)
+
+**No breaking changes.**
+
+`Integrators.status`/`Integrators.successful` are now `CTModels.Solutions` generics.
+CTSolvers adds methods for `AbstractIntegrationResult` (and `SciMLIntegrationResult` via
+the SciML extension) to the generics already owned by `CTModels.Solutions`.
+
+### Summary - v0.4.33-beta
+
+- `Integrators.status` and `Integrators.successful` moved to `CTModels.Solutions` ownership
+- Methods added for `AbstractIntegrationResult` and `SciMLIntegrationResult`
+
+### Migration - v0.4.33-beta
+
+**No action required.** Every existing call site keeps working; importing both
+`CTSolvers.Integrators: status` and `CTModels.Solutions: status` into the same module
+now succeeds instead of erroring.
+
+---
+
+## v0.4.32-beta (2026-07-22)
+
+**Breaking change:** Internal builder stubs renamed with `_` prefix.
+
+All `build_*_solver`, `build_*_modeler`, and `build_sciml_integrator` functions are
+renamed to `_build_*_solver`, `_build_*_modeler`, and `_build_sciml_integrator`
+respectively, following the Handbook convention for unexported internal functions.
+`build_sciml_integrator` is also removed from `Integrators` exports.
+
+### Summary - v0.4.32-beta
+
+- `build_*_solver` → `_build_*_solver`
+- `build_*_modeler` → `_build_*_modeler`
+- `build_sciml_integrator` → `_build_sciml_integrator`
+- `build_sciml_integrator` removed from `Integrators` exports
+
+### Breaking Changes - v0.4.32-beta
+
+#### 1. Internal builder stubs renamed
+
+**Before:**
+
+```julia
+Integrators.build_sciml_integrator(...)
+```
+
+**After:**
+
+```julia
+Integrators._build_sciml_integrator(...)
+```
+
+### Migration - v0.4.32-beta
+
+Use the public constructors (`SciML(...)`, `ADNLP(...)`, `Ipopt(...)`, etc.) instead of
+the internal `build_*` stubs.
+
+---
+
+## v0.4.31-beta (2026-07-22)
+
+**Breaking change:** `Integrators.build_integrator` removed.
+
+The convenience wrapper that delegated to `SciML(; kwargs...)` is removed.
+
+### Summary - v0.4.31-beta
+
+- `Integrators.build_integrator` deleted
+
+### Breaking Changes - v0.4.31-beta
+
+#### 1. `build_integrator` removed
+
+**Before:**
+
+```julia
+Integrators.build_integrator(...)
+```
+
+**After:**
+
+```julia
+Integrators.SciML(...)
+```
+
+### Migration - v0.4.31-beta
+
+Replace any call to `Integrators.build_integrator(...)` with `Integrators.SciML(...)`.
+
+---
+
 ## v0.4.30-beta (2026-07-19)
 
 **No breaking changes.**
