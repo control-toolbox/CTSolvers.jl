@@ -41,9 +41,5 @@ jobs:
       runs_on: '[["kkt"]]'
       runner_type: 'self-hosted'
       use_ct_registry: true
-      # TEMPORARY, for this PR's verification only (control-toolbox/CTSolvers.jl#189):
-      # scope the GPU runner to the suites touched by the fix instead of the full suite.
-      # Remove this line (back to full suite) once the GPU run is confirmed green.
-      test_args: 'suite/environment suite/strategies suite/extensions'
     secrets:
       SSH_KEY: ${{ secrets.SSH_KEY }}
