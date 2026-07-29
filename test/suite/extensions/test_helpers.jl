@@ -64,15 +64,15 @@ function test_helpers()
         # ====================================================================
 
         Test.@testset "MadNCL default linear solver - GPU" begin
-            # This should throw ExtensionError if MadNLPGPU is not loaded
-            if !isdefined(Main, :MadNLPGPU)
+            # This should throw ExtensionError if the GPU solver extension is not armed
+            if !Main.TestCapabilities.GPU_SOLVER_ARMED
                 Test.@test_throws Exceptions.ExtensionError Solvers.__madnlp_suite_default_linear_solver(
                     GPU
                 )
             else
-                # If MadNLPGPU is loaded, should return CUDSSSolver
+                # If armed, should return CUDSSSolver
                 solver_type = Solvers.__madnlp_suite_default_linear_solver(GPU)
-                Test.@test solver_type === Main.MadNLPGPU.CUDSSSolver
+                Test.@test solver_type === Main.TestCapabilities.GPU_SOLVER
             end
         end
 
@@ -90,15 +90,15 @@ function test_helpers()
         # ====================================================================
 
         Test.@testset "MadNLP default linear solver - GPU" begin
-            # This should throw ExtensionError if MadNLPGPU is not loaded
-            if !isdefined(Main, :MadNLPGPU)
+            # This should throw ExtensionError if the GPU solver extension is not armed
+            if !Main.TestCapabilities.GPU_SOLVER_ARMED
                 Test.@test_throws Exceptions.ExtensionError Solvers.__madnlp_suite_default_linear_solver(
                     GPU
                 )
             else
-                # If MadNLPGPU is loaded, should return CUDSSSolver
+                # If armed, should return CUDSSSolver
                 solver_type = Solvers.__madnlp_suite_default_linear_solver(GPU)
-                Test.@test solver_type === Main.MadNLPGPU.CUDSSSolver
+                Test.@test solver_type === Main.TestCapabilities.GPU_SOLVER
             end
         end
 

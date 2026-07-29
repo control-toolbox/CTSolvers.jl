@@ -12,6 +12,7 @@ import CTSolvers.Modelers
 import CTSolvers.Optimization
 using CommonSolve: CommonSolve
 using CUDA: CUDA
+using CUDSS: CUDSS
 using NLPModels: NLPModels
 using ADNLPModels: ADNLPModels
 using MadNCL: MadNCL
