@@ -16,7 +16,7 @@ Subtypes must implement:
 - `status(r::SubType)`: Return the termination status as a `Symbol`.
 - `successful(r::SubType)`: Return whether the integration succeeded.
 
-See also: [`CTSolvers.Integrators.final_state`](@ref), [`CTSolvers.Integrators.times`](@ref), [`CTSolvers.Integrators.evaluate_at`](@ref), [`CTSolvers.Integrators.status`](@ref), [`CTSolvers.Integrators.successful`](@ref).
+See also: [`CTSolvers.Integrators.final_state`](@ref), [`CTSolvers.Integrators.times`](@ref), [`CTSolvers.Integrators.evaluate_at`](@ref), [`CTModels.Solutions.status`](@extref), [`CTModels.Solutions.successful`](@extref).
 """
 abstract type AbstractIntegrationResult end
 
@@ -108,7 +108,7 @@ on OCP solutions and on integration results.
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): If not implemented by the concrete type.
 
-See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTSolvers.Integrators.successful`](@ref).
+See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTModels.Solutions.successful`](@extref).
 """
 function Solutions.status(r::AbstractIntegrationResult)::Symbol
     return throw(
@@ -136,7 +136,7 @@ uniformly on OCP solutions and on integration results.
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): If not implemented by the concrete type.
 
-See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTSolvers.Integrators.status`](@ref).
+See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTModels.Solutions.status`](@extref).
 """
 function Solutions.successful(r::AbstractIntegrationResult)::Bool
     return throw(

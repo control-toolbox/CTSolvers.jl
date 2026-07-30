@@ -42,7 +42,16 @@ using CTModels: Solutions
 # `Integrators.status`/`Integrators.successful` are aliases onto the CTModels.Solutions
 # generics (same Function objects), so extending `Integrators.status` and calling it
 # unqualified both act on `Solutions.status` — see BREAKING.md.
+"""
+Alias for [`CTModels.Solutions.status`](@extref) — same `Function` object, so
+`Integrators.status === CTModels.Solutions.status`, and extending either extends both.
+"""
 const status = Solutions.status
+
+"""
+Alias for [`CTModels.Solutions.successful`](@extref) — same `Function` object, so
+`Integrators.successful === CTModels.Solutions.successful`, and extending either extends both.
+"""
 const successful = Solutions.successful
 
 # CTBase generic infrastructure
