@@ -11,7 +11,7 @@ CTSolvers.jl is typically installed as a dependency of another package in the ec
 To install it directly:
 
 ```julia
-import Pkg
+using Pkg: Pkg
 Pkg.add("CTSolvers")
 ```
 

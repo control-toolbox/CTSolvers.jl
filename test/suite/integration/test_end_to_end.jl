@@ -7,16 +7,16 @@ using ExaModels: ExaModels
 using MadNLP: MadNLP
 
 include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
-import .TestProblems
+using .TestProblems: TestProblems
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 # Import modules
-import CTSolvers.Modelers
-import CTSolvers.Optimization
-import CTSolvers.Solvers
-import CTSolvers.DOCP
+using CTSolvers: Modelers
+using CTSolvers: Optimization
+using CTSolvers: Solvers
+using CTSolvers: DOCP
 
 # ============================================================================
 # TEST FUNCTION

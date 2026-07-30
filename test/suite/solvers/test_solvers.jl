@@ -1,15 +1,13 @@
 module TestSolvers
 
 using Test: Test
-import CTBase.Exceptions
+using CTBase: Exceptions
 using CTSolvers: CTSolvers
-import CTSolvers.Solvers
-import CTBase.Strategies
-using CTSolvers.Solvers  # For testing exported symbols
+using CTSolvers: Solvers
+using CTBase: Strategies
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
-const CurrentModule = TestSolvers
 
 """
     test_solvers()
@@ -37,10 +35,11 @@ function test_solvers()
 
             # Test exported abstract types
             Test.@testset "Exported Abstract Types" begin
-                for T in (AbstractNLPSolver,)
-                    Test.@testset "$(nameof(T))" begin
-                        Test.@test isdefined(Solvers, nameof(T))
-                        Test.@test isdefined(CurrentModule, nameof(T))
+                for name in (:AbstractNLPSolver,)
+                    Test.@testset "$name" begin
+                        Test.@test isdefined(Solvers, name)
+                        Test.@test name in names(Solvers)
+                        T = getfield(Solvers, name)
                         Test.@test T isa DataType || T isa UnionAll
                     end
                 end
@@ -48,10 +47,11 @@ function test_solvers()
 
             # Test exported concrete types
             Test.@testset "Exported Concrete Types" begin
-                for T in (Ipopt, MadNLP, MadNCL, Knitro, Uno)
-                    Test.@testset "$(nameof(T))" begin
-                        Test.@test isdefined(Solvers, nameof(T))
-                        Test.@test isdefined(CurrentModule, nameof(T))
+                for name in (:Ipopt, :MadNLP, :MadNCL, :Knitro, :Uno)
+                    Test.@testset "$name" begin
+                        Test.@test isdefined(Solvers, name)
+                        Test.@test name in names(Solvers)
+                        T = getfield(Solvers, name)
                         Test.@test T isa DataType || T isa UnionAll
                     end
                 end
@@ -65,7 +65,7 @@ function test_solvers()
                 )
                     Test.@testset "$f" begin
                         Test.@test isdefined(Solvers, f)
-                        Test.@test !isdefined(CurrentModule, f)
+                        Test.@test !(f in names(Solvers))
                     end
                 end
             end

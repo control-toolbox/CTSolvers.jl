@@ -1041,9 +1041,9 @@ adnlp = ADNLP{CPU}(backend=:enzyme)  # now works reliably
 # Use the new extension pattern
 module CTSolversMyBackend
 using CTSolvers
-import CTSolvers.Modelers: validate_adnlp_backend, ADNLPTag
+using CTSolvers: Modelers
 
-function validate_adnlp_backend(::Val{:mybackend})
+function Modelers.validate_adnlp_backend(::Val{:mybackend})
     # Your validation logic here
     return true
 end

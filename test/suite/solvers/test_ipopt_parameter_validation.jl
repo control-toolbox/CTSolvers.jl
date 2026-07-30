@@ -2,9 +2,9 @@ module TestIpoptParameterValidation
 
 using Test
 using CTSolvers
-using CTSolvers.Solvers
-using CTBase.Strategies
-using CTBase.Exceptions
+using CTSolvers: Solvers
+using CTBase: Strategies
+using CTBase: Exceptions
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
@@ -13,7 +13,7 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 # Fake parameter type for testing (must be at module top-level)
 # ============================================================================
 
-struct FakeParam <: AbstractStrategyParameter end
+struct FakeParam <: Strategies.AbstractStrategyParameter end
 Strategies.id(::Type{FakeParam}) = :fake
 
 # ============================================================================
@@ -34,8 +34,8 @@ function test_ipopt_parameter_validation()
 
         Test.@testset "Ipopt structure" begin
             # Test that Ipopt is parameterized
-            Test.@test Solvers.Ipopt <: AbstractNLPSolver
-            Test.@test Solvers.Ipopt{Strategies.CPU} <: AbstractNLPSolver
+            Test.@test Solvers.Ipopt <: Solvers.AbstractNLPSolver
+            Test.@test Solvers.Ipopt{Strategies.CPU} <: Solvers.AbstractNLPSolver
         end
 
         Test.@testset "id() with parameters" begin

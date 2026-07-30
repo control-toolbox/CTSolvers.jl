@@ -143,16 +143,16 @@ Validate that the specified base type is appropriate for ExaModels.
 
 # Examples
 ```julia-repl
-julia> using CTSolvers.Modelers
+julia> using CTSolvers: Modelers
 
-julia> validate_exa_base_type(Float64)
+julia> Modelers.validate_exa_base_type(Float64)
 Float64
 
-julia> validate_exa_base_type(Float32)
+julia> Modelers.validate_exa_base_type(Float32)
 Float32
 
 # Throws IncorrectArgument for invalid types
-julia> validate_exa_base_type(Int)
+julia> Modelers.validate_exa_base_type(Int)
 ERROR: Control Toolbox Error
 ❌ Error: CTBase.Exceptions.IncorrectArgument, Invalid base type for Modelers.Exa
 ```

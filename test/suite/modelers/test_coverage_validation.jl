@@ -1,9 +1,9 @@
 module TestCoverageValidation
 
 using Test: Test
-import CTBase.Core
-import CTBase.Exceptions
-import CTSolvers.Modelers
+using CTBase: Core
+using CTBase: Exceptions
+using CTSolvers: Modelers
 using ADNLPModels: ADNLPModels
 
 # Fake ADBackend for testing (must be at top-level)

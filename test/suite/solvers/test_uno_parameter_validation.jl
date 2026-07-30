@@ -2,9 +2,9 @@ module TestUnoParameterValidation
 
 using Test
 using CTSolvers
-using CTSolvers.Solvers
-using CTBase.Strategies
-using CTBase.Exceptions
+using CTSolvers: Solvers
+using CTBase: Strategies
+using CTBase: Exceptions
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
@@ -13,7 +13,7 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 # Fake parameter type for testing (must be at module top-level)
 # ============================================================================
 
-struct FakeParam <: AbstractStrategyParameter end
+struct FakeParam <: Strategies.AbstractStrategyParameter end
 Strategies.id(::Type{FakeParam}) = :fake
 
 # ============================================================================
@@ -36,8 +36,8 @@ function test_uno_parameter_validation()
 
         Test.@testset "Uno structure" begin
             # Test that Uno is parameterized
-            Test.@test Solvers.Uno <: AbstractNLPSolver
-            Test.@test Solvers.Uno{Strategies.CPU} <: AbstractNLPSolver
+            Test.@test Solvers.Uno <: Solvers.AbstractNLPSolver
+            Test.@test Solvers.Uno{Strategies.CPU} <: Solvers.AbstractNLPSolver
         end
 
         Test.@testset "id() with parameters" begin

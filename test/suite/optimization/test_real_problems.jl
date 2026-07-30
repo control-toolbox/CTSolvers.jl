@@ -6,14 +6,14 @@ using ADNLPModels: ADNLPModels
 using ExaModels: ExaModels
 
 include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
-import .TestProblems
+using .TestProblems: TestProblems
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 # Import from CTSolvers
-import CTSolvers.Optimization
-import CTSolvers.Modelers
+using CTSolvers: Optimization
+using CTSolvers: Modelers
 
 # ============================================================================
 # TEST FUNCTION

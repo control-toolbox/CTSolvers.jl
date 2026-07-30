@@ -7,11 +7,11 @@ ensuring unknown options are rejected with helpful error messages.
 module TestValidationStrict
 
 using Test: Test
-import CTBase.Strategies
-import CTSolvers.Solvers
-import CTBase.Options
+using CTBase: Strategies
+using CTSolvers: Solvers
+using CTBase: Options
 using NLPModelsIpopt: NLPModelsIpopt
-import CTBase.Exceptions
+using CTBase: Exceptions
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

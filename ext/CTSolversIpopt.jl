@@ -6,19 +6,16 @@ Implements the complete Solvers.Ipopt functionality with proper option definitio
 """
 module CTSolversIpopt
 
-import DocStringExtensions: TYPEDSIGNATURES
-import CTSolvers.Solvers
+using DocStringExtensions: TYPEDSIGNATURES
+using CTSolvers: Solvers
 using CommonSolve: CommonSolve
-import CTBase.Strategies
-import CTBase.Options
-import CTBase.Core
-import CTBase.Exceptions
+using CTBase: Strategies
+using CTBase: Options
+using CTBase: Core
+using CTBase: Exceptions
 using NLPModelsIpopt: NLPModelsIpopt
 using NLPModels: NLPModels
 using SolverCore: SolverCore
-
-# Import parameter types
-using CTBase.Strategies: CPU, GPU, AbstractStrategyParameter
 
 # ============================================================================
 # Metadata definition
@@ -29,7 +26,7 @@ $(TYPEDSIGNATURES)
 
 Return metadata defining Ipopt options and their specifications.
 """
-function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU}
+function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:Strategies.CPU}
     return Strategies.StrategyMetadata(
         # ====================================================================
         # Termination options
@@ -568,7 +565,7 @@ See also: `Solvers.Ipopt`, `Strategies.build_strategy_options`
 """
 function Solvers._build_ipopt_solver(
     ::Type{Solvers.IpoptTag},
-    parameter::Type{<:AbstractStrategyParameter};
+    parameter::Type{<:Strategies.AbstractStrategyParameter};
     mode::Symbol=:strict,
     kwargs...,
 )

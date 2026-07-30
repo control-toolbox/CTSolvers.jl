@@ -1,8 +1,8 @@
 module TestIntegratorSolve
 
 using Test: Test
-import CTBase.Exceptions
-import CTSolvers.Integrators
+using CTBase: Exceptions
+using CTSolvers: Integrators
 using CommonSolve: CommonSolve
 using OrdinaryDiffEqTsit5: OrdinaryDiffEqTsit5, Tsit5
 using SciMLBase: SciMLBase, ODEProblem

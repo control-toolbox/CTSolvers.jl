@@ -19,13 +19,13 @@ The domain glue that turns a control system/config into an `ODEProblem` (`build_
 """
 module CTSolversSciMLIntegrator
 
-import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+using DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 using CommonSolve: CommonSolve
-import CTBase.Exceptions
-import CTBase.Strategies
-import CTBase.Core
+using CTBase: Exceptions
+using CTBase: Strategies
+using CTBase: Core
 
-using CTSolvers.Integrators: Integrators
+using CTSolvers: Integrators
 using DiffEqBase: DiffEqBase
 using SciMLBase: SciMLBase
 
@@ -62,9 +62,10 @@ Return metadata defining `Integrators.SciML{P}` options and their specifications
 The `internalnorm` option defaults to `real_norm`, which extracts the primal (Float64)
 part of ForwardDiff dual numbers to ensure grid invariance (IND) when ForwardDiff is loaded.
 
-The metadata is specialized on the execution device `P` (`CPU`/`GPU`); the option set is
-currently identical for both — `P` marks the seam where GPU-specific defaults/validators land
-as they are discovered. The bare `metadata(SciML)` (core) delegates here through `SciML{CPU}`.
+The metadata is specialized on the execution device `P` (`Strategies.CPU`/`Strategies.GPU`);
+the option set is currently identical for both — `P` marks the seam where GPU-specific
+defaults/validators land as they are discovered. The bare `metadata(SciML)` (core) delegates
+here through `SciML{Strategies.CPU}`.
 """
 function Strategies.metadata(
     ::Type{Integrators.SciML{P}}
@@ -303,7 +304,8 @@ cached dictionaries `options_point` (`:auto` → `false`) and `options_trajector
 
 # Arguments
 - `::Type{Integrators.SciMLTag}`: The SciML integrator tag type.
-- `::Type{P}`: The execution device parameter (`CPU`/`GPU`); threaded into the built `SciML{P}`.
+- `::Type{P}`: The execution device parameter (`Strategies.CPU`/`Strategies.GPU`); threaded
+  into the built `SciML{P}`.
 - `mode::Symbol`: Validation mode for strategy options (`:strict` or `:permissive`).
 - `kwargs...`: User-provided option values. Explicit `true`/`false` override `:auto` resolution.
 

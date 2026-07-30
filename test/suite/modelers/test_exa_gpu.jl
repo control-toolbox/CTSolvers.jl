@@ -1,11 +1,11 @@
 module TestExaGPU
 
 using Test: Test
-import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
-import CTBase.Exceptions
-import CTSolvers.Modelers
-import CTBase.Strategies
-import CTBase.Options
+using ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+using CTBase: Exceptions
+using CTSolvers: Modelers
+using CTBase: Strategies
+using CTBase: Options
 using ExaModels: ExaModels
 using KernelAbstractions: KernelAbstractions
 using CUDA: CUDA

@@ -1,14 +1,14 @@
 module TestMadNLPExtension
 
 using Test: Test
-import CTBase.Exceptions
+using CTBase: Exceptions
 using CTSolvers: CTSolvers
-import CTSolvers.Solvers
-import CTBase.Strategies
-import CTBase.Options
-import CTBase.Core
-import CTSolvers.Modelers
-import CTSolvers.Optimization
+using CTSolvers: Solvers
+using CTBase: Strategies
+using CTBase: Options
+using CTBase: Core
+using CTSolvers: Modelers
+using CTSolvers: Optimization
 using CommonSolve: CommonSolve
 using CUDA: CUDA
 using CUDSS: CUDSS
@@ -19,7 +19,7 @@ using ExaModels: ExaModels
 using MadNLPGPU: MadNLPGPU
 
 include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
-import .TestProblems
+using .TestProblems: TestProblems
 
 # Trigger extension loading
 const CTSolversMadNLP = Base.get_extension(CTSolvers, :CTSolversMadNLP)

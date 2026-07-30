@@ -1,9 +1,9 @@
 module TestTypeStability
 
 using Test: Test
-import CTSolvers.Solvers
-import CTBase.Strategies
-import CTBase.Options
+using CTSolvers: Solvers
+using CTBase: Strategies
+using CTBase: Options
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true

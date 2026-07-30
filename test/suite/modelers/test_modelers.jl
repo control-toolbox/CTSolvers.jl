@@ -2,16 +2,14 @@ module TestModelers
 
 using Test: Test
 using CTSolvers: CTSolvers
-import CTSolvers.Modelers
-import CTBase.Strategies
+using CTSolvers: Modelers
+using CTBase: Strategies
 using ADNLPModels: ADNLPModels
 using ExaModels: ExaModels
 using SolverCore: SolverCore
-using CTSolvers.Modelers  # For testing exported symbols
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
-const CurrentModule = TestModelers
 
 """
     test_modelers_basic()
@@ -30,10 +28,11 @@ function test_modelers_basic()
 
             # Test exported types
             Test.@testset "Exported Types" begin
-                for T in (AbstractNLPModeler, ADNLP, Exa)
-                    Test.@testset "$(nameof(T))" begin
-                        Test.@test isdefined(Modelers, nameof(T))
-                        Test.@test isdefined(CurrentModule, nameof(T))
+                for name in (:AbstractNLPModeler, :ADNLP, :Exa)
+                    Test.@testset "$name" begin
+                        Test.@test isdefined(Modelers, name)
+                        Test.@test name in names(Modelers)
+                        T = getfield(Modelers, name)
                         Test.@test T isa DataType || T isa UnionAll
                     end
                 end
@@ -54,7 +53,7 @@ function test_modelers_basic()
                 )
                     Test.@testset "$f" begin
                         Test.@test isdefined(Modelers, f)
-                        Test.@test !isdefined(CurrentModule, f)
+                        Test.@test !(f in names(Modelers))
                     end
                 end
             end

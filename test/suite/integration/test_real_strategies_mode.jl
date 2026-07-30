@@ -7,13 +7,13 @@ Tests that the mode parameter works correctly with actual solver and modeler typ
 module TestRealStrategiesMode
 
 using Test: Test
-import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
 using CTSolvers: CTSolvers
-import CTBase.Strategies
-import CTBase.Options
-import CTSolvers.Modelers
-import CTSolvers.Solvers
+using CTBase: Strategies
+using CTBase: Options
+using CTSolvers: Modelers
+using CTSolvers: Solvers
 
 # Load extensions if available for testing
 try

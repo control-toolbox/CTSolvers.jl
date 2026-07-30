@@ -25,7 +25,7 @@ global convergence properties.
 ## Parameterized Types
 
 The solver supports parameterization for execution backend:
-- `Ipopt{CPU}`: CPU execution (default and only supported parameter)
+- `Ipopt{Strategies.CPU}`: CPU execution (default and only supported parameter)
 
 **Note:** Unlike `MadNLP` and `MadNCL`, this solver only supports CPU execution.
 GPU execution is not available for Ipopt.
@@ -37,7 +37,7 @@ GPU execution is not available for Ipopt.
 Solvers.Ipopt(; mode::Symbol=:strict, kwargs...)
 
 # Explicit parameter specification (only CPU supported)
-Solvers.Ipopt{CPU}(; mode::Symbol=:strict, kwargs...)
+Solvers.Ipopt{Strategies.CPU}(; mode::Symbol=:strict, kwargs...)
 ```
 
 # Fields
@@ -73,7 +73,7 @@ using NLPModelsIpopt
 solver = Ipopt(max_iter=1000, tol=1e-6, print_level=3)
 
 # Explicit CPU specification
-solver_cpu = Ipopt{CPU}(max_iter=1000, tol=1e-6)
+solver_cpu = Ipopt{Strategies.CPU}(max_iter=1000, tol=1e-6)
 
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
 stats = solver(nlp, display=true)
@@ -82,7 +82,7 @@ stats = solver(nlp, display=true)
 ## Invalid Usage
 ```julia
 # GPU is NOT supported - will throw IncorrectArgument
-solver = Ipopt{GPU}()  # ❌ Error!
+solver = Ipopt{Strategies.GPU}()  # ❌ Error!
 ```
 
 # Extension Required
@@ -104,9 +104,9 @@ using NLPModelsIpopt
 - `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
 
-See also: `CPU`, `AbstractNLPSolver`, `MadNLP`, `Knitro`
+See also: `Strategies.CPU`, `AbstractNLPSolver`, `MadNLP`, `Knitro`
 """
-struct Ipopt{P<:CPU} <: AbstractNLPSolver
+struct Ipopt{P<:Strategies.CPU} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -137,31 +137,31 @@ $(TYPEDSIGNATURES)
 
 Default parameter type for Ipopt when not explicitly specified.
 
-Returns `CPU` as the default execution parameter.
+Returns `Strategies.CPU` as the default execution parameter.
 
 # Implementation Notes
 
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: `Ipopt`, `CPU`
+See also: `Ipopt`, `Strategies.CPU`
 """
-Strategies.default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+Strategies.default_parameter(::Type{<:Solvers.Ipopt}) = Strategies.CPU
 
 """
 $(TYPEDSIGNATURES)
 
 Return the execution parameter type of an `Ipopt` strategy.
 
-Extracts the type parameter `P` from `Ipopt{P}`, which is always `CPU` since
+Extracts the type parameter `P` from `Ipopt{P}`, which is always `Strategies.CPU` since
 Ipopt is CPU-only.
 
 # Returns
-- `Type{CPU}`: the execution parameter type.
+- `Type{Strategies.CPU}`: the execution parameter type.
 
 See also: [`CTSolvers.Solvers.Ipopt`](@ref), [`CTBase.Strategies.CPU`](@extref)
 """
-Strategies.parameter(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU} = P
+Strategies.parameter(::Type{<:Solvers.Ipopt{P}}) where {P<:Strategies.CPU} = P
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -217,16 +217,16 @@ Requires the CTSolversIpopt extension to be loaded.
 ```julia
 # Conceptual usage (requires NLPModelsIpopt extension)
 using NLPModelsIpopt
-solver_cpu = Solvers.Ipopt{CPU}(max_iter=1000, tol=1e-6)
+solver_cpu = Solvers.Ipopt{Strategies.CPU}(max_iter=1000, tol=1e-6)
 ```
 
 # Throws
 - `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
 
-See also: `Ipopt`, `CPU`
+See also: `Ipopt`, `Strategies.CPU`
 """
-function Solvers.Ipopt{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
+function Solvers.Ipopt{P}(; mode::Symbol=:strict, kwargs...) where {P<:Strategies.CPU}
     return _build_ipopt_solver(IpoptTag, P; mode=mode, kwargs...)
 end
 
@@ -242,7 +242,7 @@ Real implementation provided by the extension.
 See also: `Ipopt`, `Strategies.metadata`
 """
 function _build_ipopt_solver(
-    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:Strategies.AbstractStrategyParameter}; kwargs...
 )
     return throw(
         Exceptions.ExtensionError(
@@ -260,14 +260,14 @@ $(TYPEDSIGNATURES)
 Stub function that throws ExtensionError if CTSolversIpopt extension is not loaded.
 Real metadata implementation provided by the extension.
 
-This stub is for parameterized types `Ipopt{P}` where `P <: AbstractStrategyParameter`.
+This stub is for parameterized types `Ipopt{P}` where `P <: Strategies.AbstractStrategyParameter`.
 
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
 
 See also: `Ipopt`, `Strategies.StrategyMetadata`
 """
-function Strategies.metadata(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU}
+function Strategies.metadata(::Type{<:Solvers.Ipopt{P}}) where {P<:Strategies.CPU}
     # Extension is missing
     return throw(
         Exceptions.ExtensionError(
@@ -282,15 +282,15 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Fallback for non-parameterized `Ipopt` type that delegates to `Ipopt{CPU}`.
+Fallback for non-parameterized `Ipopt` type that delegates to `Ipopt{Strategies.CPU}`.
 
 This provides backward compatibility and a sensible default when the parameter
-is not specified. The call will delegate to `metadata(Ipopt{CPU})`, which will
+is not specified. The call will delegate to `metadata(Ipopt{Strategies.CPU})`, which will
 either use the extension implementation (if loaded) or throw an ExtensionError
 (if not loaded).
 
 # Returns
-- `StrategyMetadata`: Metadata for `Ipopt{CPU}` (if extension loaded)
+- `StrategyMetadata`: Metadata for `Ipopt{Strategies.CPU}` (if extension loaded)
 
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If extension not loaded (via delegation)

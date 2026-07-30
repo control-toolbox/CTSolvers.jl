@@ -7,14 +7,12 @@ functionality that requires ExaModels/KernelAbstractions types.
 """
 module CTSolversExaModels
 
-import DocStringExtensions: TYPEDSIGNATURES
-import CTSolvers.Modelers
-import CTBase.Strategies
-import CTBase.Core
+using DocStringExtensions: TYPEDSIGNATURES
+using CTSolvers: Modelers
+using CTBase: Strategies
+using CTBase: Core
 using ExaModels: ExaModels
 using KernelAbstractions: KernelAbstractions
-
-using CTBase.Strategies: CPU, GPU, AbstractStrategyParameter
 
 # ============================================================================
 # Metadata definition
@@ -35,7 +33,7 @@ are loaded. Covers `:base_type` (floating-point precision) and `:backend`
 See also: [`CTSolvers.Modelers.Exa`](@ref),
 [`CTSolvers.Modelers._build_exa_modeler`](@ref)
 """
-function Strategies.metadata(::Type{Modelers.Exa{P}}) where {P<:Union{CPU,GPU}}
+function Strategies.metadata(::Type{Modelers.Exa{P}}) where {P<:Union{Strategies.CPU,Strategies.GPU}}
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:base_type,
@@ -53,7 +51,7 @@ function Strategies.metadata(::Type{Modelers.Exa{P}}) where {P<:Union{CPU,GPU}}
             aliases=(:exa_backend,),
             validator=function (backend)
                 if !Modelers.__consistent_backend(P, backend)
-                    param_str = P == CPU ? "CPU" : "GPU"
+                    param_str = P == Strategies.CPU ? "CPU" : "GPU"
                     backend_str =
                         backend === nothing ? "no backend" : string(typeof(backend))
                     @warn "Inconsistent backend ($backend_str) for $param_str parameter" maxlog=1
@@ -78,7 +76,7 @@ are loaded. Whenever the deprecated keyword `:exa_backend` is passed, a warning
 is issued and `:backend` should be used instead.
 
 # Arguments
-- `parameter::Type{<:AbstractStrategyParameter}`: strategy parameter type (e.g. `CPU`, `GPU`)
+- `parameter::Type{<:Strategies.AbstractStrategyParameter}`: strategy parameter type (e.g. `Strategies.CPU`, `Strategies.GPU`)
 - `mode::Symbol`: validation mode, `:strict` (default) or `:permissive`
 - `kwargs...`: options forwarded to [`CTBase.Strategies.build_strategy_options`](@extref)
 
@@ -90,7 +88,7 @@ See also: [`CTSolvers.Modelers.Exa`](@ref),
 """
 function Modelers._build_exa_modeler(
     ::Type{Modelers.ExaTag},
-    parameter::Type{<:AbstractStrategyParameter};
+    parameter::Type{<:Strategies.AbstractStrategyParameter};
     mode::Symbol=:strict,
     kwargs...,
 )

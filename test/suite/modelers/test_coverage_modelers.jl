@@ -1,12 +1,12 @@
 module TestCoverageModelers
 
 using Test: Test
-import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
-import CTBase.Exceptions
-import CTSolvers.Modelers
-import CTBase.Strategies
-import CTBase.Options
-import CTSolvers.Optimization
+using ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+using CTBase: Exceptions
+using CTSolvers: Modelers
+using CTBase: Strategies
+using CTBase: Options
+using CTSolvers: Optimization
 using SolverCore: SolverCore
 using ExaModels: ExaModels
 

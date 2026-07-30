@@ -33,16 +33,21 @@ See also: `AbstractIntegrator`, `Integrators.SciML`.
 module Integrators
 
 # Imports
-import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES, TYPEDFIELDS
+using DocStringExtensions: TYPEDEF, TYPEDSIGNATURES, TYPEDFIELDS
 using CommonSolve: CommonSolve
-import CTBase.Exceptions
-import CTBase.Core
-import CTModels.Solutions
-import CTModels.Solutions: status, successful
+using CTBase: Exceptions
+using CTBase: Core
+using CTModels: Solutions
+
+# `Integrators.status`/`Integrators.successful` are aliases onto the CTModels.Solutions
+# generics (same Function objects), so extending `Integrators.status` and calling it
+# unqualified both act on `Solutions.status` — see BREAKING.md.
+const status = Solutions.status
+const successful = Solutions.successful
 
 # CTBase generic infrastructure
-using CTBase.Strategies
-using CTBase.Options
+using CTBase: Strategies
+using CTBase: Options
 
 # Include submodules
 include(joinpath(@__DIR__, "abstract_integrator.jl"))

@@ -17,14 +17,14 @@ orchestration and option routing.
 module Modelers
 
 # Imports
-import CTBase.Exceptions
-import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+using CTBase: Exceptions
+using DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 using SolverCore: SolverCore
-import CTBase.Core
+using CTBase: Core
 
 # CTBase generic infrastructure
-using CTBase.Options
-using CTBase.Strategies
+using CTBase: Options
+using CTBase: Strategies
 
 # Internal CTSolvers API
 using ..Optimization

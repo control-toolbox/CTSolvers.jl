@@ -1,10 +1,10 @@
 module TestSciMLParameter
 
 using Test: Test
-import CTBase.Core
-import CTBase.Exceptions
-import CTSolvers.Integrators
-import CTBase.Strategies
+using CTBase: Core
+using CTBase: Exceptions
+using CTSolvers: Integrators
+using CTBase: Strategies
 
 # Extensions: CTSolversSciMLIntegrator (DiffEqBase + SciMLBase), the Tsit5 default alg
 # (OrdinaryDiffEqTsit5), and CTSolversCUDA (CUDA) for the device consistency validators.

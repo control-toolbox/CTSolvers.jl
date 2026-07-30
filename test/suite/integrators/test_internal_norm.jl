@@ -1,7 +1,7 @@
 module TestInternalNorm
 
 using Test: Test
-import CTSolvers.Integrators
+using CTSolvers: Integrators
 using ForwardDiff: ForwardDiff
 using DiffEqBase: DiffEqBase   # activates the array real_norm overload
 

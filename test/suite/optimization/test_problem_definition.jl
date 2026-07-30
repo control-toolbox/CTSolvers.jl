@@ -1,13 +1,13 @@
 module TestProblemDefinition
 
 using Test: Test
-import CTSolvers.Optimization
-import CTSolvers.Modelers
-import CTBase.Strategies
+using CTSolvers: Optimization
+using CTSolvers: Modelers
+using CTBase: Strategies
 using CUDA: CUDA
 
 include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
-import .TestProblems
+using .TestProblems: TestProblems
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true

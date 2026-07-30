@@ -8,9 +8,9 @@ Extension providing CUDA functionality for CTSolvers:
 
 module CTSolversCUDA
 
-import CTSolvers.Modelers
-import CTSolvers.Integrators
-import CTBase.Strategies
+using CTSolvers: Modelers
+using CTSolvers: Integrators
+using CTBase: Strategies
 using CUDA: CUDA
 using DocStringExtensions: DocStringExtensions
 
@@ -39,7 +39,7 @@ $(DocStringExtensions.TYPEDSIGNATURES)
 Check if CUDA backend is consistent with CPU parameter.
 
 # Arguments
-- `parameter_type::Type{CPU}`: CPU parameter type
+- `parameter_type::Type{Strategies.CPU}`: CPU parameter type
 - `backend::CUDA.CUDABackend`: CUDA backend to check
 
 # Returns
@@ -59,7 +59,7 @@ $(DocStringExtensions.TYPEDSIGNATURES)
 Check if no backend is consistent with GPU parameter.
 
 # Arguments
-- `parameter_type::Type{GPU}`: GPU parameter type
+- `parameter_type::Type{Strategies.GPU}`: GPU parameter type
 - `backend::Nothing`: No backend
 
 # Returns
@@ -79,7 +79,7 @@ $(DocStringExtensions.TYPEDSIGNATURES)
 Check if CUDA backend is consistent with GPU parameter.
 
 # Arguments
-- `parameter_type::Type{GPU}`: GPU parameter type
+- `parameter_type::Type{Strategies.GPU}`: GPU parameter type
 - `backend::CUDA.CUDABackend`: CUDA backend to check
 
 # Returns

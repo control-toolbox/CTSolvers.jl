@@ -25,7 +25,7 @@ It provides excellent performance and robustness for large-scale problems.
 ## Parameterized Types
 
 The solver supports parameterization for execution backend:
-- `Knitro{CPU}`: CPU execution (default and only supported parameter)
+- `Knitro{Strategies.CPU}`: CPU execution (default and only supported parameter)
 
 **Note:** Unlike `MadNLP` and `MadNCL`, this solver only supports CPU execution.
 GPU execution is not available for Knitro.
@@ -37,7 +37,7 @@ GPU execution is not available for Knitro.
 Solvers.Knitro(; mode::Symbol=:strict, kwargs...)
 
 # Explicit parameter specification (only CPU supported)
-Solvers.Knitro{CPU}(; mode::Symbol=:strict, kwargs...)
+Solvers.Knitro{Strategies.CPU}(; mode::Symbol=:strict, kwargs...)
 ```
 
 # Fields
@@ -73,7 +73,7 @@ using NLPModelsKnitro
 solver = Knitro(maxit=1000, maxtime=3600, ftol=1e-10, outlev=2)
 
 # Explicit CPU specification
-solver_cpu = Knitro{CPU}(maxit=1000, outlev=2)
+solver_cpu = Knitro{Strategies.CPU}(maxit=1000, outlev=2)
 
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
 stats = solver(nlp, display=true)
@@ -82,7 +82,7 @@ stats = solver(nlp, display=true)
 ## Invalid Usage
 ```julia
 # GPU is NOT supported - will throw IncorrectArgument
-solver = Knitro{GPU}()  # ❌ Error!
+solver = Knitro{Strategies.GPU}()  # ❌ Error!
 ```
 
 # Extension Required
@@ -107,9 +107,9 @@ using NLPModelsKnitro
 - `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
 
-See also: `CPU`, `AbstractNLPSolver`, `Ipopt`, `MadNLP`
+See also: `Strategies.CPU`, `AbstractNLPSolver`, `Ipopt`, `MadNLP`
 """
-struct Knitro{P<:CPU} <: AbstractNLPSolver
+struct Knitro{P<:Strategies.CPU} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -140,31 +140,31 @@ $(TYPEDSIGNATURES)
 
 Default parameter type for Knitro when not explicitly specified.
 
-Returns `CPU` as the default execution parameter.
+Returns `Strategies.CPU` as the default execution parameter.
 
 # Implementation Notes
 
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: `Knitro`, `CPU`
+See also: `Knitro`, `Strategies.CPU`
 """
-Strategies.default_parameter(::Type{<:Solvers.Knitro}) = CPU
+Strategies.default_parameter(::Type{<:Solvers.Knitro}) = Strategies.CPU
 
 """
 $(TYPEDSIGNATURES)
 
 Return the execution parameter type of a `Knitro` strategy.
 
-Extracts the type parameter `P` from `Knitro{P}`, which is always `CPU` since
+Extracts the type parameter `P` from `Knitro{P}`, which is always `Strategies.CPU` since
 Knitro is CPU-only.
 
 # Returns
-- `Type{CPU}`: the execution parameter type.
+- `Type{Strategies.CPU}`: the execution parameter type.
 
 See also: [`CTSolvers.Solvers.Knitro`](@ref), [`CTBase.Strategies.CPU`](@extref)
 """
-Strategies.parameter(::Type{<:Solvers.Knitro{P}}) where {P<:CPU} = P
+Strategies.parameter(::Type{<:Solvers.Knitro{P}}) where {P<:Strategies.CPU} = P
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -220,16 +220,16 @@ Requires the CTSolversKnitro extension to be loaded.
 ```julia
 # Conceptual usage (requires NLPModelsKnitro extension)
 using NLPModelsKnitro
-solver_cpu = Solvers.Knitro{CPU}(maxit=1000, outlev=2)
+solver_cpu = Solvers.Knitro{Strategies.CPU}(maxit=1000, outlev=2)
 ```
 
 # Throws
 - `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
 
-See also: `Knitro`, `CPU`
+See also: `Knitro`, `Strategies.CPU`
 """
-function Solvers.Knitro{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
+function Solvers.Knitro{P}(; mode::Symbol=:strict, kwargs...) where {P<:Strategies.CPU}
     return _build_knitro_solver(KnitroTag, P; mode=mode, kwargs...)
 end
 
@@ -245,7 +245,7 @@ Real implementation provided by the extension.
 See also: `Knitro`, `Strategies.metadata`
 """
 function _build_knitro_solver(
-    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:Strategies.AbstractStrategyParameter}; kwargs...
 )
     return throw(
         Exceptions.ExtensionError(
@@ -263,14 +263,14 @@ $(TYPEDSIGNATURES)
 Stub function that throws ExtensionError if CTSolversKnitro extension is not loaded.
 Real metadata implementation provided by the extension.
 
-This stub is for parameterized types `Knitro{P}` where `P <: AbstractStrategyParameter`.
+This stub is for parameterized types `Knitro{P}` where `P <: Strategies.AbstractStrategyParameter`.
 
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
 
 See also: `Knitro`, `Strategies.StrategyMetadata`
 """
-function Strategies.metadata(::Type{<:Solvers.Knitro{P}}) where {P<:CPU}
+function Strategies.metadata(::Type{<:Solvers.Knitro{P}}) where {P<:Strategies.CPU}
     # Extension is missing
     return throw(
         Exceptions.ExtensionError(
@@ -285,15 +285,15 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Fallback for non-parameterized `Knitro` type that delegates to `Knitro{CPU}`.
+Fallback for non-parameterized `Knitro` type that delegates to `Knitro{Strategies.CPU}`.
 
 This provides backward compatibility and a sensible default when the parameter
-is not specified. The call will delegate to `metadata(Knitro{CPU})`, which will
+is not specified. The call will delegate to `metadata(Knitro{Strategies.CPU})`, which will
 either use the extension implementation (if loaded) or throw an ExtensionError
 (if not loaded).
 
 # Returns
-- `StrategyMetadata`: Metadata for `Knitro{CPU}` (if extension loaded)
+- `StrategyMetadata`: Metadata for `Knitro{Strategies.CPU}` (if extension loaded)
 
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If extension not loaded (via delegation)

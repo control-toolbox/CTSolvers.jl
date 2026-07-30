@@ -45,10 +45,10 @@ file declares the type and **stubs** that throw `ExtensionError` until the
 extension is loaded.
 
 Parameterized on the execution device `P`:
-- `SciML{CPU}`: CPU execution (default);
-- `SciML{GPU}`: GPU execution (state on device arrays, e.g. `CuArray`).
+- `SciML{Strategies.CPU}`: CPU execution (default);
+- `SciML{Strategies.GPU}`: GPU execution (state on device arrays, e.g. `CuArray`).
 
-`SciML(...)` builds a `SciML{CPU}` — the device parameterization is fully backward
+`SciML(...)` builds a `SciML{Strategies.CPU}` — the device parameterization is fully backward
 compatible with existing call sites.
 
 To activate the extension, load any of:
@@ -61,7 +61,7 @@ To activate the extension, load any of:
 $(TYPEDFIELDS)
 """
 struct SciML{
-    P<:Union{CPU,GPU},
+    P<:Union{Strategies.CPU,Strategies.GPU},
     O<:Strategies.StrategyOptions,
     OP<:Dict{Symbol,Any},
     OT<:Dict{Symbol,Any},
@@ -105,28 +105,28 @@ $(TYPEDSIGNATURES)
 
 Return the execution parameter type of a parameterized `SciML{P}` integrator.
 
-Extracts the type parameter `P` from `SciML{P}`, which can be either `CPU` or `GPU`
+Extracts the type parameter `P` from `SciML{P}`, which can be either `Strategies.CPU` or `Strategies.GPU`
 since `SciML` supports both execution devices. More specific than the bare
 `parameter(::Type{<:SciML})` above, so it wins for a concrete `SciML{P}`.
 
 # Returns
-- `Type{<:Union{CPU,GPU}}`: the execution parameter type.
+- `Type{<:Union{Strategies.CPU,Strategies.GPU}}`: the execution parameter type.
 
 See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
 """
-Strategies.parameter(::Type{<:SciML{P}}) where {P<:Union{CPU,GPU}} = P
+Strategies.parameter(::Type{<:SciML{P}}) where {P<:Union{Strategies.CPU,Strategies.GPU}} = P
 
 """
 $(TYPEDSIGNATURES)
 
 Return the default execution parameter for `SciML` when none is specified.
 
-Returns `CPU`, so `SciML(...)` builds a `SciML{CPU}` and every existing call site is
+Returns `Strategies.CPU`, so `SciML(...)` builds a `SciML{Strategies.CPU}` and every existing call site is
 unaffected by the device parameterization.
 
 See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.CPU`](@extref)
 """
-Strategies.default_parameter(::Type{<:SciML}) = CPU
+Strategies.default_parameter(::Type{<:SciML}) = Strategies.CPU
 
 """
 $(TYPEDSIGNATURES)
@@ -168,8 +168,8 @@ options_trajectory(integ::SciML) = integ.options_trajectory
 """
 $(TYPEDSIGNATURES)
 
-Construct a `SciML{CPU}` integrator (the default device). Equivalent to
-`SciML{CPU}(...)`; delegates through [`CTBase.Strategies.default_parameter`](@extref).
+Construct a `SciML{Strategies.CPU}` integrator (the default device). Equivalent to
+`SciML{Strategies.CPU}(...)`; delegates through [`CTBase.Strategies.default_parameter`](@extref).
 
 # Arguments
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`).
@@ -189,7 +189,7 @@ end
 $(TYPEDSIGNATURES)
 
 Construct a parameterized `SciML{P}` integrator for the execution device `P`
-(`CPU` or `GPU`). Delegates to `_build_sciml_integrator`, which is overridden by the
+(`Strategies.CPU` or `Strategies.GPU`). Delegates to `_build_sciml_integrator`, which is overridden by the
 `CTSolversSciMLIntegrator` package extension.
 
 # Arguments
@@ -201,7 +201,7 @@ Construct a parameterized `SciML{P}` integrator for the execution device `P`
 
 See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators._build_sciml_integrator`](@ref).
 """
-function SciML{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
+function SciML{P}(; mode::Symbol=:strict, kwargs...) where {P<:Strategies.AbstractStrategyParameter}
     return _build_sciml_integrator(SciMLTag, P; mode=mode, kwargs...)
 end
 
@@ -213,7 +213,7 @@ Stub builder for `SciML`. The real implementation is provided by
 is loaded.
 """
 function _build_sciml_integrator(
-    ::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag}, ::Type{<:Strategies.AbstractStrategyParameter}; kwargs...
 )
     return throw(
         Exceptions.ExtensionError(
@@ -250,7 +250,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Fallback for the non-parameterized `SciML` type that delegates to `SciML{CPU}`.
+Fallback for the non-parameterized `SciML` type that delegates to `SciML{Strategies.CPU}`.
 
 Preserves backward compatibility for `metadata(SciML)` once the extension defines only
 the parameterized `metadata(SciML{P})`. Delegates through
@@ -287,12 +287,12 @@ of a `SciML{P}` integrator.
 
 Mirrors `Modelers.__consistent_backend`: the default returns `true` (all combinations
 allowed); the `CTSolversCUDA` extension adds the device-aware methods that flag a `CuArray`
-`u0` under `SciML{CPU}`, or a host `Array` `u0` under `SciML{GPU}`. The seam is defined here,
+`u0` under `SciML{Strategies.CPU}`, or a host `Array` `u0` under `SciML{Strategies.GPU}`. The seam is defined here,
 next to the integrator; the consuming package (e.g. CTFlows) calls it where a concrete `u0`
 is available (problem construction / solve), since `SciML` does not receive `u0` at build time.
 
 # Arguments
-- `parameter_type::Type{<:AbstractStrategyParameter}`: `CPU` or `GPU`.
+- `parameter_type::Type{<:Strategies.AbstractStrategyParameter}`: `Strategies.CPU` or `Strategies.GPU`.
 - `u0`: The initial condition array to check.
 
 # Returns
@@ -300,6 +300,6 @@ is available (problem construction / solve), since `SciML` does not receive `u0`
 
 See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref).
 """
-function __consistent_initial_condition(::Type{<:AbstractStrategyParameter}, u0)
+function __consistent_initial_condition(::Type{<:Strategies.AbstractStrategyParameter}, u0)
     return true
 end

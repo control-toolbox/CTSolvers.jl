@@ -7,8 +7,8 @@ Implements GPU-specific linear solver defaults and consistency validation.
 
 module CTSolversMadNLPGPU
 
-import CTSolvers.Solvers
-import CTBase.Strategies
+using CTSolvers: Solvers
+using CTBase: Strategies
 using MadNLPGPU: MadNLPGPU
 using DocStringExtensions: DocStringExtensions
 
@@ -34,7 +34,7 @@ $(DocStringExtensions.TYPEDSIGNATURES)
 Check if `linear_solver` is consistent with CPU parameter.
 
 # Arguments
-- `parameter_type::Type{CPU}`: CPU parameter type
+- `parameter_type::Type{Strategies.CPU}`: CPU parameter type
 - `linear_solver::Type`: Linear solver type
 
 # Returns
@@ -62,7 +62,7 @@ $(DocStringExtensions.TYPEDSIGNATURES)
 Check if `linear_solver` is consistent with GPU parameter.
 
 # Arguments
-- `parameter_type::Type{GPU}`: GPU parameter type
+- `parameter_type::Type{Strategies.GPU}`: GPU parameter type
 - `linear_solver::Type`: Linear solver type
 
 # Returns

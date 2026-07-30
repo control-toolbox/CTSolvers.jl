@@ -44,7 +44,7 @@ Uno provides presets that mimic existing solvers:
 ## Parameterized Types
 
 The solver supports parameterization for execution backend:
-- `Uno{CPU}`: CPU execution (default and only supported parameter)
+- `Uno{Strategies.CPU}`: CPU execution (default and only supported parameter)
 
 **Note:** This solver only supports CPU execution with ADNLP modeler.
 GPU execution is not available for Uno.
@@ -56,7 +56,7 @@ GPU execution is not available for Uno.
 Solvers.Uno(; mode::Symbol=:strict, kwargs...)
 
 # Explicit parameter specification (only CPU supported)
-Solvers.Uno{CPU}(; mode::Symbol=:strict, kwargs...)
+Solvers.Uno{Strategies.CPU}(; mode::Symbol=:strict, kwargs...)
 ```
 
 # Fields
@@ -95,7 +95,7 @@ solver = Uno(max_iterations=1000, primal_tolerance=1e-6, preset="ipopt")
 solver_sqp = Uno(max_iterations=1000, preset="filtersqp")
 
 # Explicit CPU specification
-solver_cpu = Uno{CPU}(max_iterations=1000, dual_tolerance=1e-6)
+solver_cpu = Uno{Strategies.CPU}(max_iterations=1000, dual_tolerance=1e-6)
 
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
 stats = solver(nlp, display=true)
@@ -104,7 +104,7 @@ stats = solver(nlp, display=true)
 ## Invalid Usage
 ```julia
 # GPU is NOT supported - will throw IncorrectArgument
-solver = Uno{GPU}()  # ❌ Error!
+solver = Uno{Strategies.GPU}()  # ❌ Error!
 ```
 
 # Extension Required
@@ -133,9 +133,9 @@ using UnoSolver
 Vanaret, C., & Leyffer, S. (2026). Implementing a unified solver for nonlinearly 
 constrained optimization. Mathematical Programming Computation (accepted).
 
-See also: `CPU`, `AbstractNLPSolver`, `Ipopt`, `MadNLP`
+See also: `Strategies.CPU`, `AbstractNLPSolver`, `Ipopt`, `MadNLP`
 """
-struct Uno{P<:CPU} <: AbstractNLPSolver
+struct Uno{P<:Strategies.CPU} <: AbstractNLPSolver
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -166,31 +166,31 @@ $(TYPEDSIGNATURES)
 
 Default parameter type for Uno when not explicitly specified.
 
-Returns `CPU` as the default execution parameter.
+Returns `Strategies.CPU` as the default execution parameter.
 
 # Implementation Notes
 
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: `Uno`, `CPU`
+See also: `Uno`, `Strategies.CPU`
 """
-Strategies.default_parameter(::Type{<:Solvers.Uno}) = CPU
+Strategies.default_parameter(::Type{<:Solvers.Uno}) = Strategies.CPU
 
 """
 $(TYPEDSIGNATURES)
 
 Return the execution parameter type of a `Uno` strategy.
 
-Extracts the type parameter `P` from `Uno{P}`, which is always `CPU` since
+Extracts the type parameter `P` from `Uno{P}`, which is always `Strategies.CPU` since
 Uno is CPU-only.
 
 # Returns
-- `Type{CPU}`: the execution parameter type.
+- `Type{Strategies.CPU}`: the execution parameter type.
 
 See also: [`CTSolvers.Solvers.Uno`](@ref), [`CTBase.Strategies.CPU`](@extref)
 """
-Strategies.parameter(::Type{<:Solvers.Uno{P}}) where {P<:CPU} = P
+Strategies.parameter(::Type{<:Solvers.Uno{P}}) where {P<:Strategies.CPU} = P
 
 # ============================================================================
 # Constructor with Tag Dispatch
@@ -246,16 +246,16 @@ Requires the CTSolversUno extension to be loaded.
 ```julia
 # Conceptual usage (requires UnoSolver extension)
 using UnoSolver
-solver_cpu = Solvers.Uno{CPU}(max_iter=1000, tol=1e-6)
+solver_cpu = Solvers.Uno{Strategies.CPU}(max_iter=1000, tol=1e-6)
 ```
 
 # Throws
 - `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
 - `CTBase.Exceptions.ExtensionError`: If the UnoSolver extension is not loaded
 
-See also: `Uno`, `CPU`
+See also: `Uno`, `Strategies.CPU`
 """
-function Solvers.Uno{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
+function Solvers.Uno{P}(; mode::Symbol=:strict, kwargs...) where {P<:Strategies.CPU}
     return _build_uno_solver(UnoTag, P; mode=mode, kwargs...)
 end
 
@@ -271,7 +271,7 @@ Real implementation provided by the extension.
 See also: `Uno`, `Strategies.metadata`
 """
 function _build_uno_solver(
-    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:Strategies.AbstractStrategyParameter}; kwargs...
 )
     return throw(
         Exceptions.ExtensionError(
@@ -289,14 +289,14 @@ $(TYPEDSIGNATURES)
 Stub function that throws ExtensionError if CTSolversUno extension is not loaded.
 Real metadata implementation provided by the extension.
 
-This stub is for parameterized types `Uno{P}` where `P <: AbstractStrategyParameter`.
+This stub is for parameterized types `Uno{P}` where `P <: Strategies.AbstractStrategyParameter`.
 
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation
 
 See also: `Uno`, `Strategies.StrategyMetadata`
 """
-function Strategies.metadata(::Type{<:Solvers.Uno{P}}) where {P<:CPU}
+function Strategies.metadata(::Type{<:Solvers.Uno{P}}) where {P<:Strategies.CPU}
     # Extension is missing
     return throw(
         Exceptions.ExtensionError(
@@ -311,15 +311,15 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Fallback for non-parameterized `Uno` type that delegates to `Uno{CPU}`.
+Fallback for non-parameterized `Uno` type that delegates to `Uno{Strategies.CPU}`.
 
 This provides backward compatibility and a sensible default when the parameter
-is not specified. The call will delegate to `metadata(Uno{CPU})`, which will
+is not specified. The call will delegate to `metadata(Uno{Strategies.CPU})`, which will
 either use the extension implementation (if loaded) or throw an ExtensionError
 (if not loaded).
 
 # Returns
-- `StrategyMetadata`: Metadata for `Uno{CPU}` (if extension loaded)
+- `StrategyMetadata`: Metadata for `Uno{Strategies.CPU}` (if extension loaded)
 
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If extension not loaded (via delegation)

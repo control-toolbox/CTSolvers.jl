@@ -1,10 +1,10 @@
 module TestExtensionHelpers
 
 using Test: Test
-import CTBase.Exceptions
+using CTBase: Exceptions
 using CTSolvers: CTSolvers
-import CTSolvers.Solvers
-import CTBase.Strategies: CPU, GPU
+using CTSolvers: Solvers
+using CTBase: Strategies
 using MadNLP: MadNLP
 using MadNCL: MadNCL
 
@@ -55,7 +55,7 @@ function test_helpers()
         # ====================================================================
 
         Test.@testset "MadNCL default linear solver - CPU" begin
-            solver_type = Solvers.__madnlp_suite_default_linear_solver(CPU)
+            solver_type = Solvers.__madnlp_suite_default_linear_solver(Strategies.CPU)
             Test.@test solver_type === MadNLP.MumpsSolver
         end
 
@@ -67,11 +67,11 @@ function test_helpers()
             # This should throw ExtensionError if the GPU solver extension is not armed
             if !Main.TestCapabilities.GPU_SOLVER_ARMED
                 Test.@test_throws Exceptions.ExtensionError Solvers.__madnlp_suite_default_linear_solver(
-                    GPU
+                    Strategies.GPU
                 )
             else
                 # If armed, should return CUDSSSolver
-                solver_type = Solvers.__madnlp_suite_default_linear_solver(GPU)
+                solver_type = Solvers.__madnlp_suite_default_linear_solver(Strategies.GPU)
                 Test.@test solver_type === Main.TestCapabilities.GPU_SOLVER
             end
         end
@@ -81,7 +81,7 @@ function test_helpers()
         # ====================================================================
 
         Test.@testset "MadNLP default linear solver - CPU" begin
-            solver_type = Solvers.__madnlp_suite_default_linear_solver(CPU)
+            solver_type = Solvers.__madnlp_suite_default_linear_solver(Strategies.CPU)
             Test.@test solver_type === MadNLP.MumpsSolver
         end
 
@@ -93,11 +93,11 @@ function test_helpers()
             # This should throw ExtensionError if the GPU solver extension is not armed
             if !Main.TestCapabilities.GPU_SOLVER_ARMED
                 Test.@test_throws Exceptions.ExtensionError Solvers.__madnlp_suite_default_linear_solver(
-                    GPU
+                    Strategies.GPU
                 )
             else
                 # If armed, should return CUDSSSolver
-                solver_type = Solvers.__madnlp_suite_default_linear_solver(GPU)
+                solver_type = Solvers.__madnlp_suite_default_linear_solver(Strategies.GPU)
                 Test.@test solver_type === Main.TestCapabilities.GPU_SOLVER
             end
         end
@@ -112,8 +112,8 @@ function test_helpers()
             Test.@test_nowarn CTSolversMadNCL.base_type(ncl_opts)
 
             # default_linear_solver should be type-stable for CPU
-            Test.@test_nowarn Solvers.__madnlp_suite_default_linear_solver(CPU)
-            Test.@test_nowarn Solvers.__madnlp_suite_default_linear_solver(CPU)
+            Test.@test_nowarn Solvers.__madnlp_suite_default_linear_solver(Strategies.CPU)
+            Test.@test_nowarn Solvers.__madnlp_suite_default_linear_solver(Strategies.CPU)
         end
     end
 end

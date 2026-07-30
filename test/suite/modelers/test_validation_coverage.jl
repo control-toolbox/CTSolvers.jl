@@ -1,8 +1,8 @@
 module TestValidationCoverage
 
 using Test: Test
-import CTBase.Exceptions
-import CTSolvers.Modelers
+using CTBase: Exceptions
+using CTSolvers: Modelers
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true

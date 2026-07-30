@@ -11,10 +11,10 @@ Date: 2026-03-17
 module TestAliasIntegration
 
 using Test: Test
-import CTBase.Exceptions
-import CTBase.Strategies
-import CTBase.Options
-import CTSolvers.Solvers
+using CTBase: Exceptions
+using CTBase: Strategies
+using CTBase: Options
+using CTSolvers: Solvers
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

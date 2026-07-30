@@ -1,12 +1,12 @@
 module TestIntegratorExtensionStubs
 
 using Test: Test
-import CTBase.Core
-import CTBase.Exceptions
-import CTBase.Strategies
-import CTSolvers.Integrators
-import CTModels.Solutions
-import CTModels.Components
+using CTBase: Core
+using CTBase: Exceptions
+using CTBase: Strategies
+using CTSolvers: Integrators
+using CTModels: Solutions
+using CTModels: Components
 using CommonSolve: CommonSolve
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

@@ -1,11 +1,11 @@
 module TestADNLPMetadata
 
 using Test: Test
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
-import CTBase.Exceptions
-import CTSolvers.Modelers
-import CTBase.Strategies
-import CTBase.Options
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using CTBase: Exceptions
+using CTSolvers: Modelers
+using CTBase: Strategies
+using CTBase: Options
 using ADNLPModels: ADNLPModels
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

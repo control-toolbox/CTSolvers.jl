@@ -1,20 +1,18 @@
 module TestOptimization
 
 using Test: Test
-import CTBase.Exceptions
+using CTBase: Exceptions
 using CTSolvers: CTSolvers
-import CTSolvers.Optimization
-import CTSolvers.Modelers
-import CTSolvers.Solvers
+using CTSolvers: Optimization
+using CTSolvers: Modelers
+using CTSolvers: Solvers
 using NLPModels: NLPModels
 using SolverCore: SolverCore
 using ADNLPModels: ADNLPModels
 using ExaModels: ExaModels
-using CTSolvers.Optimization  # For testing exported symbols
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
-const CurrentModule = TestOptimization
 
 # ============================================================================
 # FAKE TYPES FOR CONTRACT TESTING (TOP-LEVEL)
@@ -100,10 +98,11 @@ function test_optimization()
             end
 
             Test.@testset "Exported Abstract Types" begin
-                for T in (AbstractOptimizationProblem,)
-                    Test.@testset "$(nameof(T))" begin
-                        Test.@test isdefined(Optimization, nameof(T))
-                        Test.@test isdefined(CurrentModule, nameof(T))
+                for name in (:AbstractOptimizationProblem,)
+                    Test.@testset "$name" begin
+                        Test.@test isdefined(Optimization, name)
+                        Test.@test name in names(Optimization)
+                        T = getfield(Optimization, name)
                         Test.@test T isa DataType || T isa UnionAll
                     end
                 end
@@ -113,8 +112,8 @@ function test_optimization()
                 for f in (:build_model, :build_solution)
                     Test.@testset "$f" begin
                         Test.@test isdefined(Optimization, f)
-                        Test.@test isdefined(CurrentModule, f)
-                        Test.@test getfield(CurrentModule, f) isa Function
+                        Test.@test f in names(Optimization)
+                        Test.@test getfield(Optimization, f) isa Function
                     end
                 end
             end
