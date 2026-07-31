@@ -5,6 +5,34 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.5.1 (2026-07-31)
+
+**No breaking changes.**
+
+This release adopts the control-toolbox Handbook's performance-verification
+workflow: a permanent `JET.test_package` correctness gate, a
+`BenchmarkTools.@ballocated` allocation contract for the SciML integrator hot
+path, and a new performance guide. It also removes a legacy performance test
+file that asserted wall-clock timing on setup-path code.
+
+### Summary - v0.5.1
+
+- `JET` added as a test/docs-only dependency; `test/suite/meta/test_jet.jl`
+  runs `JET.test_package(CTSolvers; target_modules=(CTSolvers,))`
+- `test/suite/meta/test_performance.jl` guards `Integrators.evaluate_at`
+  (zero-overhead wrapper) and `options_point`/`options_trajectory`/
+  `final_state`/`times`/`status`/`successful` (zero-allocation reads)
+- `test_integrator_type_stability.jl` gains `@inferred` guards for
+  `Integrators.status`/`Integrators.successful`
+- `docs/src/guides/performance.md` added, with live `JET.@report_opt` checks
+- `test/suite/integration/__test_performance_validation.jl` removed
+
+### Migration - v0.5.1
+
+**No action required.** All existing code continues to work without changes.
+
+---
+
 ## v0.4.34-beta (2026-07-29)
 
 **No breaking changes.**

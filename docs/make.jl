@@ -115,6 +115,7 @@ with_api_reference(src_dir, ext_dir) do api_pages
                 "Implementing an Integrator" => "guides/implementing_an_integrator.md",
                 "Implementing a Modeler" => "guides/implementing_a_modeler.md",
                 "Implementing an Optimization Problem" => "guides/implementing_an_optimization_problem.md",
+                "Performance & Type Stability" => "guides/performance.md",
                 "Error Messages Reference" => "guides/error_messages.md",
             ],
             "API Reference" => api_pages,
