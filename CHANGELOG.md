@@ -8,6 +8,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.1] - 2026-07-31
+
+### Added
+
+- **JET correctness gate** — `JET` is now a test/docs-only dependency
+  (`[extras]`/`[targets].test`/`[compat]`, plus `docs/Project.toml`). A one-off
+  `JET.report_package(CTSolvers; target_modules=(CTSolvers,))` scan came back
+  clean, so a permanent `JET.test_package(CTSolvers; target_modules=(CTSolvers,))`
+  gate is now enforced in new file `test/suite/meta/test_jet.jl`.
+- **Performance contract** — new `test/suite/meta/test_performance.jl` locks in
+  the allocation behavior of the SciML integrator hot path with
+  `BenchmarkTools.@ballocated`: `Integrators.evaluate_at` must allocate exactly
+  what the raw wrapped `SciMLBase.AbstractODESolution` call does, and
+  `options_point`/`options_trajectory`/`final_state`/`times`/`status`/
+  `successful` must allocate nothing.
+- **Performance guide** — new `docs/src/guides/performance.md` documents the
+  hot-path/setup-path split for CTSolvers, with live `JET.@report_opt` checks
+  executed at documentation build time, following the Handbook's
+  `philosophy/performance.md` workflow.
+
+### Changed
+
+- **`test_integrator_type_stability.jl`** — extended `@inferred` coverage to
+  also guard `Integrators.status`/`Integrators.successful`, alongside the
+  existing `final_state`/`times`/`evaluate_at` guards.
+
+### Removed
+
+- **`test/suite/integration/__test_performance_validation.jl`** — this file
+  asserted wall-clock overhead percentages on setup-path code
+  (`route_to`/`RoutedOption`/strategy construction), which the Handbook
+  forbids and which was already excluded from the discovered test suite by
+  its `__` prefix. Superseded by the JET gate and performance contract above.
+
+---
+
 ## [0.4.34-beta] - 2026-07-29
 
 ### Fixed
