@@ -18,6 +18,7 @@ using MarkdownAST: MarkdownAST
 # trigger extensions
 using ADNLPModels
 using CUDA
+using CUDSS
 using DiffEqBase
 using Enzyme
 using ExaModels
@@ -65,12 +66,12 @@ draft = false # Draft mode: if true, @example blocks in markdown are not execute
 # ═══════════════════════════════════════════════════════════════════════════════
 links = InterLinks(
     "CTBase" => (
-        "https://control-toolbox.org/CTBase.jl/dev/",
-        "https://control-toolbox.org/CTBase.jl/dev/objects.inv",
+        "https://control-toolbox.org/CTBase.jl/stable/",
+        "https://control-toolbox.org/CTBase.jl/stable/objects.inv",
     ),
     "CTModels" => (
-        "https://control-toolbox.org/CTModels.jl/dev/",
-        "https://control-toolbox.org/CTModels.jl/dev/objects.inv",
+        "https://control-toolbox.org/CTModels.jl/stable/",
+        "https://control-toolbox.org/CTModels.jl/stable/objects.inv",
     ),
 )
 
