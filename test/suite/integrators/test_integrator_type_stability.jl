@@ -59,6 +59,8 @@ function test_type_stability()
             Test.@test_nowarn Test.@inferred Integrators.final_state(r)
             Test.@test_nowarn Test.@inferred Integrators.times(r)
             Test.@test_nowarn Test.@inferred Integrators.evaluate_at(r, 0.5)
+            Test.@test_nowarn Test.@inferred Integrators.status(r)
+            Test.@test_nowarn Test.@inferred Integrators.successful(r)
         end
     end
 end
