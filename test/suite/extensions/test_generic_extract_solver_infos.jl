@@ -1,7 +1,7 @@
 module TestExtGeneric
 
 using Test: Test
-import CTSolvers.Solvers
+using CTSolvers: Solvers
 using SolverCore: SolverCore
 using NLPModels: NLPModels
 using ADNLPModels: ADNLPModels

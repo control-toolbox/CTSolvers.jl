@@ -16,14 +16,14 @@ the solver/modeler infrastructure provided by CTSolvers.
 module DOCP
 
 # Imports
-import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
+using DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 using SolverCore: SolverCore
 using CTModels: CTModels
-import CTBase.Core
-import CTBase.Exceptions
+using CTBase: Core
+using CTBase: Exceptions
 
 # CTBase generic infrastructure
-using CTBase.Strategies
+using CTBase: Strategies
 
 # Internal CTSolvers API
 using ..CTSolvers.Optimization

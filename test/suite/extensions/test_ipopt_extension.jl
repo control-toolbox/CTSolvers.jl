@@ -1,20 +1,20 @@
 module TestIpoptExtension
 
 using Test: Test
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
-import CTBase.Exceptions
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using CTBase: Exceptions
 using CTSolvers: CTSolvers
-import CTSolvers.Solvers
-import CTBase.Strategies
-import CTBase.Options
-import CTSolvers.Modelers
-import CTSolvers.Optimization
+using CTSolvers: Solvers
+using CTBase: Strategies
+using CTBase: Options
+using CTSolvers: Modelers
+using CTSolvers: Optimization
 using CommonSolve: CommonSolve
 using NLPModels: NLPModels
 using ADNLPModels: ADNLPModels
 
 include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
-import .TestProblems
+using .TestProblems: TestProblems
 
 # Get extension to access solve_with_ipopt
 using NLPModelsIpopt

@@ -4,9 +4,9 @@
 # and implements the CTSolvers `build_model` / `build_solution` contract by
 # multiple dispatch on the modeler type.
 
-import CTSolvers.Optimization
-import CTSolvers.Modelers
-import CTBase.Strategies
+using CTSolvers: Optimization
+using CTSolvers: Modelers
+using CTBase: Strategies
 
 struct OptimizationProblem{A,E} <: CTSolvers.AbstractOptimizationProblem
     build_adnlp_model::A

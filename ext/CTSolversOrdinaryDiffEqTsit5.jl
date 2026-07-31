@@ -6,8 +6,8 @@ Activated automatically when `OrdinaryDiffEqTsit5` is loaded together with `CTSo
 """
 module CTSolversOrdinaryDiffEqTsit5
 
-import DocStringExtensions: TYPEDSIGNATURES
-using CTSolvers.Integrators: Integrators
+using DocStringExtensions: TYPEDSIGNATURES
+using CTSolvers: Integrators
 using OrdinaryDiffEqTsit5: OrdinaryDiffEqTsit5, Tsit5
 
 """

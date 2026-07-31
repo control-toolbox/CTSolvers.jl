@@ -1,9 +1,9 @@
 module TestIntegratorTypes
 
 using Test: Test
-import CTBase.Core
-import CTSolvers.Integrators
-import CTBase.Strategies
+using CTBase: Core
+using CTSolvers: Integrators
+using CTBase: Strategies
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true

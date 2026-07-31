@@ -1,9 +1,9 @@
 module TestSolverMetadata
 
 using Test: Test
-import CTBase.Exceptions
-import CTSolvers.Solvers
-import CTBase.Strategies
+using CTBase: Exceptions
+using CTSolvers: Solvers
+using CTBase: Strategies
 using MadNLP: MadNLP
 using MadNCL: MadNCL
 using UnoSolver: UnoSolver

@@ -80,7 +80,7 @@ identification.
 ## Parameterized Types
 
 The modeler supports parameterization for execution backend:
-- `ADNLP{CPU}`: CPU execution (default and only supported parameter)
+- `ADNLP{Strategies.CPU}`: CPU execution (default and only supported parameter)
 
 **Note:** Unlike `Exa`, `MadNLP`, and `MadNCL`, this modeler only supports CPU execution.
 GPU execution is not available for ADNLP.
@@ -92,7 +92,7 @@ GPU execution is not available for ADNLP.
 Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
 
 # Explicit parameter specification (only CPU supported)
-Modelers.ADNLP{CPU}(; mode::Symbol=:strict, kwargs...)
+Modelers.ADNLP{Strategies.CPU}(; mode::Symbol=:strict, kwargs...)
 ```
 
 # Arguments
@@ -140,7 +140,7 @@ or an `ADBackend` instance (used directly).
 modeler = Modelers.ADNLP()
 
 # Explicit CPU specification
-modeler = Modelers.ADNLP{CPU}()
+modeler = Modelers.ADNLP{Strategies.CPU}()
 
 # With custom options
 modeler = Modelers.ADNLP(
@@ -153,7 +153,7 @@ modeler = Modelers.ADNLP(
 ## Invalid Usage
 ```julia
 # GPU is NOT supported - will throw IncorrectArgument
-modeler = Modelers.ADNLP{GPU}()  # ❌ Error!
+modeler = Modelers.ADNLP{Strategies.GPU}()  # ❌ Error!
 ```
 
 ## Advanced Backend Configuration
@@ -196,7 +196,7 @@ modeler = Modelers.ADNLP(
 
 # See also
 
-- `CPU`: CPU parameter type
+- `Strategies.CPU`: CPU parameter type
 - `Modelers.Exa`: Alternative modeler using ExaModels (supports GPU)
 - `Optimization.build_model`: Build a backend NLP model from a problem and a modeler
 - `Optimization.build_solution`: Build a problem-level solution from execution statistics
@@ -213,7 +213,7 @@ modeler = Modelers.ADNLP(
 - ADNLPModels.jl: [https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl)
 - Automatic Differentiation in Julia: [https://github.com/JuliaDiff/](https://github.com/JuliaDiff/)
 """
-struct ADNLP{P<:CPU} <: AbstractNLPModeler
+struct ADNLP{P<:Strategies.CPU} <: AbstractNLPModeler
     "Solver configuration options containing validated option values"
     options::Strategies.StrategyOptions
 end
@@ -236,31 +236,31 @@ $(TYPEDSIGNATURES)
 
 Default parameter type for ADNLP when not explicitly specified.
 
-Returns `CPU` as the default execution parameter.
+Returns `Strategies.CPU` as the default execution parameter.
 
 # Implementation Notes
 
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: `ADNLP`, `CPU`
+See also: `ADNLP`, `Strategies.CPU`
 """
-Strategies.default_parameter(::Type{<:Modelers.ADNLP}) = CPU
+Strategies.default_parameter(::Type{<:Modelers.ADNLP}) = Strategies.CPU
 
 """
 $(TYPEDSIGNATURES)
 
 Return the execution parameter type of an `ADNLP` strategy.
 
-Extracts the type parameter `P` from `ADNLP{P}`, which is always `CPU` since
+Extracts the type parameter `P` from `ADNLP{P}`, which is always `Strategies.CPU` since
 ADNLP is CPU-only.
 
 # Returns
-- `Type{CPU}`: the execution parameter type.
+- `Type{Strategies.CPU}`: the execution parameter type.
 
 See also: [`CTSolvers.Modelers.ADNLP`](@ref), [`CTBase.Strategies.CPU`](@extref)
 """
-Strategies.parameter(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU} = P
+Strategies.parameter(::Type{<:Modelers.ADNLP{P}}) where {P<:Strategies.CPU} = P
 
 # Strategy metadata with option definitions (parameterized)
 """
@@ -273,7 +273,7 @@ Stub — real implementation provided by the CTSolversADNLPModels extension.
 
 See also: `Modelers.ADNLP`, `Strategies.StrategyMetadata`
 """
-function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
+function Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:Strategies.CPU}
     return throw(
         Exceptions.ExtensionError(
             :ADNLPModels;
@@ -315,7 +315,7 @@ Requires the CTSolversADNLPModels extension to be loaded.
 
 See also: `Modelers.ADNLP`, `_build_adnlp_modeler`
 """
-function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
+function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:Strategies.CPU}
     return _build_adnlp_modeler(ADNLPTag, P; mode=mode, kwargs...)
 end
 
@@ -331,7 +331,7 @@ Real implementation provided by the extension.
 See also: `Modelers.ADNLP`, `Strategies.metadata`
 """
 function _build_adnlp_modeler(
-    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:Strategies.AbstractStrategyParameter}; kwargs...
 )
     return throw(
         Exceptions.ExtensionError(
@@ -356,7 +356,7 @@ Create an Modelers.ADNLP with validated options (defaults to CPU).
 - `kwargs...`: Modeler options (see `Modelers.ADNLP` documentation)
 
 # Returns
-- `Modelers.ADNLP{CPU}`: Configured modeler instance with CPU parameter
+- `Modelers.ADNLP{Strategies.CPU}`: Configured modeler instance with CPU parameter
 
 # Examples
 ```julia
@@ -374,7 +374,7 @@ modeler = Modelers.ADNLP(backend=:optimized, custom_option=123; mode=:permissive
 - `CTBase.Exceptions.ExtensionError`: If the ADNLPModels extension is not loaded
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 
-See also: `Modelers.ADNLP`, `Modelers.ADNLP{CPU}`, `_build_adnlp_modeler`
+See also: `Modelers.ADNLP`, `Modelers.ADNLP{Strategies.CPU}`, `_build_adnlp_modeler`
 """
 function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
     P = Strategies.default_parameter(Modelers.ADNLP)
@@ -402,10 +402,10 @@ Factory function that returns a backend validator for the specified tag type.
 
 # Examples
 ```julia-repl
-julia> using CTSolvers.Modelers
+julia> using CTSolvers: Modelers
 
 julia> # Get validator for ADNLP (with extensions loaded)
-julia> validator = get_validate_adnlp_backend(ADNLPTag)
+julia> validator = Modelers.get_validate_adnlp_backend(Modelers.ADNLPTag)
 (backend)->validate_adnlp_backend(#=method=#1, #=generic#=)
 
 julia> validator(:default)
@@ -415,7 +415,7 @@ julia> validator(:enzyme)  # Works with CTSolversEnzyme extension
 :enzyme
 
 julia> # Get validator for dummy tag (no extensions)
-julia> dummy_validator = get_validate_adnlp_backend(DummyTag)
+julia> dummy_validator = Modelers.get_validate_adnlp_backend(Modelers.DummyTag)
 (backend)->validate_adnlp_backend(#=method=#1, #=generic#=)
 
 julia> dummy_validator(:enzyme)  # Throws ExtensionError

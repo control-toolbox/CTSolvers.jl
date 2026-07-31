@@ -3,19 +3,17 @@ module TestDOCP
 using Test: Test
 using CTModels: CTModels
 using CTSolvers: CTSolvers
-import CTSolvers.DOCP
-import CTSolvers.Optimization
-import CTSolvers.Modelers
+using CTSolvers: DOCP
+using CTSolvers: Optimization
+using CTSolvers: Modelers
 using CTBase: CTBase
 using NLPModels: NLPModels
 using SolverCore: SolverCore
 using ADNLPModels: ADNLPModels
 using ExaModels: ExaModels
-using CTSolvers.DOCP  # For testing exported symbols
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
-const CurrentModule = TestDOCP
 
 # ============================================================================
 # FAKE TYPES FOR TESTING (TOP-LEVEL)
@@ -109,10 +107,11 @@ function test_docp()
             end
 
             Test.@testset "Exported Types" begin
-                for T in (DiscretizedModel, AbstractDiscretizer)
-                    Test.@testset "$(nameof(T))" begin
-                        Test.@test isdefined(DOCP, nameof(T))
-                        Test.@test isdefined(CurrentModule, nameof(T))
+                for name in (:DiscretizedModel, :AbstractDiscretizer)
+                    Test.@testset "$name" begin
+                        Test.@test isdefined(DOCP, name)
+                        Test.@test name in names(DOCP)
+                        T = getfield(DOCP, name)
                         Test.@test T isa DataType || T isa UnionAll
                     end
                 end
@@ -122,8 +121,8 @@ function test_docp()
                 for f in (:ocp_model, :nlp_model, :ocp_solution, :discretize)
                     Test.@testset "$f" begin
                         Test.@test isdefined(DOCP, f)
-                        Test.@test isdefined(CurrentModule, f)
-                        Test.@test getfield(CurrentModule, f) isa Function
+                        Test.@test f in names(DOCP)
+                        Test.@test getfield(DOCP, f) isa Function
                     end
                 end
             end

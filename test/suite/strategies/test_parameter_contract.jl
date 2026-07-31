@@ -1,12 +1,11 @@
 module TestParameterContract
-import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
 
 using Test
 using CTSolvers
-using CTBase.Strategies
-using CTBase.Strategies: default_parameter, parameter
-using CTBase.Exceptions
+using CTBase: Strategies
+using CTBase: Exceptions
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
@@ -21,8 +20,8 @@ Fake strategy type that does NOT implement the parameter contract.
 This type is used to test that the fallback implementations correctly
 throw NotImplemented errors.
 """
-struct FakeStrategyWithoutContract <: AbstractStrategy
-    options::StrategyOptions
+struct FakeStrategyWithoutContract <: Strategies.AbstractStrategy
+    options::Strategies.StrategyOptions
 end
 
 # Intentionally DO NOT implement default_parameter or parameter to test the fallback behavior
@@ -51,12 +50,12 @@ function test_parameter_contract()
         Test.@testset "Fallback implementations throw NotImplemented" begin
             Test.@testset "default_parameter fallback" begin
                 err = try
-                    default_parameter(FakeStrategyWithoutContract)
+                    Strategies.default_parameter(FakeStrategyWithoutContract)
                 catch e
                     e
                 end
 
-                Test.@test err isa NotImplemented
+                Test.@test err isa Exceptions.NotImplemented
                 Test.@test occursin("must implement default_parameter", err.msg)
                 Test.@test occursin("Strategies.default_parameter", err.required_method)
                 Test.@test occursin("Strategies.default_parameter", err.suggestion)
@@ -65,12 +64,12 @@ function test_parameter_contract()
 
             Test.@testset "parameter fallback" begin
                 err = try
-                    parameter(FakeStrategyWithoutContract)
+                    Strategies.parameter(FakeStrategyWithoutContract)
                 catch e
                     e
                 end
 
-                Test.@test err isa NotImplemented
+                Test.@test err isa Exceptions.NotImplemented
                 Test.@test occursin("parameter", lowercase(err.msg))
                 Test.@test occursin("parameter", err.required_method)
                 Test.@test occursin("parameter", err.suggestion)
@@ -96,8 +95,8 @@ function test_parameter_contract()
             for (strategy_type, name) in strategies
                 Test.@testset "$name implements contract" begin
                     # Should not throw NotImplemented
-                    default = Test.@test_nowarn default_parameter(strategy_type)
-                    Test.@test default == CPU  # All current strategies default to CPU
+                    default = Test.@test_nowarn Strategies.default_parameter(strategy_type)
+                    Test.@test default == Strategies.CPU  # All current strategies default to CPU
 
                     # Type constraints enforce parameter validation at compile-time
                     # No runtime _supported_parameters() needed
@@ -113,7 +112,7 @@ function test_parameter_contract()
             Test.@testset "Cannot use FakeStrategyWithoutContract in registry" begin
                 # Attempting to query default parameter for a strategy without contract
                 # should fail with NotImplemented
-                Test.@test_throws NotImplemented default_parameter(
+                Test.@test_throws Exceptions.NotImplemented Strategies.default_parameter(
                     FakeStrategyWithoutContract
                 )
             end

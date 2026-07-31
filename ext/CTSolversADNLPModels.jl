@@ -7,14 +7,12 @@ functionality that requires ADNLPModels types.
 """
 module CTSolversADNLPModels
 
-import DocStringExtensions: TYPEDSIGNATURES
-import CTSolvers.Modelers
-import CTBase.Strategies
-import CTBase.Core
-import CTBase.Exceptions
+using DocStringExtensions: TYPEDSIGNATURES
+using CTSolvers: Modelers
+using CTBase: Strategies
+using CTBase: Core
+using CTBase: Exceptions
 using ADNLPModels: ADNLPModels
-
-using CTBase.Strategies: CPU, AbstractStrategyParameter
 
 # ============================================================================
 # ADBackend type-check helpers (override weak-dep stubs in core)
@@ -93,7 +91,7 @@ AD backend overrides for individual derivative operations.
 See also: [`CTSolvers.Modelers.ADNLP`](@ref),
 [`CTSolvers.Modelers._build_adnlp_modeler`](@ref)
 """
-function Strategies.metadata(::Type{Modelers.ADNLP{P}}) where {P<:CPU}
+function Strategies.metadata(::Type{Modelers.ADNLP{P}}) where {P<:Strategies.CPU}
     return Strategies.StrategyMetadata(
         # === Basic Options ===
         Strategies.OptionDefinition(;
@@ -194,7 +192,7 @@ Whenever the deprecated keyword `:adnlp_backend` is passed, a warning is issued
 and `:backend` should be used instead.
 
 # Arguments
-- `parameter::Type{<:AbstractStrategyParameter}`: strategy parameter type (e.g. `CPU`)
+- `parameter::Type{<:Strategies.AbstractStrategyParameter}`: strategy parameter type (e.g. `Strategies.CPU`)
 - `mode::Symbol`: validation mode, `:strict` (default) or `:permissive`
 - `kwargs...`: options forwarded to [`CTBase.Strategies.build_strategy_options`](@extref)
 
@@ -206,7 +204,7 @@ See also: [`CTSolvers.Modelers.ADNLP`](@ref),
 """
 function Modelers._build_adnlp_modeler(
     ::Type{Modelers.ADNLPTag},
-    parameter::Type{<:AbstractStrategyParameter};
+    parameter::Type{<:Strategies.AbstractStrategyParameter};
     mode::Symbol=:strict,
     kwargs...,
 )

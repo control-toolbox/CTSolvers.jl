@@ -40,7 +40,7 @@ Return the default execution backend for CPU parameter.
 
 Always returns `nothing` for CPU execution.
 """
-__exa_model_backend(::Type{CPU}) = nothing
+__exa_model_backend(::Type{Strategies.CPU}) = nothing
 
 """
 $(TYPEDSIGNATURES)
@@ -49,7 +49,7 @@ Return the default execution backend for GPU parameter.
 
 Returns CUDA backend if available, throws ExtensionError otherwise.
 """
-function __exa_model_backend(P::Type{GPU})
+function __exa_model_backend(P::Type{Strategies.GPU})
     return __get_cuda_backend(P)
 end
 
@@ -71,7 +71,7 @@ and returns an appropriate CUDA backend.
 - Issues a warning if CUDA is loaded but not functional
 - Uses CUDA.CUDABackend() for GPU execution
 """
-function __get_cuda_backend(::Type{<:GPU})
+function __get_cuda_backend(::Type{<:Strategies.GPU})
     return throw(
         Exceptions.ExtensionError(
             :CUDA;
@@ -88,7 +88,7 @@ $(TYPEDSIGNATURES)
 Check if backend is consistent with parameter type.
 
 # Arguments
-- `parameter_type::Type{<:AbstractStrategyParameter}`: CPU or GPU parameter
+- `parameter_type::Type{<:Strategies.AbstractStrategyParameter}`: CPU or GPU parameter
 - `backend`: Backend to check consistency for
 
 # Returns
@@ -98,7 +98,7 @@ Check if backend is consistent with parameter type.
 - Default implementation returns true (all combinations allowed)
 - Specific implementations in extensions provide actual consistency checks
 """
-function __consistent_backend(::Type{<:AbstractStrategyParameter}, backend)
+function __consistent_backend(::Type{<:Strategies.AbstractStrategyParameter}, backend)
     return true
 end
 
@@ -118,8 +118,8 @@ support for various execution backends (CPU, GPU) and floating-point types.
 ## Parameterized Types
 
 The modeler supports parameterization for execution backend:
-- `Exa{CPU}`: CPU execution (default)
-- `Exa{GPU}`: GPU execution (requires CUDA.jl)
+- `Exa{Strategies.CPU}`: CPU execution (default)
+- `Exa{Strategies.GPU}`: GPU execution (requires CUDA.jl)
 
 # Constructors
 
@@ -128,8 +128,8 @@ The modeler supports parameterization for execution backend:
 Modelers.Exa(; mode::Symbol=:strict, kwargs...)
 
 # Explicit parameter specification
-Modelers.Exa{CPU}(; mode::Symbol=:strict, kwargs...)
-Modelers.Exa{GPU}(; mode::Symbol=:strict, kwargs...)
+Modelers.Exa{Strategies.CPU}(; mode::Symbol=:strict, kwargs...)
+Modelers.Exa{Strategies.GPU}(; mode::Symbol=:strict, kwargs...)
 ```
 
 # Arguments
@@ -152,10 +152,10 @@ Modelers.Exa{GPU}(; mode::Symbol=:strict, kwargs...)
 modeler = Modelers.Exa()
 
 # Explicit CPU modeler
-modeler = Modelers.Exa{CPU}()
+modeler = Modelers.Exa{Strategies.CPU}()
 
 # GPU modeler (requires CUDA.jl)
-modeler = Modelers.Exa{GPU}()
+modeler = Modelers.Exa{Strategies.GPU}()
 ```
 
 ## Type Specification
@@ -170,10 +170,10 @@ modeler = Modelers.Exa(base_type=Float64)
 ## Backend Configuration
 ```julia
 # CPU backend (default for Exa{CPU})
-modeler = Modelers.Exa{CPU}(backend=nothing)
+modeler = Modelers.Exa{Strategies.CPU}(backend=nothing)
 
 # GPU backend (default for Exa{GPU})
-modeler = Modelers.Exa{GPU}()  # Uses CUDA backend automatically
+modeler = Modelers.Exa{Strategies.GPU}()  # Uses CUDA backend automatically
 ```
 
 ## Validation Modes
@@ -192,7 +192,7 @@ modeler = Modelers.Exa(
 ## Complete Configuration
 ```julia
 # Full configuration with type and backend
-modeler = Modelers.Exa{GPU}(
+modeler = Modelers.Exa{Strategies.GPU}(
     base_type=Float32;
     mode=:permissive
 )
@@ -209,7 +209,7 @@ modeler = Modelers.Exa{GPU}(
 - `Modelers.ADNLP`: Alternative modeler using ADNLPModels
 - `build_model`: Build model from problem and modeler
 - `solve!`: Solve optimization problem
-- `CPU`, `GPU`: Strategy parameters
+- `Strategies.CPU`, `Strategies.GPU`: Strategy parameters
 
 # Notes
 
@@ -224,7 +224,7 @@ modeler = Modelers.Exa{GPU}(
 - ExaModels.jl: [https://github.com/JuliaSmoothOptimizers/ExaModels.jl](https://github.com/JuliaSmoothOptimizers/ExaModels.jl)
 - KernelAbstractions.jl: [https://github.com/JuliaGPU/KernelAbstractions.jl](https://github.com/JuliaGPU/KernelAbstractions.jl)
 """
-struct Exa{P<:Union{CPU,GPU}} <: AbstractNLPModeler
+struct Exa{P<:Union{Strategies.CPU,Strategies.GPU}} <: AbstractNLPModeler
     options::Strategies.StrategyOptions
 end
 
@@ -246,31 +246,31 @@ $(TYPEDSIGNATURES)
 
 Default parameter type for Exa when not explicitly specified.
 
-Returns `CPU` as the default execution parameter.
+Returns `Strategies.CPU` as the default execution parameter.
 
 # Implementation Notes
 
 This method is part of the `AbstractStrategy` parameter contract and must be
 implemented by all parameterized strategies.
 
-See also: `Exa`, `CPU`
+See also: `Exa`, `Strategies.CPU`
 """
-Strategies.default_parameter(::Type{<:Modelers.Exa}) = CPU
+Strategies.default_parameter(::Type{<:Modelers.Exa}) = Strategies.CPU
 
 """
 $(TYPEDSIGNATURES)
 
 Return the execution parameter type of an `Exa` strategy.
 
-Extracts the type parameter `P` from `Exa{P}`, which can be either `CPU` or
-`GPU` since Exa supports both execution backends.
+Extracts the type parameter `P` from `Exa{P}`, which can be either `Strategies.CPU` or
+`Strategies.GPU` since Exa supports both execution backends.
 
 # Returns
-- `Type{<:Union{CPU,GPU}}`: the execution parameter type.
+- `Type{<:Union{Strategies.CPU,Strategies.GPU}}`: the execution parameter type.
 
 See also: [`CTSolvers.Modelers.Exa`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
 """
-Strategies.parameter(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU,GPU}} = P
+Strategies.parameter(::Type{<:Modelers.Exa{P}}) where {P<:Union{Strategies.CPU,Strategies.GPU}} = P
 
 # Strategy metadata with option definitions (parameterized)
 """
@@ -283,7 +283,7 @@ Stub — real implementation provided by the CTSolversExaModels extension.
 
 See also: `Modelers.Exa`, `Strategies.StrategyMetadata`
 """
-function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU,GPU}}
+function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:Union{Strategies.CPU,Strategies.GPU}}
     return throw(
         Exceptions.ExtensionError(
             :ExaModels;
@@ -297,13 +297,13 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Fallback for non-parameterized `Exa` type that delegates to `Exa{CPU}`.
+Fallback for non-parameterized `Exa` type that delegates to `Exa{Strategies.CPU}`.
 
 This provides backward compatibility and a sensible default when the parameter
-is not specified. The call will delegate to `metadata(Exa{CPU})`.
+is not specified. The call will delegate to `metadata(Exa{Strategies.CPU})`.
 
 # Returns
-- `StrategyMetadata`: Metadata for `Exa{CPU}`
+- `StrategyMetadata`: Metadata for `Exa{Strategies.CPU}`
 """
 function Strategies.metadata(::Type{Modelers.Exa})
     return Strategies.metadata(Modelers.Exa{Strategies.default_parameter(Modelers.Exa)})
@@ -337,7 +337,7 @@ See also: `Modelers.Exa`, `_build_exa_modeler`
 """
 function Modelers.Exa{P}(;
     mode::Symbol=:strict, kwargs...
-) where {P<:AbstractStrategyParameter}
+) where {P<:Strategies.AbstractStrategyParameter}
     return _build_exa_modeler(ExaTag, P; mode=mode, kwargs...)
 end
 
@@ -353,7 +353,7 @@ Real implementation provided by the extension.
 See also: `Modelers.Exa`, `Strategies.metadata`
 """
 function _build_exa_modeler(
-    ::Type{<:Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag}, parameter::Type{<:Strategies.AbstractStrategyParameter}; kwargs...
 )
     return throw(
         Exceptions.ExtensionError(
@@ -380,13 +380,13 @@ Requires the CTSolversExaModels extension to be loaded.
 - `kwargs...`: Modeler options (see `Modelers.Exa` documentation)
 
 # Returns
-- `Modelers.Exa{CPU}`: Configured modeler instance with CPU parameter
+- `Modelers.Exa{Strategies.CPU}`: Configured modeler instance with CPU parameter
 
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the ExaModels extension is not loaded
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 
-See also: `Modelers.Exa`, `Modelers.Exa{CPU}`, `Modelers.Exa{GPU}`, `_build_exa_modeler`
+See also: `Modelers.Exa`, `Modelers.Exa{Strategies.CPU}`, `Modelers.Exa{Strategies.GPU}`, `_build_exa_modeler`
 """
 function Modelers.Exa(; mode::Symbol=:strict, kwargs...)
     P = Strategies.default_parameter(Modelers.Exa)

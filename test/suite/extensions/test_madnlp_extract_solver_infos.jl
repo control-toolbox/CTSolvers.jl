@@ -1,7 +1,7 @@
 module TestExtMadNLP
 
 using Test: Test
-import CTSolvers.Solvers
+using CTSolvers: Solvers
 using MadNLP: MadNLP
 using NLPModels: NLPModels
 using ADNLPModels: ADNLPModels

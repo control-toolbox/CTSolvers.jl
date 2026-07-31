@@ -11,7 +11,7 @@ $(TYPEDSIGNATURES)
 Return the default linear solver for the given parameter type.
 
 # Arguments
-- `parameter_type::Type{<:AbstractStrategyParameter}`: CPU or GPU parameter
+- `parameter_type::Type{<:Strategies.AbstractStrategyParameter}`: CPU or GPU parameter
 
 # Returns
 - `Type{<:MadNLP.AbstractLinearSolver}`: Default linear solver type
@@ -24,7 +24,7 @@ Return the default linear solver for the given parameter type.
 - CPU implementation provided by CTSolversMadNLP extension
 - GPU implementation provided by CTSolversMadNLPGPU extension
 """
-function __madnlp_suite_default_linear_solver(::Type{<:GPU})
+function __madnlp_suite_default_linear_solver(::Type{<:Strategies.GPU})
     return throw(
         Exceptions.ExtensionError(
             :MadNLPGPU;
@@ -41,7 +41,7 @@ $(TYPEDSIGNATURES)
 Check if linear solver is consistent with parameter type.
 
 # Arguments
-- `parameter_type::Type{<:AbstractStrategyParameter}`: CPU or GPU parameter
+- `parameter_type::Type{<:Strategies.AbstractStrategyParameter}`: CPU or GPU parameter
 - `linear_solver::Type`: Linear solver type
 
 # Returns
@@ -52,7 +52,7 @@ Check if linear solver is consistent with parameter type.
 - Specific implementations in extensions provide actual consistency checks
 """
 function __madnlp_suite_consistent_linear_solver(
-    ::Type{<:AbstractStrategyParameter}, linear_solver::Type
+    ::Type{<:Strategies.AbstractStrategyParameter}, linear_solver::Type
 )
     return true
 end
@@ -68,7 +68,7 @@ type to validate against, so the pair is treated as consistent (no warning). Thi
 metadata construction and `describe` robust on machines without a functional GPU.
 """
 function __madnlp_suite_consistent_linear_solver(
-    ::Type{<:AbstractStrategyParameter}, ::Nothing
+    ::Type{<:Strategies.AbstractStrategyParameter}, ::Nothing
 )
     return true
 end

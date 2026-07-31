@@ -6,8 +6,8 @@ Tests the mode parameter itself: validation, default behavior, and error handlin
 module TestValidationMode
 
 using Test: Test
-import CTBase.Strategies
-import CTSolvers.Solvers
+using CTBase: Strategies
+using CTSolvers: Solvers
 using NLPModelsIpopt: NLPModelsIpopt
 
 # Test options for verbose output

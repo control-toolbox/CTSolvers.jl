@@ -1,10 +1,10 @@
 module TestIntegratorMetadata
 
 using Test: Test
-import CTBase.Core
-import CTBase.Exceptions
-import CTSolvers.Integrators
-import CTBase.Strategies
+using CTBase: Core
+using CTBase: Exceptions
+using CTSolvers: Integrators
+using CTBase: Strategies
 using OrdinaryDiffEqTsit5: OrdinaryDiffEqTsit5, Tsit5
 using SciMLBase: SciMLBase
 using DiffEqBase: DiffEqBase

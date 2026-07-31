@@ -1,11 +1,11 @@
 module TestExtMadNCL
 
 using Test: Test
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
 using CTSolvers: CTSolvers
-import CTSolvers.Optimization
-import CTSolvers.Solvers
-import CTSolvers.Modelers
+using CTSolvers: Optimization
+using CTSolvers: Solvers
+using CTSolvers: Modelers
 using MadNCL: MadNCL
 using MadNLP: MadNLP
 using NLPModels: NLPModels
@@ -13,7 +13,7 @@ using ADNLPModels: ADNLPModels
 using SolverCore: SolverCore
 
 include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
-import .TestProblems
+using .TestProblems: TestProblems
 
 # Default test options (can be overridden by Main.TestData if available)
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

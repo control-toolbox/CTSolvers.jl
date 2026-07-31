@@ -42,15 +42,15 @@ See also: `AbstractNLPSolver`, `Solvers.Ipopt`
 module Solvers
 
 # Imports
-import DocStringExtensions: TYPEDEF, TYPEDSIGNATURES, TYPEDFIELDS
+using DocStringExtensions: TYPEDEF, TYPEDSIGNATURES, TYPEDFIELDS
 using SolverCore: SolverCore
 using CommonSolve: CommonSolve
-import CTBase.Exceptions
-import CTBase.Core
+using CTBase: Exceptions
+using CTBase: Core
 
 # CTBase generic infrastructure
-using CTBase.Strategies
-using CTBase.Options
+using CTBase: Strategies
+using CTBase: Options
 
 # Internal CTSolvers modules
 using ..Optimization

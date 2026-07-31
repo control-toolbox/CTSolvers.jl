@@ -6,21 +6,18 @@ Implements the complete Solvers.MadNCL functionality with proper option definiti
 """
 module CTSolversMadNCL
 
-import DocStringExtensions: TYPEDSIGNATURES
-import CTSolvers.Solvers
+using DocStringExtensions: TYPEDSIGNATURES
+using CTSolvers: Solvers
 using CommonSolve: CommonSolve
-import CTBase.Strategies
-import CTBase.Options
-import CTBase.Core
-import CTSolvers.Optimization
-import CTBase.Exceptions
+using CTBase: Strategies
+using CTBase: Options
+using CTBase: Core
+using CTSolvers: Optimization
+using CTBase: Exceptions
 using MadNCL: MadNCL
 using MadNLP: MadNLP
 using NLPModels: NLPModels
 using SolverCore: SolverCore
-
-# Import parameter types
-using CTBase.Strategies: CPU, GPU, AbstractStrategyParameter
 
 # ============================================================================
 # Helper Functions
@@ -46,7 +43,7 @@ The metadata is parameterized by the execution backend (CPU or GPU).
 For GPU execution, the default linear solver is automatically set to
 `MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`.
 """
-function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrategyParameter}
+function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:Strategies.AbstractStrategyParameter}
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:max_iter,
@@ -95,7 +92,7 @@ function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:AbstractStrate
             computed=true,  # Default is computed from parameter P
             validator=function (linear_solver)
                 if !Solvers.__madnlp_suite_consistent_linear_solver(P, linear_solver)
-                    param_str = P == CPU ? "CPU" : "GPU"
+                    param_str = P == Strategies.CPU ? "CPU" : "GPU"
                     @warn "Inconsistent linear solver ($linear_solver) for $param_str parameter" maxlog=1
                 end
                 return linear_solver
@@ -361,7 +358,7 @@ Build a MadNCL with validated options.
 
 # Arguments
 - `tag::Solvers.MadNCLTag`: Tag for dispatch
-- `parameter::AbstractStrategyParameter`: Execution parameter (CPU or GPU)
+- `parameter::Strategies.AbstractStrategyParameter`: Execution parameter (CPU or GPU)
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
@@ -371,13 +368,13 @@ Build a MadNCL with validated options.
 
 ```julia
 # Conceptual usage
-solver_cpu = _build_madncl_solver(MadNCLTag(), CPU(); max_iter=1000)
-solver_gpu = _build_madncl_solver(MadNCLTag(), GPU(); max_iter=1000)  # requires MadNLPGPU
+solver_cpu = _build_madncl_solver(MadNCLTag(), Strategies.CPU(); max_iter=1000)
+solver_gpu = _build_madncl_solver(MadNCLTag(), Strategies.GPU(); max_iter=1000)  # requires MadNLPGPU
 ```
 """
 function Solvers._build_madncl_solver(
     ::Type{Solvers.MadNCLTag},
-    parameter::Type{<:AbstractStrategyParameter};
+    parameter::Type{<:Strategies.AbstractStrategyParameter};
     mode::Symbol=:strict,
     kwargs...,
 )

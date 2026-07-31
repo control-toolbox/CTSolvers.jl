@@ -1,13 +1,13 @@
 module TestIntegrationParameters
 
 using Test: Test
-import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
-import CTBase.Exceptions
-import CTBase.Strategies
-import CTSolvers.Modelers
-import CTSolvers.Solvers
-import CTBase.Options
+using ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using CTBase: Exceptions
+using CTBase: Strategies
+using CTSolvers: Modelers
+using CTSolvers: Solvers
+using CTBase: Options
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true

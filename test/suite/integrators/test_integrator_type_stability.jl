@@ -1,8 +1,8 @@
 module TestIntegratorTypeStability
 
 using Test: Test
-import CTSolvers.Integrators
-import CTBase.Strategies
+using CTSolvers: Integrators
+using CTBase: Strategies
 using OrdinaryDiffEqTsit5: OrdinaryDiffEqTsit5, Tsit5
 using SciMLBase: SciMLBase, ODEProblem
 using DiffEqBase: DiffEqBase

@@ -1,8 +1,8 @@
 module TestMadNLPGPULinearSolver
 
 using Test: Test
-import CTBase.Strategies
-import CTSolvers.Solvers
+using CTBase: Strategies
+using CTSolvers: Solvers
 
 # Import extensions to enable metadata testing
 using MadNLP: MadNLP

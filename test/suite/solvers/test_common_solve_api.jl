@@ -1,8 +1,8 @@
 module TestCommonSolveAPI
 
 using Test: Test
-import CTBase.Exceptions
-import CTSolvers.Solvers
+using CTBase: Exceptions
+using CTSolvers: Solvers
 using NLPModels: NLPModels
 using SolverCore: SolverCore
 using ADNLPModels: ADNLPModels

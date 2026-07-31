@@ -1,10 +1,10 @@
 module TestCoverageSolvers
 
 using Test: Test
-import CTBase.Exceptions
-import CTSolvers.Solvers
-import CTBase.Strategies
-import CTBase.Options
+using CTBase: Exceptions
+using CTSolvers: Solvers
+using CTBase: Strategies
+using CTBase: Options
 using NLPModels: NLPModels
 using SolverCore: SolverCore
 using ADNLPModels: ADNLPModels

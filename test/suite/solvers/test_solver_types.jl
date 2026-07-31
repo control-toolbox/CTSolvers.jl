@@ -1,10 +1,10 @@
 module TestSolverTypes
 
 using Test: Test
-import CTBase.Core
-import CTBase.Exceptions
-import CTSolvers.Solvers
-import CTBase.Strategies
+using CTBase: Core
+using CTBase: Exceptions
+using CTSolvers: Solvers
+using CTBase: Strategies
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true

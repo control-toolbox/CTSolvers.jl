@@ -16,14 +16,14 @@ Date: 2026-02-06
 module TestRouteToComprehensive
 
 using Test: Test
-import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
-import CTBase.Exceptions
-import CTBase.Strategies
-import CTBase.Orchestration
-import CTBase.Options
-import CTSolvers.Modelers
-import CTSolvers.Solvers
+using ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using CTBase: Exceptions
+using CTBase: Strategies
+using CTBase: Orchestration
+using CTBase: Options
+using CTSolvers: Modelers
+using CTSolvers: Solvers
 
 # Load extensions if available for real strategy testing
 const IPOPT_AVAILABLE = try

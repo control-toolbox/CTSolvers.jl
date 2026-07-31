@@ -13,10 +13,10 @@ ForwardDiff dual numbers.
 """
 module CTSolversForwardDiff
 
-import DocStringExtensions: TYPEDSIGNATURES
+using DocStringExtensions: TYPEDSIGNATURES
 using ForwardDiff: ForwardDiff
 
-using CTSolvers.Integrators: Integrators
+using CTSolvers: Integrators
 
 """
 $(TYPEDSIGNATURES)

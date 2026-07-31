@@ -4,17 +4,17 @@ using Test
 using CTBase: CTBase
 const Exceptions = CTBase.Exceptions
 using CTSolvers
-using CTSolvers.Solvers
-using CTBase.Strategies
-using CTBase.Options
-using CTSolvers.Modelers
-using CTSolvers.Optimization
+using CTSolvers: Solvers
+using CTBase: Strategies
+using CTBase: Options
+using CTSolvers: Modelers
+using CTSolvers: Optimization
 using CommonSolve
 using NLPModels
 using ADNLPModels
 
 include(joinpath(@__DIR__, "..", "..", "problems", "TestProblems.jl"))
-import .TestProblems
+using .TestProblems: TestProblems
 
 # # Trigger extension loading
 # using NLPModelsKnitro

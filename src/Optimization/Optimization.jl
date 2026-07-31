@@ -19,8 +19,8 @@ Solver-side utilities (e.g. `extract_solver_infos`) live in `Solvers`.
 module Optimization
 
 # Imports
-import CTBase.Core
-import DocStringExtensions: TYPEDEF
+using CTBase: Core
+using DocStringExtensions: TYPEDEF
 
 # Submodules
 include(joinpath(@__DIR__, "abstract_types.jl"))

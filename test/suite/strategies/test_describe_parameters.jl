@@ -5,11 +5,11 @@
 module TestDescribeParameters
 
 using Test: Test
-import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
-import CTBase.Exceptions
+using ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using CTBase: Exceptions
 using CTSolvers: CTSolvers
-import CTBase.Strategies
+using CTBase: Strategies
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true

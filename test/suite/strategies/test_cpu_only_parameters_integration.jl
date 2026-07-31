@@ -1,15 +1,13 @@
 module TestCPUOnlyParametersIntegration
-import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
 
 using Test
 using CTSolvers
-using CTSolvers.Modelers
-using CTSolvers.Modelers: AbstractNLPModeler
-using CTSolvers.Solvers
-using CTSolvers.Solvers: AbstractNLPSolver
-using CTBase.Strategies
-using CTBase.Exceptions
+using CTSolvers: Modelers
+using CTSolvers: Solvers
+using CTBase: Strategies
+using CTBase: Exceptions
 using CUDA
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
@@ -22,7 +20,7 @@ is_cuda_on() = CUDA.functional()
 # Fake parameter type for testing (must be at module top-level)
 # ============================================================================
 
-struct FakeParam <: AbstractStrategyParameter end
+struct FakeParam <: Strategies.AbstractStrategyParameter end
 Strategies.id(::Type{FakeParam}) = :fake
 
 # ============================================================================
@@ -44,11 +42,11 @@ function test_cpu_only_parameters_integration()
         Test.@testset "Registry with CPU-only strategies" begin
             # Create registry with parameterized CPU-only strategies
             registry = Strategies.create_registry(
-                AbstractNLPModeler => (
+                Modelers.AbstractNLPModeler => (
                     (Modelers.ADNLP, [Strategies.CPU]),
                     (Modelers.Exa, [Strategies.CPU, Strategies.GPU]),
                 ),
-                AbstractNLPSolver => (
+                Solvers.AbstractNLPSolver => (
                     (Solvers.Ipopt, [Strategies.CPU]),
                     (Solvers.MadNLP, [Strategies.CPU, Strategies.GPU]),
                     (Solvers.MadNCL, [Strategies.CPU, Strategies.GPU]),
@@ -59,11 +57,11 @@ function test_cpu_only_parameters_integration()
             Test.@test registry isa Strategies.StrategyRegistry
 
             # Verify strategy IDs
-            modeler_ids = Strategies.strategy_ids(AbstractNLPModeler, registry)
+            modeler_ids = Strategies.strategy_ids(Modelers.AbstractNLPModeler, registry)
             Test.@test :adnlp in modeler_ids
             Test.@test :exa in modeler_ids
 
-            solver_ids = Strategies.strategy_ids(AbstractNLPSolver, registry)
+            solver_ids = Strategies.strategy_ids(Solvers.AbstractNLPSolver, registry)
             Test.@test :ipopt in solver_ids
             Test.@test :madnlp in solver_ids
             Test.@test :madncl in solver_ids
@@ -75,18 +73,18 @@ function test_cpu_only_parameters_integration()
 
         Test.@testset "Build CPU-only strategies from registry" begin
             registry = Strategies.create_registry(
-                AbstractNLPModeler => ((Modelers.ADNLP, [Strategies.CPU]),),
-                AbstractNLPSolver => ((Solvers.Ipopt, [Strategies.CPU]),),
+                Modelers.AbstractNLPModeler => ((Modelers.ADNLP, [Strategies.CPU]),),
+                Solvers.AbstractNLPSolver => ((Solvers.Ipopt, [Strategies.CPU]),),
             )
 
             # Build ADNLP with CPU (should work)
             Test.@test_nowarn Strategies.build_strategy(
-                :adnlp, Strategies.CPU, AbstractNLPModeler, registry
+                :adnlp, Strategies.CPU, Modelers.AbstractNLPModeler, registry
             )
 
             # Verify type
             modeler = Strategies.build_strategy(
-                :adnlp, Strategies.CPU, AbstractNLPModeler, registry
+                :adnlp, Strategies.CPU, Modelers.AbstractNLPModeler, registry
             )
             Test.@test modeler isa Modelers.ADNLP{Strategies.CPU}
         end
@@ -97,13 +95,13 @@ function test_cpu_only_parameters_integration()
 
         Test.@testset "Reject GPU parameter for CPU-only strategies" begin
             registry = Strategies.create_registry(
-                AbstractNLPModeler => ((Modelers.ADNLP, [Strategies.CPU]),)
+                Modelers.AbstractNLPModeler => ((Modelers.ADNLP, [Strategies.CPU]),)
             )
 
             # Attempting to build ADNLP with GPU should fail
             Test.@test_throws Exceptions.IncorrectArgument begin
                 Strategies.build_strategy(
-                    :adnlp, Strategies.GPU, AbstractNLPModeler, registry
+                    :adnlp, Strategies.GPU, Modelers.AbstractNLPModeler, registry
                 )
             end
         end
@@ -114,7 +112,7 @@ function test_cpu_only_parameters_integration()
 
         Test.@testset "Mixed CPU-only and GPU-capable strategies" begin
             registry = Strategies.create_registry(
-                AbstractNLPModeler => (
+                Modelers.AbstractNLPModeler => (
                     (Modelers.ADNLP, [Strategies.CPU]),
                     (Modelers.Exa, [Strategies.CPU, Strategies.GPU]),
                 ),
@@ -122,17 +120,17 @@ function test_cpu_only_parameters_integration()
 
             # CPU parameter works for both
             Test.@test_nowarn Strategies.build_strategy(
-                :adnlp, Strategies.CPU, AbstractNLPModeler, registry
+                :adnlp, Strategies.CPU, Modelers.AbstractNLPModeler, registry
             )
             Test.@test_nowarn Strategies.build_strategy(
-                :exa, Strategies.CPU, AbstractNLPModeler, registry
+                :exa, Strategies.CPU, Modelers.AbstractNLPModeler, registry
             )
 
             # GPU tests only if CUDA is functional
             if is_cuda_on()
                 # GPU parameter works only for Exa
                 Test.@test_nowarn Strategies.build_strategy(
-                    :exa, Strategies.GPU, AbstractNLPModeler, registry
+                    :exa, Strategies.GPU, Modelers.AbstractNLPModeler, registry
                 )
             else
                 # CUDA not functional — skip GPU test silently
@@ -141,7 +139,7 @@ function test_cpu_only_parameters_integration()
             # GPU parameter fails for ADNLP (doesn't require CUDA to be functional)
             Test.@test_throws Exceptions.IncorrectArgument begin
                 Strategies.build_strategy(
-                    :adnlp, Strategies.GPU, AbstractNLPModeler, registry
+                    :adnlp, Strategies.GPU, Modelers.AbstractNLPModeler, registry
                 )
             end
         end
@@ -152,8 +150,8 @@ function test_cpu_only_parameters_integration()
 
         Test.@testset "Parameter extraction with CPU-only strategies" begin
             registry = Strategies.create_registry(
-                AbstractNLPModeler => ((Modelers.ADNLP, [Strategies.CPU]),),
-                AbstractNLPSolver => ((Solvers.Ipopt, [Strategies.CPU]),),
+                Modelers.AbstractNLPModeler => ((Modelers.ADNLP, [Strategies.CPU]),),
+                Solvers.AbstractNLPSolver => ((Solvers.Ipopt, [Strategies.CPU]),),
             )
 
             # Method with CPU parameter should work
@@ -184,12 +182,12 @@ function test_cpu_only_parameters_integration()
 
         Test.@testset "Error messages for unsupported parameters" begin
             registry = Strategies.create_registry(
-                AbstractNLPModeler => ((Modelers.ADNLP, [Strategies.CPU]),)
+                Modelers.AbstractNLPModeler => ((Modelers.ADNLP, [Strategies.CPU]),)
             )
 
             # Test error message when trying to build with GPU
             err = try
-                Strategies.build_strategy(:adnlp, Strategies.GPU, AbstractNLPModeler, registry)
+                Strategies.build_strategy(:adnlp, Strategies.GPU, Modelers.AbstractNLPModeler, registry)
             catch e
                 e
             end

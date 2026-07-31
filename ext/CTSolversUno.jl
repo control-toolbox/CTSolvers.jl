@@ -6,19 +6,16 @@ Implements the complete Solvers.Uno functionality with proper option definitions
 """
 module CTSolversUno
 
-import DocStringExtensions: TYPEDSIGNATURES
-import CTSolvers.Solvers
+using DocStringExtensions: TYPEDSIGNATURES
+using CTSolvers: Solvers
 using CommonSolve: CommonSolve
-import CTBase.Strategies
-import CTBase.Options
-import CTBase.Core
-import CTBase.Exceptions
+using CTBase: Strategies
+using CTBase: Options
+using CTBase: Core
+using CTBase: Exceptions
 using NLPModels: NLPModels
 using SolverCore: SolverCore
 using UnoSolver: UnoSolver
-
-# Import parameter types
-using CTBase.Strategies: CPU, GPU, AbstractStrategyParameter
 
 # ============================================================================
 # Metadata definition
@@ -29,7 +26,7 @@ $(TYPEDSIGNATURES)
 
 Return metadata defining Uno options and their specifications.
 """
-function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:CPU}
+function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:Strategies.CPU}
     return Strategies.StrategyMetadata(
         # ====================================================================
         # Presets
@@ -312,7 +309,7 @@ See also: `Solvers.Uno`, `Strategies.build_strategy_options`
 """
 function Solvers._build_uno_solver(
     ::Type{Solvers.UnoTag},
-    parameter::Type{<:AbstractStrategyParameter};
+    parameter::Type{<:Strategies.AbstractStrategyParameter};
     mode::Symbol=:strict,
     kwargs...,
 )

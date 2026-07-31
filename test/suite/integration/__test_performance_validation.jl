@@ -11,8 +11,8 @@ module TestPerformanceValidation
 
 using Test
 using CTSolvers
-using CTBase.Strategies
-using CTSolvers.Solvers
+using CTBase: Strategies
+using CTSolvers: Solvers
 using BenchmarkTools
 using Random
 

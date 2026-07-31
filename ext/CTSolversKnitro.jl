@@ -6,18 +6,15 @@ Implements the complete Solvers.Knitro functionality with proper option definiti
 """
 module CTSolversKnitro
 
-import DocStringExtensions: TYPEDSIGNATURES
-import CTSolvers.Solvers
+using DocStringExtensions: TYPEDSIGNATURES
+using CTSolvers: Solvers
 using CommonSolve: CommonSolve
-import CTBase.Strategies
-import CTBase.Options
-import CTBase.Exceptions
+using CTBase: Strategies
+using CTBase: Options
+using CTBase: Exceptions
 using NLPModelsKnitro: NLPModelsKnitro
 using NLPModels: NLPModels
 using SolverCore: SolverCore
-
-# Import parameter types
-using CTBase.Strategies: CPU, GPU, AbstractStrategyParameter
 
 # ============================================================================
 # Metadata Definition
@@ -28,7 +25,7 @@ $(TYPEDSIGNATURES)
 
 Return metadata defining Knitro options and their specifications.
 """
-function Strategies.metadata(::Type{Solvers.Knitro{P}}) where {P<:CPU}
+function Strategies.metadata(::Type{Solvers.Knitro{P}}) where {P<:Strategies.CPU}
     return Strategies.StrategyMetadata(
         # ====================================================================
         # TERMINATION OPTIONS
@@ -219,7 +216,7 @@ solver_permissive = _build_knitro_solver(KnitroTag; max_iter=1000, custom_option
 """
 function Solvers._build_knitro_solver(
     ::Type{Solvers.KnitroTag},
-    parameter::Type{<:AbstractStrategyParameter};
+    parameter::Type{<:Strategies.AbstractStrategyParameter};
     mode::Symbol=:strict,
     kwargs...,
 )

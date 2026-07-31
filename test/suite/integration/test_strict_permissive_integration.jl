@@ -8,9 +8,9 @@ to ensure the system works correctly end-to-end.
 module TestStrictPermissiveIntegration
 
 using Test: Test
-import CTBase.Strategies
-import CTBase.Options
-import CTBase.Orchestration
+using CTBase: Strategies
+using CTBase: Options
+using CTBase: Orchestration
 
 # Test options for verbose output
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true

@@ -1,12 +1,12 @@
 module TestBackwardCompatibility
 
 using Test: Test
-import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
-import CTBase.Exceptions
-import CTBase.Strategies
-import CTSolvers.Modelers
-import CTSolvers.Solvers
+using ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using CTBase: Exceptions
+using CTBase: Strategies
+using CTSolvers: Modelers
+using CTSolvers: Solvers
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true

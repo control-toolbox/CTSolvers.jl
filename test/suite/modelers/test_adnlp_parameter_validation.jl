@@ -1,13 +1,13 @@
 module TestADNLPParameterValidation
-import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
 
 using Test
-import CTBase.Core
+using CTBase: Core
 using CTSolvers
-using CTSolvers.Modelers
-using CTBase.Strategies
-using CTBase.Exceptions
+using CTSolvers: Modelers
+using CTBase: Strategies
+using CTBase: Exceptions
 using Enzyme
 using Zygote
 using KernelAbstractions
@@ -19,7 +19,7 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 # Fake types for testing (must be at module top-level)
 # ============================================================================
 
-struct FakeParam <: AbstractStrategyParameter end
+struct FakeParam <: Strategies.AbstractStrategyParameter end
 Strategies.id(::Type{FakeParam}) = :fake
 
 # Dummy tag for testing extension behavior

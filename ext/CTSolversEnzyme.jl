@@ -8,8 +8,8 @@ ExtensionError behavior for the ADNLPTag.
 
 module CTSolversEnzyme
 
-import DocStringExtensions: TYPEDSIGNATURES
-import CTSolvers.Modelers
+using DocStringExtensions: TYPEDSIGNATURES
+using CTSolvers: Modelers
 
 """
 $(TYPEDSIGNATURES)

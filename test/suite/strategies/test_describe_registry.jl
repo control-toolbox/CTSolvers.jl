@@ -1,15 +1,15 @@
 module TestDescribeRegistry
 
 using Test: Test
-import ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
-import CTBase.Exceptions
+using ADNLPModels: ADNLPModels  # trigger CTSolversADNLPModels extension
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using CTBase: Exceptions
 using CTSolvers: CTSolvers
-import CTBase.Strategies
-import CTBase.Options
-import CTSolvers.Modelers
-import CTSolvers.Solvers
-import CTSolvers.Integrators
+using CTBase: Strategies
+using CTBase: Options
+using CTSolvers: Modelers
+using CTSolvers: Solvers
+using CTSolvers: Integrators
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true

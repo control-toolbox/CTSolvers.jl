@@ -14,16 +14,16 @@ Date: 2026-02-06
 module TestComprehensiveValidation
 
 using Test: Test
-import ADNLPModels: ADNLPModels # trigger CTSolversADNLPModels extension
-import ExaModels: ExaModels  # trigger CTSolversExaModels extension
-import CTBase.Exceptions
-import CTBase.Strategies
-import CTBase.Options
-import CTBase.Core
-import CTSolvers.Modelers
-import CTSolvers.Solvers
-import CTBase.Orchestration
-import CTSolvers.Optimization
+using ADNLPModels: ADNLPModels # trigger CTSolversADNLPModels extension
+using ExaModels: ExaModels  # trigger CTSolversExaModels extension
+using CTBase: Exceptions
+using CTBase: Strategies
+using CTBase: Options
+using CTBase: Core
+using CTSolvers: Modelers
+using CTSolvers: Solvers
+using CTBase: Orchestration
+using CTSolvers: Optimization
 
 # Load extensions if available for testing
 const IPOPT_AVAILABLE = try
