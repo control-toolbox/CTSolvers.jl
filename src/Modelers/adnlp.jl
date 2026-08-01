@@ -331,7 +331,9 @@ Real implementation provided by the extension.
 See also: `Modelers.ADNLP`, `Strategies.metadata`
 """
 function _build_adnlp_modeler(
-    ::Type{<:Core.AbstractTag}, parameter::Type{<:Strategies.AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag},
+    parameter::Type{<:Strategies.AbstractStrategyParameter};
+    kwargs...,
 )
     return throw(
         Exceptions.ExtensionError(

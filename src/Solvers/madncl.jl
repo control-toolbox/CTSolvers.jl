@@ -118,7 +118,11 @@ Extracts the type parameter `P` from `MadNCL{P}`, which can be either `Strategie
 
 See also: [`CTSolvers.Solvers.MadNCL`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
 """
-Strategies.parameter(::Type{<:Solvers.MadNCL{P}}) where {P<:Union{Strategies.CPU,Strategies.GPU}} = P
+function Strategies.parameter(
+    ::Type{<:Solvers.MadNCL{P}}
+) where {P<:Union{Strategies.CPU,Strategies.GPU}}
+    return P
+end
 
 # ============================================================================
 # Constructor with tag dispatch
@@ -202,7 +206,9 @@ Real implementation provided by the extension.
 See also: `MadNCL`, `Strategies.metadata`
 """
 function _build_madncl_solver(
-    ::Type{<:Core.AbstractTag}, parameter::Type{<:Strategies.AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag},
+    parameter::Type{<:Strategies.AbstractStrategyParameter};
+    kwargs...,
 )
     return throw(
         Exceptions.ExtensionError(

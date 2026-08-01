@@ -31,9 +31,8 @@ function get_strategy_registry()::Strategies.StrategyRegistry
             (CTSolvers.Solvers.Knitro, [Strategies.CPU]),
             (CTSolvers.Solvers.Uno, [Strategies.CPU]),
         ),
-        CTSolvers.Integrators.AbstractIntegrator => (
-            (CTSolvers.Integrators.SciML, [Strategies.CPU, Strategies.GPU]),
-        ),
+        CTSolvers.Integrators.AbstractIntegrator =>
+            ((CTSolvers.Integrators.SciML, [Strategies.CPU, Strategies.GPU]),),
     )
 end
 
@@ -271,7 +270,9 @@ function test_describe_registry()
             ids = (
                 Strategies.strategy_ids(CTSolvers.Modelers.AbstractNLPModeler, registry)...,
                 Strategies.strategy_ids(CTSolvers.Solvers.AbstractNLPSolver, registry)...,
-                Strategies.strategy_ids(CTSolvers.Integrators.AbstractIntegrator, registry)...,
+                Strategies.strategy_ids(
+                    CTSolvers.Integrators.AbstractIntegrator, registry
+                )...,
             )
             for strat_id in ids
                 buf = IOBuffer()

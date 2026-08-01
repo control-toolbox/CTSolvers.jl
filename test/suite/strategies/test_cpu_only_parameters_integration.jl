@@ -187,7 +187,9 @@ function test_cpu_only_parameters_integration()
 
             # Test error message when trying to build with GPU
             err = try
-                Strategies.build_strategy(:adnlp, Strategies.GPU, Modelers.AbstractNLPModeler, registry)
+                Strategies.build_strategy(
+                    :adnlp, Strategies.GPU, Modelers.AbstractNLPModeler, registry
+                )
             catch e
                 e
             end

@@ -33,7 +33,9 @@ are loaded. Covers `:base_type` (floating-point precision) and `:backend`
 See also: [`CTSolvers.Modelers.Exa`](@ref),
 [`CTSolvers.Modelers._build_exa_modeler`](@ref)
 """
-function Strategies.metadata(::Type{Modelers.Exa{P}}) where {P<:Union{Strategies.CPU,Strategies.GPU}}
+function Strategies.metadata(
+    ::Type{Modelers.Exa{P}}
+) where {P<:Union{Strategies.CPU,Strategies.GPU}}
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:base_type,

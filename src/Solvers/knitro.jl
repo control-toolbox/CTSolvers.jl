@@ -245,7 +245,9 @@ Real implementation provided by the extension.
 See also: `Knitro`, `Strategies.metadata`
 """
 function _build_knitro_solver(
-    ::Type{<:Core.AbstractTag}, parameter::Type{<:Strategies.AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag},
+    parameter::Type{<:Strategies.AbstractStrategyParameter};
+    kwargs...,
 )
     return throw(
         Exceptions.ExtensionError(
