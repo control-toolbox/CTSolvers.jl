@@ -268,7 +268,7 @@ Extracts the type parameter `P` from `Exa{P}`, which can be either `Strategies.C
 # Returns
 - `Type{<:Union{Strategies.CPU,Strategies.GPU}}`: the execution parameter type.
 
-See also: [`CTSolvers.Modelers.Exa`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
+See also: [`CTSolvers.Modelers.Exa`](@extref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
 """
 function Strategies.parameter(
     ::Type{<:Modelers.Exa{P}}

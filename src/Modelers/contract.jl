@@ -10,13 +10,13 @@
 """
 $(TYPEDSIGNATURES)
 
-Build a [`CTSolvers.Optimization.BuiltModel`](@ref) from an optimization problem using
+Build a [`CTSolvers.Optimization.BuiltModel`](@extref) from an optimization problem using
 the specified modeler.
 
 This is the modeler contract: the modeler converts the problem into a backend NLP
-model. The returned [`CTSolvers.Optimization.BuiltModel`](@ref) carries the backend NLP
+model. The returned [`CTSolvers.Optimization.BuiltModel`](@extref) carries the backend NLP
 model together with any immutable build-time auxiliary needed later by
-[`CTSolvers.Optimization.build_solution`](@ref).
+[`CTSolvers.Optimization.build_solution`](@extref).
 
 # Contract
 Must be implemented in the package providing the concrete problem, dispatching on the
@@ -30,13 +30,13 @@ generic stub throws [`CTBase.Exceptions.NotImplemented`](@extref).
 - `modeler::AbstractNLPModeler`: The modeler strategy (e.g. `ADNLP`, `Exa`).
 
 # Returns
-- A [`CTSolvers.Optimization.BuiltModel`](@ref) bundling the backend NLP model and its build-time cache.
+- A [`CTSolvers.Optimization.BuiltModel`](@extref) bundling the backend NLP model and its build-time cache.
 
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): when no method exists for this
   `(problem, modeler)` pair.
 
-See also: [`CTSolvers.Optimization.build_solution`](@ref), [`CTSolvers.Optimization.BuiltModel`](@ref).
+See also: [`CTSolvers.Optimization.build_solution`](@extref), [`CTSolvers.Optimization.BuiltModel`](@extref).
 """
 function Optimization.build_model(
     prob::Optimization.AbstractOptimizationProblem,
@@ -60,8 +60,8 @@ Build a problem-level solution from NLP execution statistics using the specified
 modeler.
 
 This is the modeler contract: it reconstructs the solution from the
-[`CTSolvers.Optimization.BuiltModel`](@ref) returned by
-[`CTSolvers.Optimization.build_model`](@ref) (which carries the problem and the
+[`CTSolvers.Optimization.BuiltModel`](@extref) returned by
+[`CTSolvers.Optimization.build_model`](@extref) (which carries the problem and the
 immutable build-time cache) and the solver output.
 
 # Contract
@@ -82,7 +82,7 @@ in CTDirect. This generic stub throws [`CTBase.Exceptions.NotImplemented`](@extr
 - [`CTBase.Exceptions.NotImplemented`](@extref): when no method exists for this
   `(problem, modeler)` pair.
 
-See also: [`CTSolvers.Optimization.build_model`](@ref), [`CTSolvers.Optimization.BuiltModel`](@ref).
+See also: [`CTSolvers.Optimization.build_model`](@extref), [`CTSolvers.Optimization.BuiltModel`](@extref).
 """
 function Optimization.build_solution(
     built::Optimization.BuiltModel, model_solution, modeler::AbstractNLPModeler

@@ -12,7 +12,7 @@ Abstract base type for all discretization strategies.
 Concrete subtypes implement specific transcription methods (collocation, direct
 shooting, etc.) and are defined in the package providing the method. A discretizer
 is a `Strategies.AbstractStrategy`: it carries validated options and drives
-`discretize` to turn an optimal control problem into a [`DiscretizedModel`](@ref).
+`discretize` to turn an optimal control problem into a [`CTSolvers.DOCP.DiscretizedModel`](@extref).
 
 See also: `DiscretizedModel`, `discretize`.
 """

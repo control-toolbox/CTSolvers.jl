@@ -35,8 +35,8 @@ Overridden by the `CTSolversADNLPModels` extension for `ADNLPTag`.
 # Throws
 - `CTBase.Exceptions.ExtensionError`: always, until overridden by the extension
 
-See also: [`CTSolvers.Modelers.get_adnlp_available_backends`](@ref),
-[`CTSolvers.Modelers.ADNLPTag`](@ref)
+See also: [`CTSolvers.Modelers.get_adnlp_available_backends`](@extref),
+[`CTSolvers.Modelers.ADNLPTag`](@extref)
 """
 function __get_adnlp_available_backends(::Type{<:Core.AbstractTag})
     return throw(
@@ -62,8 +62,8 @@ Requires the `CTSolversADNLPModels` extension (`using ADNLPModels`) to be loaded
 # Throws
 - `CTBase.Exceptions.ExtensionError`: if `ADNLPModels` is not loaded
 
-See also: [`CTSolvers.Modelers.ADNLP`](@ref),
-[`CTSolvers.Modelers.get_validate_adnlp_backend`](@ref)
+See also: [`CTSolvers.Modelers.ADNLP`](@extref),
+[`CTSolvers.Modelers.get_validate_adnlp_backend`](@extref)
 """
 get_adnlp_available_backends() = __get_adnlp_available_backends(ADNLPTag)
 
@@ -258,7 +258,7 @@ ADNLP is CPU-only.
 # Returns
 - `Type{Strategies.CPU}`: the execution parameter type.
 
-See also: [`CTSolvers.Modelers.ADNLP`](@ref), [`CTBase.Strategies.CPU`](@extref)
+See also: [`CTSolvers.Modelers.ADNLP`](@extref), [`CTBase.Strategies.CPU`](@extref)
 """
 Strategies.parameter(::Type{<:Modelers.ADNLP{P}}) where {P<:Strategies.CPU} = P
 

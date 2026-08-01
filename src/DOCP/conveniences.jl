@@ -9,7 +9,7 @@ $(TYPEDSIGNATURES)
 Build an NLP model from a discretized optimal control problem.
 
 This is a convenience wrapper around `build_model` that returns only the backend
-NLP model (the `nlp` field of the [`BuiltModel`](@ref)). Use `build_model`
+NLP model (the `nlp` field of the [`CTSolvers.Optimization.BuiltModel`](@extref)). Use `build_model`
 directly when the build-time cache is needed (e.g. before `build_solution`).
 
 # Arguments
@@ -39,7 +39,7 @@ $(TYPEDSIGNATURES)
 Build an optimal control solution from NLP execution statistics.
 
 This is a convenience wrapper around `build_solution` that dispatches on the
-[`BuiltModel`](@ref) returned by `build_model` and ensures the return type is an
+[`CTSolvers.Optimization.BuiltModel`](@extref) returned by `build_model` and ensures the return type is an
 optimal control solution.
 
 # Arguments

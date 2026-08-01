@@ -29,7 +29,7 @@ Subtypes must implement:
 - `CTBase.Strategies.description(::Type{<:SubType})`: Return description.
 - `CTBase.Strategies.metadata(::Type{<:SubType})`: Return option metadata.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators.SciMLTag`](@ref).
+See also: [`CTSolvers.Integrators.SciML`](@extref), [`CTSolvers.Integrators.SciMLTag`](@extref).
 """
 abstract type AbstractSciMLIntegrator <: AbstractIntegrator end
 
@@ -96,7 +96,7 @@ register `SciML` without a parameter (e.g. CTFlows' flow registry) and query
 `parameter` on the bare type. A concrete `SciML{P}` resolves to `P` via the more
 specific method below.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.default_parameter`](@extref)
+See also: [`CTSolvers.Integrators.SciML`](@extref), [`CTBase.Strategies.default_parameter`](@extref)
 """
 Strategies.parameter(::Type{<:SciML}) = nothing
 
@@ -112,7 +112,7 @@ since `SciML` supports both execution devices. More specific than the bare
 # Returns
 - `Type{<:Union{Strategies.CPU,Strategies.GPU}}`: the execution parameter type.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
+See also: [`CTSolvers.Integrators.SciML`](@extref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
 """
 Strategies.parameter(::Type{<:SciML{P}}) where {P<:Union{Strategies.CPU,Strategies.GPU}} = P
 
@@ -124,7 +124,7 @@ Return the default execution parameter for `SciML` when none is specified.
 Returns `Strategies.CPU`, so `SciML(...)` builds a `SciML{Strategies.CPU}` and every existing call site is
 unaffected by the device parameterization.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.CPU`](@extref)
+See also: [`CTSolvers.Integrators.SciML`](@extref), [`CTBase.Strategies.CPU`](@extref)
 """
 Strategies.default_parameter(::Type{<:SciML}) = Strategies.CPU
 
@@ -148,7 +148,7 @@ $(TYPEDSIGNATURES)
 
 Return the pre-computed option dictionary for point (final-state) integration.
 
-See also: [`CTSolvers.Integrators.options_trajectory`](@ref).
+See also: [`CTSolvers.Integrators.options_trajectory`](@extref).
 """
 options_point(integ::SciML) = integ.options_point
 
@@ -157,7 +157,7 @@ $(TYPEDSIGNATURES)
 
 Return the pre-computed option dictionary for trajectory integration.
 
-See also: [`CTSolvers.Integrators.options_point`](@ref).
+See also: [`CTSolvers.Integrators.options_point`](@extref).
 """
 options_trajectory(integ::SciML) = integ.options_trajectory
 
@@ -178,7 +178,7 @@ Construct a `SciML{Strategies.CPU}` integrator (the default device). Equivalent 
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the `CTSolversSciMLIntegrator` extension is not loaded.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators._build_sciml_integrator`](@ref).
+See also: [`CTSolvers.Integrators.SciML`](@extref), [`CTSolvers.Integrators._build_sciml_integrator`](@extref).
 """
 function SciML(; mode::Symbol=:strict, kwargs...)
     P = Strategies.default_parameter(SciML)
@@ -199,7 +199,7 @@ Construct a parameterized `SciML{P}` integrator for the execution device `P`
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the `CTSolversSciMLIntegrator` extension is not loaded.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators._build_sciml_integrator`](@ref).
+See also: [`CTSolvers.Integrators.SciML`](@extref), [`CTSolvers.Integrators._build_sciml_integrator`](@extref).
 """
 function SciML{P}(;
     mode::Symbol=:strict, kwargs...
@@ -236,7 +236,7 @@ not loaded. The real metadata implementation is provided by the extension.
 # Throws
 - `CTBase.Exceptions.ExtensionError`: Always thrown by this stub implementation.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.StrategyMetadata`](@extref).
+See also: [`CTSolvers.Integrators.SciML`](@extref), [`CTBase.Strategies.StrategyMetadata`](@extref).
 """
 function Strategies.metadata(::Type{<:AbstractSciMLIntegrator})
     return throw(
@@ -258,7 +258,7 @@ Preserves backward compatibility for `metadata(SciML)` once the extension define
 the parameterized `metadata(SciML{P})`. Delegates through
 [`CTBase.Strategies.default_parameter`](@extref).
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.StrategyMetadata`](@extref).
+See also: [`CTSolvers.Integrators.SciML`](@extref), [`CTBase.Strategies.StrategyMetadata`](@extref).
 """
 function Strategies.metadata(::Type{SciML})
     return Strategies.metadata(SciML{Strategies.default_parameter(SciML)})
@@ -275,7 +275,7 @@ for `Tsit5Tag` is provided by `CTSolversOrdinaryDiffEqTsit5`.
 # Returns
 - `missing`: Default stub implementation.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators.Tsit5Tag`](@ref).
+See also: [`CTSolvers.Integrators.SciML`](@extref), [`CTSolvers.Integrators.Tsit5Tag`](@extref).
 """
 function __default_sciml_algorithm(::Type{<:Core.AbstractTag})
     return missing
@@ -300,7 +300,7 @@ is available (problem construction / solve), since `SciML` does not receive `u0`
 # Returns
 - `Bool`: `true` if consistent, `false` otherwise.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref).
+See also: [`CTSolvers.Integrators.SciML`](@extref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref).
 """
 function __consistent_initial_condition(::Type{<:Strategies.AbstractStrategyParameter}, u0)
     return true

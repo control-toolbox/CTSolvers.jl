@@ -122,7 +122,7 @@ Extracts the type parameter `P` from `MadNLP{P}`, which can be either `Strategie
 # Returns
 - `Type{<:Union{Strategies.CPU,Strategies.GPU}}`: the execution parameter type.
 
-See also: [`CTSolvers.Solvers.MadNLP`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
+See also: [`CTSolvers.Solvers.MadNLP`](@extref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
 """
 function Strategies.parameter(
     ::Type{<:Solvers.MadNLP{P}}

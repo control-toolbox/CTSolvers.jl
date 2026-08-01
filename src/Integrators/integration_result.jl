@@ -16,7 +16,7 @@ Subtypes must implement:
 - `status(r::SubType)`: Return the termination status as a `Symbol`.
 - `successful(r::SubType)`: Return whether the integration succeeded.
 
-See also: [`CTSolvers.Integrators.final_state`](@ref), [`CTSolvers.Integrators.times`](@ref), [`CTSolvers.Integrators.evaluate_at`](@ref), [`CTModels.Solutions.status`](@extref), [`CTModels.Solutions.successful`](@extref).
+See also: [`CTSolvers.Integrators.final_state`](@extref), [`CTSolvers.Integrators.times`](@extref), [`CTSolvers.Integrators.evaluate_at`](@extref), [`CTModels.Solutions.status`](@extref), [`CTModels.Solutions.successful`](@extref).
 """
 abstract type AbstractIntegrationResult end
 
@@ -31,7 +31,7 @@ Return the final state vector from the integration result.
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): If not implemented by the concrete type.
 
-See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTSolvers.Integrators.times`](@ref), [`CTSolvers.Integrators.evaluate_at`](@ref).
+See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@extref), [`CTSolvers.Integrators.times`](@extref), [`CTSolvers.Integrators.evaluate_at`](@extref).
 """
 function final_state(r::AbstractIntegrationResult)
     return throw(
@@ -55,7 +55,7 @@ Return the vector of time points from the integration result.
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): If not implemented by the concrete type.
 
-See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTSolvers.Integrators.final_state`](@ref), [`CTSolvers.Integrators.evaluate_at`](@ref).
+See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@extref), [`CTSolvers.Integrators.final_state`](@extref), [`CTSolvers.Integrators.evaluate_at`](@extref).
 """
 function times(r::AbstractIntegrationResult)
     return throw(
@@ -80,7 +80,7 @@ Evaluate the integration result at a specific time `t`.
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): If not implemented by the concrete type.
 
-See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTSolvers.Integrators.final_state`](@ref), [`CTSolvers.Integrators.times`](@ref).
+See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@extref), [`CTSolvers.Integrators.final_state`](@extref), [`CTSolvers.Integrators.times`](@extref).
 """
 function evaluate_at(r::AbstractIntegrationResult, t::Real)
     return throw(
@@ -108,7 +108,7 @@ on OCP solutions and on integration results.
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): If not implemented by the concrete type.
 
-See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTModels.Solutions.successful`](@extref).
+See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@extref), [`CTModels.Solutions.successful`](@extref).
 """
 function Solutions.status(r::AbstractIntegrationResult)::Symbol
     return throw(
@@ -136,7 +136,7 @@ uniformly on OCP solutions and on integration results.
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): If not implemented by the concrete type.
 
-See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref), [`CTModels.Solutions.status`](@extref).
+See also: [`CTSolvers.Integrators.AbstractIntegrationResult`](@extref), [`CTModels.Solutions.status`](@extref).
 """
 function Solutions.successful(r::AbstractIntegrationResult)::Bool
     return throw(

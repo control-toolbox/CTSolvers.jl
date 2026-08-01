@@ -17,7 +17,7 @@ Return the default SciML ODE algorithm (Tsit5) for `Tsit5Tag`.
 
 Overrides the stub in `src/Integrators/sciml.jl` that returns `missing`.
 
-See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators.Tsit5Tag`](@ref).
+See also: [`CTSolvers.Integrators.SciML`](@extref), [`CTSolvers.Integrators.Tsit5Tag`](@extref).
 """
 function Integrators.__default_sciml_algorithm(::Type{<:Integrators.Tsit5Tag})
     return Tsit5()

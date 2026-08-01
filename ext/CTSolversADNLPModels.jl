@@ -28,8 +28,8 @@ Overrides the core stub in `CTSolvers.Modelers` when `ADNLPModels` is loaded.
 # Returns
 - `Bool`: `true`
 
-See also: [`CTSolvers.Modelers.__is_adbackend_type`](@ref),
-[`CTSolvers.Modelers.__is_adbackend_instance`](@ref)
+See also: [`CTSolvers.Modelers.__is_adbackend_type`](@extref),
+[`CTSolvers.Modelers.__is_adbackend_instance`](@extref)
 """
 Modelers.__is_adbackend_type(::Type{<:ADNLPModels.ADBackend}) = true
 
@@ -43,8 +43,8 @@ Overrides the core stub in `CTSolvers.Modelers` when `ADNLPModels` is loaded.
 # Returns
 - `Bool`: `true`
 
-See also: [`CTSolvers.Modelers.__is_adbackend_instance`](@ref),
-[`CTSolvers.Modelers.__is_adbackend_type`](@ref)
+See also: [`CTSolvers.Modelers.__is_adbackend_instance`](@extref),
+[`CTSolvers.Modelers.__is_adbackend_type`](@extref)
 """
 Modelers.__is_adbackend_instance(x::ADNLPModels.ADBackend) = true
 
@@ -57,14 +57,14 @@ $(TYPEDSIGNATURES)
 
 Return the list of available AD backends for `Modelers.ADNLP` using `ADNLPModels`.
 
-Overrides the core stub; called via [`CTSolvers.Modelers.get_adnlp_available_backends`](@ref).
+Overrides the core stub; called via [`CTSolvers.Modelers.get_adnlp_available_backends`](@extref).
 Includes all predefined backends from `ADNLPModels.predefined_backend` plus `:manual`.
 
 # Returns
 - `Vector{Symbol}`: available backend names (e.g. `:default`, `:optimized`, `:manual`)
 
-See also: [`CTSolvers.Modelers.get_adnlp_available_backends`](@ref),
-[`CTSolvers.Modelers.ADNLPTag`](@ref)
+See also: [`CTSolvers.Modelers.get_adnlp_available_backends`](@extref),
+[`CTSolvers.Modelers.ADNLPTag`](@extref)
 """
 function Modelers.__get_adnlp_available_backends(::Type{Modelers.ADNLPTag})
     backends = collect(keys(ADNLPModels.predefined_backend))
@@ -88,8 +88,8 @@ AD backend overrides for individual derivative operations.
 # Returns
 - `CTBase.Strategies.StrategyMetadata`: metadata object with all option definitions
 
-See also: [`CTSolvers.Modelers.ADNLP`](@ref),
-[`CTSolvers.Modelers._build_adnlp_modeler`](@ref)
+See also: [`CTSolvers.Modelers.ADNLP`](@extref),
+[`CTSolvers.Modelers._build_adnlp_modeler`](@extref)
 """
 function Strategies.metadata(::Type{Modelers.ADNLP{P}}) where {P<:Strategies.CPU}
     return Strategies.StrategyMetadata(
@@ -199,8 +199,8 @@ and `:backend` should be used instead.
 # Returns
 - `CTSolvers.Modelers.ADNLP{parameter}`: configured modeler instance
 
-See also: [`CTSolvers.Modelers.ADNLP`](@ref),
-[`CTSolvers.Modelers._build_adnlp_modeler`](@ref)
+See also: [`CTSolvers.Modelers.ADNLP`](@extref),
+[`CTSolvers.Modelers._build_adnlp_modeler`](@extref)
 """
 function Modelers._build_adnlp_modeler(
     ::Type{Modelers.ADNLPTag},

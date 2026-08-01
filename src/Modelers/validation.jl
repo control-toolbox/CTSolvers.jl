@@ -300,8 +300,8 @@ Stub — always returns `false`. Overridden by the `CTSolversADNLPModels` extens
 # Returns
 - `Bool`: `false` (stub); `true` when the extension is active and `T <: ADBackend`
 
-See also: [`CTSolvers.Modelers.__is_adbackend_instance`](@ref),
-[`CTSolvers.Modelers.validate_backend_override`](@ref)
+See also: [`CTSolvers.Modelers.__is_adbackend_instance`](@extref),
+[`CTSolvers.Modelers.validate_backend_override`](@extref)
 """
 __is_adbackend_type(::Type) = false
 
@@ -316,8 +316,8 @@ Stub — always returns `false`. Overridden by the `CTSolversADNLPModels` extens
 # Returns
 - `Bool`: `false` (stub); `true` when the extension is active and `x isa ADBackend`
 
-See also: [`CTSolvers.Modelers.__is_adbackend_type`](@ref),
-[`CTSolvers.Modelers.validate_backend_override`](@ref)
+See also: [`CTSolvers.Modelers.__is_adbackend_type`](@extref),
+[`CTSolvers.Modelers.validate_backend_override`](@extref)
 """
 __is_adbackend_instance(x) = false
 

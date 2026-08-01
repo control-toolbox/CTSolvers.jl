@@ -159,7 +159,7 @@ Ipopt is CPU-only.
 # Returns
 - `Type{Strategies.CPU}`: the execution parameter type.
 
-See also: [`CTSolvers.Solvers.Ipopt`](@ref), [`CTBase.Strategies.CPU`](@extref)
+See also: [`CTSolvers.Solvers.Ipopt`](@extref), [`CTBase.Strategies.CPU`](@extref)
 """
 Strategies.parameter(::Type{<:Solvers.Ipopt{P}}) where {P<:Strategies.CPU} = P
 

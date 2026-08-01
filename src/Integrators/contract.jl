@@ -34,13 +34,13 @@ in the `CTSolversSciMLIntegrator` extension. This generic stub throws `NotImplem
 - `unsafe::Bool`: If `true`, bypass retcode checking (default: `false`).
 
 # Returns
-- An [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref).
+- An [`CTSolvers.Integrators.AbstractIntegrationResult`](@extref).
 
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): until a backend extension provides the
   typed method.
 
-See also: [`CTSolvers.Integrators.AbstractIntegrator`](@ref).
+See also: [`CTSolvers.Integrators.AbstractIntegrator`](@extref).
 """
 function CommonSolve.solve(prob, integ::AbstractIntegrator; kwargs...)
     return throw(
@@ -66,13 +66,13 @@ implement this method for their specific result types, typically in a backend ex
   `T <: AbstractIntegrationResult`.
 
 # Returns
-- A single [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref) representing the merged trajectory.
+- A single [`CTSolvers.Integrators.AbstractIntegrationResult`](@extref) representing the merged trajectory.
 
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): until a backend extension provides the
   typed method.
 
-See also: [`CTSolvers.Integrators.AbstractIntegrator`](@ref), [`CTSolvers.Integrators.AbstractIntegrationResult`](@ref).
+See also: [`CTSolvers.Integrators.AbstractIntegrator`](@extref), [`CTSolvers.Integrators.AbstractIntegrationResult`](@extref).
 """
 function merge(segments::AbstractVector{T}) where {T<:AbstractIntegrationResult}
     return throw(

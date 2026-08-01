@@ -7,7 +7,7 @@
 """
 $(TYPEDSIGNATURES)
 
-Discretize an optimal control problem into a [`DiscretizedModel`](@ref).
+Discretize an optimal control problem into a [`CTSolvers.DOCP.DiscretizedModel`](@extref).
 
 # Contract
 Must be implemented in the package providing `discretizer`, dispatching on its
@@ -18,7 +18,7 @@ concrete type, e.g. `CTSolvers.discretize(ocp, ::Collocation)` in CTDirect.
 - `discretizer::AbstractDiscretizer`: The discretization strategy.
 
 # Returns
-- A [`DiscretizedModel`](@ref) with a populated cache.
+- A [`CTSolvers.DOCP.DiscretizedModel`](@extref) with a populated cache.
 
 See also: `build_model`, `build_solution`.
 """
