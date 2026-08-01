@@ -270,7 +270,11 @@ Extracts the type parameter `P` from `Exa{P}`, which can be either `Strategies.C
 
 See also: [`CTSolvers.Modelers.Exa`](@ref), [`CTBase.Strategies.CPU`](@extref), [`CTBase.Strategies.GPU`](@extref)
 """
-Strategies.parameter(::Type{<:Modelers.Exa{P}}) where {P<:Union{Strategies.CPU,Strategies.GPU}} = P
+function Strategies.parameter(
+    ::Type{<:Modelers.Exa{P}}
+) where {P<:Union{Strategies.CPU,Strategies.GPU}}
+    return P
+end
 
 # Strategy metadata with option definitions (parameterized)
 """
@@ -283,7 +287,9 @@ Stub — real implementation provided by the CTSolversExaModels extension.
 
 See also: `Modelers.Exa`, `Strategies.StrategyMetadata`
 """
-function Strategies.metadata(::Type{<:Modelers.Exa{P}}) where {P<:Union{Strategies.CPU,Strategies.GPU}}
+function Strategies.metadata(
+    ::Type{<:Modelers.Exa{P}}
+) where {P<:Union{Strategies.CPU,Strategies.GPU}}
     return throw(
         Exceptions.ExtensionError(
             :ExaModels;
@@ -353,7 +359,9 @@ Real implementation provided by the extension.
 See also: `Modelers.Exa`, `Strategies.metadata`
 """
 function _build_exa_modeler(
-    ::Type{<:Core.AbstractTag}, parameter::Type{<:Strategies.AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag},
+    parameter::Type{<:Strategies.AbstractStrategyParameter};
+    kwargs...,
 )
     return throw(
         Exceptions.ExtensionError(

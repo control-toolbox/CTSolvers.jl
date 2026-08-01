@@ -43,7 +43,9 @@ The metadata is parameterized by the execution backend (CPU or GPU).
 For GPU execution, the default linear solver is automatically set to
 `MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`.
 """
-function Strategies.metadata(::Type{Solvers.MadNCL{P}}) where {P<:Strategies.AbstractStrategyParameter}
+function Strategies.metadata(
+    ::Type{Solvers.MadNCL{P}}
+) where {P<:Strategies.AbstractStrategyParameter}
     return Strategies.StrategyMetadata(
         Strategies.OptionDefinition(;
             name=:max_iter,

@@ -64,8 +64,9 @@ function test_performance()
         # ======================================================================
         Test.@testset "Zero-allocation reads" begin
             Test.@test (BenchmarkTools.@ballocated Integrators.options_point($integ)) == 0
-            Test.@test (BenchmarkTools.@ballocated Integrators.options_trajectory($integ)) ==
-                0
+            Test.@test (BenchmarkTools.@ballocated Integrators.options_trajectory(
+                $integ
+            )) == 0
             Test.@test (BenchmarkTools.@ballocated Integrators.final_state($r)) == 0
             Test.@test (BenchmarkTools.@ballocated Integrators.times($r)) == 0
             Test.@test (BenchmarkTools.@ballocated Integrators.status($r)) == 0

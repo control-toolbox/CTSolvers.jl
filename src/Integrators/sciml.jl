@@ -201,7 +201,9 @@ Construct a parameterized `SciML{P}` integrator for the execution device `P`
 
 See also: [`CTSolvers.Integrators.SciML`](@ref), [`CTSolvers.Integrators._build_sciml_integrator`](@ref).
 """
-function SciML{P}(; mode::Symbol=:strict, kwargs...) where {P<:Strategies.AbstractStrategyParameter}
+function SciML{P}(;
+    mode::Symbol=:strict, kwargs...
+) where {P<:Strategies.AbstractStrategyParameter}
     return _build_sciml_integrator(SciMLTag, P; mode=mode, kwargs...)
 end
 
