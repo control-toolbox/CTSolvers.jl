@@ -24,9 +24,9 @@ $(TYPEDSIGNATURES)
 Recursively extract the primal (real) value from a ForwardDiff dual number.
 
 Handles nested dual numbers for higher-order differentiation. Extends the fallback
-[`CTSolvers.Integrators.deepvalue`](@ref) to support ForwardDiff.
+[`CTSolvers.Integrators.deepvalue`](@extref) to support ForwardDiff.
 
-See also: [`CTSolvers.Integrators.deepvalue`](@ref), [`CTSolvers.Integrators.real_norm`](@ref).
+See also: [`CTSolvers.Integrators.deepvalue`](@extref), [`CTSolvers.Integrators.real_norm`](@extref).
 """
 Integrators.deepvalue(x::ForwardDiff.Dual) = Integrators.deepvalue(ForwardDiff.value(x))
 
@@ -35,10 +35,10 @@ $(TYPEDSIGNATURES)
 
 Compute the internal norm for a scalar ForwardDiff dual number using only its primal part.
 
-Extends the fallback [`CTSolvers.Integrators.real_norm`](@ref) to support ForwardDiff dual
+Extends the fallback [`CTSolvers.Integrators.real_norm`](@extref) to support ForwardDiff dual
 numbers, ensuring grid invariance (IND) when integrating ODEs with dual numbers.
 
-See also: [`CTSolvers.Integrators.real_norm`](@ref), [`CTSolvers.Integrators.deepvalue`](@ref).
+See also: [`CTSolvers.Integrators.real_norm`](@extref), [`CTSolvers.Integrators.deepvalue`](@extref).
 """
 function Integrators.real_norm(u::ForwardDiff.Dual, t)
     return Integrators.real_norm(Integrators.deepvalue(u), t)

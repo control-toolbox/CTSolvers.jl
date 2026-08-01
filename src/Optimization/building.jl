@@ -11,7 +11,7 @@ Build a backend NLP model from an optimization problem and an initial guess.
 
 Generic function for the model-building contract. Concrete methods must be provided
 by the package supplying the optimization problem (e.g. CTDirect for
-[`CTSolvers.DOCP.DiscretizedModel`](@ref)), dispatching on the concrete
+[`CTSolvers.DOCP.DiscretizedModel`](@extref)), dispatching on the concrete
 `(problem, modeler)` pair.
 
 # Arguments
@@ -20,14 +20,14 @@ by the package supplying the optimization problem (e.g. CTDirect for
 - `modeler::CTSolvers.Modelers.AbstractNLPModeler`: The modeler strategy (e.g. `ADNLP`, `Exa`).
 
 # Returns
-- [`CTSolvers.Optimization.BuiltModel`](@ref): immutable bundle of the problem, the
+- [`CTSolvers.Optimization.BuiltModel`](@extref): immutable bundle of the problem, the
   backend NLP model, and an optional build-time cache.
 
 # Throws
 - [`CTBase.Exceptions.NotImplemented`](@extref): when no concrete method exists for
   this `(problem, modeler)` pair.
 
-See also: [`CTSolvers.Optimization.build_solution`](@ref), [`CTSolvers.Optimization.BuiltModel`](@ref).
+See also: [`CTSolvers.Optimization.build_solution`](@extref), [`CTSolvers.Optimization.BuiltModel`](@extref).
 """
 function build_model end
 
@@ -40,7 +40,7 @@ by the package supplying the optimization problem, dispatching on the concrete
 
 # Arguments
 - `built::CTSolvers.Optimization.BuiltModel`: The bundle returned by
-  [`CTSolvers.Optimization.build_model`](@ref).
+  [`CTSolvers.Optimization.build_model`](@extref).
 - `model_solution`: NLP solver output (execution statistics from SolverCore).
 - `modeler::CTSolvers.Modelers.AbstractNLPModeler`: The modeler strategy used to build.
 
@@ -51,6 +51,6 @@ by the package supplying the optimization problem, dispatching on the concrete
 - [`CTBase.Exceptions.NotImplemented`](@extref): when no concrete method exists for
   this `(built, modeler)` pair.
 
-See also: [`CTSolvers.Optimization.build_model`](@ref), [`CTSolvers.Optimization.BuiltModel`](@ref).
+See also: [`CTSolvers.Optimization.build_model`](@extref), [`CTSolvers.Optimization.BuiltModel`](@extref).
 """
 function build_solution end

@@ -333,7 +333,7 @@ Solve an NLP problem using Uno.
 # Returns
 - `UnoSolver.UnoExecutionStats`: Solver execution statistics
 
-See also: [`solve_with_uno`](@ref), [`Solvers.extract_solver_infos`](@ref)
+See also: [`CTSolversUno.solve_with_uno`](@extref), [`CTSolvers.Solvers.extract_solver_infos`](@extref)
 """
 function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::Solvers.Uno; display::Bool=true
@@ -361,7 +361,7 @@ Solves the NLP problem using UnoSolver backend.
 # Returns
 - `UnoSolver.UnoExecutionStats`: Solver execution statistics
 
-See also: `Solvers.Uno`, `UnoSolver.uno`, [`Solvers.extract_solver_infos`](@ref)
+See also: `Solvers.Uno`, `UnoSolver.uno`, [`CTSolvers.Solvers.extract_solver_infos`](@extref)
 """
 function solve_with_uno(
     nlp::NLPModels.AbstractNLPModel; kwargs...
@@ -391,7 +391,7 @@ A 6-element tuple `(objective, iterations, constraints_violation, message, statu
 - The successful flag is `true` when status is `:first_order` or `:acceptable`
 - This function enables integration with the CTSolvers pipeline by providing standardized solver information
 
-See also: [`solve_with_uno`](@ref)
+See also: [`CTSolversUno.solve_with_uno`](@extref)
 """
 function Solvers.extract_solver_infos(nlp_solution::UnoSolver.UnoExecutionStats)
     objective = nlp_solution.objective

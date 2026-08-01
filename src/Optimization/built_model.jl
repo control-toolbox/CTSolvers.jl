@@ -13,7 +13,7 @@ $(TYPEDEF)
 
 Empty cache for backends whose `build_model` produces no auxiliary data.
 
-Used as the `cache` field of a [`CTSolvers.Optimization.BuiltModel`](@ref) when
+Used as the `cache` field of a [`CTSolvers.Optimization.BuiltModel`](@extref) when
 nothing besides the NLP needs to be carried to `build_solution` (e.g. the ADNLP
 backend). Reusable by any backend, including the future ODE side.
 """
@@ -22,8 +22,8 @@ struct NoCache <: Core.AbstractCache end
 """
 $(TYPEDEF)
 
-Immutable bundle produced by [`CTSolvers.Optimization.build_model`](@ref) and consumed
-by [`CTSolvers.Optimization.build_solution`](@ref).
+Immutable bundle produced by [`CTSolvers.Optimization.build_model`](@extref) and consumed
+by [`CTSolvers.Optimization.build_solution`](@extref).
 
 It pairs the optimization problem with the backend NLP model and an optional,
 immutable build-time cache. This replaces the previous pattern of mutating a
@@ -36,7 +36,7 @@ NLP (e.g. an ExaModels getter) is stored here once, never mutated.
 - `nlp::TN`: The backend NLP model. Left untyped because its package (e.g.
   `NLPModels`) is a weak dependency.
 - `cache::TC`: Immutable build-time auxiliary (`<: CTBase.Core.AbstractCache`),
-  populated by `build_model`. [`CTSolvers.Optimization.NoCache`](@ref) when the
+  populated by `build_model`. [`CTSolvers.Optimization.NoCache`](@extref) when the
   backend needs none.
 
 # Type parameters
@@ -44,7 +44,7 @@ NLP (e.g. an ExaModels getter) is stored here once, never mutated.
 - `TN`
 - `TC <: CTBase.Core.AbstractCache`
 
-See also: [`CTSolvers.Optimization.build_model`](@ref), [`CTSolvers.Optimization.build_solution`](@ref), [`CTSolvers.Optimization.NoCache`](@ref).
+See also: [`CTSolvers.Optimization.build_model`](@extref), [`CTSolvers.Optimization.build_solution`](@extref), [`CTSolvers.Optimization.NoCache`](@extref).
 """
 struct BuiltModel{TP<:AbstractOptimizationProblem,TN,TC<:Core.AbstractCache}
     problem::TP

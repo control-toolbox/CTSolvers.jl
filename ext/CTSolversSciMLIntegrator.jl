@@ -41,10 +41,10 @@ parts of dual numbers.
 
 Ensures grid invariance (IND) when integrating ODEs with ForwardDiff dual numbers:
 the adaptive time grid chosen by the solver is identical whether integrating with real
-or dual numbers. Uses [`CTSolvers.Integrators.deepvalue`](@ref) to extract primal parts
+or dual numbers. Uses [`CTSolvers.Integrators.deepvalue`](@extref) to extract primal parts
 and `DiffEqBase.ODE_DEFAULT_NORM` to compute the norm.
 
-See also: [`CTSolvers.Integrators.deepvalue`](@ref), [`CTSolvers.Integrators.real_norm`](@ref).
+See also: [`CTSolvers.Integrators.deepvalue`](@extref), [`CTSolvers.Integrators.real_norm`](@extref).
 """
 function Integrators.real_norm(u::AbstractArray, t)
     return DiffEqBase.ODE_DEFAULT_NORM(Integrators.deepvalue.(u), t)
@@ -288,7 +288,7 @@ integrator construction into two cached dictionaries:
 Users can override automatic resolution by providing explicit `true`/`false` values
 when constructing the integrator.
 
-See also: [`CTSolvers.Integrators._build_sciml_integrator`](@ref).
+See also: [`CTSolvers.Integrators._build_sciml_integrator`](@extref).
 """
 const _AUTO_OPTION_KEYS = (:dense, :save_everystep, :save_start)
 
@@ -310,13 +310,13 @@ cached dictionaries `options_point` (`:auto` → `false`) and `options_trajector
 - `kwargs...`: User-provided option values. Explicit `true`/`false` override `:auto` resolution.
 
 # Returns
-- [`CTSolvers.Integrators.SciML`](@ref): integrator with cached `options_point`/`options_trajectory`.
+- [`CTSolvers.Integrators.SciML`](@extref): integrator with cached `options_point`/`options_trajectory`.
 
 # Throws
 - `CTBase.Exceptions.PreconditionError`: If no algorithm is available (e.g. `OrdinaryDiffEqTsit5`
   not loaded and no explicit `alg`).
 
-See also: [`CTSolvers.Integrators.SciML`](@ref).
+See also: [`CTSolvers.Integrators.SciML`](@extref).
 """
 function Integrators._build_sciml_integrator(
     ::Type{Integrators.SciMLTag}, ::Type{P}; mode::Symbol=:strict, kwargs...
@@ -512,7 +512,7 @@ end
 $(TYPEDSIGNATURES)
 
 Integrate an `ODEProblem` with a `SciML` integrator and resolved options.
-Returns a [`SciMLIntegrationResult`](@ref) wrapping the raw `ODESolution`.
+Returns a [`CTSolversSciMLIntegrator.SciMLIntegrationResult`](@extref) wrapping the raw `ODESolution`.
 
 # Arguments
 - `prob::SciMLBase.AbstractODEProblem`: The ODE problem to integrate (time span embedded).

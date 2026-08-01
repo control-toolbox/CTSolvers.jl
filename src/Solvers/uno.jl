@@ -188,7 +188,7 @@ Uno is CPU-only.
 # Returns
 - `Type{Strategies.CPU}`: the execution parameter type.
 
-See also: [`CTSolvers.Solvers.Uno`](@ref), [`CTBase.Strategies.CPU`](@extref)
+See also: [`CTSolvers.Solvers.Uno`](@extref), [`CTBase.Strategies.CPU`](@extref)
 """
 Strategies.parameter(::Type{<:Solvers.Uno{P}}) where {P<:Strategies.CPU} = P
 

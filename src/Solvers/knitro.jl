@@ -162,7 +162,7 @@ Knitro is CPU-only.
 # Returns
 - `Type{Strategies.CPU}`: the execution parameter type.
 
-See also: [`CTSolvers.Solvers.Knitro`](@ref), [`CTBase.Strategies.CPU`](@extref)
+See also: [`CTSolvers.Solvers.Knitro`](@extref), [`CTBase.Strategies.CPU`](@extref)
 """
 Strategies.parameter(::Type{<:Solvers.Knitro{P}}) where {P<:Strategies.CPU} = P
 

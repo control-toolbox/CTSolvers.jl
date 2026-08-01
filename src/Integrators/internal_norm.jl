@@ -22,7 +22,7 @@ recursive extraction from nested dual numbers.
   recursively extracts the primal value via `deepvalue(value(x))`.
 - This method serves as the base case for all `Number` subtypes not handled by extensions.
 
-See also: [`CTSolvers.Integrators.real_norm`](@ref).
+See also: [`CTSolvers.Integrators.real_norm`](@extref).
 """
 deepvalue(x::Number) = x
 
@@ -48,6 +48,6 @@ array overload (using `DiffEqBase.ODE_DEFAULT_NORM`) lives in the
 - For complex numbers, returns `abs(u)` (the magnitude).
 - Used by SciML integrators for step-size control in grid-invariant computations.
 
-See also: [`CTSolvers.Integrators.deepvalue`](@ref).
+See also: [`CTSolvers.Integrators.deepvalue`](@extref).
 """
 real_norm(u::Number, t) = abs(u)
