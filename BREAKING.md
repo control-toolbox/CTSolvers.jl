@@ -5,6 +5,29 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.5.2 (2026-08-01)
+
+**No breaking changes.**
+
+This release improves CI coverage and documentation quality. It adds Windows to the
+GitHub Actions runner matrix, fixes cross-package and intra-package documentation links,
+and improves strategy type display and documentation without changing the public API.
+
+### Summary - v0.5.2
+
+- `windows-latest` added to the GitHub Actions CI matrix
+- Documentation references corrected to use fully qualified `@extref` targets
+- Self-referencing CTSolvers InterLinks inventory added to `docs/make.jl`
+- `describe()` strategy type names simplified while preserving parameter information
+- `_strategy_type_name` documentation and dispatch cases refined
+- Julia source and test files formatted automatically
+
+### Migration - v0.5.2
+
+**No action required.** All existing code continues to work without changes.
+
+---
+
 ## v0.5.1 (2026-07-31)
 
 **No breaking changes.**

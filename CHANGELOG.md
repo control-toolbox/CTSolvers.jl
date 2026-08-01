@@ -8,6 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.2] - 2026-08-01
+
+### Added
+
+- **Windows CI coverage** — added `windows-latest` to the GitHub Actions runner matrix.
+- **Multiple dispatch implementation** — refactored `_strategy_type_name` with specialized methods
+  for concrete `DataType`, generic `UnionAll`, and fallback `Type` cases.
+
+### Changed
+
+- **Strategy type display** — `describe()` functions now show clean type names without module
+  prefixes, such as `Exa{CPU}` instead of `CTSolvers.Modelers.Exa{CTSolvers.Strategies.CPU}`.
+  Parameter information is preserved while improving readability in strategy descriptions.
+- **Documentation standards** — updated `_strategy_type_name` docstrings with typed signatures,
+  structured sections, cross-references, and reproducible examples.
+- **Documentation links** — corrected local and cross-package docstring references to use
+  `@extref` with fully qualified targets, and registered a self-referencing CTSolvers InterLinks
+  inventory so documentation builds resolve correctly.
+- **Julia formatting** — applied the repository's automated formatting to Julia source and test files.
+
+---
+
 ## [0.5.1] - 2026-07-31
 
 ### Added
@@ -561,33 +583,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Computed options prioritized for immediate visibility of parameter-specific behavior
   - Cleaner strategy headers with essential information first
   - Maintained complete parameter information in dedicated sections
-
----
-
-## [Unreleased]
-
-### Changed
-
-- **Strategy type display** - `describe()` functions now show clean type names without module prefixes
-  - Strategy types display as `Exa{CPU}` instead of `CTSolvers.Modelers.Exa{CTSolvers.Strategies.CPU}`
-  - Preserves parameter information (e.g., `{CPU}`, `{GPU}`) while removing module clutter
-  - Improved readability in `describe(:cpu, registry)` and `describe(:gpu, registry)` output
-
-### Added
-
-- **Multiple dispatch implementation** - Refactored `_strategy_type_name` with specialized methods
-  - `_strategy_type_name(T::DataType)` for concrete instantiated types (most common case)
-  - `_strategy_type_name(T::UnionAll)` for generic types not yet instantiated
-  - `_strategy_type_name(T::Type)` as ultimate fallback for edge cases
-  - Each method has comprehensive docstring with examples and cross-references
-
-### Improved
-
-- **Documentation standards** - Applied project docstring standards to all `_strategy_type_name` methods
-  - Uses `$(TYPEDSIGNATURES)` for auto-generated signatures
-  - Structured sections: Arguments, Returns, Examples, Notes, See also
-  - Method-specific documentation explaining each dispatch case
-  - Safe, reproducible examples following project guidelines
 
 ---
 
