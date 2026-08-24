@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.3] - 2026-08-23
+
+### 📦 Dependencies
+
+- **`CTModels` compat raised to `0.18`** (from `0.16`), matching the currently released
+  `CTModels.jl` version.
+- **`ExaModels` compat raised to `0.12`** (from `0.11`), in both `Project.toml` and
+  `docs/Project.toml`.
+
+### ✅ Compatibility
+
+- **No breaking changes**: dependency compat bounds widened only; no source or public
+  API changes. See [BREAKING.md](BREAKING.md).
+
+---
+
 ## [0.5.2] - 2026-08-01
 
 ### Added
