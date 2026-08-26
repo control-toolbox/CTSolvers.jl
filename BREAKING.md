@@ -5,6 +5,20 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.5.4 (2026-08-26)
+
+**No breaking changes.**
+
+This release fixes the GPU extension diagnostic for MadNLP/MadNCL. When the GPU
+extension is unavailable, the fallback now names the missing dependency among
+`MadNLPGPU`, `CUDA`, and `CUDSS` instead of always suggesting `MadNLPGPU`.
+
+### Migration - v0.5.4
+
+**No action required.** Existing code continues to work without changes.
+
+---
+
 ## v0.5.2 (2026-08-01)
 
 **No breaking changes.**

@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.4] - 2026-08-26
+
+### Fixed
+
+- **GPU extension diagnostics** — the MadNLP/MadNCL GPU fallback now identifies the
+  missing dependency among `MadNLPGPU`, `CUDA`, and `CUDSS`, instead of always naming
+  `MadNLPGPU` ([#216](https://github.com/control-toolbox/CTSolvers.jl/issues/216)).
+
+### Compatibility
+
+- **No breaking changes**: only the fallback error diagnostic was corrected.
+
+---
+
 ## [0.5.3] - 2026-08-23
 
 ### 📦 Dependencies
