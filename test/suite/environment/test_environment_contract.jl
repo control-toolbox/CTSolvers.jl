@@ -42,6 +42,42 @@ function _isdefined_main_offenders()
     return offenders
 end
 
+"""
+    _silent_cuda_guard_offenders()
+
+Recursively find, under `test/suite/` (located via `@__DIR__`, not `pwd()`), lines that open
+an `if` block directly on a CUDA-device predicate — a local `is_cuda_on()` call or a bare
+`CUDA.functional()` call — the anti-pattern that makes a correctly-skipped run (no device, as
+expected on a CPU/developer machine) and a silently-broken run (device *should* be present
+but isn't) produce the same output: a green testset with zero assertions (see Handbook
+`philosophy/testing.md` §"Capability-gated tests", and control-toolbox/CTSolvers.jl#189).
+
+The fix is `if Main.TestCapabilities.CUDA_FUNCTIONAL ... else Test.@test_skip ... end`, with
+the device tier made *required* on the GPU runners centrally, in the testset below.
+
+This file is excluded from the walk: it necessarily spells out the very patterns it searches
+for (regex source, comments, warning text).
+"""
+function _silent_cuda_guard_offenders()
+    suite_dir = joinpath(@__DIR__, "..")
+    offenders = Tuple{String,Int,String}[]
+    # Assembled from two literals so this line does not match itself.
+    pattern = Regex("if\\s+(is_cuda_on\\(\\)|CUDA" * "\\.functional\\(\\))")
+    this_file = basename(@__FILE__)
+    for (root, _, files) in walkdir(suite_dir)
+        for f in files
+            (endswith(f, ".jl") && f != this_file) || continue
+            path = joinpath(root, f)
+            for (lineno, line) in enumerate(eachline(path))
+                if match(pattern, line) !== nothing
+                    push!(offenders, (relpath(path, suite_dir), lineno, strip(line)))
+                end
+            end
+        end
+    end
+    return offenders
+end
+
 function test_environment_contract()
     Test.@testset "Test-environment contract" verbose=VERBOSE showtiming=SHOWTIMING begin
         Test.@testset "GPU solver extension is armed" begin
@@ -53,12 +89,17 @@ function test_environment_contract()
         end
 
         Test.@testset "GPU driver required on the GPU runner" begin
+            # Central enforcement of the Handbook's capability-gated-test contract: on a
+            # machine that is supposed to have a GPU, a missing/broken device fails loudly
+            # here rather than being silently skipped everywhere else.
+            #
             # Heuristic: RUNNER_NAME is set automatically by the GitHub Actions runner agent
-            # itself (no .github/workflows/CI.yml or CTActions change needed) and equals
-            # "kkt" for the self-hosted GPU runner (see CI.yml's `runs_on: '[["kkt"]]'`). If
-            # the runner is ever renamed, update the literal below — this check then just
-            # silently stops firing rather than failing loudly.
-            if get(ENV, "RUNNER_NAME", "") == "kkt"
+            # itself (no .github/workflows/CI.yml or CTActions change needed) and equals the
+            # runner label — "kkt" or "occidata", the self-hosted GPU runners (see CI.yml's
+            # `runs_on: '[["occidata"]]'`). `ON_GPU_RUNNER` matches both. If a runner is ever
+            # renamed, update the tuple in test/runtests.jl — the check then just stops
+            # firing silently rather than failing loudly.
+            if Main.TestCapabilities.ON_GPU_RUNNER
                 Test.@test Main.TestCapabilities.CUDA_FUNCTIONAL
             end
         end
@@ -68,6 +109,14 @@ function test_environment_contract()
             Test.@test isempty(offenders)
             for (file, lineno, sym) in offenders
                 @warn "isdefined(Main, :$sym) anti-pattern at $file:$lineno — use Main.TestCapabilities instead"
+            end
+        end
+
+        Test.@testset "silent CUDA-guard anti-pattern has not returned" begin
+            offenders = _silent_cuda_guard_offenders()
+            Test.@test isempty(offenders)
+            for (file, lineno, text) in offenders
+                @warn "silent CUDA guard at $file:$lineno — use Main.TestCapabilities.CUDA_FUNCTIONAL with a Test.@test_skip else branch" text
             end
         end
     end

@@ -13,8 +13,8 @@ using CUDA
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
-# CUDA availability check
-is_cuda_on() = CUDA.functional()
+# CUDA-device cases read Main.TestCapabilities.CUDA_FUNCTIONAL (the suite's single device
+# predicate) and Test.@test_skip when it is false — never a silent `if`.
 
 # ============================================================================
 # Fake parameter type for testing (must be at module top-level)
@@ -126,14 +126,14 @@ function test_cpu_only_parameters_integration()
                 :exa, Strategies.CPU, Modelers.AbstractNLPModeler, registry
             )
 
-            # GPU tests only if CUDA is functional
-            if is_cuda_on()
+            # GPU parameter build needs a functional CUDA device
+            if Main.TestCapabilities.CUDA_FUNCTIONAL
                 # GPU parameter works only for Exa
                 Test.@test_nowarn Strategies.build_strategy(
                     :exa, Strategies.GPU, Modelers.AbstractNLPModeler, registry
                 )
             else
-                # CUDA not functional — skip GPU test silently
+                Test.@test_skip "building an :exa GPU strategy needs a functional CUDA device"
             end
 
             # GPU parameter fails for ADNLP (doesn't require CUDA to be functional)

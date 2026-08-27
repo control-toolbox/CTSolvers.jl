@@ -5,6 +5,22 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## Unreleased
+
+**No breaking changes.**
+
+Test-runner detection now recognises both the `kkt` and `occidata` self-hosted GPU
+runners ([#217](https://github.com/control-toolbox/CTSolvers.jl/issues/217)),
+GPU-dependent testsets skip visibly with `Test.@test_skip` on CPU runners, and
+`.github/workflows/CI.yml` runs its self-hosted GPU job on `occidata` only. No
+source or public API changes.
+
+### Migration - Unreleased
+
+**No action required.**
+
+---
+
 ## v0.5.4 (2026-08-26)
 
 **No breaking changes.**
