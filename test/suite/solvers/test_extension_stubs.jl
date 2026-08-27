@@ -25,6 +25,30 @@ function test_extension_stubs()
     Test.@testset "Extension Stubs" verbose=VERBOSE showtiming=SHOWTIMING begin
 
         # ====================================================================
+        # UNIT TESTS - MadNLP/MadNCL GPU Stub
+        # ====================================================================
+
+        Test.@testset "Solvers MadNLP GPU dependency diagnostics" begin
+            all_loaded = _ -> true
+            none_loaded = _ -> false
+            cudss_missing = dependency -> dependency !== :CUDSS
+
+            Test.@test Solvers.__madnlp_gpu_extension_error(cudss_missing).weakdeps ===
+                (:CUDSS,)
+            Test.@test Solvers.__madnlp_gpu_extension_error(none_loaded).weakdeps ===
+                (:MadNLPGPU, :CUDA, :CUDSS)
+            Test.@test Solvers.__madnlp_gpu_extension_error(all_loaded).weakdeps ===
+                (:MadNLPGPU, :CUDA, :CUDSS)
+
+            err = Solvers.__madnlp_gpu_extension_error(cudss_missing)
+            Test.@test err isa Exceptions.ExtensionError
+            Test.@test occursin("CUDSS", string(err))
+            Test.@test !occursin("MadNLPGPU, CUDA, CUDSS", string(err))
+            Test.@test err.feature == "GPU computation with MadNLP/MadNCL"
+            Test.@test occursin("all three", err.context)
+        end
+
+        # ====================================================================
         # UNIT TESTS - Solvers.Ipopt Stub
         # ====================================================================
 

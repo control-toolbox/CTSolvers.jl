@@ -6,6 +6,43 @@ for GPU/CPU linear solver defaults and consistency validation.
 """
 
 """
+Weak dependencies required to activate the MadNLP/MadNCL GPU solver extension.
+
+The extension is loaded only when all three packages are available and loaded:
+`MadNLPGPU`, `CUDA`, and `CUDSS`.
+"""
+const __MADNLP_GPU_DEPENDENCIES = (:MadNLPGPU, :CUDA, :CUDSS)
+
+"""
+$(TYPEDSIGNATURES)
+
+Build the diagnostic error for an unavailable MadNLP/MadNCL GPU extension.
+
+# Arguments
+- `is_loaded::Function`: Predicate that reports whether a dependency is loaded. It
+  defaults to checking the names in `Base.loaded_modules`.
+
+# Returns
+- `Exceptions.ExtensionError`: Error naming the missing dependencies, or all three
+  extension triggers when none is reported missing.
+
+See also: [`CTSolvers.Solvers.__madnlp_suite_default_linear_solver`](@ref)
+"""
+function __madnlp_gpu_extension_error(
+    is_loaded::Function = dependency ->
+        any(pkgid -> pkgid.name === dependency, keys(Base.loaded_modules)),
+)
+    missing = filter(dependency -> !is_loaded(dependency), __MADNLP_GPU_DEPENDENCIES)
+    weakdeps = isempty(missing) ? __MADNLP_GPU_DEPENDENCIES : missing
+    return Exceptions.ExtensionError(
+        weakdeps...;
+        message="to use GPU linear solver with MadNLP/MadNCL",
+        feature="GPU computation with MadNLP/MadNCL",
+        context="the CTSolversMadNLPGPU extension needs all three of MadNLPGPU, CUDA, and CUDSS",
+    )
+end
+
+"""
 $(TYPEDSIGNATURES)
 
 Return the default linear solver for the given parameter type.
@@ -25,14 +62,7 @@ Return the default linear solver for the given parameter type.
 - GPU implementation provided by CTSolversMadNLPGPU extension
 """
 function __madnlp_suite_default_linear_solver(::Type{<:Strategies.GPU})
-    return throw(
-        Exceptions.ExtensionError(
-            :MadNLPGPU;
-            message="to use GPU linear solver with MadNLP/MadNCL",
-            feature="GPU computation with MadNLP/MadNCL",
-            context="Load MadNLPGPU extension first: using MadNLPGPU",
-        ),
-    )
+    return throw(__madnlp_gpu_extension_error())
 end
 
 """
