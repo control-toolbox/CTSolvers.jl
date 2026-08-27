@@ -94,11 +94,12 @@ function test_environment_contract()
             # here rather than being silently skipped everywhere else.
             #
             # Heuristic: RUNNER_NAME is set automatically by the GitHub Actions runner agent
-            # itself (no .github/workflows/CI.yml or CTActions change needed) and equals the
-            # runner label — "kkt" or "occidata", the self-hosted GPU runners (see CI.yml's
-            # `runs_on: '[["occidata"]]'`). `ON_GPU_RUNNER` matches both. If a runner is ever
-            # renamed, update the tuple in test/runtests.jl — the check then just stops
-            # firing silently rather than failing loudly.
+            # itself (no .github/workflows/CI.yml or CTActions change needed) to the runner's
+            # registered name — `kkt-runner` / `occidata-runner` for our self-hosted GPU
+            # runners (the CI.yml `runs_on` label is the bare `kkt`/`occidata`). `ON_GPU_RUNNER`
+            # (test/runtests.jl) matches the `kkt`/`occidata` substring, so it survives the
+            # `-runner` suffix; if a runner is renamed past that, the check stops firing
+            # silently rather than failing loudly.
             if Main.TestCapabilities.ON_GPU_RUNNER
                 Test.@test Main.TestCapabilities.CUDA_FUNCTIONAL
             end
