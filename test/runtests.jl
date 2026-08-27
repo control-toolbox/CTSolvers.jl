@@ -33,15 +33,20 @@ using CUDA
 # `is_cuda_on()` in a test file (duplicated copies drift; see Handbook philosophy/testing.md).
 # `ON_GPU_RUNNER` turns the device tier from *skipped* into *required* on the self-hosted GPU
 # runners: `RUNNER_NAME` is set by the GitHub Actions runner agent itself (no CI.yml/CTActions
-# change needed) and equals the runner label — `kkt` or `occidata` (see CI.yml). Enforcement
-# lives centrally in test/suite/environment/test_environment_contract.jl.
+# change needed) to the runner's *registered name*. Our self-hosted GPU runners are registered
+# as `kkt-runner` / `occidata-runner` (the CI.yml `runs_on` label is the bare `kkt`/`occidata`,
+# which is a different string), so match on the `kkt` / `occidata` substring to stay robust to
+# the `-runner` suffix. Enforcement lives centrally in
+# test/suite/environment/test_environment_contract.jl.
 module TestCapabilities
 using CUDA: CUDA
 using CUDSS: CUDSS          # with CUDA, arms MadNLPGPUCUDAExt
 using MadNLPGPU: MadNLPGPU
 
 const CUDA_FUNCTIONAL = CUDA.functional()
-const ON_GPU_RUNNER = get(ENV, "RUNNER_NAME", "") in ("kkt", "occidata")
+const ON_GPU_RUNNER = any(
+    gpu -> occursin(gpu, get(ENV, "RUNNER_NAME", "")), ("kkt", "occidata")
+)
 const GPU_SOLVER_ARMED = MadNLPGPU.CUDSSSolver isa Type
 const GPU_SOLVER = GPU_SOLVER_ARMED ? MadNLPGPU.CUDSSSolver : nothing
 end

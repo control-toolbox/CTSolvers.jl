@@ -15,10 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **GPU test-runner detection recognises both `kkt` and `occidata`**
   ([#217](https://github.com/control-toolbox/CTSolvers.jl/issues/217)). The
   environment contract keyed on `RUNNER_NAME == "kkt"`; it now uses
-  `Main.TestCapabilities.ON_GPU_RUNNER`
-  (`get(ENV, "RUNNER_NAME", "") in ("kkt", "occidata")`), so a broken/absent CUDA
-  device fails loudly on either self-hosted GPU runner instead of being silently
-  skipped.
+  `Main.TestCapabilities.ON_GPU_RUNNER`, which matches the `kkt` / `occidata`
+  substring of `RUNNER_NAME` (the self-hosted runners are registered as
+  `kkt-runner` / `occidata-runner`), so a broken/absent CUDA device fails loudly
+  on either self-hosted GPU runner instead of being silently skipped.
 - **GPU-dependent testsets now skip visibly.** Several `@testset "GPU …"` blocks
   guarded their only assertions behind a bare `if is_cuda_on()` /
   `if CUDA.functional()`, producing a green testset with zero assertions on every
