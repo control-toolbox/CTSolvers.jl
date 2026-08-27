@@ -9,13 +9,27 @@ and provides migration guides for users upgrading between versions.
 
 **No breaking changes.**
 
-Test-runner detection now recognises both the `kkt` and `occidata` self-hosted GPU
-runners ([#217](https://github.com/control-toolbox/CTSolvers.jl/issues/217)),
-GPU-dependent testsets skip visibly with `Test.@test_skip` on CPU runners, and
-`.github/workflows/CI.yml` runs its self-hosted GPU job on `occidata` only. No
-source or public API changes.
+---
 
-### Migration - Unreleased
+## v0.5.5-beta (2026-08-27)
+
+**No breaking changes.**
+
+This release fixes the default dependency check in the MadNLP/MadNCL GPU fallback
+diagnostic ([#222](https://github.com/control-toolbox/CTSolvers.jl/issues/222)): it
+now correctly identifies which of `MadNLPGPU`, `CUDA`, and `CUDSS` is missing instead
+of always naming all three. It also folds in the earlier unreleased test-runner
+changes: detection recognises both the `kkt` and `occidata` self-hosted GPU runners
+([#217](https://github.com/control-toolbox/CTSolvers.jl/issues/217)), GPU-dependent
+testsets skip visibly with `Test.@test_skip` on CPU runners, and
+`.github/workflows/CI.yml` runs its self-hosted GPU job on `occidata` only.
+
+The internal helper `Solvers.__madnlp_gpu_extension_error` changed its optional
+argument from a predicate `is_loaded::Function` to a collection `loaded_modules`.
+This symbol is unexported and internal (`__`-prefixed), so it is not part of the
+public API.
+
+### Migration - v0.5.5-beta
 
 **No action required.**
 

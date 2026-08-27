@@ -29,9 +29,14 @@ function test_extension_stubs()
         # ====================================================================
 
         Test.@testset "Solvers MadNLP GPU dependency diagnostics" begin
-            all_loaded = _ -> true
-            none_loaded = _ -> false
-            cudss_missing = dependency -> dependency !== :CUDSS
+            # Fake package identifiers: stand-ins for modules that are never loaded,
+            # exercising the real name-matching in the default code path (issue #222,
+            # where `PkgId.name::String` was compared to a `Symbol` with `===`).
+            loaded(names...) = [Base.PkgId(String(name)) for name in names]
+
+            all_loaded = loaded(:MadNLPGPU, :CUDA, :CUDSS)
+            none_loaded = loaded(:SomethingUnrelated)
+            cudss_missing = loaded(:MadNLPGPU, :CUDA)
 
             Test.@test Solvers.__madnlp_gpu_extension_error(cudss_missing).weakdeps ===
                 (:CUDSS,)
@@ -39,6 +44,9 @@ function test_extension_stubs()
                 (:MadNLPGPU, :CUDA, :CUDSS)
             Test.@test Solvers.__madnlp_gpu_extension_error(all_loaded).weakdeps ===
                 (:MadNLPGPU, :CUDA, :CUDSS)
+
+            # Default (no-arg) path stays reachable and well-formed.
+            Test.@test Solvers.__madnlp_gpu_extension_error() isa Exceptions.ExtensionError
 
             err = Solvers.__madnlp_gpu_extension_error(cudss_missing)
             Test.@test err isa Exceptions.ExtensionError

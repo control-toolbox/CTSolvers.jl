@@ -10,6 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.5.5-beta] - 2026-08-27
+
+### Fixed
+
+- **GPU extension diagnostic default predicate** — `__madnlp_gpu_extension_error`
+  compared `Base.PkgId.name` (a `String`) to each expected dependency (a `Symbol`)
+  with `===`, so the check always failed and the error listed all three of
+  `MadNLPGPU`, `CUDA`, and `CUDSS` as missing even when only one was absent
+  ([#222](https://github.com/control-toolbox/CTSolvers.jl/issues/222)). The helper
+  now takes the loaded package identifiers as data (`loaded_modules`, defaulting to
+  `keys(Base.loaded_modules)`) and matches names as `String`s, and the test suite
+  drives that default path with fake `Base.PkgId`s instead of an injected predicate.
+
 ### Changed
 
 - **GPU test-runner detection recognises both `kkt` and `occidata`**
