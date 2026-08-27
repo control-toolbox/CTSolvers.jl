@@ -23,25 +23,33 @@ using .TestData: VERBOSE, SHOWTIMING
 
 # CUDA availability check
 using CUDA
-is_cuda_on() = CUDA.functional()
-if is_cuda_on()
-    println("✓ CUDA functional, GPU tests enabled")
-else
-    println("⚠️  CUDA not functional, GPU tests will be skipped")
-end
 
 # Capability constants computed once, here, where a top-level `using` is guaranteed to bind
 # into Main. Test files must read Main.TestCapabilities.* instead of `isdefined(Main, :X)`
 # checks: `using X` inside a suite/*/test_*.jl file's own module binds X into that submodule,
 # not into Main, so such checks are always false regardless of what is actually loaded.
+#
+# `CUDA_FUNCTIONAL` is the suite's single CUDA-device predicate — never define a local
+# `is_cuda_on()` in a test file (duplicated copies drift; see Handbook philosophy/testing.md).
+# `ON_GPU_RUNNER` turns the device tier from *skipped* into *required* on the self-hosted GPU
+# runners: `RUNNER_NAME` is set by the GitHub Actions runner agent itself (no CI.yml/CTActions
+# change needed) and equals the runner label — `kkt` or `occidata` (see CI.yml). Enforcement
+# lives centrally in test/suite/environment/test_environment_contract.jl.
 module TestCapabilities
 using CUDA: CUDA
 using CUDSS: CUDSS          # with CUDA, arms MadNLPGPUCUDAExt
 using MadNLPGPU: MadNLPGPU
 
 const CUDA_FUNCTIONAL = CUDA.functional()
+const ON_GPU_RUNNER = get(ENV, "RUNNER_NAME", "") in ("kkt", "occidata")
 const GPU_SOLVER_ARMED = MadNLPGPU.CUDSSSolver isa Type
 const GPU_SOLVER = GPU_SOLVER_ARMED ? MadNLPGPU.CUDSSSolver : nothing
+end
+
+if TestCapabilities.CUDA_FUNCTIONAL
+    println("✓ CUDA functional, GPU tests enabled")
+else
+    println("⚠️  CUDA not functional, GPU device tests will be skipped (Test.@test_skip)")
 end
 
 # Run tests using the TestRunner extension

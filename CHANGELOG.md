@@ -8,6 +8,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **GPU test-runner detection recognises both `kkt` and `occidata`**
+  ([#217](https://github.com/control-toolbox/CTSolvers.jl/issues/217)). The
+  environment contract keyed on `RUNNER_NAME == "kkt"`; it now uses
+  `Main.TestCapabilities.ON_GPU_RUNNER`
+  (`get(ENV, "RUNNER_NAME", "") in ("kkt", "occidata")`), so a broken/absent CUDA
+  device fails loudly on either self-hosted GPU runner instead of being silently
+  skipped.
+- **GPU-dependent testsets now skip visibly.** Several `@testset "GPU …"` blocks
+  guarded their only assertions behind a bare `if is_cuda_on()` /
+  `if CUDA.functional()`, producing a green testset with zero assertions on every
+  CPU/developer runner. They now branch to `Test.@test_skip` on the `else`, so the
+  skip shows as `Broken` in the summary. The per-file `is_cuda_on()` copies are
+  removed in favour of the single `Main.TestCapabilities.CUDA_FUNCTIONAL`.
+- **`.github/workflows/CI.yml`** now runs the self-hosted GPU job on `occidata`
+  only (the `kkt` job was removed); comments translated to English.
+
+### Added
+
+- **Meta-test against the silent-CUDA-guard anti-pattern** —
+  `test/suite/environment/test_environment_contract.jl` gains
+  `_silent_cuda_guard_offenders()` and a testset that fails if any
+  `if is_cuda_on()` / `if CUDA.functional()` guard reappears in `test/suite/`,
+  mirroring the existing `isdefined(Main, ...)` audit.
+
+---
+
 ## [0.5.4] - 2026-08-26
 
 ### Fixed

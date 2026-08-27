@@ -13,7 +13,8 @@ using CUDA: CUDA
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
-is_cuda_on() = CUDA.functional()
+# CUDA-device cases read Main.TestCapabilities.CUDA_FUNCTIONAL (the suite's single device
+# predicate) and Test.@test_skip when it is false — never a silent `if`.
 
 """
     test_exa_gpu()
@@ -107,14 +108,16 @@ function test_exa_gpu()
             # Test GPU parameter with nothing backend (should warn)
             Test.@test_logs (:warn, r"Inconsistent backend") gpu_validator(nothing)
 
-            # If CUDA is available, test with CUDA backend
-            if is_cuda_on()
+            # Backend validation against a real CUDABackend needs a functional CUDA device
+            if Main.TestCapabilities.CUDA_FUNCTIONAL
                 cuda_backend = CUDA.CUDABackend()
                 Test.@test cpu_validator(cuda_backend) === cuda_backend  # This will warn but still return cuda_backend
                 Test.@test gpu_validator(cuda_backend) === cuda_backend
 
                 # Test CPU parameter with CUDA backend (should warn)
                 Test.@test_logs (:warn, r"Inconsistent backend") cpu_validator(cuda_backend)
+            else
+                Test.@test_skip "CUDABackend validator checks need a functional CUDA device"
             end
         end
     end

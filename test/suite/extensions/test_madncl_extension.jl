@@ -28,8 +28,8 @@ const CTSolversMadNCL = Base.get_extension(CTSolvers, :CTSolversMadNCL)
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
-# CUDA availability check
-is_cuda_on() = CUDA.functional()
+# CUDA-device tests read Main.TestCapabilities.CUDA_FUNCTIONAL (the suite's single device
+# predicate) and Test.@test_skip when it is false — never a silent `if`.
 
 """
     test_madncl_extension()
@@ -311,8 +311,7 @@ function test_madncl_extension()
         # ====================================================================
 
         Test.@testset "GPU Tests" begin
-            # Check if CUDA is available and functional
-            if CUDA.functional()
+            if Main.TestCapabilities.CUDA_FUNCTIONAL
                 Test.@testset "Rosenbrock Problem - GPU" begin
                     ros = TestProblems.Rosenbrock()
 
@@ -324,6 +323,8 @@ function test_madncl_extension()
 
                     Test.@test solver isa Solvers.MadNCL
                 end
+            else
+                Test.@test_skip "GPU solver construction needs a functional CUDA device"
             end
         end
 
@@ -483,7 +484,7 @@ function test_madncl_extension()
         # ====================================================================
 
         Test.@testset "GPU Tests" begin
-            if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
+            if Main.TestCapabilities.CUDA_FUNCTIONAL && MadNLPGPU.CUDSSSolver isa Type
                 gpu_modeler = Modelers.Exa{Strategies.GPU}()
                 gpu_solver = Solvers.MadNCL{Strategies.GPU}(
                     max_iter=1000,
@@ -511,6 +512,8 @@ function test_madncl_extension()
                     Test.@test length(sol.solution) == 1
                     Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
                 end
+            else
+                Test.@test_skip "GPU solve needs a functional CUDA device and an armed CUDSS"
             end
         end
 
@@ -519,7 +522,7 @@ function test_madncl_extension()
         # ====================================================================
 
         Test.@testset "GPU - solve_with_madncl" begin
-            if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
+            if Main.TestCapabilities.CUDA_FUNCTIONAL && MadNLPGPU.CUDSSSolver isa Type
                 gpu_modeler = Modelers.Exa{Strategies.GPU}()
                 madncl_options = Dict(
                     :max_iter => 1000,
@@ -546,6 +549,8 @@ function test_madncl_extension()
                     Test.@test length(sol.solution) == 1
                     Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
                 end
+            else
+                Test.@test_skip "GPU solve needs a functional CUDA device and an armed CUDSS"
             end
         end
 
@@ -554,7 +559,7 @@ function test_madncl_extension()
         # ====================================================================
 
         Test.@testset "GPU - Initial Guess (max_iter=0)" begin
-            if is_cuda_on() && MadNLPGPU.CUDSSSolver isa Type
+            if Main.TestCapabilities.CUDA_FUNCTIONAL && MadNLPGPU.CUDSSSolver isa Type
                 gpu_modeler = Modelers.Exa{Strategies.GPU}()
                 ncl_opts_0 = MadNCL.NCLOptions{Float64}(verbose=false, max_auglag_iter=0)
                 gpu_solver_0 = Solvers.MadNCL{Strategies.GPU}(
@@ -573,6 +578,8 @@ function test_madncl_extension()
                     expected = vcat(elec.init.x, elec.init.y, elec.init.z)
                     Test.@test Array(sol.solution) ≈ expected atol=1e-6
                 end
+            else
+                Test.@test_skip "GPU solve needs a functional CUDA device and an armed CUDSS"
             end
         end
     end

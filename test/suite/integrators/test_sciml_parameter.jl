@@ -16,7 +16,8 @@ using CUDA: CUDA
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
-is_cuda_on() = CUDA.functional()
+# CUDA-device cases read Main.TestCapabilities.CUDA_FUNCTIONAL (the suite's single device
+# predicate) and Test.@test_skip when it is false — never a silent `if`.
 
 """
     test_sciml_parameter()
@@ -27,7 +28,8 @@ Covers the `SciML{P<:Union{CPU,GPU}}` parameterization (GPU roadmap phase 1 / D1
 contract (`parameter`/`default_parameter`/`id`), per-parameter `metadata` and back-compat bare
 delegation, per-parameter construction, registry `[CPU, GPU]` registration + global-parameter
 extraction, and the `__consistent_initial_condition` device consistency validators. All assertions
-run on CPU; only the `CuArray` cases are gated behind `is_cuda_on()`.
+run on CPU; only the `CuArray` cases are gated behind `Main.TestCapabilities.CUDA_FUNCTIONAL`
+(with a visible `Test.@test_skip` when no device is present).
 """
 function test_sciml_parameter()
     Test.@testset "SciML{P} parameterization" verbose=VERBOSE showtiming=SHOWTIMING begin
@@ -129,7 +131,7 @@ function test_sciml_parameter()
             Test.@test Integrators.__consistent_initial_condition(Strategies.GPU, host) ==
                 false
 
-            if is_cuda_on()
+            if Main.TestCapabilities.CUDA_FUNCTIONAL
                 dev = CUDA.cu(host)
                 Test.@test Integrators.__consistent_initial_condition(
                     Strategies.GPU, dev
@@ -137,6 +139,8 @@ function test_sciml_parameter()
                 Test.@test Integrators.__consistent_initial_condition(
                     Strategies.CPU, dev
                 ) == false
+            else
+                Test.@test_skip "device/host consistency on a CuArray needs a functional CUDA device"
             end
         end
     end
