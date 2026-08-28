@@ -12,6 +12,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.6-beta] - 2026-08-28
+
+### Changed
+
+- **`[compat]` widened: `CTBase = "0.29, 0.30"`, `CTModels = "0.18, 0.19"`**
+  (`Project.toml`; `docs/Project.toml` gains `CTBase = "0.29, 0.30"`). CTBase 0.30
+  adds the `Plotting.MakieBackend` / `CTBaseMakie` extension and CTModels 0.19
+  relocates its plotting case layer to `CTModels.PlotCase`; both are documented as
+  fully additive — no public API, type, or signature changed. CTSolvers uses
+  neither plotting path, so no source change was needed and the full suite passes
+  unchanged against CTBase 0.30.1-beta / CTModels 0.19.1-beta.
+
+### Compatibility
+
+- **No breaking changes**: compat-only update. See [BREAKING.md](BREAKING.md).
+
+---
+
 ## [0.5.5-beta] - 2026-08-27
 
 ### Fixed

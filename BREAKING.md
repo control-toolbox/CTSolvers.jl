@@ -11,6 +11,18 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.5.6-beta (2026-08-28)
+
+**No breaking changes.**
+
+`[compat]` widened to accept CTBase 0.30 (`"0.29, 0.30"`) and CTModels 0.19
+(`"0.18, 0.19"`). CTBase 0.30 adds the Makie plotting backend and CTModels 0.19
+moves its plotting case layer into `CTModels.PlotCase`; both are purely additive
+(see the respective `BREAKING.md` non-breaking notes). CTSolvers touches neither,
+no source change, full suite green. No migration required.
+
+---
+
 ## v0.5.5-beta (2026-08-27)
 
 **No breaking changes.**
