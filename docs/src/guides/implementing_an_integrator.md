@@ -13,9 +13,9 @@ This guide explains how to implement an ODE integrator in CTSolvers. Integrators
 
 An integrator must satisfy **three contracts**:
 
-1. **Strategy contract** — `id`, `metadata`, `options` (inherited from `AbstractStrategy`)
-2. **Solve contract** — `CommonSolve.solve(prob, integrator; options, unsafe) → AbstractIntegrationResult`
-3. **Tag Dispatch** — separates type definition from backend implementation
+- **Strategy contract** — `id`, `metadata`, `options` (inherited from `AbstractStrategy`)
+- **Solve contract** — `CommonSolve.solve(prob, integrator; options, unsafe) → AbstractIntegrationResult`
+- **Tag Dispatch** — separates type definition from backend implementation
 
 ```text
 AbstractStrategy
@@ -261,24 +261,24 @@ To add a new integrator (e.g. `MyIntegrator` backed by `MyBackend`):
 
 ### In `src/Integrators/`
 
-1. Define `MyTag <: Core.AbstractTag`
-2. Define `MyIntegrator <: AbstractIntegrator` with an `options::StrategyOptions` field
-3. Implement `CTBase.Strategies.id(::Type{<:MyIntegrator}) = :my_integrator`
-4. Write constructor: `MyIntegrator(; mode, kwargs...) = build_my_integrator(MyTag; mode, kwargs...)`
-5. Write stub: `build_my_integrator(::Type{<:Core.AbstractTag}; kwargs...) = throw(ExtensionError(...))`
+- Define `MyTag <: Core.AbstractTag`
+- Define `MyIntegrator <: AbstractIntegrator` with an `options::StrategyOptions` field
+- Implement `CTBase.Strategies.id(::Type{<:MyIntegrator}) = :my_integrator`
+- Write constructor: `MyIntegrator(; mode, kwargs...) = build_my_integrator(MyTag; mode, kwargs...)`
+- Write stub: `build_my_integrator(::Type{<:Core.AbstractTag}; kwargs...) = throw(ExtensionError(...))`
 
 ### In `ext/CTSolversMyBackend.jl`
 
-6. Implement `CTBase.Strategies.metadata(::Type{<:MyIntegrator})` with all option definitions
-7. Implement `Integrators.build_my_integrator(::Type{MyTag}; kwargs...)` — real constructor
-8. Implement `CommonSolve.solve(prob::ExternalProblem, integ::MyIntegrator; options, unsafe)` returning an `AbstractIntegrationResult`, plus its `final_state`/`times`/`evaluate_at`/`status`/`successful` (and `merge`)
+- Implement `CTBase.Strategies.metadata(::Type{<:MyIntegrator})` with all option definitions
+- Implement `Integrators.build_my_integrator(::Type{MyTag}; kwargs...)` — real constructor
+- Implement `CommonSolve.solve(prob::ExternalProblem, integ::MyIntegrator; options, unsafe)` returning an `AbstractIntegrationResult`, plus its `final_state`/`times`/`evaluate_at`/`status`/`successful` (and `merge`)
 
 ### In `Project.toml`
 
-9. Add `MyBackend` to `[weakdeps]` and `CTSolversMyBackend = "MyBackend"` to `[extensions]`
+- Add `MyBackend` to `[weakdeps]` and `CTSolversMyBackend = "MyBackend"` to `[extensions]`
 
 ### Tests
 
-10. **Contract test**: `id`, `metadata` (extension loaded), and `options`
-11. **Solve test**: `solve(prob, integ)` returns an `AbstractIntegrationResult` with correct `final_state`/`times`/`evaluate_at`/`status`/`successful`
-12. **Extension error test**: without `using MyBackend`, `MyIntegrator()` throws `ExtensionError`, and the generic `solve`/`merge` stubs throw `NotImplemented`
+- **Contract test**: `id`, `metadata` (extension loaded), and `options`
+- **Solve test**: `solve(prob, integ)` returns an `AbstractIntegrationResult` with correct `final_state`/`times`/`evaluate_at`/`status`/`successful`
+- **Extension error test**: without `using MyBackend`, `MyIntegrator()` throws `ExtensionError`, and the generic `solve`/`merge` stubs throw `NotImplemented`

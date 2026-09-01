@@ -13,8 +13,8 @@ This guide explains how to implement an optimization modeler in CTSolvers. Model
 
 A modeler must satisfy **two contracts**:
 
-1. **Strategy contract** — `id`, `metadata`, `options`, `parameter`, `default_parameter` (inherited from `AbstractStrategy`)
-2. **Modeler contract** — the generic functions `Optimization.build_model` / `Optimization.build_solution`, dispatched on the `(problem, modeler)` pair
+- **Strategy contract** — `id`, `metadata`, `options`, `parameter`, `default_parameter` (inherited from `AbstractStrategy`)
+- **Modeler contract** — the generic functions `Optimization.build_model` / `Optimization.build_solution`, dispatched on the `(problem, modeler)` pair
 
 ```text
 AbstractStrategy
@@ -333,11 +333,11 @@ method to implement.
 
 To add a new modeler (e.g., `MyModeler` for a new NLP backend):
 
-1. Define the tag: `struct MyModelerTag <: CTBase.Core.AbstractTag end`
-2. Define the parameterized struct: `MyModeler{P<:CPU} <: AbstractNLPModeler` with `options::CTBase.Strategies.StrategyOptions`
-3. Implement `CTBase.Strategies.id(::Type{<:MyModeler}) = :my_backend` and `CTBase.Strategies.description`
-4. Implement `CTBase.Strategies.default_parameter(::Type{<:MyModeler}) = CPU` and `CTBase.Strategies.parameter(::Type{<:MyModeler{P}}) where {P<:CPU} = P`
-5. Declare the `metadata` stub in `src/` (throws `ExtensionError`); implement the real option definitions in the backend extension
-6. Write the constructor chain: `MyModeler(; ...)` → `MyModeler{P}(; ...)` → `build_my_modeler(MyModelerTag, P; ...)`, with the builder stub in `src/` and the real builder in the extension
-7. Implement `CTBase.Strategies.options(m::MyModeler) = m.options`
-8. **Do not** implement any model building on the modeler — the packages providing problem types opt in by defining `Optimization.build_model(prob, init, ::MyModeler)` and `Optimization.build_solution(built, stats, ::MyModeler)` for their own problems
+- Define the tag: `struct MyModelerTag <: CTBase.Core.AbstractTag end`
+- Define the parameterized struct: `MyModeler{P<:CPU} <: AbstractNLPModeler` with `options::CTBase.Strategies.StrategyOptions`
+- Implement `CTBase.Strategies.id(::Type{<:MyModeler}) = :my_backend` and `CTBase.Strategies.description`
+- Implement `CTBase.Strategies.default_parameter(::Type{<:MyModeler}) = CPU` and `CTBase.Strategies.parameter(::Type{<:MyModeler{P}}) where {P<:CPU} = P`
+- Declare the `metadata` stub in `src/` (throws `ExtensionError`); implement the real option definitions in the backend extension
+- Write the constructor chain: `MyModeler(; ...)` → `MyModeler{P}(; ...)` → `build_my_modeler(MyModelerTag, P; ...)`, with the builder stub in `src/` and the real builder in the extension
+- Implement `CTBase.Strategies.options(m::MyModeler) = m.options`
+- **Do not** implement any model building on the modeler — the packages providing problem types opt in by defining `Optimization.build_model(prob, init, ::MyModeler)` and `Optimization.build_solution(built, stats, ::MyModeler)` for their own problems

@@ -4,13 +4,13 @@ $(TYPEDEF)
 Abstract base type for optimization solvers in the Control Toolbox.
 
 All concrete solver types must:
-1. Be a subtype of `AbstractNLPSolver`
-2. Implement the `AbstractStrategy` contract:
-   - `Strategies.id(::Type{<:MySolver})` - Return unique Symbol identifier
-   - `Strategies.metadata(::Type{<:MySolver})` - Return StrategyMetadata with options
-   - Have an `options::Strategies.StrategyOptions` field
-3. Implement the solve method (typically in a backend extension):
-   - `CommonSolve.solve(nlp::NLPModels.AbstractNLPModel, solver::MySolver; display=Bool)`
+- Be a subtype of `AbstractNLPSolver`
+- Implement the `AbstractStrategy` contract:
+  - `Strategies.id(::Type{<:MySolver})` - Return unique Symbol identifier
+  - `Strategies.metadata(::Type{<:MySolver})` - Return StrategyMetadata with options
+  - Have an `options::Strategies.StrategyOptions` field
+- Implement the solve method (typically in a backend extension):
+  - `CommonSolve.solve(nlp::NLPModels.AbstractNLPModel, solver::MySolver; display=Bool)`
 
 # Solver Types
 - `Solvers.Ipopt` - Interior point optimizer (Ipopt backend)
