@@ -140,8 +140,8 @@ Separation of responsibilities:
 
 To add a new optimization problem type that plugs into the CTSolvers pipeline:
 
-1. Define `MyProblem <: AbstractOptimizationProblem` with your data fields
-2. Implement `CTSolvers.Optimization.build_model(prob::MyProblem, init, modeler::ADNLP)` returning a `BuiltModel`
-3. Implement `CTSolvers.Optimization.build_solution(built::BuiltModel{<:MyProblem}, stats, modeler::ADNLP)` returning your domain solution
-4. Optionally add methods for other modelers (`Exa`, future backends) following the same dispatch pattern
-5. If `build_model` produces auxiliary data needed by `build_solution`, store it in a custom `<: CTBase.Core.AbstractCache` subtype rather than `NoCache`
+- Define `MyProblem <: AbstractOptimizationProblem` with your data fields
+- Implement `CTSolvers.Optimization.build_model(prob::MyProblem, init, modeler::ADNLP)` returning a `BuiltModel`
+- Implement `CTSolvers.Optimization.build_solution(built::BuiltModel{<:MyProblem}, stats, modeler::ADNLP)` returning your domain solution
+- Optionally add methods for other modelers (`Exa`, future backends) following the same dispatch pattern
+- If `build_model` produces auxiliary data needed by `build_solution`, store it in a custom `<: CTBase.Core.AbstractCache` subtype rather than `NoCache`

@@ -13,9 +13,9 @@ This guide explains how to implement an optimization solver in CTSolvers. Solver
 
 A solver must satisfy **three contracts**:
 
-1. **Strategy contract** — `id`, `metadata`, `options`, `parameter`, `default_parameter` (inherited from `AbstractStrategy`)
-2. **Solve contract** — `CommonSolve.solve(nlp, solver; display) → ExecutionStats`
-3. **Tag Dispatch** — separates type definition from backend implementation
+- **Strategy contract** — `id`, `metadata`, `options`, `parameter`, `default_parameter` (inherited from `AbstractStrategy`)
+- **Solve contract** — `CommonSolve.solve(nlp, solver; display) → ExecutionStats`
+- **Tag Dispatch** — separates type definition from backend implementation
 
 Solvers are **parameterized** by an execution parameter `P <: CTBase.Strategies.AbstractStrategyParameter`
 (see Strategy Parameters in CTBase.jl documentation). `Solvers.Ipopt{P<:CTBase.Strategies.CPU}` is CPU-only;
@@ -326,24 +326,24 @@ To add a new solver (e.g., `MySolver` backed by `MyBackend`):
 
 ### In `src/Solvers/`
 
-1. Define `MyTag <: Core.AbstractTag`
-2. Define the parameterized struct `MySolver{P<:CTBase.Strategies.CPU} <: AbstractNLPSolver` with `options::CTBase.Strategies.StrategyOptions` (widen the bound to `Union{CTBase.Strategies.CPU,CTBase.Strategies.GPU}` for GPU-capable backends)
-3. Implement `CTBase.Strategies.id(::Type{<:MySolver}) = :my_solver`, `CTBase.Strategies.default_parameter(::Type{<:MySolver}) = CTBase.Strategies.CPU`, and `CTBase.Strategies.parameter(::Type{<:MySolver{P}}) where {P<:CTBase.Strategies.CPU} = P`
-4. Write the constructor chain: `MySolver(; ...)` → `MySolver{P}(; ...)` → `build_my_solver(MyTag, P; mode, kwargs...)`
-5. Write stub: `build_my_solver(::Type{<:Core.AbstractTag}, ::Type{<:CTBase.Strategies.AbstractStrategyParameter}; kwargs...) = throw(ExtensionError(...))`
+- Define `MyTag <: Core.AbstractTag`
+- Define the parameterized struct `MySolver{P<:CTBase.Strategies.CPU} <: AbstractNLPSolver` with `options::CTBase.Strategies.StrategyOptions` (widen the bound to `Union{CTBase.Strategies.CPU,CTBase.Strategies.GPU}` for GPU-capable backends)
+- Implement `CTBase.Strategies.id(::Type{<:MySolver}) = :my_solver`, `CTBase.Strategies.default_parameter(::Type{<:MySolver}) = CTBase.Strategies.CPU`, and `CTBase.Strategies.parameter(::Type{<:MySolver{P}}) where {P<:CTBase.Strategies.CPU} = P`
+- Write the constructor chain: `MySolver(; ...)` → `MySolver{P}(; ...)` → `build_my_solver(MyTag, P; mode, kwargs...)`
+- Write stub: `build_my_solver(::Type{<:Core.AbstractTag}, ::Type{<:CTBase.Strategies.AbstractStrategyParameter}; kwargs...) = throw(ExtensionError(...))`
 
 ### In `ext/CTSolversMyBackend.jl`
 
-6. Implement `CTBase.Strategies.metadata(::Type{MySolver{P}}) where {P<:CTBase.Strategies.CPU}` with all option definitions
-7. Implement `Solvers.build_my_solver(::Type{Solvers.MyTag}, parameter::Type{<:CTBase.Strategies.AbstractStrategyParameter}; kwargs...)` — real constructor
-8. Implement `CommonSolve.solve(nlp, solver::MySolver; display)` — solve method invoking the backend
+- Implement `CTBase.Strategies.metadata(::Type{MySolver{P}}) where {P<:CTBase.Strategies.CPU}` with all option definitions
+- Implement `Solvers.build_my_solver(::Type{Solvers.MyTag}, parameter::Type{<:CTBase.Strategies.AbstractStrategyParameter}; kwargs...)` — real constructor
+- Implement `CommonSolve.solve(nlp, solver::MySolver; display)` — solve method invoking the backend
 
 ### In `Project.toml`
 
-9. Add `MyBackend` to `[weakdeps]` and `CTSolversMyBackend = "MyBackend"` to `[extensions]`
+- Add `MyBackend` to `[weakdeps]` and `CTSolversMyBackend = "MyBackend"` to `[extensions]`
 
 ### Tests
 
-10. **Contract test**: `CTBase.Strategies.id(MySolver)`, `CTBase.Strategies.metadata(MySolver)`, and `CTBase.Strategies.options(MySolver())` (requires extension loaded)
-11. **Solve test**: `CommonSolve.solve(nlp, solver; display = false)` returns `AbstractExecutionStats`
-12. **Extension error test**: without `using MyBackend`, `MySolver()` throws `ExtensionError`
+- **Contract test**: `CTBase.Strategies.id(MySolver)`, `CTBase.Strategies.metadata(MySolver)`, and `CTBase.Strategies.options(MySolver())` (requires extension loaded)
+- **Solve test**: `CommonSolve.solve(nlp, solver; display = false)` returns `AbstractExecutionStats`
+- **Extension error test**: without `using MyBackend`, `MySolver()` throws `ExtensionError`
