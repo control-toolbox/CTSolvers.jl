@@ -11,6 +11,16 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.5.7 (2026-10-04)
+
+**No breaking changes.**
+
+The compatibility bounds for `CTBase` and `CTModels` were narrowed to `0.30` and
+`0.19`, respectively. Documentation-only list formatting was also updated. No
+public API or behavior changed, and no migration is required.
+
+---
+
 ## v0.5.6-beta (2026-08-28)
 
 **No breaking changes.**
