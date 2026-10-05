@@ -12,6 +12,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.7] - 2026-10-04
+
+### Changed
+
+- **Dependency compatibility narrowed:** `CTBase` is now restricted to `0.30` and
+  `CTModels` to `0.19`.
+- **Documentation lists** were simplified from ordered lists to bullet lists in the
+  implementation guides and solver documentation.
+
+### Compatibility
+
+- **No breaking changes.** See [BREAKING.md](BREAKING.md).
+
+---
+
 ## [0.5.6-beta] - 2026-08-28
 
 ### Changed
