@@ -11,6 +11,16 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.5.8 (2026-10-09)
+
+**No breaking changes.**
+
+The SciML integrator now accepts an explicitly provided ODE algorithm when
+`OrdinaryDiffEqTsit5` is not loaded. The default behavior and public APIs are
+unchanged when Tsit5 is available, and no migration is required.
+
+---
+
 ## v0.5.7 (2026-10-04)
 
 **No breaking changes.**

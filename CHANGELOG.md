@@ -12,6 +12,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.8] - 2026-10-09
+
+### Fixed
+
+- **SciML flows with an explicit algorithm:** `Flow`/`SciML` now accept an explicit
+  SciML algorithm when `OrdinaryDiffEqTsit5` is not loaded ([#230](https://github.com/control-toolbox/CTSolvers.jl/issues/230)).
+- **SciML algorithm diagnostic:** the missing-algorithm error now documents both the
+  low-level `SciML(alg=...)` and user-facing `Flow(ocp, law; alg=...)` forms.
+
+### Compatibility
+
+- **No breaking changes.** See [BREAKING.md](BREAKING.md).
+
+---
+
 ## [0.5.7] - 2026-10-04
 
 ### Changed
