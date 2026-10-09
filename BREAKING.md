@@ -7,7 +7,20 @@ and provides migration guides for users upgrading between versions.
 
 ## Unreleased
 
-**No breaking changes.**
+- **`Integrators.merge` returns a `PiecewiseIntegrationResult`** for two SciML segments or
+  more, instead of a `SciMLIntegrationResult` wrapping a flattened `dense=false`
+  solution. The `AbstractIntegrationResult` accessors (`times`, `evaluate_at`,
+  `final_state`, `status`, `successful`) behave as before — `evaluate_at` is now
+  solver-accurate inside each phase — but code reading `merged.ode_sol` must use the
+  accessors (or `merged.segments`).
+- **Time grid with `saveat`:** `times(result)` is the `saveat` grid (as SciML's native
+  saving returns it); with the trajectory options it used to be the union of `saveat`
+  and every solver step (forced `save_everystep=true`), and evaluating between the points
+  crashed. Pass `save_everystep=true` explicitly for the union.
+- **Memory with `saveat`:** a dense trajectory with `saveat` keeps the full interpolant.
+  Pass `dense=false` to store only the grid values (linear in between).
+- **`SciMLIntegrationResult` has a second type parameter** (`grid`); the one-argument
+  constructor `SciMLIntegrationResult(ode_sol)` is unchanged.
 
 ---
 
