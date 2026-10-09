@@ -96,6 +96,24 @@ end
 """
 $(TYPEDSIGNATURES)
 
+Return whether `evaluate_at` reads a dense (solver-accurate) interpolant at every time of
+the integration span.
+
+When `false`, values between the stored time points are only an approximation (e.g. a
+linear interpolation), whose accuracy is bounded by the spacing of [`CTSolvers.Integrators.times`](@extref)
+rather than by the solver tolerances. Defaults to `false`; concrete result types that keep a
+dense interpolant override it.
+
+# Arguments
+- `r::AbstractIntegrationResult`: The integration result.
+
+See also: [`CTSolvers.Integrators.evaluate_at`](@extref), [`CTSolvers.Integrators.times`](@extref).
+"""
+is_dense(r::AbstractIntegrationResult)::Bool = false
+
+"""
+$(TYPEDSIGNATURES)
+
 Return the termination status of the integration result, as a `Symbol`.
 
 This generic is owned by `CTModels.Solutions`; `CTSolvers.Integrators` contributes the

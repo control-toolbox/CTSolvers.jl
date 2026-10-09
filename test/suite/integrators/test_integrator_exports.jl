@@ -38,7 +38,7 @@ function test_integrator_exports()
         # ====================================================================
 
         Test.@testset "Exported concrete types and tags" begin
-            for sym in (:SciML, :SciMLTag, :Tsit5Tag)
+            for sym in (:SciML, :SciMLTag, :Tsit5Tag, :PiecewiseIntegrationResult)
                 Test.@testset "$sym" begin
                     Test.@test sym in names(Integrators)
                     Test.@test isdefined(Integrators, sym)
@@ -55,6 +55,7 @@ function test_integrator_exports()
                 :final_state,
                 :times,
                 :evaluate_at,
+                :is_dense,
                 :status,
                 :successful,
                 :options_point,
@@ -101,6 +102,8 @@ function test_integrator_exports()
                 :final_state,
                 :times,
                 :evaluate_at,
+                :is_dense,
+                :PiecewiseIntegrationResult,
                 :status,
                 :successful,
                 :options_point,

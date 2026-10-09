@@ -62,12 +62,20 @@ decoupling consumers from the backend solution type:
 - `final_state(r)` — the final state vector
 - `times(r)` — the vector of time points
 - `evaluate_at(r, t)` — the continuous solution at time `t`
+- `is_dense(r)` — whether `evaluate_at` reads a dense interpolant (defaults to `false`)
 - `status(r)` — the termination status, as a `Symbol`
 - `successful(r)` — whether the integration succeeded
 
-For multi-phase trajectories, `merge(segments)` concatenates a sequence of results,
-aggregating `status`/`successful` so a merged result stays truthful even if one segment
-was solved with `unsafe = true`.
+For multi-phase trajectories, `merge(segments)` combines a sequence of results; the SciML
+backend returns a `PiecewiseIntegrationResult`, which keeps each segment (and its
+interpolant), is left-continuous at the switching times, and aggregates
+`status`/`successful` so a merged result stays truthful even if one segment was solved
+with `unsafe = true`.
+
+With `saveat`, the SciML backend treats the requested times as an **output grid**: when
+dense output is wanted it integrates without `saveat`, keeps the interpolant, and
+returns the grid from `times(r)` — same times, values and integration cost as SciML's
+native saving, with `evaluate_at` accurate everywhere.
 
 ## Implementing the Integrator Type
 

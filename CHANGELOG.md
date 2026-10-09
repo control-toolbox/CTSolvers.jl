@@ -10,6 +10,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`saveat` is an output grid, the solution stays dense** ([CTFlows#434](https://github.com/control-toolbox/CTFlows.jl/issues/434)).
+  Trajectory options resolve `dense=:auto` to `true`; combined with `saveat`, SciML kept
+  `dense=true` without filling the interpolation data, so evaluating the solution between
+  saved points segfaulted. `CommonSolve.solve(prob, ::SciML)` now integrates without
+  `saveat` when dense output is wanted (same steps, same cost) and returns the `saveat`
+  grid as the result's time grid — the same times and values as SciML's native saving —
+  while `evaluate_at` reads the dense interpolant everywhere. A `saveat` stored in the
+  problem's own keyword arguments is handled the same way. With `dense=false`, SciML's
+  native saving is used.
+- **Multi-phase merge keeps every phase's interpolant:** `Integrators.merge` returns a
+  `PiecewiseIntegrationResult` instead of a flattened, linearly interpolated solution.
+
+### Added
+
+- `Integrators.is_dense(result)` — whether `evaluate_at` reads a dense interpolant.
+- `Integrators.PiecewiseIntegrationResult` — backend-agnostic multi-phase result,
+  left-continuous at switching times.
+
+### Changed
+
+- `options_point` no longer carries `saveat` (only the final state is needed).
+- With `saveat`, an automatic `save_everystep` resolves to `false` in the trajectory
+  options: the grid is the `saveat` grid only (an explicit `save_everystep=true` still
+  adds the solver steps, as in SciML).
+
+### Compatibility
+
+- **Breaking** (type of `merge`, time grid with `saveat`). See [BREAKING.md](BREAKING.md).
+
 ---
 
 ## [0.5.8] - 2026-10-09
