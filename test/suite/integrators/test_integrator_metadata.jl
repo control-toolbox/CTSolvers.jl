@@ -46,6 +46,15 @@ function test_integrator_metadata()
             Test.@test Integrators.__default_sciml_algorithm(Integrators.Tsit5Tag) isa Tsit5
         end
 
+        Test.@testset "missing algorithm diagnostic" begin
+            err = CTSolversSciMLIntegrator._missing_sciml_algorithm_error()
+            Test.@test err isa Exceptions.PreconditionError
+            err_str = string(err)
+            Test.@test occursin("SciML(alg=Vern6())", err_str)
+            Test.@test occursin("Flow(ocp, law; alg=Vern6())", err_str)
+            Test.@test occursin("OrdinaryDiffEqVerner", err_str)
+        end
+
         # ====================================================================
         # Construction + accessors
         # ====================================================================

@@ -322,6 +322,20 @@ cached dictionaries `options_point` (`:auto` → `false`) and `options_trajector
 
 See also: [`CTSolvers.Integrators.SciML`](@extref).
 """
+function _missing_sciml_algorithm_error()
+    return Exceptions.PreconditionError(
+        "No ODE algorithm specified and OrdinaryDiffEqTsit5 is not loaded";
+        reason="alg is missing",
+        suggestion="Load OrdinaryDiffEqTsit5: using OrdinaryDiffEqTsit5\n" *
+                   "Or specify an algorithm explicitly, for example:\n" *
+                   "  SciML(alg=Vern6())\n" *
+                   "  Flow(ocp, law; alg=Vern6())\n" *
+                   "Note: when specifying an algorithm, also load its package " *
+                   "(e.g., using OrdinaryDiffEqVerner for Vern6)",
+        context="SciML integrator construction",
+    )
+end
+
 function Integrators._build_sciml_integrator(
     ::Type{Integrators.SciMLTag}, ::Type{P}; mode::Symbol=:strict, kwargs...
 ) where {P<:Strategies.AbstractStrategyParameter}
@@ -331,16 +345,7 @@ function Integrators._build_sciml_integrator(
     # Check if algorithm is missing and raise PreconditionError
     alg_val = raw[:alg]
     if alg_val === missing
-        throw(
-            Exceptions.PreconditionError(
-                "No ODE algorithm specified and OrdinaryDiffEqTsit5 is not loaded";
-                reason="alg is missing",
-                suggestion="Load OrdinaryDiffEqTsit5: using OrdinaryDiffEqTsit5\n" *
-                           "Or specify an algorithm explicitly: SciML(alg=Vern6())\n" *
-                           "Note: when specifying an algorithm, also load its package (e.g., using OrdinaryDiffEqVerner for Vern6)",
-                context="SciML integrator construction",
-            ),
-        )
+        throw(_missing_sciml_algorithm_error())
     end
 
     # Pre-compute options for point integration
