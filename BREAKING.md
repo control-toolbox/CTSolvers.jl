@@ -7,6 +7,15 @@ and provides migration guides for users upgrading between versions.
 
 ## Unreleased
 
+**No breaking changes.**
+
+---
+
+## v0.6.0 (2026-10-09)
+
+Breaking for code that reads the internals of integration results; code that uses the
+`AbstractIntegrationResult` accessors only needs no change.
+
 - **`Integrators.merge` returns a `PiecewiseIntegrationResult`** for two SciML segments or
   more, instead of a `SciMLIntegrationResult` wrapping a flattened `dense=false`
   solution. The `AbstractIntegrationResult` accessors (`times`, `evaluate_at`,

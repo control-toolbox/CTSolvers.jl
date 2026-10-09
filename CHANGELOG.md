@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.6.0] - 2026-10-09
+
 ### Fixed
 
 - **`saveat` is an output grid, the solution stays dense** ([CTFlows#434](https://github.com/control-toolbox/CTFlows.jl/issues/434)).
@@ -23,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   native saving is used.
 - **Multi-phase merge keeps every phase's interpolant:** `Integrators.merge` returns a
   `PiecewiseIntegrationResult` instead of a flattened, linearly interpolated solution.
+- **GPU solver diagnostics:** with CUDA (and CUDSS) loaded but not MadNLPGPU,
+  `solve(ocp, :gpu)` now asks directly for `MadNLPGPU` instead of first asking for
+  `MadNLP` ([#234](https://github.com/control-toolbox/CTSolvers.jl/issues/234)).
 
 ### Added
 
