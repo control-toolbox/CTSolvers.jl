@@ -286,8 +286,10 @@ Tuple of option keys that support automatic resolution based on the integration 
 
 These options use the `:auto` sentinel value in their metadata and are resolved during
 integrator construction into two cached dictionaries:
-- `options_point`: `:auto` → `false` (only the final state is needed)
-- `options_trajectory`: `:auto` → `true` (full trajectory storage needed)
+- `options_point`: `:auto` → `false` (only the final state is needed); `saveat` is dropped
+- `options_trajectory`: `:auto` → `true` (full trajectory storage needed), except
+  `save_everystep`, which resolves to `false` when `saveat` is given (the output grid is
+  then the `saveat` grid only — see `CommonSolve.solve`)
 
 Users can override automatic resolution by providing explicit `true`/`false` values
 when constructing the integrator.
@@ -348,16 +350,22 @@ function Integrators._build_sciml_integrator(
         throw(_missing_sciml_algorithm_error())
     end
 
-    # Pre-compute options for point integration
+    # Pre-compute options for point integration: only the final state is needed, so the
+    # output grid `saveat` is irrelevant and dropped.
     options_point = copy(raw)
     for key in _AUTO_OPTION_KEYS
         get(options_point, key, :auto) === :auto && (options_point[key] = false)
     end
+    delete!(options_point, :saveat)
 
-    # Pre-compute options for trajectory integration
+    # Pre-compute options for trajectory integration. With `saveat`, an automatic
+    # `save_everystep` resolves to `false`: the returned grid is the `saveat` grid only (the
+    # dense interpolant is kept anyway, see `CommonSolve.solve`).
     options_trajectory = copy(raw)
+    has_saveat = _requested_saveat(options_trajectory) !== nothing
     for key in _AUTO_OPTION_KEYS
-        get(options_trajectory, key, :auto) === :auto && (options_trajectory[key] = true)
+        get(options_trajectory, key, :auto) === :auto || continue
+        options_trajectory[key] = !(key === :save_everystep && has_saveat)
     end
 
     return Integrators.SciML{
@@ -381,11 +389,24 @@ interface.
 
 # Fields
 - `ode_sol::S`: The raw SciML ODE solution.
+- `grid::G`: The output time grid requested through `saveat` when the solution was kept
+  dense (see `CommonSolve.solve`), or `nothing` when the grid is the solution's own
+  `ode_sol.t`.
 """
-struct SciMLIntegrationResult{S<:SciMLBase.AbstractODESolution} <:
-       Integrators.AbstractIntegrationResult
+struct SciMLIntegrationResult{
+    S<:SciMLBase.AbstractODESolution,G<:Union{Nothing,AbstractVector}
+} <: Integrators.AbstractIntegrationResult
     ode_sol::S
+    grid::G
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Wrap a SciML ODE solution whose own time points are the output grid.
+"""
+SciMLIntegrationResult(ode_sol::SciMLBase.AbstractODESolution) =
+    SciMLIntegrationResult(ode_sol, nothing)
 
 """
 $(TYPEDSIGNATURES)
@@ -399,7 +420,21 @@ $(TYPEDSIGNATURES)
 
 Return the vector of time points from the SciML ODE solution.
 """
-Integrators.times(r::SciMLIntegrationResult) = r.ode_sol.t
+Integrators.times(r::SciMLIntegrationResult{<:Any,Nothing}) = r.ode_sol.t
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the output grid requested through `saveat` (the solution itself is kept dense).
+"""
+Integrators.times(r::SciMLIntegrationResult{<:Any,<:AbstractVector}) = r.grid
+
+"""
+$(TYPEDSIGNATURES)
+
+Return whether the SciML ODE solution carries a dense interpolant.
+"""
+Integrators.is_dense(r::SciMLIntegrationResult) = r.ode_sol.dense
 
 """
 $(TYPEDSIGNATURES)
@@ -427,35 +462,22 @@ function Integrators.successful(r::SciMLIntegrationResult)
 end
 
 # =============================================================================
-# merge — concatenate SciML integration results (multi-phase trajectories)
+# merge — piecewise SciML integration results (multi-phase trajectories)
 # =============================================================================
 
 """
 $(TYPEDSIGNATURES)
 
-Return the retcode to report for a merged multi-phase solution: the first non-successful
-retcode among `ode_sols`, or `SciMLBase.ReturnCode.Success` if every segment succeeded.
+Merge a sequence of SciML integration results into a
+[`CTSolvers.Integrators.PiecewiseIntegrationResult`](@extref). Each phase keeps its own
+solution and interpolant, so a dense multi-phase trajectory is as accurate as a single-phase
+one. A single segment is returned unchanged.
 
-This keeps `Integrators.status`/`Integrators.successful` on a merged result truthful even
-when a segment was solved with `unsafe=true` (bypassing the retcode check at `solve` time).
-"""
-function _merged_retcode(ode_sols)
-    for sol in ode_sols
-        SciMLBase.successful_retcode(sol.retcode) || return sol.retcode
-    end
-    return SciMLBase.ReturnCode.Success
-end
-
-"""
-$(TYPEDSIGNATURES)
-
-Merge a sequence of SciML integration results into a single result by concatenating their
-time and state vectors. Used for multi-phase trajectories.
+# Throws
+- `CTBase.Exceptions.IncorrectArgument`: If `segments` is empty.
 """
 function Integrators.merge(segments::AbstractVector{<:SciMLIntegrationResult})
-    ode_sols = [r.ode_sol for r in segments]
-
-    if isempty(ode_sols)
+    if isempty(segments)
         throw(
             Exceptions.IncorrectArgument(
                 "Cannot merge empty sequence of segments";
@@ -465,31 +487,8 @@ function Integrators.merge(segments::AbstractVector{<:SciMLIntegrationResult})
             ),
         )
     end
-
-    if length(ode_sols) == 1
-        return segments[1]
-    end
-
-    t_merged = copy(ode_sols[1].t)
-    u_merged = copy(ode_sols[1].u)
-
-    for i in eachindex(ode_sols)[2:end]
-        sol = ode_sols[i]
-        append!(t_merged, sol.t)
-        append!(u_merged, sol.u)
-    end
-
-    sol1 = ode_sols[1]
-    merged_sol = DiffEqBase.build_solution(
-        sol1.prob,
-        sol1.alg,
-        t_merged,
-        u_merged;
-        retcode=_merged_retcode(ode_sols),
-        dense=false,
-    )
-
-    return SciMLIntegrationResult(merged_sol)
+    length(segments) == 1 && return segments[1]
+    return Integrators.PiecewiseIntegrationResult(segments)
 end
 
 # =============================================================================
@@ -523,6 +522,13 @@ $(TYPEDSIGNATURES)
 Integrate an `ODEProblem` with a `SciML` integrator and resolved options.
 Returns a [`CTSolversSciMLIntegrator.SciMLIntegrationResult`](@extref) wrapping the raw `ODESolution`.
 
+`saveat` (in `options`, or stored in the problem) is an **output grid**. When dense output
+is wanted (`options[:dense] === true`), the problem is integrated without it — same steps,
+same cost — the dense interpolant is kept, and the result's time grid is the one SciML's
+native saving would have returned (so `evaluate_at` is solver-accurate everywhere, not
+only on the grid). Otherwise SciML's native saving is used. In both cases the solver
+steps join the grid only on an explicit `save_everystep=true`.
+
 # Arguments
 - `prob::SciMLBase.AbstractODEProblem`: The ODE problem to integrate (time span embedded).
 - `integ::Integrators.SciML`: The SciML integrator strategy.
@@ -538,9 +544,126 @@ function CommonSolve.solve(
     options=Integrators.options_trajectory(integ),
     unsafe=Integrators.__unsafe(),
 )
-    ode_sol = SciMLBase.solve(prob; options...)
+    saveat = _requested_saveat(options, prob)
+    if saveat === nothing
+        ode_sol = SciMLBase.solve(prob; options...)
+        _check_retcode(ode_sol, unsafe)
+        return SciMLIntegrationResult(ode_sol)
+    end
+    # the solver steps join the output grid only on an explicit `save_everystep=true`
+    everystep = integ[:save_everystep] === true
+    if get(options, :dense, false) !== true
+        # dense output not wanted: SciML's native saving at the `saveat` times
+        ode_sol = SciMLBase.solve(prob; _native_saveat_options(options, everystep)...)
+        _check_retcode(ode_sol, unsafe)
+        return SciMLIntegrationResult(ode_sol)
+    end
+    # `saveat` is an output grid only: integrate dense without it, keep the interpolant
+    ode_sol = SciMLBase.solve(prob; _dense_options(options, prob)...)
     _check_retcode(ode_sol, unsafe)
-    return SciMLIntegrationResult(ode_sol)
+    grid = _output_grid(saveat, ode_sol, prob.tspan, options, everystep)
+    return SciMLIntegrationResult(ode_sol, grid)
+end
+
+# =============================================================================
+# saveat as an output grid
+# =============================================================================
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the `saveat` requested in `options` (or, failing that, stored in the problem's own
+keyword arguments), or `nothing` when none or an empty one is given.
+"""
+function _requested_saveat(options, prob=nothing)
+    saveat = get(options, :saveat, nothing)
+    if saveat === nothing && prob !== nothing && hasproperty(prob, :kwargs)
+        saveat = get(prob.kwargs, :saveat, nothing)
+    end
+    saveat === nothing && return nothing
+    saveat isa Number && return saveat
+    return isempty(saveat) ? nothing : saveat
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the options of a dense integration over the whole span: `saveat` is overridden by an
+empty grid (also shadowing a `saveat` stored in the problem), and every step is saved with
+its interpolation data.
+"""
+function _dense_options(options, prob)
+    opts = Dict{Symbol,Any}(pairs(options))
+    opts[:saveat] = eltype(prob.tspan)[]
+    opts[:dense] = true
+    opts[:save_everystep] = true
+    opts[:save_start] = true
+    opts[:save_end] = true
+    return opts
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the options of SciML's native `saveat` saving: `save_everystep` follows the user's
+explicit choice only (an automatic value would add every solver step to the grid).
+"""
+function _native_saveat_options(options, everystep::Bool)
+    get(options, :save_everystep, false) === everystep && return options
+    opts = Dict{Symbol,Any}(pairs(options))
+    opts[:save_everystep] = everystep
+    return opts
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the `Bool` value of a saving flag in `options`, or `nothing` when it is absent or
+still automatic.
+"""
+function _saving_flag(options, key::Symbol)
+    value = get(options, key, nothing)
+    return value isa Bool ? value : nothing
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Build the output time grid SciML would have returned for `saveat`, so that requesting it on
+a dense solution yields the same times as SciML's native saving:
+
+- a scalar `saveat` is a step from `t0` in the integration direction;
+- a collection keeps the times strictly after `t0` and up to `tf`, in integration order;
+- `t0` (resp. `tf`) is added following `save_start` (resp. `save_end`), with SciML's
+  defaults when unset;
+- an explicit `save_everystep=true` (`everystep`) adds the solver steps (union, as SciML
+  does).
+"""
+function _output_grid(saveat, ode_sol, tspan, options, everystep::Bool)
+    T = eltype(ode_sol.t)
+    t0, tf = T(tspan[1]), T(tspan[2])
+    tdir = sign(tf - t0)
+    after_t0(t) = tdir * t0 < tdir * t ≤ tdir * tf
+    grid = T[]
+    if saveat isa Number
+        Δ = tdir * abs(saveat)
+        append!(grid, (t0 + Δ):Δ:tf)
+    else
+        append!(grid, Iterators.filter(after_t0, saveat))
+    end
+    everystep && append!(grid, Iterators.filter(after_t0, ode_sol.t))
+    sort!(grid; rev=(tdir < 0))
+    unique!(grid)
+    by_default = everystep || saveat isa Number
+    save_start = something(_saving_flag(options, :save_start), by_default || t0 in saveat)
+    save_end = something(_saving_flag(options, :save_end), by_default || tf in saveat)
+    save_start && pushfirst!(grid, t0)
+    if save_end
+        (isempty(grid) || last(grid) != tf) && push!(grid, tf)
+    else
+        filter!(!=(tf), grid)
+    end
+    return grid
 end
 
 end # module CTSolversSciMLIntegrator

@@ -61,6 +61,7 @@ using CTBase: Options
 # Include submodules
 include(joinpath(@__DIR__, "abstract_integrator.jl"))
 include(joinpath(@__DIR__, "integration_result.jl"))
+include(joinpath(@__DIR__, "piecewise_result.jl"))
 include(joinpath(@__DIR__, "sciml.jl"))
 include(joinpath(@__DIR__, "contract.jl"))
 include(joinpath(@__DIR__, "internal_norm.jl"))
@@ -69,12 +70,12 @@ include(joinpath(@__DIR__, "internal_norm.jl"))
 export AbstractIntegrator, AbstractSciMLIntegrator, SciML, SciMLTag, Tsit5Tag
 
 # Public API - integration result
-export AbstractIntegrationResult, final_state, times, evaluate_at, status, successful
+export AbstractIntegrationResult, final_state, times, evaluate_at, is_dense, status, successful
 
 # Public API - construction and accessors
 export options_point, options_trajectory
 
 # Public API - multi-phase
-export merge
+export merge, PiecewiseIntegrationResult
 
 end # module Integrators
