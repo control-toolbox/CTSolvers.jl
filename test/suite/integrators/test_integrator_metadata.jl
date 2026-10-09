@@ -3,11 +3,14 @@ module TestIntegratorMetadata
 using Test: Test
 using CTBase: Core
 using CTBase: Exceptions
+using CTBase: Options
 using CTSolvers: Integrators
 using CTBase: Strategies
 using OrdinaryDiffEqTsit5: OrdinaryDiffEqTsit5, Tsit5
 using SciMLBase: SciMLBase
 using DiffEqBase: DiffEqBase
+
+struct FakeDEAlgorithm <: SciMLBase.AbstractDEAlgorithm end
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
@@ -30,6 +33,8 @@ function test_integrator_metadata()
         Test.@testset "metadata" begin
             md = Strategies.metadata(Integrators.SciML)
             Test.@test md isa Strategies.StrategyMetadata
+            Test.@test Options.type(md[:alg]) ==
+                Union{Missing, SciMLBase.AbstractDEAlgorithm}
             # Tsit5 is the default algorithm once OrdinaryDiffEqTsit5 is loaded
             Test.@test Integrators.__default_sciml_algorithm(Integrators.Tsit5Tag) isa Tsit5
         end
@@ -54,6 +59,10 @@ function test_integrator_metadata()
                 Test.@test op[k] === false
                 Test.@test ot[k] === true
             end
+
+            fake_integ = Integrators.SciML(; alg=FakeDEAlgorithm())
+            Test.@test Integrators.options_point(fake_integ)[:alg] isa FakeDEAlgorithm
+            Test.@test Integrators.options_trajectory(fake_integ)[:alg] isa FakeDEAlgorithm
         end
 
         # ====================================================================
