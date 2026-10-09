@@ -67,17 +67,21 @@ the option set is currently identical for both — `P` marks the seam where GPU-
 defaults/validators land as they are discovered. The bare `metadata(SciML)` (core) delegates
 here through `SciML{Strategies.CPU}`.
 """
+function _sciml_alg_option(default)
+    return Strategies.OptionDefinition(;
+        name=:alg,
+        type=Union{Missing, SciMLBase.AbstractDEAlgorithm},
+        default=default,
+        description="ODE algorithm (e.g. Tsit5(), Vern6()).",
+        aliases=(:algorithm, :solver),
+    )
+end
+
 function Strategies.metadata(
     ::Type{Integrators.SciML{P}}
 ) where {P<:Union{Strategies.CPU,Strategies.GPU}}
     return Strategies.StrategyMetadata(
-        Strategies.OptionDefinition(;
-            name=:alg,
-            type=SciMLBase.AbstractDEAlgorithm,
-            default=Integrators.__default_sciml_algorithm(Integrators.Tsit5Tag),
-            description="ODE algorithm (e.g. Tsit5(), Vern6()).",
-            aliases=(:algorithm, :solver),
-        ),
+        _sciml_alg_option(Integrators.__default_sciml_algorithm(Integrators.Tsit5Tag)),
         Strategies.OptionDefinition(;
             name=:reltol,
             type=Real,

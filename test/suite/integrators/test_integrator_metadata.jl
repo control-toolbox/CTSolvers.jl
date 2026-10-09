@@ -9,6 +9,9 @@ using CTBase: Strategies
 using OrdinaryDiffEqTsit5: OrdinaryDiffEqTsit5, Tsit5
 using SciMLBase: SciMLBase
 using DiffEqBase: DiffEqBase
+using CTSolvers: CTSolvers
+
+const CTSolversSciMLIntegrator = Base.get_extension(CTSolvers, :CTSolversSciMLIntegrator)
 
 struct FakeDEAlgorithm <: SciMLBase.AbstractDEAlgorithm end
 
@@ -33,6 +36,10 @@ function test_integrator_metadata()
         Test.@testset "metadata" begin
             md = Strategies.metadata(Integrators.SciML)
             Test.@test md isa Strategies.StrategyMetadata
+            alg_without_default = CTSolversSciMLIntegrator._sciml_alg_option(missing)
+            Test.@test Options.type(alg_without_default) ==
+                Union{Missing, SciMLBase.AbstractDEAlgorithm}
+            Test.@test Options.default(alg_without_default) === missing
             Test.@test Options.type(md[:alg]) ==
                 Union{Missing, SciMLBase.AbstractDEAlgorithm}
             # Tsit5 is the default algorithm once OrdinaryDiffEqTsit5 is loaded
