@@ -3,11 +3,17 @@ module TestIntegratorMetadata
 using Test: Test
 using CTBase: Core
 using CTBase: Exceptions
+using CTBase: Options
 using CTSolvers: Integrators
 using CTBase: Strategies
 using OrdinaryDiffEqTsit5: OrdinaryDiffEqTsit5, Tsit5
 using SciMLBase: SciMLBase
 using DiffEqBase: DiffEqBase
+using CTSolvers: CTSolvers
+
+const CTSolversSciMLIntegrator = Base.get_extension(CTSolvers, :CTSolversSciMLIntegrator)
+
+struct FakeDEAlgorithm <: SciMLBase.AbstractDEAlgorithm end
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
@@ -30,8 +36,23 @@ function test_integrator_metadata()
         Test.@testset "metadata" begin
             md = Strategies.metadata(Integrators.SciML)
             Test.@test md isa Strategies.StrategyMetadata
+            alg_without_default = CTSolversSciMLIntegrator._sciml_alg_option(missing)
+            Test.@test Options.type(alg_without_default) ==
+                Union{Missing, SciMLBase.AbstractDEAlgorithm}
+            Test.@test Options.default(alg_without_default) === missing
+            Test.@test Options.type(md[:alg]) ==
+                Union{Missing, SciMLBase.AbstractDEAlgorithm}
             # Tsit5 is the default algorithm once OrdinaryDiffEqTsit5 is loaded
             Test.@test Integrators.__default_sciml_algorithm(Integrators.Tsit5Tag) isa Tsit5
+        end
+
+        Test.@testset "missing algorithm diagnostic" begin
+            err = CTSolversSciMLIntegrator._missing_sciml_algorithm_error()
+            Test.@test err isa Exceptions.PreconditionError
+            err_str = string(err)
+            Test.@test occursin("SciML(alg=Vern6())", err_str)
+            Test.@test occursin("Flow(ocp, law; alg=Vern6())", err_str)
+            Test.@test occursin("OrdinaryDiffEqVerner", err_str)
         end
 
         # ====================================================================
@@ -54,6 +75,10 @@ function test_integrator_metadata()
                 Test.@test op[k] === false
                 Test.@test ot[k] === true
             end
+
+            fake_integ = Integrators.SciML(; alg=FakeDEAlgorithm())
+            Test.@test Integrators.options_point(fake_integ)[:alg] isa FakeDEAlgorithm
+            Test.@test Integrators.options_trajectory(fake_integ)[:alg] isa FakeDEAlgorithm
         end
 
         # ====================================================================
