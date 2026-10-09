@@ -242,14 +242,7 @@ See also: `MadNLP`, `Strategies.StrategyMetadata`
 function Strategies.metadata(
     ::Type{<:Solvers.MadNLP{P}}
 ) where {P<:Strategies.AbstractStrategyParameter}
-    return throw(
-        Exceptions.ExtensionError(
-            :MadNLP;
-            message="to access MadNLP{$P} options metadata",
-            feature="MadNLP metadata",
-            context="Load MadNLP extension first: using MadNLP",
-        ),
-    )
+    return throw(Solvers.__madnlp_suite_metadata_extension_error(:MadNLP, P))
 end
 
 """

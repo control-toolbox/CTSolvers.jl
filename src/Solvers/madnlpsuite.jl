@@ -67,6 +67,36 @@ function __madnlp_suite_default_linear_solver(::Type{<:Strategies.GPU})
 end
 
 """
+Build the metadata extension diagnostic for a MadNLP/MadNCL solver parameter.
+
+GPU metadata requires `MadNLPGPU`, while CPU metadata keeps the solver-specific
+weak-dependency diagnostics.
+"""
+function __madnlp_suite_metadata_extension_error(
+    solver::Symbol, parameter::Type{<:Strategies.AbstractStrategyParameter}
+)
+    if parameter == Strategies.GPU
+        return Exceptions.ExtensionError(
+            :MadNLPGPU;
+            message="to access $(solver){$parameter} options metadata",
+            feature="$(solver) metadata",
+            context="Load MadNLPGPU first: using MadNLPGPU",
+        )
+    end
+
+    weakdeps = solver == :MadNCL ? (:MadNCL, :MadNLP) : (:MadNLP,)
+    context = solver == :MadNCL ?
+        "Load MadNCL extension first: using MadNCL, MadNLP" :
+        "Load MadNLP extension first: using MadNLP"
+    return Exceptions.ExtensionError(
+        weakdeps...;
+        message="to access $(solver){$parameter} options metadata",
+        feature="$(solver) metadata",
+        context=context,
+    )
+end
+
+"""
 $(TYPEDSIGNATURES)
 
 Check if linear solver is consistent with parameter type.
