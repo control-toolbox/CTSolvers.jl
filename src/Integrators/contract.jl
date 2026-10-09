@@ -84,3 +84,71 @@ function merge(segments::AbstractVector{T}) where {T<:AbstractIntegrationResult}
         ),
     )
 end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return a copy of the integration result whose output time grid
+([`CTSolvers.Integrators.times`](@extref)) is `grid`. The integration is not redone: the
+values on the new grid are read with [`CTSolvers.Integrators.evaluate_at`](@extref) (dense
+interpolant when [`CTSolvers.Integrators.is_dense`](@extref)). The original result is left
+unchanged.
+
+`grid` must hold at least two times, be strictly monotone in the integration direction and
+lie in the integration span. Concrete result types implement this method, typically in a
+backend extension.
+
+# Throws
+- [`CTBase.Exceptions.IncorrectArgument`](@extref): If `grid` is invalid (in the concrete
+  methods).
+- [`CTBase.Exceptions.NotImplemented`](@extref): For a result type without a `regrid` method.
+
+See also: [`CTSolvers.Integrators.times`](@extref), [`CTSolvers.Integrators.PiecewiseIntegrationResult`](@extref).
+"""
+function regrid(r::AbstractIntegrationResult, grid::AbstractVector{<:Real})
+    return throw(
+        Exceptions.NotImplemented(
+            "regrid not implemented for this integration result";
+            required_method="regrid(r::$(typeof(r)), grid::AbstractVector{<:Real})",
+            suggestion="Implement regrid(r, grid) returning a result whose times are grid.",
+            context="AbstractIntegrationResult - regrid implementation",
+        ),
+    )
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Check that `grid` is a valid output grid for the integration span `(t0, tf)`: at least two
+times, strictly monotone in the integration direction, inside the span. Returns `nothing`.
+
+# Throws
+- [`CTBase.Exceptions.IncorrectArgument`](@extref): If any condition fails.
+"""
+function _check_grid(grid::AbstractVector{<:Real}, (t0, tf)::Tuple{Real,Real})
+    _grid_error(msg, expected) = throw(
+        Exceptions.IncorrectArgument(
+            msg; got="$(grid)", expected=expected, context="Integrators.regrid"
+        ),
+    )
+    length(grid) >= 2 ||
+        _grid_error("An output grid needs at least two times", "≥ 2 times")
+    forward = tf >= t0
+    monotone = forward ? all(>(0), diff(grid)) : all(<(0), diff(grid))
+    monotone || _grid_error(
+        "The output grid must be strictly monotone in the integration direction",
+        forward ? "strictly increasing times" : "strictly decreasing times",
+    )
+    lo, hi = minmax(t0, tf)
+    all(t -> lo <= t <= hi, grid) ||
+        _grid_error("The output grid must lie in the integration span", "times in [$lo, $hi]")
+    return nothing
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the integration span `(t0, tf)` of a result. Defaults to the first and last times of
+its grid; result types that know their span (e.g. from the integrated problem) override it.
+"""
+_tspan(r::AbstractIntegrationResult) = (first(times(r)), last(times(r)))

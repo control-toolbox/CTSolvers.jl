@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `Integrators.regrid(result, grid)` — a copy of an integration result on another output
+  grid, read from its interpolant without re-integrating (SciML and piecewise results);
+  invalid grids (fewer than two times, not strictly monotone in the integration
+  direction, outside the span) throw `IncorrectArgument` ([CTFlows#435](https://github.com/control-toolbox/CTFlows.jl/issues/435)).
+
 ### Fixed
 
 - **`saveat` is an output grid, the solution stays dense** ([CTFlows#434](https://github.com/control-toolbox/CTFlows.jl/issues/434)).
