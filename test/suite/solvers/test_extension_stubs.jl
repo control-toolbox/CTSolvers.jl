@@ -54,6 +54,32 @@ function test_extension_stubs()
             Test.@test !occursin("MadNLPGPU, CUDA, CUDSS", string(err))
             Test.@test err.feature == "GPU computation with MadNLP/MadNCL"
             Test.@test occursin("all three", err.context)
+
+            madnlp_gpu = Solvers.__madnlp_suite_metadata_extension_error(
+                :MadNLP, Strategies.GPU
+            )
+            Test.@test madnlp_gpu.weakdeps === (:MadNLPGPU,)
+            Test.@test occursin("MadNLPGPU", string(madnlp_gpu))
+            Test.@test occursin("using MadNLPGPU", madnlp_gpu.context)
+            Test.@test !occursin("Missing MadNLP", string(madnlp_gpu))
+
+            madncl_gpu = Solvers.__madnlp_suite_metadata_extension_error(
+                :MadNCL, Strategies.GPU
+            )
+            Test.@test madncl_gpu.weakdeps === (:MadNLPGPU,)
+            Test.@test occursin("using MadNLPGPU", madncl_gpu.context)
+
+            madnlp_cpu = Solvers.__madnlp_suite_metadata_extension_error(
+                :MadNLP, Strategies.CPU
+            )
+            Test.@test madnlp_cpu.weakdeps === (:MadNLP,)
+            Test.@test occursin("using MadNLP", madnlp_cpu.context)
+
+            madncl_cpu = Solvers.__madnlp_suite_metadata_extension_error(
+                :MadNCL, Strategies.CPU
+            )
+            Test.@test madncl_cpu.weakdeps === (:MadNCL, :MadNLP)
+            Test.@test occursin("using MadNCL, MadNLP", madncl_cpu.context)
         end
 
         # ====================================================================

@@ -237,15 +237,7 @@ See also: `MadNCL`, `Strategies.StrategyMetadata`
 function Strategies.metadata(
     ::Type{<:Solvers.MadNCL{P}}
 ) where {P<:Strategies.AbstractStrategyParameter}
-    return throw(
-        Exceptions.ExtensionError(
-            :MadNCL,
-            :MadNLP;
-            message="to access MadNCL{$P} options metadata",
-            feature="MadNCL metadata",
-            context="Load MadNCL extension first: using MadNCL, MadNLP",
-        ),
-    )
+    return throw(Solvers.__madnlp_suite_metadata_extension_error(:MadNCL, P))
 end
 
 """
