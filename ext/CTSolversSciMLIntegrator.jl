@@ -70,7 +70,7 @@ here through `SciML{Strategies.CPU}`.
 function _sciml_alg_option(default)
     return Strategies.OptionDefinition(;
         name=:alg,
-        type=Union{Missing, SciMLBase.AbstractDEAlgorithm},
+        type=Union{Missing,SciMLBase.AbstractDEAlgorithm},
         default=default,
         description="ODE algorithm (e.g. Tsit5(), Vern6()).",
         aliases=(:algorithm, :solver),
@@ -405,8 +405,9 @@ $(TYPEDSIGNATURES)
 
 Wrap a SciML ODE solution whose own time points are the output grid.
 """
-SciMLIntegrationResult(ode_sol::SciMLBase.AbstractODESolution) =
-    SciMLIntegrationResult(ode_sol, nothing)
+function SciMLIntegrationResult(ode_sol::SciMLBase.AbstractODESolution)
+    return SciMLIntegrationResult(ode_sol, nothing)
+end
 
 """
 $(TYPEDSIGNATURES)

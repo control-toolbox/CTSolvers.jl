@@ -70,7 +70,8 @@ include(joinpath(@__DIR__, "internal_norm.jl"))
 export AbstractIntegrator, AbstractSciMLIntegrator, SciML, SciMLTag, Tsit5Tag
 
 # Public API - integration result
-export AbstractIntegrationResult, final_state, times, evaluate_at, is_dense, status, successful
+export AbstractIntegrationResult,
+    final_state, times, evaluate_at, is_dense, status, successful
 
 # Public API - construction and accessors
 export options_point, options_trajectory

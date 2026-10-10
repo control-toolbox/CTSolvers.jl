@@ -38,10 +38,10 @@ function test_integrator_metadata()
             Test.@test md isa Strategies.StrategyMetadata
             alg_without_default = CTSolversSciMLIntegrator._sciml_alg_option(missing)
             Test.@test Options.type(alg_without_default) ==
-                Union{Missing, SciMLBase.AbstractDEAlgorithm}
+                Union{Missing,SciMLBase.AbstractDEAlgorithm}
             Test.@test Options.default(alg_without_default) === missing
             Test.@test Options.type(md[:alg]) ==
-                Union{Missing, SciMLBase.AbstractDEAlgorithm}
+                Union{Missing,SciMLBase.AbstractDEAlgorithm}
             # Tsit5 is the default algorithm once OrdinaryDiffEqTsit5 is loaded
             Test.@test Integrators.__default_sciml_algorithm(Integrators.Tsit5Tag) isa Tsit5
         end

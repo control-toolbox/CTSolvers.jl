@@ -18,8 +18,11 @@ _prob(tspan=(0.0, 1.0); kw...) = ODEProblem(_rhs, [1.0, 0.0], tspan; kw...)
 _tol() = (; alg=Tsit5(), reltol=1e-10, abstol=1e-10)
 
 # maximal error of the result against the exact solution on a fine grid of [0, 1]
-_offgrid_error(r) =
-    maximum(maximum(abs.(Integrators.evaluate_at(r, t) .- _exact(t))) for t in 0:0.001:1)
+function _offgrid_error(r)
+    return maximum(
+        maximum(abs.(Integrators.evaluate_at(r, t) .- _exact(t))) for t in 0:0.001:1
+    )
+end
 
 # solve with the integrator's trajectory options, counting right-hand side calls
 function _counted_solve(prob, integ; kw...)
@@ -83,7 +86,11 @@ function test_sciml_saveat()
             ("backward, scalar step", (1.0, 0.0), (; saveat=0.25)),
             ("save_start=false", (0.0, 1.0), (; saveat=0.25, save_start=false)),
             ("save_end=false", (0.0, 1.0), (; saveat=[0.5, 1.0], save_end=false)),
-            ("save_everystep=true", (0.0, 1.0), (; saveat=[0.33, 0.66], save_everystep=true)),
+            (
+                "save_everystep=true",
+                (0.0, 1.0),
+                (; saveat=[0.33, 0.66], save_everystep=true),
+            ),
         )
             prob = _prob(tspan)
             integ = Integrators.SciML(; _tol()..., kw...)
@@ -112,8 +119,8 @@ function test_sciml_saveat()
 
             # same integration, same accuracy as without saveat
             plain = CommonSolve.solve(prob, Integrators.SciML(; _tol()...))
-            Test.@test Integrators.evaluate_at(r, 0.33) ≈ Integrators.evaluate_at(plain, 0.33) atol =
-                1e-14
+            Test.@test Integrators.evaluate_at(r, 0.33) ≈
+                Integrators.evaluate_at(plain, 0.33) atol = 1e-14
         end
 
         # ====================================================================
