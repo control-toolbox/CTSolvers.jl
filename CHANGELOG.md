@@ -49,6 +49,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   options: the grid is the `saveat` grid only (an explicit `save_everystep=true` still
   adds the solver steps, as in SciML).
 
+### Documentation
+
+- Error examples use direct `@repl` expressions instead of `try/catch` + `showerror`
+  workarounds, now that DocumenterVitepress 0.3.5 renders colored `@repl` output
+  ([#226](https://github.com/control-toolbox/CTSolvers.jl/issues/226)); the docs
+  environment requires `DocumenterVitepress >= 0.3.5`.
+
 ### Compatibility
 
 - **Breaking** (type of `merge`, time grid with `saveat`). See [BREAKING.md](BREAKING.md).
