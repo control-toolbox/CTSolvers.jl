@@ -10,12 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+---
 
-- `Integrators.regrid(result, grid)` — a copy of an integration result on another output
-  grid, read from its interpolant without re-integrating (SciML and piecewise results);
-  invalid grids (fewer than two times, not strictly monotone in the integration
-  direction, outside the span) throw `IncorrectArgument` ([CTFlows#435](https://github.com/control-toolbox/CTFlows.jl/issues/435)).
+## [0.6.0] - 2026-10-09
 
 ### Fixed
 
@@ -30,12 +27,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   native saving is used.
 - **Multi-phase merge keeps every phase's interpolant:** `Integrators.merge` returns a
   `PiecewiseIntegrationResult` instead of a flattened, linearly interpolated solution.
+- **GPU solver diagnostics:** with CUDA (and CUDSS) loaded but not MadNLPGPU,
+  `solve(ocp, :gpu)` now asks directly for `MadNLPGPU` instead of first asking for
+  `MadNLP` ([#234](https://github.com/control-toolbox/CTSolvers.jl/issues/234)).
 
 ### Added
 
 - `Integrators.is_dense(result)` — whether `evaluate_at` reads a dense interpolant.
 - `Integrators.PiecewiseIntegrationResult` — backend-agnostic multi-phase result,
   left-continuous at switching times.
+- `Integrators.regrid(result, grid)` — a copy of an integration result on another output
+  grid, read from its interpolant without re-integrating (SciML and piecewise results);
+  invalid grids (fewer than two times, not strictly monotone in the integration
+  direction, outside the span) throw `IncorrectArgument`
+  ([CTFlows#435](https://github.com/control-toolbox/CTFlows.jl/issues/435)).
 
 ### Changed
 

@@ -4,8 +4,10 @@
 # to serve the documentation (option 2 — Julia only):
 #   julia --project=docs -e 'using LiveServer; LiveServer.serve(dir="docs/build/1", single_page=true)'
 # note: single_page=true is required so that reloading /getting-started serves the correct HTML
-pushfirst!(LOAD_PATH, joinpath(@__DIR__))
-pushfirst!(LOAD_PATH, joinpath(@__DIR__, ".."))
+# Append (not prepend): docs/Manifest.toml must win for shared deps (e.g. LLVM),
+# the repo root is only needed to find the local CTSolvers.
+push!(LOAD_PATH, joinpath(@__DIR__))
+push!(LOAD_PATH, joinpath(@__DIR__, ".."))
 
 using Documenter
 using DocumenterVitepress
