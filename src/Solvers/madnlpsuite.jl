@@ -85,9 +85,11 @@ function __madnlp_suite_metadata_extension_error(
     end
 
     weakdeps = solver == :MadNCL ? (:MadNCL, :MadNLP) : (:MadNLP,)
-    context = solver == :MadNCL ?
-        "Load MadNCL extension first: using MadNCL, MadNLP" :
+    context = if solver == :MadNCL
+        "Load MadNCL extension first: using MadNCL, MadNLP"
+    else
         "Load MadNLP extension first: using MadNLP"
+    end
     return Exceptions.ExtensionError(
         weakdeps...;
         message="to access $(solver){$parameter} options metadata",

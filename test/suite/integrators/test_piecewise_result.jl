@@ -13,8 +13,9 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 _integ(; kw...) = Integrators.SciML(; alg=Tsit5(), reltol=1e-12, abstol=1e-12, kw...)
 
 # u' = -u on [t0, t1] from u(t0) = u0
-_segment(t0, t1, u0; integ=_integ()) =
-    CommonSolve.solve(ODEProblem((u, p, t) -> -u, [u0], (t0, t1)), integ)
+function _segment(t0, t1, u0; integ=_integ())
+    return CommonSolve.solve(ODEProblem((u, p, t) -> -u, [u0], (t0, t1)), integ)
+end
 
 """
     test_piecewise_result()

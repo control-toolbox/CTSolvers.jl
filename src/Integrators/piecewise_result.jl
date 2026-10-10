@@ -62,7 +62,7 @@ Return the index of the segment that holds time `t` (left-continuous at switchin
 function _segment_index(r::PiecewiseIntegrationResult, t::Real)
     isempty(r.switches) && return 1
     forward = last(r.grid) >= first(r.grid)
-    return searchsortedfirst(r.switches, t; rev=!forward)
+    return searchsortedfirst(r.switches, t; rev=(!forward))
 end
 
 """
@@ -84,8 +84,9 @@ $(TYPEDSIGNATURES)
 
 Evaluate the segment holding time `t` (left-continuous at switching times).
 """
-evaluate_at(r::PiecewiseIntegrationResult, t::Real) =
-    evaluate_at(r.segments[_segment_index(r, t)], t)
+function evaluate_at(r::PiecewiseIntegrationResult, t::Real)
+    return evaluate_at(r.segments[_segment_index(r, t)], t)
+end
 
 """
 $(TYPEDSIGNATURES)
