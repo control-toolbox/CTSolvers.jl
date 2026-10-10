@@ -37,11 +37,7 @@ nothing # hide
 ```
 
 ```@repl errors
-try # hide
 CTBase.Strategies.id(IncompleteStrategy)
-catch e # hide
-showerror(IOContext(stdout, :color => false), e) # hide
-end # hide
 ```
 
 **Fix**: Implement the missing method:
@@ -53,11 +49,7 @@ CTBase.Strategies.id(::Type{<:IncompleteStrategy}) = :my_strategy
 ### Strategy contract — missing `metadata`
 
 ```@repl errors
-try # hide
 CTBase.Strategies.metadata(IncompleteStrategy)
-catch e # hide
-showerror(IOContext(stdout, :color => false), e) # hide
-end # hide
 ```
 
 ### Optimization problem contract — missing build_model
@@ -76,11 +68,7 @@ The generic stub in `Modelers/contract.jl` throws `NotImplemented` as soon as `b
 is called with a `(problem, modeler)` pair for which no concrete method exists:
 
 ```@repl optprob
-try # hide
 CTSolvers.Optimization.build_model(MinimalProblem(), nothing, MinimalModeler())
-catch e # hide
-showerror(IOContext(stdout, :color => false), e) # hide
-end # hide
 ```
 
 **Fix**: Implement `build_model` and `build_solution` in the package providing the
@@ -110,11 +98,7 @@ def = CTBase.Options.OptionDefinition(
     name = :max_iter, type = Integer, default = 100,
     description = "Maximum iterations",
 )
-try # hide
 CTBase.Options.extract_option((max_iter = "hello",), def)
-catch e # hide
-showerror(IOContext(stdout, :color => false), e) # hide
-end # hide
 ```
 
 **Fix**: Provide a value of the correct type.
@@ -139,11 +123,7 @@ nothing # hide
 ```
 
 ```@repl errors
-try # hide
 CTBase.Options.extract_option((tol = -1.0,), bad_def)
-catch e # hide
-showerror(IOContext(stdout, :color => false), e) # hide
-end # hide
 ```
 
 **Fix**: Provide a value that satisfies the validator constraint.
@@ -153,14 +133,10 @@ end # hide
 When the default value doesn't match the declared type:
 
 ```@repl errors
-try # hide
 CTBase.Options.OptionDefinition(
     name = :count, type = Integer, default = "hello",
     description = "A count",
 )
-catch e # hide
-showerror(IOContext(stdout, :color => false), e) # hide
-end # hide
 ```
 
 **Fix**: Ensure the default value matches the declared type.
@@ -168,11 +144,7 @@ end # hide
 ### Invalid OptionValue source
 
 ```@repl errors
-try # hide
 CTBase.Options.OptionValue(42, :invalid_source)
-catch e # hide
-showerror(IOContext(stdout, :color => false), e) # hide
-end # hide
 ```
 
 **Fix**: Use `:default`, `:user`, or `:computed`.
@@ -182,11 +154,7 @@ end # hide
 Thrown when a solver requires a package extension that hasn't been loaded.
 
 ```@repl errors
-try # hide
 CTSolvers.Solvers.MadNLP()
-catch e # hide
-showerror(IOContext(stdout, :color => false), e) # hide
-end # hide
 ```
 
 **Fix**: Load the required package before using the solver:

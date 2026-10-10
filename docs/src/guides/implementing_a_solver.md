@@ -113,11 +113,7 @@ end
 Live demonstration of the `ExtensionError` for all solvers:
 
 ```@repl solver
-try # hide
 CTSolvers.Solvers.MadNLP()
-catch e # hide
-showerror(IOContext(stdout, :color => false), e) # hide
-end # hide
 ```
 
 !!! note "Why Tag Dispatch?"

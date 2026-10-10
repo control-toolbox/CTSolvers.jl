@@ -43,21 +43,13 @@ nothing into scope directly.
 CTSolvers loads no backend at startup. Each constructor throws `ExtensionError` until
 the corresponding package is loaded:
 
-```@example gs
+```@repl gs
 using CTSolvers
-try # hide
 CTSolvers.Solvers.Ipopt()
-catch e # hide
-showerror(IOContext(stdout, :color => true), e) # hide
-end # hide
 ```
 
-```@example gs
-try # hide
+```@repl gs
 CTSolvers.Integrators.SciML()
-catch e # hide
-showerror(IOContext(stdout, :color => true), e) # hide
-end # hide
 ```
 
 Strategy identifiers and type information are always available, without any extension:
@@ -100,12 +92,8 @@ CTSolvers.Solvers.Ipopt(max_iter = 1000, tol = 1e-8)
 An unknown option name — with the extension loaded this raises `IncorrectArgument` with
 a Levenshtein suggestion (`Did you mean: :max_iter?`):
 
-```@example co
-try # hide
+```@repl co
 CTSolvers.Solvers.Ipopt(max_itr = 1000)
-catch e # hide
-showerror(IOContext(stdout, :color => true), e) # hide
-end # hide
 ```
 
 Pass `mode = :permissive` to warn rather than error on unknown options. Introspect the
