@@ -139,11 +139,7 @@ end
 Without the extension, constructing the modeler therefore raises `ExtensionError`:
 
 ```@repl modeler
-try # hide
 CTSolvers.Modelers.ADNLP()
-catch e # hide
-showerror(IOContext(stdout, :color => false), e) # hide
-end # hide
 ```
 
 With `using ADNLPModels`, the extension's `_build_adnlp_modeler` validates the options
