@@ -439,6 +439,28 @@ Integrators.is_dense(r::SciMLIntegrationResult) = r.ode_sol.dense
 """
 $(TYPEDSIGNATURES)
 
+Return the integration span of the underlying ODE problem.
+"""
+Integrators._tspan(r::SciMLIntegrationResult) = r.ode_sol.prob.tspan
+
+"""
+$(TYPEDSIGNATURES)
+
+Return a copy of the result whose output grid is `grid`; the ODE solution (and its
+interpolant) is shared, values on the grid are read with `evaluate_at`.
+
+# Throws
+- `CTBase.Exceptions.IncorrectArgument`: If `grid` is not a valid output grid for the
+  integration span.
+"""
+function Integrators.regrid(r::SciMLIntegrationResult, grid::AbstractVector{<:Real})
+    Integrators._check_grid(grid, Integrators._tspan(r))
+    return SciMLIntegrationResult(r.ode_sol, collect(eltype(r.ode_sol.t), grid))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
 Evaluate the SciML ODE solution at a specific time `t` using its interpolation.
 """
 Integrators.evaluate_at(r::SciMLIntegrationResult, t::Real) = r.ode_sol(t)

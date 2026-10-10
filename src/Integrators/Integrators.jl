@@ -76,6 +76,6 @@ export AbstractIntegrationResult, final_state, times, evaluate_at, is_dense, sta
 export options_point, options_trajectory
 
 # Public API - multi-phase
-export merge, PiecewiseIntegrationResult
+export merge, regrid, PiecewiseIntegrationResult
 
 end # module Integrators

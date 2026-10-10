@@ -111,3 +111,26 @@ $(TYPEDSIGNATURES)
 Return whether every segment succeeded.
 """
 Solutions.successful(r::PiecewiseIntegrationResult)::Bool = all(successful, r.segments)
+
+"""
+$(TYPEDSIGNATURES)
+
+Return the integration span: from the start of the first segment to the end of the last.
+"""
+_tspan(r::PiecewiseIntegrationResult) = (_tspan(first(r.segments))[1], _tspan(last(r.segments))[2])
+
+"""
+$(TYPEDSIGNATURES)
+
+Return a copy of the piecewise result whose time grid is `grid`; the segments (and their
+interpolants) are shared, and a switching time is evaluated left-continuously as before.
+
+# Throws
+- [`CTBase.Exceptions.IncorrectArgument`](@extref): If `grid` is not a valid output grid
+  for the integration span.
+"""
+function regrid(r::PiecewiseIntegrationResult, grid::AbstractVector{<:Real})
+    _check_grid(grid, _tspan(r))
+    W = typeof(r.grid)
+    return PiecewiseIntegrationResult(r.segments, r.switches, convert(W, collect(grid)))
+end

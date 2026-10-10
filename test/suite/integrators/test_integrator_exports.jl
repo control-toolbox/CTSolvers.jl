@@ -61,6 +61,7 @@ function test_integrator_exports()
                 :options_point,
                 :options_trajectory,
                 :merge,
+                :regrid,
             )
                 Test.@testset "$sym" begin
                     Test.@test sym in names(Integrators)
@@ -104,6 +105,7 @@ function test_integrator_exports()
                 :evaluate_at,
                 :is_dense,
                 :PiecewiseIntegrationResult,
+                :regrid,
                 :status,
                 :successful,
                 :options_point,

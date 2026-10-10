@@ -36,6 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Integrators.is_dense(result)` — whether `evaluate_at` reads a dense interpolant.
 - `Integrators.PiecewiseIntegrationResult` — backend-agnostic multi-phase result,
   left-continuous at switching times.
+- `Integrators.regrid(result, grid)` — a copy of an integration result on another output
+  grid, read from its interpolant without re-integrating (SciML and piecewise results);
+  invalid grids (fewer than two times, not strictly monotone in the integration
+  direction, outside the span) throw `IncorrectArgument`
+  ([CTFlows#435](https://github.com/control-toolbox/CTFlows.jl/issues/435)).
 
 ### Changed
 
