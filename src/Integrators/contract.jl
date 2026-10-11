@@ -131,8 +131,7 @@ function _check_grid(grid::AbstractVector{<:Real}, (t0, tf)::Tuple{Real,Real})
             msg; got="$(grid)", expected=expected, context="Integrators.regrid"
         ),
     )
-    length(grid) >= 2 ||
-        _grid_error("An output grid needs at least two times", "≥ 2 times")
+    length(grid) >= 2 || _grid_error("An output grid needs at least two times", "≥ 2 times")
     forward = tf >= t0
     monotone = forward ? all(>(0), diff(grid)) : all(<(0), diff(grid))
     monotone || _grid_error(
@@ -140,8 +139,9 @@ function _check_grid(grid::AbstractVector{<:Real}, (t0, tf)::Tuple{Real,Real})
         forward ? "strictly increasing times" : "strictly decreasing times",
     )
     lo, hi = minmax(t0, tf)
-    all(t -> lo <= t <= hi, grid) ||
-        _grid_error("The output grid must lie in the integration span", "times in [$lo, $hi]")
+    all(t -> lo <= t <= hi, grid) || _grid_error(
+        "The output grid must lie in the integration span", "times in [$lo, $hi]"
+    )
     return nothing
 end
 

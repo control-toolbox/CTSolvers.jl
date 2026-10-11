@@ -118,7 +118,9 @@ $(TYPEDSIGNATURES)
 
 Return the integration span: from the start of the first segment to the end of the last.
 """
-_tspan(r::PiecewiseIntegrationResult) = (_tspan(first(r.segments))[1], _tspan(last(r.segments))[2])
+function _tspan(r::PiecewiseIntegrationResult)
+    return (_tspan(first(r.segments))[1], _tspan(last(r.segments))[2])
+end
 
 """
 $(TYPEDSIGNATURES)
