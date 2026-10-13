@@ -138,8 +138,17 @@ end
 
 Without the extension, constructing the modeler therefore raises `ExtensionError`:
 
-```@repl modeler
-CTSolvers.Modelers.ADNLP()
+```julia
+julia> CTSolvers.Modelers.ADNLP()
+ExtensionError
+│
+│  missing dependencies to create ADNLP, access options, and build NLP models
+│
+│  Missing  ADNLPModels
+│
+│  Context  Load ADNLPModels first: using ADNLPModels
+│  Hint     Run: using ADNLPModels
+└─
 ```
 
 With `using ADNLPModels`, the extension's `_build_adnlp_modeler` validates the options

@@ -28,3 +28,10 @@ colored `@repl` output is now rendered correctly while the input remains Julia s
 - Use **`@ansi`** when explicitly demonstrating terminal styling or raw ANSI output.
 - Use **`@repl`** with a direct expression that raises an exception to display errors;
   `@repl` captures the exception as output, so no `try/catch` or `showerror` is needed.
+
+## Extensions are always loaded
+
+`make.jl` loads every weak dependency so that the API reference can document the
+extensions. An `ExtensionError` therefore **cannot** be shown with `@repl`: the
+constructor succeeds. Show it in a static `julia` block, with the output copied from a
+session where the extension is not loaded (`julia --project=. -e 'using CTSolvers; ...'`).

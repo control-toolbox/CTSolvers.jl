@@ -178,8 +178,17 @@ Integrators.regrid(r, [0.0, 2.0])
 
 Thrown when a solver requires a package extension that hasn't been loaded.
 
-```@repl errors
-CTSolvers.Solvers.MadNLP()
+```julia
+julia> CTSolvers.Solvers.MadNLP()
+ExtensionError
+│
+│  missing dependencies to create MadNLP, access options, and solve problems
+│
+│  Missing  MadNLP
+│
+│  Context  Load MadNLP extension first: using MadNLP
+│  Hint     Run: using MadNLP
+└─
 ```
 
 **Fix**: Load the required package before using the solver:

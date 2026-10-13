@@ -97,20 +97,22 @@ direction, and lie in the integration span; otherwise `regrid` throws `Incorrect
 into a [`Integrators.PiecewiseIntegrationResult`](@ref). Each phase keeps its own
 interpolant, so a dense multi-phase trajectory is as accurate as a single-phase one.
 
+Below, the state jumps by `+1` at `t = 1`:
+
 ```@example res
 r1 = solve(ODEProblem((u, p, t) -> -u, [1.0], (0.0, 1.0)), integ)
-r2 = solve(ODEProblem((u, p, t) -> u, Integrators.final_state(r1), (1.0, 2.0)), integ)
+r2 = solve(ODEProblem((u, p, t) -> -u, Integrators.final_state(r1) .+ 1, (1.0, 2.0)), integ)
 rm = Integrators.merge([r1, r2])
 nothing # hide
 ```
 
 ```@repl res
-Integrators.final_state(rm)
-Integrators.evaluate_at(rm, 1.0) == Integrators.final_state(r1)
+Integrators.evaluate_at(rm, 1.0)           # end of the first phase
+Integrators.evaluate_at(rm, 1.0 + 1e-12)   # second phase, after the jump
 ```
 
 The merged trajectory is **left-continuous** at a switching time: at `t = 1.0` it returns
-the end of the first phase (before any jump), and any later time belongs to the second.
+the end of the first phase (before the jump), and any later time belongs to the second.
 The switching time appears twice in `times(rm)`. `successful(rm)` is `true` only if every
 phase succeeded, and `status(rm)` is the status of the first failed phase.
 

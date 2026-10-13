@@ -114,8 +114,17 @@ end
 
 The same stub pattern is used by every solver. Without its extension, `Solvers.MadNLP` fails the same way:
 
-```@repl solver
-CTSolvers.Solvers.MadNLP()
+```julia
+julia> CTSolvers.Solvers.MadNLP()
+ExtensionError
+│
+│  missing dependencies to create MadNLP, access options, and solve problems
+│
+│  Missing  MadNLP
+│
+│  Context  Load MadNLP extension first: using MadNLP
+│  Hint     Run: using MadNLP
+└─
 ```
 
 !!! note "Why Tag Dispatch?"

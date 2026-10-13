@@ -33,9 +33,9 @@ Like solvers, integrators are **parameterized** by an execution parameter
 `P <: CTBase.Strategies.AbstractStrategyParameter`: `Integrators.SciML{CPU}` (the default)
 integrates host arrays, `Integrators.SciML{GPU}` device arrays such as `CuArray`.
 
-Unlike the NLP solver, there is **no callable** — the solve contract is expressed directly as
-`CommonSolve.solve` methods, problem-first, exactly like the mid-level `solve(nlp, solver)` of
-the NLP side. The generic stub throws `NotImplemented` with guidance.
+As for NLP solvers, the solve contract is expressed directly as `CommonSolve.solve`
+methods, problem-first, exactly like the mid-level `solve(nlp, solver)` of the NLP side. The
+generic stub throws `NotImplemented` with guidance.
 
 ```@example integrator
 using CTSolvers
