@@ -37,7 +37,7 @@ using UnoSolver
 using Zygote
 
 # Make extension modules available in Main so that @docs blocks can resolve
-# qualified bindings like CTFlowsSciMLIntegrator.SciMLIntegrationResult.
+# qualified bindings like CTSolversSciMLIntegrator.SciMLIntegrationResult.
 for _ext_sym in (
     :CTSolversADNLPModels,
     :CTSolversCUDA,

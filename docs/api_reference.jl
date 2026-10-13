@@ -120,6 +120,8 @@ function generate_api_reference(src_dir::String, ext_dir::String)
     internals_modules = Any[cfg.mod => cfg.files for cfg in modules_config]
 
     for (sym, files) in [
+        (:CTSolversADNLPModels, ext("CTSolversADNLPModels.jl")),
+        (:CTSolversExaModels, ext("CTSolversExaModels.jl")),
         (:CTSolversIpopt, ext("CTSolversIpopt.jl")),
         (:CTSolversMadNLP, ext("CTSolversMadNLP.jl")),
         (:CTSolversMadNCL, ext("CTSolversMadNCL.jl")),
