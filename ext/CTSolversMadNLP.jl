@@ -487,7 +487,7 @@ function Solvers._build_madnlp_solver(
 end
 
 # ============================================================================
-# Callable interface with display handling
+# Solve method with display handling
 # ============================================================================
 
 """

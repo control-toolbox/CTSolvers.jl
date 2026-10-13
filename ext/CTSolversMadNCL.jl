@@ -387,7 +387,7 @@ function Solvers._build_madncl_solver(
 end
 
 # ============================================================================
-# Callable interface with display handling
+# Solve method with display handling
 # ============================================================================
 
 """

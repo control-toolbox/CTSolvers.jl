@@ -227,7 +227,7 @@ function Solvers._build_knitro_solver(
 end
 
 # ============================================================================
-# Callable interface with display handling
+# Solve method with display handling
 # ============================================================================
 
 """

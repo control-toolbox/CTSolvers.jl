@@ -574,7 +574,7 @@ function Solvers._build_ipopt_solver(
 end
 
 # ============================================================================
-# Callable interface with display handling
+# Solve method with display handling
 # ============================================================================
 
 """
