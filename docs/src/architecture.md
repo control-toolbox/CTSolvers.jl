@@ -16,9 +16,9 @@ CTSolvers modules, loaded in dependency order:
 |---|--------|---------------|
 | 1 | `Optimization` | Abstract problem types (`AbstractOptimizationProblem`), `BuiltModel`/`NoCache`, `build_model`/`build_solution` |
 | 2 | `Modelers` | NLP backend adapters: `Modelers.ADNLP`, `Modelers.Exa` |
-| 3 | `DOCP` | `DiscretizedModel` — pairs an OCP with its discretizer (provided by CTDirect) |
+| 3 | `DOCP` | `AbstractDiscretizer`, `DiscretizedModel` (an OCP paired with its discretizer), `discretize` stub, `nlp_model`/`ocp_solution` conveniences |
 | 4 | `Solvers` | NLP solver wrappers: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, `Solvers.Uno` |
-| 5 | `Integrators` | ODE integrator wrapper: `Integrators.SciML` |
+| 5 | `Integrators` | ODE integrator wrapper `Integrators.SciML`, integration results (`AbstractIntegrationResult`, `PiecewiseIntegrationResult`) |
 
 CTSolvers relies on **CTBase** for its generic infrastructure (`CTBase.Options`, `CTBase.Strategies`, `CTBase.Orchestration`). See the [CTBase documentation](https://control-toolbox.org/CTBase.jl/dev/) for details on the strategy contract, option system, and orchestration.
 
@@ -58,21 +58,24 @@ AbstractStrategy
 │       ├─► Solvers.Ipopt{P<:CPU}
 │       ├─► Solvers.MadNLP{P<:Union{CPU,GPU}}
 │       ├─► Solvers.MadNCL{P<:Union{CPU,GPU}}
-│       ├─► Solvers.Knitro
-│       └─► Solvers.Uno
+│       ├─► Solvers.Knitro{P<:CPU}
+│       └─► Solvers.Uno{P<:CPU}
 │
-└─► AbstractIntegrator
-        ├─ solve(prob, integ) → AbstractIntegrationResult
-        └─► AbstractSciMLIntegrator
-                └─► Integrators.SciML
+├─► AbstractIntegrator
+│       ├─ solve(prob, integ; options, unsafe) → AbstractIntegrationResult
+│       └─► AbstractSciMLIntegrator
+│               └─► Integrators.SciML{P<:Union{CPU,GPU}}
+│
+└─► AbstractDiscretizer                     (DOCP — no concrete type in CTSolvers)
+        └─ discretize(ocp, discretizer) → DiscretizedModel
 ```
 
-!!! note "External Strategy Families"
-    Other packages in the control-toolbox ecosystem define additional strategy families:
-    **`AbstractDiscretizer`** (in [CTDirect.jl](https://github.com/control-toolbox/CTDirect.jl))
-    discretizes continuous-time OCP into finite-dimensional problems (e.g., `Collocation`, `DirectShooting`).
-    These external strategies follow the same `AbstractStrategy` contract.
-    See the Implementing a Strategy guide in CTBase.jl documentation for a complete tutorial.
+!!! note "Discretizers live elsewhere"
+    CTSolvers only declares `AbstractDiscretizer` and the `discretize` stub. The concrete
+    discretizers (e.g. `Collocation`, `DirectShooting`) are defined in
+    [CTDirect.jl](https://github.com/control-toolbox/CTDirect.jl), which implements
+    `discretize` and the `build_model`/`build_solution` methods for its `DiscretizedModel`s.
+    See the Implementing a Strategy guide in CTBase.jl documentation for the strategy contract.
 
 ### Optimization Branch
 
@@ -82,7 +85,7 @@ packages (e.g. CTDirect) implement the typed methods for their own problem types
 
 ```text
 AbstractOptimizationProblem                 (marker — no interface methods)
-└─► DiscretizedModel  (in DOCP module, concrete implementation from CTDirect)
+└─► DiscretizedModel  (DOCP module; its cache is populated by CTDirect)
 
 build_model(prob, x0, modeler)    → BuiltModel   (generic stub; CTDirect provides typed methods)
 build_solution(built, stats, modeler) → Solution  (generic stub; CTDirect provides typed methods)
@@ -98,20 +101,17 @@ BuiltModel{TP, TN, TC}                      (problem + NLP + cache, immutable)
 
 The loading order is strict and acyclic:
 
-```text
-CTBase: Options → Strategies → Orchestration
-                                    │
-                         ┌──────────┴──────────┐
-                         ▼                     ▼
-                    Optimization           Integrators
-                         │
-               ┌─────────┼─────────┐
-               ▼         ▼         ▼
-           Modelers     DOCP     Solvers
-```
+| # | Module | Depends on (inside CTSolvers) | External |
+|---|--------|-------------------------------|----------|
+| 1 | `Optimization` | — | CTBase |
+| 2 | `Modelers` | `Optimization` | CTBase |
+| 3 | `DOCP` | `Optimization`, `Modelers` | CTBase, CTModels |
+| 4 | `Solvers` | `Optimization`, `Modelers` | CTBase, SolverCore |
+| 5 | `Integrators` | — | CTBase, CTModels (`status`/`successful`) |
 
-Each module only depends on modules loaded before it. This strict ordering ensures
-no circular dependencies and makes extensions straightforward to reason about.
+Each module only depends on modules loaded before it. `Integrators` is independent of the
+NLP side. This strict ordering ensures no circular dependencies and makes extensions
+straightforward to reason about.
 
 ## Data Flow
 
@@ -133,12 +133,13 @@ CommonSolve.solve
          (CTDirect provides typed method for DiscretizedModel + modeler pair)
 ```
 
-The three levels of `CommonSolve.solve`:
+The two levels of `CommonSolve.solve` on the NLP side, plus the integrator one:
 
 | Level | Signature | Purpose |
 |-------|-----------|---------|
-| **High** | `solve(problem, x0, modeler, solver)` | Full pipeline: build NLP → solve → build solution |
-| **Mid** | `CommonSolve.solve(nlp, solver; display)` | Solve an NLP directly; implemented by each backend extension |
+| **High** | `solve(problem, x0, modeler, solver; display)` | Full pipeline: build NLP → solve → build solution |
+| **Mid** | `solve(nlp, solver; display)` | Solve an NLP directly; implemented by each backend extension |
+| **ODE** | `solve(prob, integrator; options, unsafe)` | Integrate an ODE problem; implemented by the integrator extension |
 
 ## Architectural Patterns
 
@@ -239,14 +240,3 @@ CommonSolve.solve(nlp, solver::Solvers.Ipopt; display) = ipopt(nlp; options_dict
 ```
 
 This keeps CTSolvers lightweight — backend dependencies are optional weak deps loaded on demand.
-
-### Qualified Access
-
-CTSolvers does **not** export symbols at the top level. All access goes through qualified module paths:
-
-```julia
-CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)
-CTSolvers.Optimization.build_model(problem, x0, modeler)
-```
-
-This ensures namespace clarity, avoids conflicts with other packages, and makes dependencies explicit.

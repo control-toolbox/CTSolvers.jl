@@ -66,7 +66,7 @@ Load a backend to unlock its constructor:
 ```julia
 using NLPModelsIpopt       # loads CTSolversIpopt       → enables Solvers.Ipopt
 using ADNLPModels          # loads CTSolversADNLPModels  → enables Modelers.ADNLP
-using OrdinaryDiffEqTsit5  # loads CTSolversSciMLIntegrator → enables Integrators.SciML
+using OrdinaryDiffEqTsit5  # loads CTSolversSciMLIntegrator (+ default Tsit5) → enables Integrators.SciML
 ```
 
 ## Configuring Options

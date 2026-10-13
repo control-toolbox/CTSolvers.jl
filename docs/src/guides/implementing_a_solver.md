@@ -20,6 +20,8 @@ A solver must satisfy **three contracts**:
 Solvers are **parameterized** by an execution parameter `P <: CTBase.Strategies.AbstractStrategyParameter`
 (see Strategy Parameters in CTBase.jl documentation). `Solvers.Ipopt{P<:CTBase.Strategies.CPU}` is CPU-only;
 `Solvers.MadNLP` and `Solvers.MadNCL` accept `Union{CTBase.Strategies.CPU,CTBase.Strategies.GPU}`.
+A parameter outside the bound (e.g. `Solvers.Ipopt{CTBase.Strategies.GPU}`) is rejected by Julia
+itself with a `TypeError`.
 
 ```text
 AbstractStrategy
@@ -32,8 +34,8 @@ AbstractNLPSolver <: AbstractStrategy
    ├─► Solvers.Ipopt{P<:CPU}
    ├─► Solvers.MadNLP{P<:Union{CPU,GPU}}
    ├─► Solvers.MadNCL{P<:Union{CPU,GPU}}
-   ├─► Solvers.Knitro
-   └─► Solvers.Uno
+   ├─► Solvers.Knitro{P<:CPU}
+   └─► Solvers.Uno{P<:CPU}
 ```
 
 The generic stub throws `NotImplemented` until a backend extension provides the typed method. Without the extension loaded, constructing a solver throws `ExtensionError`.
@@ -110,7 +112,7 @@ function _build_ipopt_solver(
 end
 ```
 
-Live demonstration of the `ExtensionError` for all solvers:
+The same stub pattern is used by every solver. Without its extension, `Solvers.MadNLP` fails the same way:
 
 ```@repl solver
 CTSolvers.Solvers.MadNLP()
