@@ -17,8 +17,9 @@ Integrators.times(::FakeResult) = [0.0, 1.0]
 _integ(; kw...) = Integrators.SciML(; alg=Tsit5(), reltol=1e-12, abstol=1e-12, kw...)
 
 # u' = -u on tspan from u(t0) = u0
-_solve(tspan, u0; integ=_integ()) =
-    CommonSolve.solve(ODEProblem((u, p, t) -> -u, [u0], tspan), integ)
+function _solve(tspan, u0; integ=_integ())
+    return CommonSolve.solve(ODEProblem((u, p, t) -> -u, [u0], tspan), integ)
+end
 
 """
     test_regrid()
@@ -82,18 +83,31 @@ function test_regrid()
 
         Test.@testset "Error: invalid grids" begin
             r = _solve((0.0, 1.0), 1.0)
-            for bad in ([0.5], Float64[], [0.0, 0.5, 0.5, 1.0], [0.0, 0.7, 0.5, 1.0],
-                        [1.0, 0.5, 0.0], [-0.1, 0.5, 1.0], [0.0, 0.5, 1.1])
+            for bad in (
+                [0.5],
+                Float64[],
+                [0.0, 0.5, 0.5, 1.0],
+                [0.0, 0.7, 0.5, 1.0],
+                [1.0, 0.5, 0.0],
+                [-0.1, 0.5, 1.0],
+                [0.0, 0.5, 1.1],
+            )
                 Test.@test_throws Exceptions.IncorrectArgument Integrators.regrid(r, bad)
             end
             rb = _solve((1.0, 0.0), 1.0)
-            Test.@test_throws Exceptions.IncorrectArgument Integrators.regrid(rb, [0.0, 1.0])
+            Test.@test_throws Exceptions.IncorrectArgument Integrators.regrid(
+                rb, [0.0, 1.0]
+            )
             pw = Integrators.merge([_solve((0.0, 0.5), 1.0), _solve((0.5, 1.0), 1.0)])
-            Test.@test_throws Exceptions.IncorrectArgument Integrators.regrid(pw, [0.0, 1.5])
+            Test.@test_throws Exceptions.IncorrectArgument Integrators.regrid(
+                pw, [0.0, 1.5]
+            )
         end
 
         Test.@testset "Error: result without regrid" begin
-            Test.@test_throws Exceptions.NotImplemented Integrators.regrid(FakeResult(), grid)
+            Test.@test_throws Exceptions.NotImplemented Integrators.regrid(
+                FakeResult(), grid
+            )
         end
 
         Test.@testset "type stability" begin
