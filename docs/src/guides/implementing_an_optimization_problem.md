@@ -14,7 +14,7 @@ This guide explains how to implement an optimization problem in CTSolvers. An op
 `AbstractOptimizationProblem` is a marker abstract type with **no required methods of its own**. The contract is expressed through two generic functions that must be implemented by **multiple dispatch** in the package providing the concrete problem:
 
 | Method | Signature | Returns | Implemented in |
-|--------|-----------|---------|----------------|
+|:-------|:----------|:--------|:---------------|
 | `build_model` | `(prob::MyProblem, init, modeler::ADNLP)` | `BuiltModel` | package providing `MyProblem` |
 | `build_solution` | `(built::BuiltModel{<:MyProblem}, stats, modeler::ADNLP)` | domain solution | package providing `MyProblem` |
 

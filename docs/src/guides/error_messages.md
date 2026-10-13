@@ -11,7 +11,7 @@ This page catalogues all exception types used in CTSolvers, with live examples a
 CTSolvers uses five exception types from `CTBase.Exceptions`:
 
 | Type | Purpose |
-|------|---------|
+|:-----|:--------|
 | `NotImplemented` | Contract method not implemented by a concrete type |
 | `IncorrectArgument` | Invalid argument value, type, or routing |
 | `ExtensionError` | Required package extension not loaded |
@@ -83,7 +83,7 @@ problem, dispatching on the concrete `(problem, modeler)` pair (see
 ### Where it's thrown
 
 | Method | Context |
-|--------|---------|
+|:-------|:--------|
 | `CTBase.Strategies.id(::Type{T})` | Strategy type missing `id` |
 | `CTBase.Strategies.metadata(::Type{T})` | Strategy type missing `metadata` |
 | `CTBase.Strategies.options(strategy)` | Strategy instance has no `options` field and no custom getter |
@@ -192,7 +192,7 @@ solver = Solvers.MadNLP(max_iter = 1000)
 ### Where it's thrown
 
 | Strategy | Required packages |
-|----------|-------------------|
+|:---------|:------------------|
 | `Solvers.Ipopt` | `NLPModelsIpopt` |
 | `Solvers.MadNLP` | `MadNLP` |
 | `Solvers.MadNCL` | `MadNCL`, `MadNLP` |
