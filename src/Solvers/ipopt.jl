@@ -76,12 +76,12 @@ solver = Ipopt(max_iter=1000, tol=1e-6, print_level=3)
 solver_cpu = Ipopt{Strategies.CPU}(max_iter=1000, tol=1e-6)
 
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-stats = solver(nlp, display=true)
+stats = CommonSolve.solve(nlp, solver; display=true)
 ```
 
 ## Invalid Usage
 ```julia
-# GPU is NOT supported - will throw IncorrectArgument
+# GPU is NOT supported - rejected by the type parameter bound (TypeError)
 solver = Ipopt{Strategies.GPU}()  # ❌ Error!
 ```
 
@@ -97,11 +97,12 @@ using NLPModelsIpopt
 - Implements the `AbstractStrategy` contract via `Strategies.id()`
 - Metadata and constructor implementation provided by CTSolversIpopt extension
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::Ipopt)(nlp; display=true)` provided by extension
+- Solve method: `CommonSolve.solve(nlp, solver::Ipopt; display=true)` provided by extension
 
 # Throws
 
-- `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
+- `TypeError`: If `Strategies.GPU` or another unsupported parameter is specified
+  (the type parameter is bounded by `Strategies.CPU`)
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
 
 See also: `Strategies.CPU`, `AbstractNLPSolver`, `MadNLP`, `Knitro`
@@ -221,7 +222,8 @@ solver_cpu = Solvers.Ipopt{Strategies.CPU}(max_iter=1000, tol=1e-6)
 ```
 
 # Throws
-- `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
+- `TypeError`: If `Strategies.GPU` or another unsupported parameter is specified
+  (the type parameter is bounded by `Strategies.CPU`)
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsIpopt extension is not loaded
 
 See also: `Ipopt`, `Strategies.CPU`

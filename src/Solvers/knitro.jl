@@ -76,12 +76,12 @@ solver = Knitro(maxit=1000, maxtime=3600, ftol=1e-10, outlev=2)
 solver_cpu = Knitro{Strategies.CPU}(maxit=1000, outlev=2)
 
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-stats = solver(nlp, display=true)
+stats = CommonSolve.solve(nlp, solver; display=true)
 ```
 
 ## Invalid Usage
 ```julia
-# GPU is NOT supported - will throw IncorrectArgument
+# GPU is NOT supported - rejected by the type parameter bound (TypeError)
 solver = Knitro{Strategies.GPU}()  # ❌ Error!
 ```
 
@@ -99,12 +99,13 @@ using NLPModelsKnitro
 - Implements the `AbstractStrategy` contract via `Strategies.id()`
 - Metadata and constructor implementation provided by CTSolversKnitro extension
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::Knitro)(nlp; display=true)` provided by extension
+- Solve method: `CommonSolve.solve(nlp, solver::Knitro; display=true)` provided by extension
 - Requires valid Knitro license for operation
 
 # Throws
 
-- `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
+- `TypeError`: If `Strategies.GPU` or another unsupported parameter is specified
+  (the type parameter is bounded by `Strategies.CPU`)
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
 
 See also: `Strategies.CPU`, `AbstractNLPSolver`, `Ipopt`, `MadNLP`
@@ -224,7 +225,8 @@ solver_cpu = Solvers.Knitro{Strategies.CPU}(maxit=1000, outlev=2)
 ```
 
 # Throws
-- `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
+- `TypeError`: If `Strategies.GPU` or another unsupported parameter is specified
+  (the type parameter is bounded by `Strategies.CPU`)
 - `CTBase.Exceptions.ExtensionError`: If the NLPModelsKnitro extension is not loaded
 
 See also: `Knitro`, `Strategies.CPU`

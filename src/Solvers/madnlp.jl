@@ -53,7 +53,7 @@ $(TYPEDFIELDS)
 using MadNLP
 solver = MadNLP(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-stats = solver(nlp, display=true)
+stats = CommonSolve.solve(nlp, solver; display=true)
 ```
 
 # Extension Required
@@ -67,7 +67,7 @@ using MadNLP
 
 - Implements the `AbstractStrategy` contract via `Strategies.id`, `Strategies.metadata`, and `Strategies.options`
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::MadNLP{P}(nlp; display=true)`
+- Solve method: `CommonSolve.solve(nlp, solver::MadNLP; display=true)` provided by extension
 - Supports GPU acceleration when appropriate backends are loaded
 - Default backend is automatically selected based on the parameter type
 - **GPU linear solver**: When using `MadNLP{Strategies.GPU}`, the linear solver automatically defaults to `MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`. This ensures compatibility with GPU execution and avoids attempting to use CPU-only solvers on CUDA backends.

@@ -1,54 +1,31 @@
 """
     CTSolvers
 
-Control Toolbox Solvers (CTSolvers) - A Julia package for solving optimal control problems.
+Control Toolbox Solvers (CTSolvers) - the resolution layer of the control-toolbox ecosystem.
 
-This module provides a comprehensive framework for solving optimal control problems
-with a modular architecture that separates concerns and facilitates extensibility.
+CTSolvers provides the strategies (NLP modelers, NLP solvers, ODE integrators) and the
+abstract problem types used by CTDirect (direct methods) and CTFlows (flows for indirect
+methods). Backends are optional: each one is activated by loading its package, which
+triggers the corresponding extension in `ext/`.
 
-# Architecture Overview
+# Modules
 
-CTSolvers is organized into specialized modules, each with clear responsibilities:
+Loaded in dependency order:
 
-## Generic Infrastructure (provided by CTBase)
+- **Optimization**: abstract problem type, `BuiltModel`/`NoCache`, `build_model`/`build_solution`
+- **Modelers**: NLP backend selection (`Modelers.ADNLP`, `Modelers.Exa`)
+- **DOCP**: `AbstractDiscretizer`, `DiscretizedModel`, `discretize`
+- **Solvers**: NLP solvers (`Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`,
+  `Solvers.Knitro`, `Solvers.Uno`) and the high-level `CommonSolve.solve` pipeline
+- **Integrators**: ODE integrators (`Integrators.SciML`) and integration results
 
-- **CTBase.Options**: Configuration and options management system
-  - Option definitions and validation
-  - Option extraction API
-  - NotProvided sentinel for optional parameters
-
-- **CTBase.Strategies**: Strategy contract and registry
-  - Abstract strategy types and interface
-  - Strategy registry for explicit dependency management
-  - Strategy building and validation utilities
-
-- **CTBase.Orchestration**: High-level coordination and method routing
-  - Option routing with disambiguation support
-  - Method resolution from strategy families
-
-## Implemented Modules
-
-- **DOCP**: Discretized Optimal Control Problem types and operations
-- **Modelers**: Backend modeler implementations (Modelers.ADNLP, Modelers.Exa)
-- **Optimization**: General optimization abstractions and builders
-- **Solvers**: Solver integration and CommonSolve API
-- **Integrators**: ODE integrator strategies and CommonSolve API
-
-# Loading Order
-
-Modules are loaded in dependency order to ensure all types and functions are available
-when needed.
+The generic strategy, option and routing infrastructure (`CTBase.Strategies`,
+`CTBase.Options`, `CTBase.Orchestration`) is provided by CTBase.
 
 # Public API
 
-All functions and types are accessible via qualified module paths (e.g., `CTBase.Options.extract_options()`).
-The modular architecture ensures that:
-
-- Types are defined where they belong
-- Dependencies are explicit and minimal
-- Extensions can target specific modules
-- The public API remains stable and clean
-- No direct exports to avoid namespace conflicts
+CTSolvers exports nothing at the top level: use qualified paths, e.g.
+`CTSolvers.Solvers.Ipopt(max_iter=100)` or `CTSolvers.Integrators.final_state(result)`.
 """
 module CTSolvers
 

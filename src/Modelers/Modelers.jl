@@ -7,9 +7,11 @@
 Modelers module.
 
 This module defines `AbstractNLPModeler` and concrete modeler strategies such as
-`ADNLP` and `Exa`. Modelers are strategies that:
-- Build NLP backend models from an `Optimization.AbstractOptimizationProblem` and an initial guess.
-- Build problem-specific solution objects from solver execution statistics.
+`ADNLP` and `Exa`. A modeler selects an NLP backend and carries its validated options;
+it does not build anything itself. The NLP model and the problem-level solution are
+produced by `Optimization.build_model` / `Optimization.build_solution`, implemented by
+the package providing the problem (e.g. CTDirect) for each concrete `(problem, modeler)`
+pair. The generic `NotImplemented` stubs of this contract live in this module.
 
 Modelers implement the `Strategies.AbstractStrategy` contract and participate in
 orchestration and option routing.
