@@ -117,6 +117,11 @@ with_api_reference(src_dir, ext_dir) do api_pages
             # index.md is the VitePress root — not listed here
             "Getting Started" => "getting-started.md",
             "Architecture" => "architecture.md",
+            "Using CTSolvers" => [
+                "Strategies Catalogue" => "using/strategies.md",
+                "Integration Results" => "using/integration_results.md",
+                "GPU Execution" => "using/gpu.md",
+            ],
             "Developer Guides" => [
                 "Implementing a Solver" => "guides/implementing_a_solver.md",
                 "Implementing an Integrator" => "guides/implementing_an_integrator.md",

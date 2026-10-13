@@ -112,6 +112,9 @@ CTBase.Strategies.options(CTSolvers.Solvers.Ipopt())   # actual values with prov
 | Topic | Where |
 |:------|:------|
 | Module dependencies, type hierarchies, data flow | [Architecture](@ref) |
+| Available solvers, modelers, integrators | [Strategies Catalogue](@ref) |
+| Reading integration results | [Integration Results](@ref) |
+| Running on GPU | [GPU Execution](@ref) |
 | Wrapping a new NLP solver | [Implementing a Solver](@ref) |
 | Wrapping a new ODE integrator | [Implementing an Integrator](@ref) |
 | Adapting a new NLP backend | [Implementing a Modeler](@ref) |
