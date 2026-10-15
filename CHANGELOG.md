@@ -19,7 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`AbstractDiscretizer` in `DOCP`, `PreconditionError`/`SolverFailure`, complete
   extension table).
 - Docstrings no longer show the removed callable solver interface; MadNLP, MadNCL and Uno
-  descriptions fixed. The ADNLPModels and ExaModels extensions appear in the Internals page.
+  descriptions fixed (Uno also works with `Modelers.Exa{CPU}`); extension builder examples
+  use the right signature. The ADNLPModels and ExaModels extensions appear in the Internals
+  page.
+- Errors raised when an extension is missing are rendered from a fresh Julia process
+  (`docs/noext.jl`): the build loads every extension, so `@repl` could not show them.
+- The GPU page is executable: built on CPU, then rebuilt on the `kkt` GPU runner on push
+  and tags (`gpu_runner` in `Documentation.yml`).
 
 ---
 
