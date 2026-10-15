@@ -11,10 +11,12 @@ on:
 
 # The GPU upgrade pass (`gpu_runner` below) can run long after the CPU build. Without
 # this, an older run's GPU pass could redeploy older content over a newer CPU build.
-# Tags carry their own ref, so a release build is never cancelled by a push to `main`.
+# Push and tag runs queue (GitHub keeps only the newest pending one), so no Julia process
+# is killed on the self-hosted runner; PR runs are GitHub-hosted only and are cancelled.
+# Tags carry their own ref, so a release build never waits for `main`.
 concurrency:
   group: documentation-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   call:
