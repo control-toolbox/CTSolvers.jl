@@ -86,6 +86,8 @@ requires the `cache` field to be `<: CTBase.Core.AbstractCache`.
 
 CTSolvers owns the generic stubs; CTDirect owns the concrete methods via multiple dispatch:
 
+Simplified from `CTDirect/src/collocation.jl`:
+
 ```julia
 # In CTDirect — concrete methods for (DiscretizedModel + Collocation, ADNLP)
 function CTSolvers.build_model(
@@ -95,7 +97,9 @@ function CTSolvers.build_model(
 )
     docp = dm.cache.docp
     options = Strategies.options_dict(modeler)         # the modeler's validated options
-    nlp = build_adnlp_model(docp, initial_guess; options...)  # ADNLPModel
+    backend = pop!(options, :backend)
+    # ... objective f, constraints c!, initial guess x0 and bounds from docp ...
+    nlp = ADNLPModels.ADNLPModel!(f, x0, lvar, uvar, c!, lcon, ucon; backend, options...)
     return CTSolvers.BuiltModel(dm, nlp, CTSolvers.NoCache())  # ADNLP needs no aux cache
 end
 
@@ -105,7 +109,9 @@ function CTSolvers.build_solution(
     ::CTSolvers.Modelers.ADNLP,
 )
     docp = built.problem.cache.docp
-    return build_OCP_solution(docp, nlp_solution)      # OCP solution
+    infos = CTSolvers.extract_solver_infos(nlp_solution)  # objective, iterations, status, …
+    # ... time grid T from the NLP solution ...
+    return build_OCP_solution(docp, nlp_solution, T, infos...)  # OCP solution
 end
 ```
 
@@ -121,13 +127,13 @@ CommonSolve.solve
  │
  ├─► build_model(docp, x0, modeler)
  │       │
- │       ├─► (CTDirect) build_adnlp_model(docp, x0)  →  ADNLPModel
+ │       ├─► (CTDirect) ADNLPModels.ADNLPModel!(f, x0, …)  →  ADNLPModel
  │       └─► BuiltModel(docp, nlp, NoCache())
  │
  ├─► solve(nlp, solver) → ExecutionStats
  │
  └─► build_solution(built, stats, modeler)
-         └─► (CTDirect) extract_ocp_solution(docp, stats)  →  OCPSolution
+         └─► (CTDirect) build_OCP_solution(docp, stats, …)  →  OCP solution
 ```
 
 Separation of responsibilities:
