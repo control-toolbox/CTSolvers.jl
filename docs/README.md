@@ -32,6 +32,20 @@ colored `@repl` output is now rendered correctly while the input remains Julia s
 ## Extensions are always loaded
 
 `make.jl` loads every weak dependency so that the API reference can document the
-extensions. An `ExtensionError` therefore **cannot** be shown with `@repl`: the
-constructor succeeds. Show it in a static `julia` block, with the output copied from a
-session where the extension is not loaded (`julia --project=. -e 'using CTSolvers; ...'`).
+extensions, and extension methods are global to the process. An `ExtensionError` (or any
+error raised *because* an extension is missing) therefore **cannot** be shown with
+`@repl`: the constructor succeeds.
+
+Use `NoExt.repl` ([`noext.jl`](noext.jl)) from an `@eval` block instead. It runs the code
+in a fresh Julia process where only CTSolvers is loaded, and renders the transcript like
+an `@repl` block:
+
+````markdown
+```@eval
+Main.NoExt.repl("CTSolvers.Solvers.Ipopt()")
+```
+````
+
+Snippets before the last one are run first and shown as inputs (e.g.
+`Main.NoExt.repl("using OrdinaryDiffEqVerner", "CTSolvers.Integrators.SciML()")`). The
+build fails if the last snippet does not throw, so an example cannot silently go stale.

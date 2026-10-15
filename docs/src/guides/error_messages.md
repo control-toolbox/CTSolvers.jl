@@ -178,17 +178,8 @@ Integrators.regrid(r, [0.0, 2.0])
 
 Thrown when a solver requires a package extension that hasn't been loaded.
 
-```julia
-julia> CTSolvers.Solvers.MadNLP()
-ExtensionError
-│
-│  missing dependencies to create MadNLP, access options, and solve problems
-│
-│  Missing  MadNLP
-│
-│  Context  Load MadNLP extension first: using MadNLP
-│  Hint     Run: using MadNLP
-└─
+```@eval
+Main.NoExt.repl("CTSolvers.Solvers.MadNLP()")
 ```
 
 **Fix**: Load the required package before using the solver:
@@ -220,17 +211,8 @@ Thrown when `Integrators.SciML` is built with the SciML extension active (`SciML
 `DiffEqBase` loaded) but no algorithm is available: no explicit `alg` and
 `OrdinaryDiffEqTsit5` not loaded to provide the default `Tsit5()`.
 
-```julia
-julia> using OrdinaryDiffEqVerner   # loads SciMLBase/DiffEqBase, but not Tsit5
-
-julia> CTSolvers.Integrators.SciML()
-PreconditionError
-│  No ODE algorithm specified and OrdinaryDiffEqTsit5 is not loaded
-│  Reason   alg is missing
-│  Context  SciML integrator construction
-│  Hint     Load OrdinaryDiffEqTsit5: using OrdinaryDiffEqTsit5
-│           Or specify an algorithm explicitly, for example:
-│             SciML(alg=Vern6())
+```@eval
+Main.NoExt.repl("using OrdinaryDiffEqVerner", "CTSolvers.Integrators.SciML()")
 ```
 
 **Fix**: Pass an algorithm explicitly, `Integrators.SciML(alg = Vern6())`, or load

@@ -17,6 +17,9 @@ using CTBase
 using Markdown
 using MarkdownAST: MarkdownAST
 
+# NoExt.repl: show errors raised when an extension is not loaded (see noext.jl)
+include(joinpath(@__DIR__, "noext.jl"))
+
 # trigger extensions
 using ADNLPModels
 using CUDA

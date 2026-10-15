@@ -43,30 +43,12 @@ nothing into scope directly.
 CTSolvers loads no backend at startup. Each constructor throws `ExtensionError` until
 the corresponding package is loaded:
 
-```julia
-julia> CTSolvers.Solvers.Ipopt()
-ExtensionError
-│
-│  missing dependencies to create Ipopt, access options, and solve problems
-│
-│  Missing  NLPModelsIpopt
-│
-│  Context  Load NLPModelsIpopt extension first: using NLPModelsIpopt
-│  Hint     Run: using NLPModelsIpopt
-└─
+```@eval
+Main.NoExt.repl("CTSolvers.Solvers.Ipopt()")
 ```
 
-```julia
-julia> CTSolvers.Integrators.SciML()
-ExtensionError
-│
-│  missing dependencies to construct a SciML integrator
-│
-│  Missing  OrdinaryDiffEqTsit5
-│
-│  Context  Load OrdinaryDiffEqTsit5, OrdinaryDiffEq, or DifferentialEquations to activate the CTSolversSciMLIntegrator extension.
-│  Hint     Run: using OrdinaryDiffEqTsit5
-└─
+```@eval
+Main.NoExt.repl("CTSolvers.Integrators.SciML()")
 ```
 
 Strategy identifiers and type information are always available, without any extension:
