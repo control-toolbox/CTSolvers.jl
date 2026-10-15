@@ -11,6 +11,12 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.6.1 (2026-10-15)
+
+**No breaking changes.**
+
+---
+
 ## v0.6.0 (2026-10-09)
 
 Breaking for code that reads the internals of integration results; code that uses the

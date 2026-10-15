@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.6.1] - 2026-10-15
+
+### Dependencies
+
+- `DocStringExtensions` compat widened to `0.9, 0.10`.
+
 ### Documentation
 
 - New **Using CTSolvers** section for experienced users: strategies catalogue, integration
@@ -35,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Code lines in documentation code blocks stay within 75 characters (`SITE9`, ct-conventions
   v0.4.0); the only remaining long line is captured solver output.
 - ct-conventions pin bumped to v0.5.0 (`SITE13` previews on request, `SITE15`–`SITE17`).
+
+### Compatibility
+
+- **No breaking changes.** See [BREAKING.md](BREAKING.md).
 
 ---
 
