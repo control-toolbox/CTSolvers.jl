@@ -96,7 +96,9 @@ and requires `ADNLPModels` to be loaded:
 
 ```julia
 # src/Modelers/adnlp.jl — stub
-function CTBase.Strategies.metadata(::Type{<:Modelers.ADNLP{P}}) where {P<:CPU}
+function CTBase.Strategies.metadata(
+    ::Type{<:Modelers.ADNLP{P}},
+) where {P<:CPU}
     throw(CTBase.Exceptions.ExtensionError(:ADNLPModels; ...))
 end
 
@@ -121,15 +123,18 @@ function Modelers.ADNLP(; mode::Symbol=:strict, kwargs...)
     return Modelers.ADNLP{P}(; mode=mode, kwargs...)
 end
 
-# Parameterized constructor → tag dispatch, tag and parameter passed as TYPES
-function Modelers.ADNLP{P}(; mode::Symbol=:strict, kwargs...) where {P<:CPU}
+# Parameterized constructor → tag dispatch, tag and parameter as TYPES
+function Modelers.ADNLP{P}(;
+    mode::Symbol=:strict, kwargs...,
+) where {P<:CPU}
     return _build_adnlp_modeler(ADNLPTag, P; mode=mode, kwargs...)
 end
 
 # Stub — throws until ADNLPModels is loaded; the extension provides the
 # typed method _build_adnlp_modeler(::Type{ADNLPTag}, ::Type{<:CPU}; ...)
 function _build_adnlp_modeler(
-    ::Type{<:CTBase.Core.AbstractTag}, parameter::Type{<:AbstractStrategyParameter};
+    ::Type{<:CTBase.Core.AbstractTag},
+    parameter::Type{<:AbstractStrategyParameter};
     kwargs...,
 )
     throw(CTBase.Exceptions.ExtensionError(:ADNLPModels; ...))
@@ -149,7 +154,8 @@ against the metadata and returns the configured instance:
 # requires: using ADNLPModels
 modeler = CTSolvers.Modelers.ADNLP(backend = :optimized)
 CTBase.Strategies.options(modeler)
-# → StrategyOptions with backend = :optimized (and all defaults, with provenance)
+# → StrategyOptions with backend = :optimized
+#   (and all defaults, with provenance)
 ```
 
 And that is all: the modeler is complete. It carries options — nothing else.
@@ -162,11 +168,14 @@ functions whose `NotImplemented` stubs — the modeler contract — live in
 
 ```julia
 function Optimization.build_model(
-    prob::Optimization.AbstractOptimizationProblem, initial_guess, modeler::AbstractNLPModeler
+    prob::Optimization.AbstractOptimizationProblem,
+    initial_guess,
+    modeler::AbstractNLPModeler,
 )
     throw(Exceptions.NotImplemented(
         "Model building not implemented";
-        suggestion="Implement build_model for this (problem, modeler) pair in the package providing the problem",
+        suggestion="Implement build_model for this (problem, modeler) " *
+                   "pair in the package providing the problem",
         ...
     ))
 end
@@ -178,7 +187,8 @@ on the concrete `(problem, modeler)` pair. For example, CTDirect implements the 
 `CTDirect/src/collocation.jl`):
 
 ```julia
-# In CTDirect — the problem package builds the NLP, using the modeler's options
+# In CTDirect — the problem package builds the NLP,
+# using the modeler's options
 function CTSolvers.build_model(
     dm::CTSolvers.DiscretizedModel{<:Any,<:Collocation},
     initial_guess::CTModels.AbstractInitialGuess,
@@ -198,7 +208,9 @@ function CTSolvers.build_model(
 end
 
 function CTSolvers.build_solution(
-    built::CTSolvers.BuiltModel{<:CTSolvers.DiscretizedModel{<:Any,<:Collocation}},
+    built::CTSolvers.BuiltModel{
+        <:CTSolvers.DiscretizedModel{<:Any,<:Collocation},
+    },
     nlp_solution::SolverCore.AbstractExecutionStats,
     ::CTSolvers.Modelers.ADNLP,
 )
@@ -224,9 +236,13 @@ end
 
 CTBase.Strategies.id(::Type{<:Modelers.Exa}) = :exa
 CTBase.Strategies.default_parameter(::Type{<:Modelers.Exa}) = CPU
-CTBase.Strategies.parameter(::Type{<:Modelers.Exa{P}}) where {P<:Union{CPU,GPU}} = P
+CTBase.Strategies.parameter(
+    ::Type{<:Modelers.Exa{P}},
+) where {P<:Union{CPU,GPU}} = P
 
-function Modelers.Exa{P}(; mode::Symbol=:strict, kwargs...) where {P<:AbstractStrategyParameter}
+function Modelers.Exa{P}(;
+    mode::Symbol=:strict, kwargs...,
+) where {P<:AbstractStrategyParameter}
     return _build_exa_modeler(ExaTag, P; mode=mode, kwargs...)
 end
 ```
@@ -246,14 +262,20 @@ function CTSolvers.build_model(
     modeler::CTSolvers.Modelers.Exa,
 )
     # ... build the ExaModel and its getter ...
-    nlp, exa_getter = build_exa(; grid_size, backend, scheme, init, base_type)
+    nlp, exa_getter = build_exa(;
+        grid_size, backend, scheme, init, base_type,
+    )
 
     # carry the getter in an immutable build-time cache
     return CTSolvers.BuiltModel(dm, nlp, ExaBuildCache(exa_getter))
 end
 
 function CTSolvers.build_solution(
-    built::CTSolvers.BuiltModel{<:CTSolvers.DiscretizedModel{<:Any,<:Collocation},<:Any,<:ExaBuildCache},
+    built::CTSolvers.BuiltModel{
+        <:CTSolvers.DiscretizedModel{<:Any,<:Collocation},
+        <:Any,
+        <:ExaBuildCache,
+    },
     nlp_solution::SolverCore.AbstractExecutionStats,
     ::CTSolvers.Modelers.Exa,
 )
@@ -299,27 +321,32 @@ CTBase.Strategies.id(CTSolvers.Modelers.Exa)      # => :exa
 
 # metadata and construction require the backend extension
 # requires: using ADNLPModels
-CTBase.Strategies.metadata(CTSolvers.Modelers.ADNLP) isa CTBase.Strategies.StrategyMetadata  # => true
+using CTBase: Strategies
+Strategies.metadata(CTSolvers.Modelers.ADNLP) isa
+    Strategies.StrategyMetadata                          # => true
 modeler = CTSolvers.Modelers.ADNLP()
-CTBase.Strategies.options(modeler) isa CTBase.Strategies.StrategyOptions  # => true
+Strategies.options(modeler) isa Strategies.StrategyOptions  # => true
 ```
 
 For the modeler contract, test the dispatch with a fake problem (fake types at the
 top level of the test module, never inside test functions):
 
 ```julia
-struct FakeProblem <: CTSolvers.Optimization.AbstractOptimizationProblem end
+using CTSolvers: Optimization, Modelers
 
-function CTSolvers.Optimization.build_model(
-    prob::FakeProblem, initial_guess, modeler::CTSolvers.Modelers.ADNLP
+struct FakeProblem <: Optimization.AbstractOptimizationProblem end
+
+function Optimization.build_model(
+    prob::FakeProblem, initial_guess, modeler::Modelers.ADNLP,
 )
-    nlp = build_fake_nlp(initial_guess; CTBase.Strategies.options_dict(modeler)...)
-    return CTSolvers.Optimization.BuiltModel(prob, nlp, CTSolvers.Optimization.NoCache())
+    options = CTBase.Strategies.options_dict(modeler)
+    nlp = build_fake_nlp(initial_guess; options...)
+    return Optimization.BuiltModel(prob, nlp, Optimization.NoCache())
 end
 
-built = CTSolvers.Optimization.build_model(FakeProblem(), x0, modeler)
-@test built isa CTSolvers.Optimization.BuiltModel
-@test built.cache isa CTSolvers.Optimization.NoCache
+built = Optimization.build_model(FakeProblem(), x0, modeler)
+@test built isa Optimization.BuiltModel
+@test built.cache isa Optimization.NoCache
 ```
 
 Without a typed method, the stub fails loudly with `NotImplemented` and names the exact

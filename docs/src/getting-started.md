@@ -64,9 +64,12 @@ CTBase.Strategies.id(CTSolvers.Integrators.SciML)
 Load a backend to unlock its constructor:
 
 ```julia
-using NLPModelsIpopt       # loads CTSolversIpopt       → enables Solvers.Ipopt
-using ADNLPModels          # loads CTSolversADNLPModels  → enables Modelers.ADNLP
-using OrdinaryDiffEqTsit5  # loads CTSolversSciMLIntegrator (+ default Tsit5) → enables Integrators.SciML
+# CTSolversIpopt → Solvers.Ipopt
+using NLPModelsIpopt
+# CTSolversADNLPModels → Modelers.ADNLP
+using ADNLPModels
+# CTSolversSciMLIntegrator (+ default Tsit5) → Integrators.SciML
+using OrdinaryDiffEqTsit5
 ```
 
 ## Configuring Options
@@ -100,11 +103,13 @@ Pass `mode = :permissive` to warn rather than error on unknown options. Introspe
 full option schema and read back values with provenance:
 
 ```@example co
-CTBase.Strategies.metadata(CTSolvers.Solvers.Ipopt)    # inspect all option definitions
+# inspect all option definitions
+CTBase.Strategies.metadata(CTSolvers.Solvers.Ipopt)
 ```
 
 ```@example co
-CTBase.Strategies.options(CTSolvers.Solvers.Ipopt())   # actual values with provenance
+# actual values with provenance
+CTBase.Strategies.options(CTSolvers.Solvers.Ipopt())
 ```
 
 ## Next Steps

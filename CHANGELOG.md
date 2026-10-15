@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `.conventions/`), `AGENTS.md` cites rules by identifier, `CLAUDE.md` redirects to it, and
   the references to the former Handbook are updated. `CONTRIBUTING.md` documents it, and
   the spell check excludes `.conventions/`.
+- Code lines in documentation code blocks stay within 75 characters (`SITE9`, ct-conventions
+  v0.4.0); the only remaining long line is captured solver output.
 
 ---
 

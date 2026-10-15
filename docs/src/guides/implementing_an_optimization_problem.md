@@ -22,7 +22,8 @@ The generic stubs in CTSolvers throw `NotImplemented` with guidance. Defining a 
 
 ```@example optprob
 using CTSolvers
-struct EmptyProblem <: CTSolvers.Optimization.AbstractOptimizationProblem end
+using CTSolvers: Optimization
+struct EmptyProblem <: Optimization.AbstractOptimizationProblem end
 nothing # hide
 ```
 
@@ -58,7 +59,7 @@ struct DiscretizedModel{
 } <: AbstractOptimizationProblem
     ocp::TO          # original OCP
     discretizer::TD  # e.g. Collocation
-    cache::TC        # opaque to CTSolvers; populated by the discretizing package
+    cache::TC        # opaque to CTSolvers, filled by the discretizer
 end
 ```
 
@@ -74,7 +75,7 @@ the package providing the discretizer implements the typed method. In CTDirect
 ```julia
 # In CTDirect — typed method for the Collocation discretizer
 function CTSolvers.discretize(ocp::AbstractModel, discretizer::Collocation)
-    docp = get_docp(discretizer, ocp)                        # problem-specific preprocessing
+    docp = get_docp(discretizer, ocp)  # problem-specific preprocessing
     return CTSolvers.DiscretizedModel(ocp, discretizer, DOCPCache(docp))
 end
 ```
@@ -89,29 +90,38 @@ CTSolvers owns the generic stubs; CTDirect owns the concrete methods via multipl
 Simplified from `CTDirect/src/collocation.jl`:
 
 ```julia
-# In CTDirect — concrete methods for (DiscretizedModel + Collocation, ADNLP)
+# In CTDirect — concrete methods for
+# (DiscretizedModel + Collocation, ADNLP)
 function CTSolvers.build_model(
     dm::CTSolvers.DiscretizedModel{<:Any,<:Collocation},
     initial_guess::CTModels.AbstractInitialGuess,
     modeler::CTSolvers.Modelers.ADNLP,
 )
     docp = dm.cache.docp
-    options = Strategies.options_dict(modeler)         # the modeler's validated options
+    # the modeler's validated options
+    options = Strategies.options_dict(modeler)
     backend = pop!(options, :backend)
-    # ... objective f, constraints c!, initial guess x0 and bounds from docp ...
-    nlp = ADNLPModels.ADNLPModel!(f, x0, lvar, uvar, c!, lcon, ucon; backend, options...)
-    return CTSolvers.BuiltModel(dm, nlp, CTSolvers.NoCache())  # ADNLP needs no aux cache
+    # ... objective f, constraints c!, x0 and bounds from docp ...
+    nlp = ADNLPModels.ADNLPModel!(
+        f, x0, lvar, uvar, c!, lcon, ucon; backend, options...,
+    )
+    # ADNLP needs no auxiliary cache
+    return CTSolvers.BuiltModel(dm, nlp, CTSolvers.NoCache())
 end
 
 function CTSolvers.build_solution(
-    built::CTSolvers.BuiltModel{<:CTSolvers.DiscretizedModel{<:Any,<:Collocation}},
+    built::CTSolvers.BuiltModel{
+        <:CTSolvers.DiscretizedModel{<:Any,<:Collocation},
+    },
     nlp_solution::SolverCore.AbstractExecutionStats,
     ::CTSolvers.Modelers.ADNLP,
 )
     docp = built.problem.cache.docp
-    infos = CTSolvers.extract_solver_infos(nlp_solution)  # objective, iterations, status, …
+    # objective, iterations, status, …
+    infos = CTSolvers.extract_solver_infos(nlp_solution)
     # ... time grid T from the NLP solution ...
-    return build_OCP_solution(docp, nlp_solution, T, infos...)  # OCP solution
+    # the OCP solution
+    return build_OCP_solution(docp, nlp_solution, T, infos...)
 end
 ```
 

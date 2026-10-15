@@ -131,7 +131,9 @@ CTBase.Strategies.id(CTSolvers.Integrators.SciML)
 
 ```julia
 CTBase.Strategies.default_parameter(::Type{<:SciML}) = CPU
-CTBase.Strategies.parameter(::Type{<:SciML{P}}) where {P<:Union{CPU,GPU}} = P
+CTBase.Strategies.parameter(
+    ::Type{<:SciML{P}},
+) where {P<:Union{CPU,GPU}} = P
 ```
 
 ### Step 4 — Constructors with Tag Dispatch
@@ -147,19 +149,24 @@ function SciML(; mode::Symbol = :strict, kwargs...)
     return SciML{P}(; mode = mode, kwargs...)
 end
 
-function SciML{P}(; mode::Symbol = :strict, kwargs...) where {P<:AbstractStrategyParameter}
+function SciML{P}(;
+    mode::Symbol = :strict, kwargs...,
+) where {P<:AbstractStrategyParameter}
     return _build_sciml_integrator(SciMLTag, P; mode = mode, kwargs...)
 end
 
 # Stub — real implementation in ext/CTSolversSciMLIntegrator.jl
 function _build_sciml_integrator(
-    ::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...
+    ::Type{<:Core.AbstractTag},
+    ::Type{<:AbstractStrategyParameter};
+    kwargs...,
 )
     throw(Exceptions.ExtensionError(
         :OrdinaryDiffEqTsit5;
         message = "to construct a SciML integrator",
         feature = "ODE integration via SciML",
-        context = "Load OrdinaryDiffEqTsit5, OrdinaryDiffEq, or DifferentialEquations ...",
+        context = "Load OrdinaryDiffEqTsit5, OrdinaryDiffEq, " *
+                  "or DifferentialEquations ...",
     ))
 end
 ```
@@ -235,7 +242,10 @@ function CTBase.Strategies.metadata(
         CTBase.Strategies.OptionDefinition(;
             name = :alg,
             type = Union{Missing,SciMLBase.AbstractDEAlgorithm},
-            default = Integrators.__default_sciml_algorithm(Integrators.Tsit5Tag),  # missing without Tsit5
+            # missing without Tsit5
+            default = Integrators.__default_sciml_algorithm(
+                Integrators.Tsit5Tag,
+            ),
             description = "ODE algorithm (e.g. Tsit5(), Vern6()).",
             aliases = (:algorithm, :solver),
         ),
@@ -255,18 +265,24 @@ resolves the `:auto` sentinel into the cached point/trajectory dictionaries:
 function Integrators._build_sciml_integrator(
     ::Type{Integrators.SciMLTag}, ::Type{P}; mode = :strict, kwargs...
 ) where {P<:CTBase.Strategies.AbstractStrategyParameter}
-    opts = CTBase.Strategies.build_strategy_options(Integrators.SciML{P}; mode = mode, kwargs...)
+    opts = CTBase.Strategies.build_strategy_options(
+        Integrators.SciML{P}; mode = mode, kwargs...,
+    )
     raw  = CTBase.Strategies.options_dict(opts)
-    raw[:alg] === missing && throw(_missing_sciml_algorithm_error())  # PreconditionError
+    # PreconditionError when no algorithm is available
+    raw[:alg] === missing && throw(_missing_sciml_algorithm_error())
 
-    # point integration: only the final state is needed — :auto → false, no saveat
+    # point integration: only the final state is needed
+    # (:auto → false, no saveat)
     options_point = copy(raw)
     for key in (:dense, :save_everystep, :save_start)
-        get(options_point, key, :auto) === :auto && (options_point[key] = false)
+        get(options_point, key, :auto) === :auto || continue
+        options_point[key] = false
     end
     delete!(options_point, :saveat)
 
-    # trajectory integration: :auto → true, except save_everystep when saveat is given
+    # trajectory integration: :auto → true, except save_everystep
+    # when saveat is given
     options_trajectory = copy(raw)
     has_saveat = _requested_saveat(options_trajectory) !== nothing
     for key in (:dense, :save_everystep, :save_start)
@@ -274,7 +290,8 @@ function Integrators._build_sciml_integrator(
         options_trajectory[key] = !(key === :save_everystep && has_saveat)
     end
 
-    return Integrators.SciML{P,typeof(opts),typeof(options_point),typeof(options_trajectory)}(
+    OP, OT = typeof(options_point), typeof(options_trajectory)
+    return Integrators.SciML{P,typeof(opts),OP,OT}(
         opts, options_point, options_trajectory,
     )
 end
@@ -283,17 +300,21 @@ end
 **3. Solve** — integrates the (external) `ODEProblem` and wraps the solution:
 
 ```julia
-function CommonSolve.solve(prob::SciMLBase.AbstractODEProblem, integ::Integrators.SciML;
-                           options = Integrators.options_trajectory(integ),
-                           unsafe = Integrators.__unsafe())
+function CommonSolve.solve(
+    prob::SciMLBase.AbstractODEProblem,
+    integ::Integrators.SciML;
+    options = Integrators.options_trajectory(integ),
+    unsafe = Integrators.__unsafe(),
+)
     saveat = _requested_saveat(options, prob)
     if saveat === nothing                       # plain integration
         ode_sol = SciMLBase.solve(prob; options...)
-        _check_retcode(ode_sol, unsafe)          # SolverFailure unless unsafe
+        _check_retcode(ode_sol, unsafe)  # SolverFailure unless unsafe
         return SciMLIntegrationResult(ode_sol)
     end
-    # with dense output, saveat is an output grid only: integrate dense without it,
-    # keep the interpolant, and return the saveat grid as the result's time grid
+    # with dense output, saveat is an output grid only: integrate dense
+    # without it, keep the interpolant, and return the saveat grid as the
+    # result's time grid
     # (with dense = false, SciML's native saveat is used instead)
     ...
     return SciMLIntegrationResult(ode_sol, grid)
@@ -307,7 +328,8 @@ end
 
 ```julia
 using CTSolvers
-using OrdinaryDiffEqTsit5     # activates CTSolversSciMLIntegrator + default Tsit5
+# activates CTSolversSciMLIntegrator + default Tsit5
+using OrdinaryDiffEqTsit5
 using SciMLBase: ODEProblem
 using CommonSolve
 

@@ -64,8 +64,9 @@ label (`optprob`) keeps these throwaway types out of the shared `errors` scope:
 
 ```@example optprob
 using CTSolvers
-struct MinimalProblem <: CTSolvers.Optimization.AbstractOptimizationProblem end
-struct MinimalModeler <: CTSolvers.Modelers.AbstractNLPModeler end
+using CTSolvers: Optimization, Modelers
+struct MinimalProblem <: Optimization.AbstractOptimizationProblem end
+struct MinimalModeler <: Modelers.AbstractNLPModeler end
 nothing # hide
 ```
 
@@ -73,7 +74,7 @@ The generic stub in `Modelers/contract.jl` throws `NotImplemented` as soon as `b
 is called with a `(problem, modeler)` pair for which no concrete method exists:
 
 ```@repl optprob
-CTSolvers.Optimization.build_model(MinimalProblem(), nothing, MinimalModeler())
+Optimization.build_model(MinimalProblem(), nothing, MinimalModeler())
 ```
 
 **Fix**: Implement `build_model` and `build_solution` in the package providing the
@@ -120,7 +121,7 @@ bad_def = CTBase.Options.OptionDefinition(
         "Invalid tolerance value",
         got = "tol=$x",
         expected = "positive real number (> 0)",
-        suggestion = "Provide a positive tolerance value (e.g., 1e-6, 1e-8)",
+        suggestion = "Provide a positive tolerance (e.g., 1e-6, 1e-8)",
         context = "tol validation",
     )),
 )
@@ -164,7 +165,8 @@ using CTSolvers: Integrators
 using OrdinaryDiffEqTsit5
 using SciMLBase: ODEProblem
 using CommonSolve: CommonSolve
-r = CommonSolve.solve(ODEProblem((u, p, t) -> -u, 1.0, (0.0, 1.0)), Integrators.SciML())
+prob = ODEProblem((u, p, t) -> -u, 1.0, (0.0, 1.0))
+r = CommonSolve.solve(prob, Integrators.SciML())
 nothing # hide
 ```
 
