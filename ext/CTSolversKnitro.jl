@@ -209,9 +209,9 @@ Build a Knitro with validated options.
 # Example
 
 ```julia
-# Conceptual usage
-solver = _build_knitro_solver(KnitroTag; max_iter=1000)
-solver_permissive = _build_knitro_solver(KnitroTag; max_iter=1000, custom_option=123; mode=:permissive)
+# Reached through the public constructor:
+solver = Solvers.Knitro(max_iter=1000)  # → _build_knitro_solver(KnitroTag, Strategies.CPU; max_iter=1000)
+solver_permissive = Solvers.Knitro(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 """
 function Solvers._build_knitro_solver(

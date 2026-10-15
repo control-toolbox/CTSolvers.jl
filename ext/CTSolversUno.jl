@@ -300,9 +300,9 @@ Build a Uno solver with validated options.
 # Example
 
 ```julia
-# Conceptual usage
-solver = _build_uno_solver(UnoTag; max_iterations=1000)
-solver_permissive = _build_uno_solver(UnoTag; max_iterations=1000, custom_option=123; mode=:permissive)
+# Reached through the public constructor:
+solver = Solvers.Uno(max_iterations=1000)  # → _build_uno_solver(UnoTag, Strategies.CPU; max_iterations=1000)
+solver_permissive = Solvers.Uno(max_iterations=1000, custom_option=123; mode=:permissive)
 ```
 
 See also: `Solvers.Uno`, `Strategies.build_strategy_options`

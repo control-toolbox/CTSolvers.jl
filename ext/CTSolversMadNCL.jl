@@ -359,8 +359,8 @@ $(TYPEDSIGNATURES)
 Build a MadNCL with validated options.
 
 # Arguments
-- `tag::Solvers.MadNCLTag`: Tag for dispatch
-- `parameter::Strategies.AbstractStrategyParameter`: Execution parameter (CPU or GPU)
+- `::Type{Solvers.MadNCLTag}`: Tag type for dispatch
+- `parameter::Type{<:Strategies.AbstractStrategyParameter}`: Execution parameter type (`Strategies.CPU` or `Strategies.GPU`)
 - `mode::Symbol=:strict`: Validation mode (`:strict` or `:permissive`)
   - `:strict` (default): Rejects unknown options with detailed error message
   - `:permissive`: Accepts unknown options with warning, stores with `:user` source
@@ -370,8 +370,8 @@ Build a MadNCL with validated options.
 
 ```julia
 # Conceptual usage
-solver_cpu = _build_madncl_solver(MadNCLTag(), Strategies.CPU(); max_iter=1000)
-solver_gpu = _build_madncl_solver(MadNCLTag(), Strategies.GPU(); max_iter=1000)  # requires MadNLPGPU
+solver_cpu = _build_madncl_solver(MadNCLTag, Strategies.CPU; max_iter=1000)
+solver_gpu = _build_madncl_solver(MadNCLTag, Strategies.GPU; max_iter=1000)  # requires MadNLPGPU, CUDA, CUDSS
 ```
 """
 function Solvers._build_madncl_solver(

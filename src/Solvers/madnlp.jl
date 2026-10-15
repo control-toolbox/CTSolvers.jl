@@ -26,7 +26,7 @@ performance for large-scale optimization problems.
 
 The solver supports parameterization for execution backend:
 - `MadNLP{Strategies.CPU}`: CPU execution (default)
-- `MadNLP{Strategies.GPU}`: GPU execution (requires CUDA.jl)
+- `MadNLP{Strategies.GPU}`: GPU execution (requires MadNLPGPU, CUDA and CUDSS)
 
 # Fields
 
@@ -185,12 +185,12 @@ Requires the CTSolversMadNLP extension to be loaded.
 # Conceptual usage (requires MadNLP extension)
 using MadNLP
 solver_cpu = MadNLP{Strategies.CPU}(max_iter=1000, tol=1e-6)
-solver_gpu = MadNLP{Strategies.GPU}(max_iter=1000, tol=1e-6)  # requires CUDA.jl
+solver_gpu = MadNLP{Strategies.GPU}(max_iter=1000, tol=1e-6)  # requires MadNLPGPU, CUDA, CUDSS
 ```
 
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
-- `CTBase.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
+- `CTBase.Exceptions.ExtensionError`: If GPU parameter used but MadNLPGPU, CUDA or CUDSS is not loaded
 
 See also: `MadNLP`, `Strategies.CPU`, `Strategies.GPU`
 """

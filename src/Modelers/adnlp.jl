@@ -70,12 +70,11 @@ get_adnlp_available_backends() = __get_adnlp_available_backends(ADNLPTag)
 """
 $(TYPEDEF)
 
-Modeler for building ADNLPModels from discretized optimal control problems.
+Modeler selecting ADNLPModels as the NLP backend.
 
-This modeler uses the ADNLPModels.jl package to create NLP models with
-automatic differentiation support. It provides configurable options for
-timing information, AD backend selection, memory optimization, and model
-identification.
+The NLP model is built with ADNLPModels.jl (automatic differentiation) by the package
+providing the problem (e.g. CTDirect). The options configure timing information, AD
+backend selection, memory optimization, and model identification.
 
 ## Parameterized Types
 
@@ -114,10 +113,13 @@ The CPU parameter indicates standard CPU-based execution:
 # Options
 
 ## Basic Options
-- `show_time::Bool`: Enable timing information for model building (default: `false`)
 - `backend::Symbol`: AD backend to use (default: `:optimized`)
-- `matrix_free::Bool`: Enable matrix-free mode (default: `false`)
-- `name::String`: Model name for identification (default: `"CTSolvers-ADNLP"`)
+- `show_time::Bool`: Enable timing information for model building
+- `matrix_free::Bool`: Enable matrix-free mode
+- `name::String`: Model name for identification
+
+Options without a default are not passed to ADNLPModels unless set, so ADNLPModels' own
+defaults apply.
 
 ## Advanced Backend Overrides (expert users)
 
@@ -152,7 +154,7 @@ modeler = Modelers.ADNLP(
 
 ## Invalid Usage
 ```julia
-# GPU is NOT supported - will throw IncorrectArgument
+# GPU is NOT supported - rejected by the type parameter bound (TypeError)
 modeler = Modelers.ADNLP{Strategies.GPU}()  # ❌ Error!
 ```
 
@@ -190,7 +192,8 @@ modeler = Modelers.ADNLP(
 
 # Throws
 
-- `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
+- `TypeError`: If `Strategies.GPU` or another unsupported parameter is specified
+  (the type parameter is bounded by `Strategies.CPU`)
 - `CTBase.Exceptions.IncorrectArgument`: If option validation fails
 - `CTBase.Exceptions.IncorrectArgument`: If invalid mode is provided
 
@@ -203,7 +206,8 @@ modeler = Modelers.ADNLP(
 
 # Notes
 
-- The `backend` option supports: `:default`, `:optimized`, `:generic`, `:enzyme`, `:zygote`
+- The `backend` option supports: `:default`, `:optimized`, `:generic`, `:enzyme`, `:zygote`,
+  `:manual` (`:enzyme` and `:zygote` require `Enzyme` / `Zygote` to be loaded)
 - Advanced backend overrides are for expert users only
 - Matrix-free mode reduces memory usage but may increase computation time
 - Model name is used for identification in solver output

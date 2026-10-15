@@ -16,6 +16,12 @@ Subtypes must implement:
 - `status(r::SubType)`: Return the termination status as a `Symbol`.
 - `successful(r::SubType)`: Return whether the integration succeeded.
 
+Subtypes may also implement:
+- `is_dense(r::SubType)`: Whether `evaluate_at` reads a dense interpolant (default `false`).
+- `regrid(r::SubType, grid)`: A copy of the result on another output grid.
+- `merge(segments::AbstractVector{SubType})`: Combine consecutive results of a multi-phase
+  integration (see [`CTSolvers.Integrators.PiecewiseIntegrationResult`](@extref)).
+
 See also: [`CTSolvers.Integrators.final_state`](@extref), [`CTSolvers.Integrators.times`](@extref), [`CTSolvers.Integrators.evaluate_at`](@extref), [`CTModels.Solutions.status`](@extref), [`CTModels.Solutions.successful`](@extref).
 """
 abstract type AbstractIntegrationResult end

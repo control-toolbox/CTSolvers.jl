@@ -58,18 +58,14 @@ $(TYPEDSIGNATURES)
 
 Get CUDA backend for GPU execution.
 
-This function checks if CUDA.jl is available and functional,
-and returns an appropriate CUDA backend.
+Stub — overridden by the `CTSolversCUDA` extension, which returns `CUDA.CUDABackend()`
+(with a one-time warning if CUDA is loaded but not functional).
 
 # Returns
-- CUDA backend object if CUDA is available and functional
+- `CUDA.CUDABackend()` once CUDA is loaded
 
 # Throws
-- `CTBase.Exceptions.ExtensionError`: If CUDA is not loaded or not functional
-
-# Notes
-- Issues a warning if CUDA is loaded but not functional
-- Uses CUDA.CUDABackend() for GPU execution
+- `CTBase.Exceptions.ExtensionError`: If CUDA is not loaded
 """
 function __get_cuda_backend(::Type{<:Strategies.GPU})
     return throw(
@@ -110,10 +106,10 @@ end
 """
 $(TYPEDEF)
 
-Modeler for building ExaModels from discretized optimal control problems.
+Modeler selecting ExaModels as the NLP backend.
 
-This modeler uses the ExaModels.jl package to create NLP models with
-support for various execution backends (CPU, GPU) and floating-point types.
+The NLP model is built with ExaModels.jl, on CPU or GPU and with a configurable
+floating-point type, by the package providing the problem (e.g. CTDirect).
 
 ## Parameterized Types
 
@@ -207,21 +203,21 @@ modeler = Modelers.Exa{Strategies.GPU}(
 # See also
 
 - `Modelers.ADNLP`: Alternative modeler using ADNLPModels
-- `build_model`: Build model from problem and modeler
-- `solve!`: Solve optimization problem
+- `Optimization.build_model`: Build a backend NLP model from a problem and a modeler
+- `Optimization.build_solution`: Build a problem-level solution from execution statistics
 - `Strategies.CPU`, `Strategies.GPU`: Strategy parameters
 
 # Notes
 
 - The `base_type` option affects the precision of all computations
 - CPU backend (`backend=nothing`) is always available
-- GPU backends require CUDA.jl to be loaded and functional
+- GPU backends require CUDA.jl to be loaded (a warning is issued if it is not functional)
 - ExaModels.jl provides efficient GPU acceleration for large problems
 - Default backend is automatically selected based on the parameter type
 
 # References
 
-- ExaModels.jl: [https://github.com/JuliaSmoothOptimizers/ExaModels.jl](https://github.com/JuliaSmoothOptimizers/ExaModels.jl)
+- ExaModels.jl: [https://github.com/exanauts/ExaModels.jl](https://github.com/exanauts/ExaModels.jl)
 - KernelAbstractions.jl: [https://github.com/JuliaGPU/KernelAbstractions.jl](https://github.com/JuliaGPU/KernelAbstractions.jl)
 """
 struct Exa{P<:Union{Strategies.CPU,Strategies.GPU}} <: AbstractNLPModeler
