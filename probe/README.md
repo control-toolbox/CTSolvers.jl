@@ -39,3 +39,19 @@ Shared helpers live in [`common.jl`](common.jl).
   packages are loaded; `SciML{GPU}` builds without them.
 - `Integrators.SciML` integrates scalar, vector (in-place or not), `Float32` and matrix
   states, with point and trajectory options.
+
+## Known results (GPU, `kkt` — NVIDIA H200, 2026-10-15)
+
+- `Exa{GPU}` defaults to `CUDABackend()`; `MadNLP{GPU}` and `MadNCL{GPU}` default to
+  `MadNLPGPU.CUDSSSolver`.
+- `Exa{GPU}` (`Float64`) works with `MadNLP{GPU}` and `MadNCL{GPU}`. `MadNLP{CPU}`, Ipopt
+  and Uno have no method for a device model.
+- `Exa{GPU}` with `base_type = Float32`: `MadNLP{GPU}` runs but did not converge on the
+  probe model (1000 iterations at `tol = 1e-5`); `MadNCL{GPU}` has no method for it.
+- `Integrators.SciML{GPU}` and `SciML{CPU}` both integrate `CuArray` states (in-place,
+  out-of-place, `Float32`), with point and trajectory options; the final state stays a
+  `CuArray`.
+- MadNLP relaxes bounds by about its tolerance (violation ~2e-8 on the device, ~1e-8 on CPU):
+  on a model whose constraints are all active and very sensitive (the one of
+  `docs/src/using/gpu.md`), CPU and GPU objectives differ by ~1e-3 for that reason alone.
+  The probe therefore judges solves on a well-conditioned model with an analytic optimum.
