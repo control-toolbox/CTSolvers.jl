@@ -100,8 +100,10 @@ interpolant, so a dense multi-phase trajectory is as accurate as a single-phase 
 Below, the state jumps by `+1` at `t = 1`:
 
 ```@example res
-r1 = solve(ODEProblem((u, p, t) -> -u, [1.0], (0.0, 1.0)), integ)
-r2 = solve(ODEProblem((u, p, t) -> -u, Integrators.final_state(r1) .+ 1, (1.0, 2.0)), integ)
+decay(u, p, t) = -u
+r1 = solve(ODEProblem(decay, [1.0], (0.0, 1.0)), integ)
+u1 = Integrators.final_state(r1) .+ 1    # the jump
+r2 = solve(ODEProblem(decay, u1, (1.0, 2.0)), integ)
 rm = Integrators.merge([r1, r2])
 nothing # hide
 ```
@@ -123,7 +125,8 @@ By default, an unsuccessful SciML return code throws a `SolverFailure`. Pass
 
 ```julia
 r = solve(prob, integ; unsafe = true)
-Integrators.successful(r) || @warn "integration stopped early" Integrators.status(r)
+Integrators.successful(r) ||
+    @warn "integration stopped early" Integrators.status(r)
 ```
 
 See [Error Messages Reference](@ref) for the error itself.

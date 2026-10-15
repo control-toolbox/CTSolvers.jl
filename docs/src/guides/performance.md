@@ -111,12 +111,15 @@ Allocation behavior on the same hot-path calls is locked in as a deterministic
 regression guard in `test/suite/meta/test_performance.jl`:
 
 ```julia
-# Zero-overhead wrapper: evaluate_at costs exactly what the raw ODE solution call does
+# Zero-overhead wrapper: evaluate_at costs exactly what the raw
+# ODE solution call does
 Test.@test (BenchmarkTools.@ballocated Integrators.evaluate_at($r, $t)) ==
     (BenchmarkTools.@ballocated $(r.ode_sol)($t))
 
 # Zero-allocation reads
-Test.@test (BenchmarkTools.@ballocated Integrators.options_point($integ)) == 0
+Test.@test (
+    BenchmarkTools.@ballocated Integrators.options_point($integ)
+) == 0
 ```
 
 ## Known, acceptable dynamism

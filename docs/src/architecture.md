@@ -199,7 +199,8 @@ julia> CTBase.Strategies.id(IncompleteStrategy)
 # ERROR: NotImplemented
 #   Strategy ID method not implemented
 #   Required method: id(::Type{<:IncompleteStrategy})
-#   Suggestion: Implement id(::Type{<:IncompleteStrategy}) to return a unique Symbol identifier
+#   Suggestion: Implement id(::Type{<:IncompleteStrategy}) to return
+#   a unique Symbol identifier
 ```
 
 This pattern ensures that missing implementations are detected immediately with clear guidance —
@@ -222,21 +223,32 @@ CTBase.Strategies.id(::Type{<:Solvers.Ipopt}) = :ipopt
 CTBase.Strategies.default_parameter(::Type{<:Solvers.Ipopt}) = CPU
 CTBase.Strategies.parameter(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU} = P
 
-# Constructor chain: resolve P, then dispatch on the tag and parameter TYPES
-Solvers.Ipopt(; kwargs...) =
-    Solvers.Ipopt{CTBase.Strategies.default_parameter(Solvers.Ipopt)}(; kwargs...)
-Solvers.Ipopt{P}(; kwargs...) where {P<:CPU} = _build_ipopt_solver(IpoptTag, P; kwargs...)
-_build_ipopt_solver(::Type{<:Core.AbstractTag}, ::Type{<:AbstractStrategyParameter}; kwargs...) =
-    throw(ExtensionError(:NLPModelsIpopt))
+# Constructor chain: resolve P, then dispatch on the tag and parameter
+# TYPES
+function Solvers.Ipopt(; kwargs...)
+    P = CTBase.Strategies.default_parameter(Solvers.Ipopt)
+    return Solvers.Ipopt{P}(; kwargs...)
+end
+Solvers.Ipopt{P}(; kwargs...) where {P<:CPU} =
+    _build_ipopt_solver(IpoptTag, P; kwargs...)
+_build_ipopt_solver(
+    ::Type{<:Core.AbstractTag},
+    ::Type{<:AbstractStrategyParameter};
+    kwargs...,
+) = throw(ExtensionError(:NLPModelsIpopt))
 ```
 
 **`ext/CTSolversIpopt.jl`** — real implementations (loaded only with `using NLPModelsIpopt`):
 
 ```julia
 metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU} = StrategyMetadata(...)
-_build_ipopt_solver(::Type{Solvers.IpoptTag}, P::Type{<:AbstractStrategyParameter}; kwargs...) =
-    Solvers.Ipopt{P}(validated_opts)
-CommonSolve.solve(nlp, solver::Solvers.Ipopt; display) = ipopt(nlp; options_dict(solver)...)
+_build_ipopt_solver(
+    ::Type{Solvers.IpoptTag},
+    P::Type{<:AbstractStrategyParameter};
+    kwargs...,
+) = Solvers.Ipopt{P}(validated_opts)
+CommonSolve.solve(nlp, solver::Solvers.Ipopt; display) =
+    ipopt(nlp; options_dict(solver)...)
 ```
 
 This keeps CTSolvers lightweight — backend dependencies are optional weak deps loaded on demand.

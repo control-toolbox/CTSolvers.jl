@@ -35,7 +35,8 @@ using ADNLPModels, NLPModelsIpopt
 using CommonSolve: solve
 
 nlp = ADNLPModel(x -> sum(x .^ 2), ones(10))
-stats = solve(nlp, CTSolvers.Solvers.Ipopt(max_iter = 100); display = false)
+solver = CTSolvers.Solvers.Ipopt(max_iter = 100)
+stats = solve(nlp, solver; display = false)
 ```
 
 `display = false` silences the backend's output.

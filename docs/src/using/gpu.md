@@ -61,8 +61,10 @@ println("MadNLP{GPU} linear_solver: ", solver[:linear_solver])
 The CPU defaults, for comparison:
 
 ```@example gpu
-println("Exa{CPU} backend:          ", CTSolvers.Modelers.Exa()[:backend])
-println("MadNLP{CPU} linear_solver: ", CTSolvers.Solvers.MadNLP()[:linear_solver])
+cpu_modeler = CTSolvers.Modelers.Exa()
+cpu_solver = CTSolvers.Solvers.MadNLP()
+println("Exa{CPU} backend:          ", cpu_modeler[:backend])
+println("MadNLP{CPU} linear_solver: ", cpu_solver[:linear_solver])
 ```
 
 ## Solving an NLP on the GPU
@@ -75,7 +77,11 @@ function quadratic_model(backend, N)
     c = ExaModels.ExaCore(; backend)
     c, x = ExaModels.add_var(c, N; start = 0.5)
     c, _ = ExaModels.add_obj(c, (x[i] - i / N)^2 for i in 1:N)
-    c, _ = ExaModels.add_con(c, x[i+1] - x[i] for i in 1:(N-1); lcon = -5e-4, ucon = 5e-4)
+    c, _ = ExaModels.add_con(
+        c, x[i+1] - x[i] for i in 1:(N-1);
+        lcon = -5e-4,
+        ucon = 5e-4,
+    )
     return ExaModels.ExaModel(c)
 end
 nothing # hide
@@ -142,12 +148,14 @@ using CTSolvers: Integrators
 
 if CUDA.functional()
     integ = Integrators.SciML{GPU}()
-    prob = ODEProblem((du, u, p, t) -> (du .= .-u), CuArray([1.0, 2.0]), (0.0, 1.0))
+    u0 = CuArray([1.0, 2.0])
+    prob = ODEProblem((du, u, p, t) -> (du .= .-u), u0, (0.0, 1.0))
     r = solve(prob, integ; options = Integrators.options_point(integ))
     xf = Integrators.final_state(r)
     println(typeof(xf), " ", Array(xf))
 else
-    println("No functional GPU on the machine that built this page: no device integration.")
+    println("No functional GPU on the machine that built this page: ",
+            "no device integration.")
 end
 ```
 
