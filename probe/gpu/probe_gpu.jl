@@ -87,14 +87,21 @@ function quadratic_model(modeler::Modelers.Exa)
     return ExaModels.ExaModel(c)
 end
 
+# Largest violation of the ORIGINAL bounds |x_{i+1} - x_i| ≤ 5e-4 by a solution: shows
+# whether a solver returned a point of a relaxed problem.
+max_violation(x) = maximum(max.(abs.(diff(Float64.(Array(x)))) .- 5e-4, 0.0))
+
 const REFERENCE = let
     stats = solve(
         quadratic_model(Modelers.Exa()), Solvers.MadNLP(; print_level=MadNLP.ERROR);
         display=false,
     )
+    @printf(
+        "reference (Exa{CPU} + MadNLP{CPU}): objective %.10g, max violation %.2e\n",
+        Solvers.extract_solver_infos(stats)[1], max_violation(stats.solution)
+    )
     Float64(Solvers.extract_solver_infos(stats)[1])
 end
-println("reference objective (Exa{CPU} + MadNLP{CPU}): ", REFERENCE)
 
 _tol(T) = T == Float32 ? 1e-5 : 1e-8
 
@@ -121,7 +128,10 @@ let rows = first.(MODELERS), cols = first.(SOLVERS), cells = Dict()
             ok || return Cell(:warn, "not successful: status $status after $iter iterations")
             check_close(
                 Float64(obj), REFERENCE; rtol=T == Float32 ? 1e-3 : 1e-6,
-                note=@sprintf("%d iterations, %.2f s (with compilation)", iter, t),
+                note=@sprintf(
+                    "max violation %.2e, %d iterations, %.2f s (with compilation)",
+                    max_violation(stats.solution), iter, t,
+                ),
             )
         end
     end

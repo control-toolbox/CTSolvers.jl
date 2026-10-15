@@ -13,7 +13,7 @@
 # =============================================================================
 
 using Logging: Logging
-using Printf: @sprintf
+using Printf: @printf, @sprintf
 
 """
 Outcome of one experiment: a mark (`:ok`, `:warn`, `:fail`) and a short note.
