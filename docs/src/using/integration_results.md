@@ -24,7 +24,7 @@ nothing # hide
 ## Reading a result
 
 | Accessor | Returns |
-|:---------|:--------|
+| :--------- | :-------- |
 | [`Integrators.final_state`](@ref)`(r)` | State at the final time |
 | [`Integrators.times`](@ref)`(r)` | Output time grid |
 | [`Integrators.evaluate_at`](@ref)`(r, t)` | State at any time `t` of the span |

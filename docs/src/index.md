@@ -31,7 +31,7 @@ CTSolvers does not solve optimal control problems by itself. Two packages build 
 ## Module overview
 
 | Module | Responsibility |
-|:-------|:--------------|
+| :------- | :-------------- |
 | `Optimization` | Abstract problem type (`AbstractOptimizationProblem`), `BuiltModel`, `NoCache`, generic `build_model`/`build_solution` |
 | `Modelers` | `Modelers.ADNLP`, `Modelers.Exa` — NLP backend selection |
 | `DOCP` | `AbstractDiscretizer`, `DiscretizedModel` — an OCP paired with its discretizer; `discretize` |

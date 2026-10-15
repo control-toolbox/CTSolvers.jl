@@ -110,7 +110,7 @@ CTBase.Strategies.options(CTSolvers.Solvers.Ipopt())   # actual values with prov
 ## Next Steps
 
 | Topic | Where |
-|:------|:------|
+| :------ | :------ |
 | Module dependencies, type hierarchies, data flow | [Architecture](@ref) |
 | Available solvers, modelers, integrators | [Strategies Catalogue](@ref) |
 | Reading integration results | [Integration Results](@ref) |

@@ -13,7 +13,7 @@ This page provides the complete architectural overview. Read it before diving in
 CTSolvers modules, loaded in dependency order:
 
 | # | Module | Responsibility |
-|:---|:-------|:--------------|
+| :--- | :------- | :-------------- |
 | 1 | `Optimization` | Abstract problem types (`AbstractOptimizationProblem`), `BuiltModel`/`NoCache`, `build_model`/`build_solution` |
 | 2 | `Modelers` | NLP backend adapters: `Modelers.ADNLP`, `Modelers.Exa` |
 | 3 | `DOCP` | `AbstractDiscretizer`, `DiscretizedModel` (an OCP paired with its discretizer), `discretize` stub, `nlp_model`/`ocp_solution` conveniences |
@@ -102,7 +102,7 @@ BuiltModel{TP, TN, TC}                      (problem + NLP + cache, immutable)
 The loading order is strict and acyclic:
 
 | # | Module | Depends on (inside CTSolvers) | External |
-|:---|:-------|:------------------------------|:---------|
+| :--- | :------- | :------------------------------ | :--------- |
 | 1 | `Optimization` | — | CTBase |
 | 2 | `Modelers` | `Optimization` | CTBase |
 | 3 | `DOCP` | `Optimization`, `Modelers` | CTBase, CTModels |
@@ -136,7 +136,7 @@ CommonSolve.solve
 The two levels of `CommonSolve.solve` on the NLP side, plus the integrator one:
 
 | Level | Signature | Purpose |
-|:------|:----------|:--------|
+| :------ | :---------- | :-------- |
 | **High** | `solve(problem, x0, modeler, solver; display)` | Full pipeline: build NLP → solve → build solution |
 | **Mid** | `solve(nlp, solver; display)` | Solve an NLP directly; implemented by each backend extension |
 | **ODE** | `solve(prob, integrator; options, unsafe)` | Integrate an ODE problem; implemented by the integrator extension |

@@ -188,7 +188,7 @@ solve(prob, ::AbstractIntegrator)           SciMLIntegrationResult (with accesso
 The split is:
 
 | Location | Contains |
-|:---------|:---------|
+| :--------- | :--------- |
 | `src/Integrators/sciml.jl` | Struct, `id`/`description`/parameter contract, tags, constructor chain, `metadata`/`build` stubs, option accessors |
 | `src/Integrators/integration_result.jl` | `AbstractIntegrationResult` and its accessor stubs |
 | `src/Integrators/piecewise_result.jl` | `PiecewiseIntegrationResult` (backend-agnostic multi-phase result) |
