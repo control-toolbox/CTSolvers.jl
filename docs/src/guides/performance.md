@@ -162,8 +162,7 @@ using Test
 
 ## See Also
 
-- [`philosophy/performance.md`](https://github.com/control-toolbox/Handbook/blob/main/philosophy/performance.md)
-  in the control-toolbox Handbook: the full hot-path/setup-path workflow this
-  page follows.
+- [`PERF1`](https://github.com/control-toolbox/ct-conventions/blob/main/rules/performance.md#perf1--classify-hot-path-vs-setup-path-guard-the-hot-path-only)
+  in ct-conventions: the full hot-path/setup-path workflow this page follows.
 - [Implementing an Integrator](@ref): where `Integrators.SciML` and the result
   accessors used above come from.

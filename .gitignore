@@ -37,3 +37,6 @@ tmp/
 .extras/
 .coverage/
 .claude/
+
+# ct-conventions, cloned at the tag pinned in AGENTS.md
+.conventions/

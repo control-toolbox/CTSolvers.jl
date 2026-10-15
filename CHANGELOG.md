@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`docs/noext.jl`): the build loads every extension, so `@repl` could not show them.
 - The GPU page is executable: built on CPU, then rebuilt on the `kkt` GPU runner on push
   and tags (`gpu_runner` in `Documentation.yml`).
+- ct-conventions pinned at v0.3.1 in `AGENTS.md` (read from a git-ignored clone in
+  `.conventions/`), `AGENTS.md` cites rules by identifier, `CLAUDE.md` redirects to it, and
+  the references to the former Handbook are updated. `CONTRIBUTING.md` documents it, and
+  the spell check excludes `.conventions/`.
 
 ---
 

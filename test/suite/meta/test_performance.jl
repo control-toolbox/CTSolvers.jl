@@ -7,8 +7,8 @@ module TestPerformance
 # This file asserts the *allocation* invariants of CTSolvers' hot path: the
 # code called repeatedly while reading back an integration result (trajectory
 # evaluation, cached option-dict reads, result accessors). See
-# docs/src/guides/performance.md and the Handbook's philosophy/performance.md
-# ("hot path vs. setup path") for what is deliberately NOT guarded here —
+# docs/src/guides/performance.md and ct-conventions PERF1 ("hot path vs. setup
+# path") for what is deliberately NOT guarded here —
 # strategy construction, `route_to`/`RoutedOption`, option validation/
 # extraction, and NLP model/solution building are setup-path, called once per
 # problem, and dynamic dispatch there is by design.
