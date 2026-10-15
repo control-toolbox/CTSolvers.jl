@@ -22,10 +22,15 @@ jobs:
     # re-run this job on every subsequent label add. Only react to 'labeled' when it's
     # this specific label; for other trigger types (synchronize/reopened), fall back to
     # checking the current label set as before.
+    # `documentation push preview` also triggers the build, and deploys its preview
+    # (CTActions sets DOCUMENTER_PUSH_PREVIEW from it); `run documentation` alone only builds.
     if: >
       github.event_name != 'pull_request' ||
-      (github.event.action == 'labeled' && github.event.label.name == 'run documentation') ||
-      (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'run documentation'))
+      (github.event.action == 'labeled' &&
+        (github.event.label.name == 'run documentation' || github.event.label.name == 'documentation push preview')) ||
+      (github.event.action != 'labeled' &&
+        (contains(github.event.pull_request.labels.*.name, 'run documentation') ||
+         contains(github.event.pull_request.labels.*.name, 'documentation push preview')))
     uses: control-toolbox/CTActions/.github/workflows/documentation.yml@main
     with:
       use_ct_registry: true
