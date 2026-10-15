@@ -96,6 +96,15 @@ end
 With OptimalControl.jl this pairing is the `:gpu` shortcut of `solve`. The NLP model, the
 linear algebra and the KKT systems all stay on the device.
 
+Only `Solvers.MadNLP{GPU}` and `Solvers.MadNCL{GPU}` accept a device model: `MadNLP{CPU}`,
+Ipopt and Uno have no method for it. Use `Float64`: with `base_type = Float32`, MadNCL has
+no method for the model and MadNLP may not converge.
+
+!!! note "Objectives may differ slightly from CPU"
+    MadNLP relaxes the bounds by about its tolerance. On a problem whose constraints are all
+    active and very sensitive, like this one, the GPU and CPU objectives can differ in the
+    fourth significant digit while both solves are correct.
+
 ## CPU-only strategies
 
 `Solvers.Ipopt`, `Solvers.Knitro`, `Solvers.Uno` and `Modelers.ADNLP` are CPU-only: their

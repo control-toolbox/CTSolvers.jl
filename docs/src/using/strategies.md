@@ -56,6 +56,12 @@ CTDirect) builds the NLP model for each `(problem, modeler)` pair.
 
 ADNLP backends based on `Enzyme` or `Zygote` additionally require that package to be loaded.
 
+!!! warning "Single precision"
+    `Modelers.Exa(base_type = Float32)` builds a `Float32` model, which only MadNLP accepts,
+    with a tolerance reachable in single precision (e.g. `tol = 1e-5`). Ipopt, MadNCL and Uno
+    have no method for a `Float32` model. On the GPU, MadNLP runs on it but did not converge
+    on the probe problem.
+
 ## ODE integrators — `CTSolvers.Integrators`
 
 | Strategy | `id` | Load | Parameters | Backend |

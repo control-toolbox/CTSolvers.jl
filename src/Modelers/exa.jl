@@ -163,6 +163,10 @@ modeler = Modelers.Exa(base_type=Float32)
 modeler = Modelers.Exa(base_type=Float64)
 ```
 
+A `Float32` model is accepted by MadNLP only, with a tolerance reachable in single precision
+(e.g. `tol = 1e-5`): Ipopt, MadNCL and Uno have no method for it. On the GPU, MadNLP runs
+but may not converge (see `probe/README.md`).
+
 ## Backend Configuration
 ```julia
 # CPU backend (default for Exa{CPU})
