@@ -144,7 +144,7 @@ end
 Without the extension, constructing the modeler therefore raises `ExtensionError`:
 
 ```@eval
-Main.NoExt.repl("CTSolvers.Modelers.ADNLP()")
+Main.CTBase.DevTools.repl_without_extensions(:CTSolvers, "CTSolvers.Modelers.ADNLP()")
 ```
 
 With `using ADNLPModels`, the extension's `_build_adnlp_modeler` validates the options

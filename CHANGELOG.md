@@ -22,7 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   use the right signature. The ADNLPModels and ExaModels extensions appear in the Internals
   page.
 - Errors raised when an extension is missing are rendered from a fresh Julia process
-  (`docs/noext.jl`): the build loads every extension, so `@repl` could not show them.
+  (`CTBase.DevTools.repl_without_extensions`, CTBase 0.30.10): the build loads every
+  extension, so `@repl` could not show them. Warnings in examples are shown without the
+  build machine's paths (`CTBase.DevTools.warnings_without_paths`). Both started as
+  `docs/noext.jl` and `docs/doclogs.jl` here and moved to CTBase for every package.
 - The GPU page is executable: built on CPU, then rebuilt on the `kkt` GPU runner on push
   and tags (`gpu_runner` in `Documentation.yml`).
 - ct-conventions pinned at v0.3.1 in `AGENTS.md` (read from a git-ignored clone in
@@ -31,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the spell check excludes `.conventions/`.
 - Code lines in documentation code blocks stay within 75 characters (`SITE9`, ct-conventions
   v0.4.0); the only remaining long line is captured solver output.
+- ct-conventions pin bumped to v0.5.0 (`SITE13` previews on request, `SITE15`–`SITE17`).
 
 ---
 

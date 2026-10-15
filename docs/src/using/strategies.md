@@ -97,7 +97,7 @@ CTSolvers.Solvers.Ipopt(max_itr = 100)
 ```
 
 ```@example cat
-Main.DocLogs.run(; show = true) do # hide
+Main.CTBase.DevTools.warnings_without_paths(; show = true) do # hide
 CTSolvers.Solvers.Ipopt(bound_relax_factor = 1e-10; mode = :permissive)
 end # hide
 ```
