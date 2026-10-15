@@ -7,7 +7,8 @@
 # actually work on a CUDA device — the ground truth for docs/src/using/gpu.md.
 #
 #   A. Defaults selected by the GPU parameter (backend, linear solver).
-#   B. NLP on the device: modeler × solver, including mismatched combinations.
+#   B. NLP on the device: modeler × solver, including mismatched combinations, on a
+#      well-conditioned model with an analytic optimum.
 #   C. Integrators.SciML with device states (CuArray): state × point/trajectory options.
 #
 # Diagnostic only: nothing asserts, every cell is try/catch'd, the run always succeeds.
@@ -70,38 +71,31 @@ end
 # B. NLP on the device: modeler × solver
 # =============================================================================
 #
-# The model of docs/src/using/gpu.md:
-#   min Σᵢ (xᵢ - i/N)²   s.t.   |x_{i+1} - xᵢ| ≤ 5e-4
-# Its optimum is computed once on CPU (Exa{CPU} + MadNLP) as the reference.
+# A well-conditioned model with an analytic optimum (its multiplier is O(1), so a
+# constraint relaxed at the solver tolerance barely moves the objective):
+#   min Σᵢ (xᵢ - tᵢ)²   s.t.   Σᵢ xᵢ = 0,   tᵢ = i/N
+#   ⇒  x* = t - mean(t),   f* = N · mean(t)²
+# (The model of docs/src/using/gpu.md is badly conditioned for this purpose: all its
+# constraints are active and df*/d(bound) ≈ 1e5, so MadNLP's bound relaxation of
+# ~1e-8 shifts its objective by ~1e-3.)
 
 const N = 1000
+const F_STAR = N * ((N + 1) / (2N))^2
 
-function quadratic_model(modeler::Modelers.Exa)
+function sum_model(modeler::Modelers.Exa)
     T = modeler[:base_type]
     c = ExaModels.ExaCore(T; backend=modeler[:backend])
-    c, x = ExaModels.add_var(c, N; start=T(0.5))
+    c, x = ExaModels.add_var(c, N; start=zero(T))
     c, _ = ExaModels.add_obj(c, (x[i] - i / T(N))^2 for i in 1:N)  # i is symbolic
-    c, _ = ExaModels.add_con(
-        c, x[i + 1] - x[i] for i in 1:(N - 1); lcon=T(-5e-4), ucon=T(5e-4)
-    )
+    c, g = ExaModels.add_con(c, 1; lcon=zero(T), ucon=zero(T))   # one empty row …
+    c, _ = ExaModels.add_con!(c, g, 1 => x[i] for i in 1:N)        # … accumulating Σ xᵢ
     return ExaModels.ExaModel(c)
 end
 
-# Largest violation of the ORIGINAL bounds |x_{i+1} - x_i| ≤ 5e-4 by a solution: shows
-# whether a solver returned a point of a relaxed problem.
-max_violation(x) = maximum(max.(abs.(diff(Float64.(Array(x)))) .- 5e-4, 0.0))
+# Violation of the constraint Σ xᵢ = 0 by a solution.
+max_violation(x) = abs(sum(Float64.(Array(x))))
 
-const REFERENCE = let
-    stats = solve(
-        quadratic_model(Modelers.Exa()), Solvers.MadNLP(; print_level=MadNLP.ERROR);
-        display=false,
-    )
-    @printf(
-        "reference (Exa{CPU} + MadNLP{CPU}): objective %.10g, max violation %.2e\n",
-        Solvers.extract_solver_infos(stats)[1], max_violation(stats.solution)
-    )
-    Float64(Solvers.extract_solver_infos(stats)[1])
-end
+@printf("analytic optimum f* = %.10g\n", F_STAR)
 
 _tol(T) = T == Float32 ? 1e-5 : 1e-8
 
@@ -121,13 +115,13 @@ const SOLVERS = [
 let rows = first.(MODELERS), cols = first.(SOLVERS), cells = Dict()
     for (m, mk) in MODELERS, (s, sk) in SOLVERS
         cells[(m, s)] = probe_cell() do
-            nlp = quadratic_model(mk())
+            nlp = sum_model(mk())
             T = eltype(nlp.meta.x0)
             t = @elapsed stats = solve(nlp, sk(T); display=false)
             obj, iter, _, _, status, ok = Solvers.extract_solver_infos(stats)
             ok || return Cell(:warn, "not successful: status $status after $iter iterations")
             check_close(
-                Float64(obj), REFERENCE; rtol=T == Float32 ? 1e-3 : 1e-6,
+                Float64(obj), F_STAR; rtol=T == Float32 ? 1e-4 : 1e-7,
                 note=@sprintf(
                     "max violation %.2e, %d iterations, %.2f s (with compilation)",
                     max_violation(stats.solution), iter, t,
