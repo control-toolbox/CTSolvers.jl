@@ -14,6 +14,7 @@ src/           # Source code: one submodule per responsibility, no top-level exp
 ext/           # Weak-dependency extensions (loaded on demand by Julia)
 test/suite/    # Test suite: organised by functionality, not by src/ layout
 docs/          # Documentation site (DocumenterVitepress)
+probe/         # Capability probes: diagnostics on CPU and GPU, not tests (see probe/README.md)
 .conventions/  # ct-conventions, cloned at the pinned tag (git-ignored)
 ```
 
