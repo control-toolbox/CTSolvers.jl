@@ -49,8 +49,8 @@ Recursively find, under `test/suite/` (located via `@__DIR__`, not `pwd()`), lin
 an `if` block directly on a CUDA-device predicate — a local `is_cuda_on()` call or a bare
 `CUDA.functional()` call — the anti-pattern that makes a correctly-skipped run (no device, as
 expected on a CPU/developer machine) and a silently-broken run (device *should* be present
-but isn't) produce the same output: a green testset with zero assertions (see Handbook
-`philosophy/testing.md` §"Capability-gated tests", and control-toolbox/CTSolvers.jl#189).
+but isn't) produce the same output: a green testset with zero assertions (see ct-conventions
+`TST6`, "Capability-gated tests skip visibly", and control-toolbox/CTSolvers.jl#189).
 
 The fix is `if Main.TestCapabilities.CUDA_FUNCTIONAL ... else Test.@test_skip ... end`, with
 the device tier made *required* on the GPU runners centrally, in the testset below.
@@ -89,7 +89,7 @@ function test_environment_contract()
         end
 
         Test.@testset "GPU driver required on the GPU runner" begin
-            # Central enforcement of the Handbook's capability-gated-test contract: on a
+            # Central enforcement of the capability-gated-test contract (TST6): on a
             # machine that is supposed to have a GPU, a missing/broken device fails loudly
             # here rather than being silently skipped everywhere else.
             #

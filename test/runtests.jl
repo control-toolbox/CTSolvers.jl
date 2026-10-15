@@ -30,7 +30,7 @@ using CUDA
 # not into Main, so such checks are always false regardless of what is actually loaded.
 #
 # `CUDA_FUNCTIONAL` is the suite's single CUDA-device predicate — never define a local
-# `is_cuda_on()` in a test file (duplicated copies drift; see Handbook philosophy/testing.md).
+# `is_cuda_on()` in a test file (duplicated copies drift; see ct-conventions TST6).
 # `ON_GPU_RUNNER` turns the device tier from *skipped* into *required* on the self-hosted GPU
 # runners: `RUNNER_NAME` is set by the GitHub Actions runner agent itself (no CI.yml/CTActions
 # change needed) to the runner's *registered name*. Our self-hosted GPU runners are registered
