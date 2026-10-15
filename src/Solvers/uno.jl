@@ -120,7 +120,7 @@ using UnoSolver
 - Metadata and constructor implementation provided by CTSolversUno extension
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
 - Solve method: `CommonSolve.solve(nlp, solver::Uno; display=true)` provided by extension
-- Only compatible with ADNLP modeler (not `Modelers.Exa`)
+- CPU only: works with `Modelers.ADNLP` and `Modelers.Exa{CPU}` (any `NLPModels.AbstractNLPModel` on the host)
 - Based on the unified framework described in Vanaret & Leyffer (2026)
 
 # Throws
