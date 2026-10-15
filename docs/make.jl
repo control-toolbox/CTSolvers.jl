@@ -19,6 +19,8 @@ using MarkdownAST: MarkdownAST
 
 # NoExt.repl: show errors raised when an extension is not loaded (see noext.jl)
 include(joinpath(@__DIR__, "noext.jl"))
+# DocLogs.run: show warnings without the build machine's source paths (see doclogs.jl)
+include(joinpath(@__DIR__, "doclogs.jl"))
 
 # trigger extensions
 using ADNLPModels

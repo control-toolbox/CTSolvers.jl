@@ -20,7 +20,7 @@ using OrdinaryDiffEqTsit5
 ## NLP solvers — `CTSolvers.Solvers`
 
 | Strategy | `id` | Load | Parameters | Backend |
-|:---------|:-----|:-----|:-----------|:--------|
+| :--------- | :----- | :----- | :----------- | :-------- |
 | `Solvers.Ipopt` | `:ipopt` | `NLPModelsIpopt` | `CPU` | Interior point (COIN-OR Ipopt) |
 | `Solvers.MadNLP` | `:madnlp` | `MadNLP` | `CPU`, `GPU` | Pure-Julia interior point |
 | `Solvers.MadNCL` | `:madncl` | `MadNCL`, `MadNLP` | `CPU`, `GPU` | Augmented Lagrangian (NCL) on top of MadNLP |
@@ -50,7 +50,7 @@ its options. It does not build anything itself: the package providing the proble
 CTDirect) builds the NLP model for each `(problem, modeler)` pair.
 
 | Strategy | `id` | Load | Parameters | Backend |
-|:---------|:-----|:-----|:-----------|:--------|
+| :--------- | :----- | :----- | :----------- | :-------- |
 | `Modelers.ADNLP` | `:adnlp` | `ADNLPModels` | `CPU` | [ADNLPModels](https://jso.dev/ADNLPModels.jl) — automatic differentiation |
 | `Modelers.Exa` | `:exa` | `ExaModels` | `CPU`, `GPU` | [ExaModels](https://exanauts.github.io/ExaModels.jl) — SIMD abstraction, GPU-ready |
 
@@ -59,7 +59,7 @@ ADNLP backends based on `Enzyme` or `Zygote` additionally require that package t
 ## ODE integrators — `CTSolvers.Integrators`
 
 | Strategy | `id` | Load | Parameters | Backend |
-|:---------|:-----|:-----|:-----------|:--------|
+| :--------- | :----- | :----- | :----------- | :-------- |
 | `Integrators.SciML` | `:sciml` | `OrdinaryDiffEqTsit5` (or `OrdinaryDiffEq`, `DifferentialEquations`) | `CPU`, `GPU` | Any SciML ODE algorithm |
 
 `Tsit5()` is the default algorithm when `OrdinaryDiffEqTsit5` is loaded; any other
@@ -87,7 +87,12 @@ CTSolvers does not declare:
 
 ```@repl cat
 CTSolvers.Solvers.Ipopt(max_itr = 100)
+```
+
+```@example cat
+Main.DocLogs.run(; show = true) do # hide
 CTSolvers.Solvers.Ipopt(bound_relax_factor = 1e-10; mode = :permissive)
+end # hide
 ```
 
 To skip validation for a single option only, wrap its value:

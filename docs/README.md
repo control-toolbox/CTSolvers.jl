@@ -49,3 +49,25 @@ Main.NoExt.repl("CTSolvers.Solvers.Ipopt()")
 Snippets before the last one are run first and shown as inputs (e.g.
 `Main.NoExt.repl("using OrdinaryDiffEqVerner", "CTSolvers.Integrators.SciML()")`). The
 build fails if the last snippet does not throw, so an example cannot silently go stale.
+
+## Warnings without build-machine paths
+
+In `@example` blocks, log records show their source location
+(`└ @ Module /path/on/the/build/machine/file.jl:line`), which leaks local or CI paths.
+Wrap the visible lines with `Main.DocLogs.run` ([`doclogs.jl`](doclogs.jl)) on hidden
+lines; use `show = true` when the block should also display its value:
+
+````markdown
+```@example page
+Main.DocLogs.run(; show = true) do # hide
+CTSolvers.Solvers.Ipopt(bound_relax_factor = 1e-10; mode = :permissive)
+end # hide
+```
+````
+
+## GPU page
+
+`docs/src/using/gpu.md` runs on every build. Blocks that need a device are guarded by
+`CUDA.functional()` or wrapped in `try/catch`, so the page builds on CPU (GitHub-hosted
+`build` job, PR previews) and shows real GPU output when rebuilt by the `build-gpu` job
+on the `kkt` runner (push to `main` and tags only).

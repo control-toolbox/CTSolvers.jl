@@ -7,7 +7,14 @@ on:
     tags: '*'
   pull_request:
     types: [labeled, synchronize, reopened]
-  
+
+# The GPU upgrade pass (`gpu_runner` below) can run long after the CPU build. Without
+# this, an older run's GPU pass could redeploy older content over a newer CPU build.
+# Tags carry their own ref, so a release build is never cancelled by a push to `main`.
+concurrency:
+  group: documentation-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   call:
     # A 'labeled' event fires once per label added, and re-evaluates against the PR's
@@ -22,5 +29,10 @@ jobs:
     uses: control-toolbox/CTActions/.github/workflows/documentation.yml@main
     with:
       use_ct_registry: true
+      # Publish then upgrade (CTActions documentation.yml): the GitHub-hosted `build`
+      # always deploys first; `build-gpu` then rebuilds on the kkt GPU runner so that
+      # the GPU page shows real GPU output. Push/tag only, never fails the workflow.
+      gpu_runner: '["kkt"]'
+      gpu_timeout_minutes: 120
     secrets:
       SSH_KEY: ${{ secrets.SSH_KEY }}
