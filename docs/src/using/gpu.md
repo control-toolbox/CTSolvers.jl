@@ -45,7 +45,7 @@ Building the strategies does not touch the device, so this block runs anywhere (
 warning when CUDA is loaded but not functional):
 
 ```@example gpu
-Main.DocLogs.run() do # hide
+Main.CTBase.DevTools.warnings_without_paths() do # hide
 global modeler, solver # hide
 modeler = CTSolvers.Modelers.Exa{GPU}()
 solver = CTSolvers.Solvers.MadNLP{GPU}(print_level = MadNLP.ERROR)
@@ -127,7 +127,7 @@ Options that contradict the parameter are accepted with a warning, since they ma
 intentional. For instance a CUDA backend on a CPU modeler:
 
 ```@example gpu
-Main.DocLogs.run() do # hide
+Main.CTBase.DevTools.warnings_without_paths() do # hide
 CTSolvers.Modelers.Exa(backend = CUDA.CUDABackend())
 end # hide
 nothing # hide

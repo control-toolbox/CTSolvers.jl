@@ -12,7 +12,7 @@ julia --project=docs docs/make.jl
 Preview after build: `npx serve docs/build/1 --listen 5173`
 
 Documentation conventions and build workflow:
-[ct-conventions](https://github.com/control-toolbox/ct-conventions) (rules `SITE1`–`SITE14`, `method.md`).
+[ct-conventions](https://github.com/control-toolbox/ct-conventions) (rules `SITE1`–`SITE17`, `method.md`).
 
 ## `@repl` vs `@example` — ANSI color rule
 
@@ -36,30 +36,30 @@ extensions, and extension methods are global to the process. An `ExtensionError`
 error raised *because* an extension is missing) therefore **cannot** be shown with
 `@repl`: the constructor succeeds.
 
-Use `NoExt.repl` ([`noext.jl`](noext.jl)) from an `@eval` block instead. It runs the code
-in a fresh Julia process where only CTSolvers is loaded, and renders the transcript like
-an `@repl` block:
+Use `CTBase.DevTools.repl_without_extensions` (CTBase's `DocumenterReference` extension,
+ct-conventions `SITE15`) from an `@eval` block instead. It runs the code in a fresh Julia
+process where only CTSolvers is loaded, and renders the transcript like an `@repl` block:
 
 ````markdown
 ```@eval
-Main.NoExt.repl("CTSolvers.Solvers.Ipopt()")
+Main.CTBase.DevTools.repl_without_extensions(:CTSolvers, "CTSolvers.Solvers.Ipopt()")
 ```
 ````
 
 Snippets before the last one are run first and shown as inputs (e.g.
-`Main.NoExt.repl("using OrdinaryDiffEqVerner", "CTSolvers.Integrators.SciML()")`). The
-build fails if the last snippet does not throw, so an example cannot silently go stale.
+`"using OrdinaryDiffEqVerner", "CTSolvers.Integrators.SciML()"`). The build fails if the
+last snippet does not throw, so an example cannot silently go stale.
 
 ## Warnings without build-machine paths
 
 In `@example` blocks, log records show their source location
 (`└ @ Module /path/on/the/build/machine/file.jl:line`), which leaks local or CI paths.
-Wrap the visible lines with `Main.DocLogs.run` ([`doclogs.jl`](doclogs.jl)) on hidden
-lines; use `show = true` when the block should also display its value:
+Wrap the visible lines with `CTBase.DevTools.warnings_without_paths` (ct-conventions
+`SITE16`) on hidden lines; use `show = true` when the block should also display its value:
 
 ````markdown
 ```@example page
-Main.DocLogs.run(; show = true) do # hide
+Main.CTBase.DevTools.warnings_without_paths(; show = true) do # hide
 CTSolvers.Solvers.Ipopt(bound_relax_factor = 1e-10; mode = :permissive)
 end # hide
 ```

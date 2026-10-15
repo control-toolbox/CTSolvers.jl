@@ -126,7 +126,7 @@ end
 The same stub pattern is used by every solver. Without its extension, `Solvers.MadNLP` fails the same way:
 
 ```@eval
-Main.NoExt.repl("CTSolvers.Solvers.MadNLP()")
+Main.CTBase.DevTools.repl_without_extensions(:CTSolvers, "CTSolvers.Solvers.MadNLP()")
 ```
 
 !!! note "Why Tag Dispatch?"

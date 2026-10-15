@@ -181,7 +181,7 @@ Integrators.regrid(r, [0.0, 2.0])
 Thrown when a solver requires a package extension that hasn't been loaded.
 
 ```@eval
-Main.NoExt.repl("CTSolvers.Solvers.MadNLP()")
+Main.CTBase.DevTools.repl_without_extensions(:CTSolvers, "CTSolvers.Solvers.MadNLP()")
 ```
 
 **Fix**: Load the required package before using the solver:
@@ -214,7 +214,7 @@ Thrown when `Integrators.SciML` is built with the SciML extension active (`SciML
 `OrdinaryDiffEqTsit5` not loaded to provide the default `Tsit5()`.
 
 ```@eval
-Main.NoExt.repl("using OrdinaryDiffEqVerner", "CTSolvers.Integrators.SciML()")
+Main.CTBase.DevTools.repl_without_extensions(:CTSolvers, "using OrdinaryDiffEqVerner", "CTSolvers.Integrators.SciML()")
 ```
 
 **Fix**: Pass an algorithm explicitly, `Integrators.SciML(alg = Vern6())`, or load

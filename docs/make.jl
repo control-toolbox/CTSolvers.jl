@@ -17,10 +17,9 @@ using CTBase
 using Markdown
 using MarkdownAST: MarkdownAST
 
-# NoExt.repl: show errors raised when an extension is not loaded (see noext.jl)
-include(joinpath(@__DIR__, "noext.jl"))
-# DocLogs.run: show warnings without the build machine's source paths (see doclogs.jl)
-include(joinpath(@__DIR__, "doclogs.jl"))
+# The pages use CTBase.DevTools.repl_without_extensions (errors raised when an extension
+# is not loaded) and CTBase.DevTools.warnings_without_paths (warnings without the build
+# machine's source paths), from CTBase's DocumenterReference extension.
 
 # trigger extensions
 using ADNLPModels

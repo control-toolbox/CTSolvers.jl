@@ -44,11 +44,11 @@ CTSolvers loads no backend at startup. Each constructor throws `ExtensionError` 
 the corresponding package is loaded:
 
 ```@eval
-Main.NoExt.repl("CTSolvers.Solvers.Ipopt()")
+Main.CTBase.DevTools.repl_without_extensions(:CTSolvers, "CTSolvers.Solvers.Ipopt()")
 ```
 
 ```@eval
-Main.NoExt.repl("CTSolvers.Integrators.SciML()")
+Main.CTBase.DevTools.repl_without_extensions(:CTSolvers, "CTSolvers.Integrators.SciML()")
 ```
 
 Strategy identifiers and type information are always available, without any extension:
