@@ -1,5 +1,4 @@
 # Changelog
-<!-- markdownlint-disable MD024 -->
 
 All notable changes to CTSolvers.jl will be documented in this file.
 
