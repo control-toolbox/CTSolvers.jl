@@ -1,0 +1,40 @@
+name: CPU probe
+
+# Runs the standalone CPU capability probe (probe/cpu/probe_cpu.jl) on an Ubuntu
+# runner. Diagnostic only: it prints capability matrices and always succeeds
+# (experiments are individually try/catch'd). See probe/README.md.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [labeled, synchronize, reopened]
+
+jobs:
+  cpu-probe:
+    # Run manually (workflow_dispatch) or on a PR carrying the 'run probe' label.
+    # React to 'labeled' only for this label (a 'labeled' event fires once per label
+    # added); for synchronize/reopened, check the current label set.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'run probe') ||
+      (github.event.action != 'labeled' && contains(github.event.pull_request.labels.*.name, 'run probe'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@latest
+        with:
+          version: '1'
+
+      - name: Add ct-registry
+        uses: julia-actions/add-julia-registry@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          registry: control-toolbox/ct-registry
+
+      - name: Run CPU probe
+        run: julia --project=probe/cpu probe/cpu/probe_cpu.jl
