@@ -556,9 +556,9 @@ Build an Ipopt with validated options.
 # Example
 
 ```julia
-# Conceptual usage
-solver = _build_ipopt_solver(IpoptTag; max_iter=1000)
-solver_permissive = _build_ipopt_solver(IpoptTag; max_iter=1000, custom_option=123; mode=:permissive)
+# Reached through the public constructor:
+solver = Solvers.Ipopt(max_iter=1000)  # → _build_ipopt_solver(IpoptTag, Strategies.CPU; max_iter=1000)
+solver_permissive = Solvers.Ipopt(max_iter=1000, custom_option=123; mode=:permissive)
 ```
 
 See also: `Solvers.Ipopt`, `Strategies.build_strategy_options`
@@ -574,7 +574,7 @@ function Solvers._build_ipopt_solver(
 end
 
 # ============================================================================
-# Callable interface with display handling
+# Solve method with display handling
 # ============================================================================
 
 """

@@ -14,9 +14,10 @@ All concrete solver types must:
 
 # Solver Types
 - `Solvers.Ipopt` - Interior point optimizer (Ipopt backend)
-- `Solvers.MadNLP` - Matrix-free augmented Lagrangian (MadNLP backend)
-- `Solvers.MadNCL` - NCL variant of MadNLP
+- `Solvers.MadNLP` - Pure-Julia interior point optimizer (MadNLP backend)
+- `Solvers.MadNCL` - Augmented Lagrangian (NCL) solver built on MadNLP (MadNCL backend)
 - `Solvers.Knitro` - Commercial solver (Knitro backend)
+- `Solvers.Uno` - Unified Lagrange-Newton solver (Uno backend)
 
 # Example
 ```julia
@@ -30,6 +31,6 @@ nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
 stats = solve(nlp, solver; display=true)
 ```
 
-See also: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, `CommonSolve.solve`
+See also: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, `Solvers.Uno`, `CommonSolve.solve`
 """
 abstract type AbstractNLPSolver <: Strategies.AbstractStrategy end

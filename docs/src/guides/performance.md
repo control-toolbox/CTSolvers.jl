@@ -38,7 +38,7 @@ worry about a few dispatches in one-time construction/routing code.**
 ## The toolbox
 
 | Tool | What it does | When to reach for it |
-| --- | --- | --- |
+| :--- | :--- | :--- |
 | `@code_warntype f(args...)` | Colored dump of inferred types for one call; red marks instability. | First local look at a single function in the REPL. |
 | `Cthulhu.@descend f(args...)` | Interactive, navigable version of the above; descend into callees. | Finding *where* deep in a call chain an instability originates. |
 | `JET.@report_opt f(args...)` | Reports runtime-dispatch / optimization failures for one concrete call. | The at-a-glance stability check used on this page. |

@@ -26,7 +26,7 @@ performance for large-scale optimization problems.
 
 The solver supports parameterization for execution backend:
 - `MadNLP{Strategies.CPU}`: CPU execution (default)
-- `MadNLP{Strategies.GPU}`: GPU execution (requires CUDA.jl)
+- `MadNLP{Strategies.GPU}`: GPU execution (requires MadNLPGPU, CUDA and CUDSS)
 
 # Fields
 
@@ -53,7 +53,7 @@ $(TYPEDFIELDS)
 using MadNLP
 solver = MadNLP(max_iter=1000, tol=1e-6, print_level=MadNLP.DEBUG)
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-stats = solver(nlp, display=true)
+stats = CommonSolve.solve(nlp, solver; display=true)
 ```
 
 # Extension Required
@@ -67,7 +67,7 @@ using MadNLP
 
 - Implements the `AbstractStrategy` contract via `Strategies.id`, `Strategies.metadata`, and `Strategies.options`
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::MadNLP{P}(nlp; display=true)`
+- Solve method: `CommonSolve.solve(nlp, solver::MadNLP; display=true)` provided by extension
 - Supports GPU acceleration when appropriate backends are loaded
 - Default backend is automatically selected based on the parameter type
 - **GPU linear solver**: When using `MadNLP{Strategies.GPU}`, the linear solver automatically defaults to `MadNLPGPU.CUDSSSolver` instead of `MadNLP.MumpsSolver`. This ensures compatibility with GPU execution and avoids attempting to use CPU-only solvers on CUDA backends.
@@ -185,12 +185,12 @@ Requires the CTSolversMadNLP extension to be loaded.
 # Conceptual usage (requires MadNLP extension)
 using MadNLP
 solver_cpu = MadNLP{Strategies.CPU}(max_iter=1000, tol=1e-6)
-solver_gpu = MadNLP{Strategies.GPU}(max_iter=1000, tol=1e-6)  # requires CUDA.jl
+solver_gpu = MadNLP{Strategies.GPU}(max_iter=1000, tol=1e-6)  # requires MadNLPGPU, CUDA, CUDSS
 ```
 
 # Throws
 - `CTBase.Exceptions.ExtensionError`: If the MadNLP extension is not loaded
-- `CTBase.Exceptions.ExtensionError`: If GPU parameter used but CUDA not available
+- `CTBase.Exceptions.ExtensionError`: If GPU parameter used but MadNLPGPU, CUDA or CUDSS is not loaded
 
 See also: `MadNLP`, `Strategies.CPU`, `Strategies.GPU`
 """

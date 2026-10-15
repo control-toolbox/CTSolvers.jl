@@ -3,16 +3,17 @@
 
 Optimization solvers module for the Control Toolbox.
 
-This module provides concrete solver implementations that integrate with various
-optimization backends (Ipopt, MadNLP, MadNCL, Knitro). All solvers implement
-the `AbstractStrategy` contract and provide a unified callable interface.
+This module provides concrete solver strategies that wrap NLP backends (Ipopt, MadNLP,
+MadNCL, Knitro, Uno). All solvers implement the `AbstractStrategy` contract and are
+called through `CommonSolve.solve`.
 
 # Solver Types
-- `Solvers.Ipopt` - Interior point optimizer (requires NLPModelsIpopt)
-- `Solvers.MadNLP` - Matrix-free augmented Lagrangian (requires MadNLP)
-- `Solvers.MadNCL` - NCL variant of MadNLP (requires MadNCL, MadNLP)
-- `Solvers.Knitro` - Commercial solver (requires NLPModelsKnitro)
-- `Solvers.Uno` - Unified solver (requires NLPModelsUno)
+- `Solvers.Ipopt` - Interior point optimizer, CPU (requires NLPModelsIpopt)
+- `Solvers.MadNLP` - Pure-Julia interior point optimizer, CPU/GPU (requires MadNLP)
+- `Solvers.MadNCL` - Augmented Lagrangian (NCL) solver built on MadNLP, CPU/GPU
+  (requires MadNCL, MadNLP)
+- `Solvers.Knitro` - Commercial solver, CPU (requires NLPModelsKnitro)
+- `Solvers.Uno` - Unified Lagrange-Newton solver, CPU (requires UnoSolver)
 
 # Architecture
 - **Types and logic**: Defined in src/Solvers/ (this module)
@@ -23,18 +24,12 @@ the `AbstractStrategy` contract and provide a unified callable interface.
 ```julia
 using CTSolvers
 using NLPModelsIpopt  # Load backend extension
-
-# Create solver with options
-solver = Solvers.Ipopt(max_iter=1000, tol=1e-6)
-
-# Solve NLP problem
 using ADNLPModels
-nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-stats = solver(nlp, display=true)
-
-# Or use CommonSolve API
 using CommonSolve
-stats = solve(nlp, solver, display=false)
+
+solver = Solvers.Ipopt(max_iter=1000, tol=1e-6)
+nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
+stats = solve(nlp, solver; display=false)
 ```
 
 See also: `AbstractNLPSolver`, `Solvers.Ipopt`

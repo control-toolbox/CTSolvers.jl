@@ -98,12 +98,12 @@ solver_sqp = Uno(max_iterations=1000, preset="filtersqp")
 solver_cpu = Uno{Strategies.CPU}(max_iterations=1000, dual_tolerance=1e-6)
 
 nlp = ADNLPModel(x -> sum(x.^2), zeros(10))
-stats = solver(nlp, display=true)
+stats = CommonSolve.solve(nlp, solver; display=true)
 ```
 
 ## Invalid Usage
 ```julia
-# GPU is NOT supported - will throw IncorrectArgument
+# GPU is NOT supported - rejected by the type parameter bound (TypeError)
 solver = Uno{Strategies.GPU}()  # ❌ Error!
 ```
 
@@ -119,13 +119,14 @@ using UnoSolver
 - Implements the `AbstractStrategy` contract via `Strategies.id()`
 - Metadata and constructor implementation provided by CTSolversUno extension
 - Options are validated at construction time using enriched `Exceptions.IncorrectArgument`
-- Callable interface: `(solver::Uno)(nlp; display=true)` provided by extension
-- Only compatible with ADNLP modeler (not ExaModeler)
+- Solve method: `CommonSolve.solve(nlp, solver::Uno; display=true)` provided by extension
+- CPU only: works with `Modelers.ADNLP` and `Modelers.Exa{CPU}` (any `NLPModels.AbstractNLPModel` on the host)
 - Based on the unified framework described in Vanaret & Leyffer (2026)
 
 # Throws
 
-- `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
+- `TypeError`: If `Strategies.GPU` or another unsupported parameter is specified
+  (the type parameter is bounded by `Strategies.CPU`)
 - `CTBase.Exceptions.ExtensionError`: If the UnoSolver extension is not loaded
 
 # References
@@ -250,7 +251,8 @@ solver_cpu = Solvers.Uno{Strategies.CPU}(max_iter=1000, tol=1e-6)
 ```
 
 # Throws
-- `CTBase.Exceptions.IncorrectArgument`: If GPU or other unsupported parameter is specified
+- `TypeError`: If `Strategies.GPU` or another unsupported parameter is specified
+  (the type parameter is bounded by `Strategies.CPU`)
 - `CTBase.Exceptions.ExtensionError`: If the UnoSolver extension is not loaded
 
 See also: `Uno`, `Strategies.CPU`

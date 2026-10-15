@@ -8,15 +8,20 @@ This page catalogues all exception types used in CTSolvers, with live examples a
 
 ## Exception Types
 
-CTSolvers uses three exception types from `CTBase.Exceptions`:
+CTSolvers uses five exception types from `CTBase.Exceptions`:
 
 | Type | Purpose |
-|------|---------|
+| :----- | :-------- |
 | `NotImplemented` | Contract method not implemented by a concrete type |
 | `IncorrectArgument` | Invalid argument value, type, or routing |
 | `ExtensionError` | Required package extension not loaded |
+| `PreconditionError` | A required precondition is not met (e.g. no ODE algorithm available) |
+| `SolverFailure` | A backend reported a failure (e.g. unsuccessful ODE retcode) |
 
-All three accept keyword arguments for structured messages:
+A type parameter outside a strategy's bound (e.g. `Solvers.Ipopt{GPU}` for a CPU-only
+solver) is rejected by Julia itself with a `TypeError`, before any CTSolvers code runs.
+
+All CTSolvers exceptions accept keyword arguments for structured messages:
 
 ```@example errors
 using CTSolvers
@@ -78,7 +83,7 @@ problem, dispatching on the concrete `(problem, modeler)` pair (see
 ### Where it's thrown
 
 | Method | Context |
-|--------|---------|
+| :------- | :-------- |
 | `CTBase.Strategies.id(::Type{T})` | Strategy type missing `id` |
 | `CTBase.Strategies.metadata(::Type{T})` | Strategy type missing `metadata` |
 | `CTBase.Strategies.options(strategy)` | Strategy instance has no `options` field and no custom getter |
@@ -149,12 +154,32 @@ CTBase.Options.OptionValue(42, :invalid_source)
 
 **Fix**: Use `:default`, `:user`, or `:computed`.
 
+### Invalid output grid in `regrid`
+
+[`Integrators.regrid`](@ref) checks that the new grid has at least two times, is strictly
+monotone in the integration direction and lies in the integration span:
+
+```@example regrid
+using CTSolvers: Integrators
+using OrdinaryDiffEqTsit5
+using SciMLBase: ODEProblem
+using CommonSolve: CommonSolve
+r = CommonSolve.solve(ODEProblem((u, p, t) -> -u, 1.0, (0.0, 1.0)), Integrators.SciML())
+nothing # hide
+```
+
+```@repl regrid
+Integrators.regrid(r, [0.0, 2.0])
+```
+
+**Fix**: Use a grid inside `(t0, tf)`, e.g. `Integrators.regrid(r, 0:0.25:1)`.
+
 ## ExtensionError — Extension Not Loaded
 
 Thrown when a solver requires a package extension that hasn't been loaded.
 
-```@repl errors
-CTSolvers.Solvers.MadNLP()
+```@eval
+Main.NoExt.repl("CTSolvers.Solvers.MadNLP()")
 ```
 
 **Fix**: Load the required package before using the solver:
@@ -166,12 +191,52 @@ solver = Solvers.MadNLP(max_iter = 1000)
 
 ### Where it's thrown
 
-| Solver | Required package |
-|--------|-----------------|
+| Strategy | Required packages |
+| :--------- | :------------------ |
 | `Solvers.Ipopt` | `NLPModelsIpopt` |
 | `Solvers.MadNLP` | `MadNLP` |
-| `Solvers.Knitro` | `KNITRO` |
-| `Solvers.MadNCL` | `MadNCL` |
+| `Solvers.MadNCL` | `MadNCL`, `MadNLP` |
+| `Solvers.Knitro` | `NLPModelsKnitro` |
+| `Solvers.Uno` | `UnoSolver` |
+| `Solvers.MadNLP{GPU}`, `Solvers.MadNCL{GPU}` | `MadNLPGPU`, `CUDA`, `CUDSS` (in addition) |
+| `Modelers.ADNLP` | `ADNLPModels` |
+| `Modelers.Exa` | `ExaModels` (and `CUDA` for `Modelers.Exa{GPU}`) |
+| `Integrators.SciML` | `OrdinaryDiffEqTsit5`, `OrdinaryDiffEq`, or `DifferentialEquations` |
+
+Some ADNLP backends also need their AD package (`Enzyme`, `Zygote`).
+
+## PreconditionError — Missing Precondition
+
+Thrown when `Integrators.SciML` is built with the SciML extension active (`SciMLBase` and
+`DiffEqBase` loaded) but no algorithm is available: no explicit `alg` and
+`OrdinaryDiffEqTsit5` not loaded to provide the default `Tsit5()`.
+
+```@eval
+Main.NoExt.repl("using OrdinaryDiffEqVerner", "CTSolvers.Integrators.SciML()")
+```
+
+**Fix**: Pass an algorithm explicitly, `Integrators.SciML(alg = Vern6())`, or load
+`OrdinaryDiffEqTsit5`.
+
+## SolverFailure — Backend Failure
+
+Thrown by `CommonSolve.solve(prob, ::Integrators.SciML)` when the ODE solver returns an
+unsuccessful retcode, e.g. a solution that blows up in finite time:
+
+```julia
+julia> prob = ODEProblem((u, p, t) -> u^2, 1.0, (0.0, 2.0));
+
+julia> CommonSolve.solve(prob, Integrators.SciML())
+SolverFailure
+│  ODE integration failed
+│  Retcode  Unstable
+│  Context  SciML solve
+│  Hint     Try tightening tolerances (reltol, abstol) or changing the solver algorithm.
+```
+
+**Fix**: Check the model, tighten the tolerances or change the algorithm. To inspect the
+partial result instead, pass `unsafe = true`: no exception is thrown and
+`Integrators.successful(r)` is `false`, `Integrators.status(r)` is `:Unstable`.
 
 ## Best Practices for Error Messages
 

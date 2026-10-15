@@ -43,18 +43,18 @@ nothing into scope directly.
 CTSolvers loads no backend at startup. Each constructor throws `ExtensionError` until
 the corresponding package is loaded:
 
-```@repl gs
-using CTSolvers
-CTSolvers.Solvers.Ipopt()
+```@eval
+Main.NoExt.repl("CTSolvers.Solvers.Ipopt()")
 ```
 
-```@repl gs
-CTSolvers.Integrators.SciML()
+```@eval
+Main.NoExt.repl("CTSolvers.Integrators.SciML()")
 ```
 
 Strategy identifiers and type information are always available, without any extension:
 
 ```@repl gs
+using CTSolvers
 using CTBase
 CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)
 CTBase.Strategies.id(CTSolvers.Modelers.ADNLP)
@@ -66,7 +66,7 @@ Load a backend to unlock its constructor:
 ```julia
 using NLPModelsIpopt       # loads CTSolversIpopt       → enables Solvers.Ipopt
 using ADNLPModels          # loads CTSolversADNLPModels  → enables Modelers.ADNLP
-using OrdinaryDiffEqTsit5  # loads CTSolversSciMLIntegrator → enables Integrators.SciML
+using OrdinaryDiffEqTsit5  # loads CTSolversSciMLIntegrator (+ default Tsit5) → enables Integrators.SciML
 ```
 
 ## Configuring Options
@@ -110,8 +110,11 @@ CTBase.Strategies.options(CTSolvers.Solvers.Ipopt())   # actual values with prov
 ## Next Steps
 
 | Topic | Where |
-|:------|:------|
+| :------ | :------ |
 | Module dependencies, type hierarchies, data flow | [Architecture](@ref) |
+| Available solvers, modelers, integrators | [Strategies Catalogue](@ref) |
+| Reading integration results | [Integration Results](@ref) |
+| Running on GPU | [GPU Execution](@ref) |
 | Wrapping a new NLP solver | [Implementing a Solver](@ref) |
 | Wrapping a new ODE integrator | [Implementing an Integrator](@ref) |
 | Adapting a new NLP backend | [Implementing a Modeler](@ref) |

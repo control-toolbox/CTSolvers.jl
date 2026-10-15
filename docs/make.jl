@@ -17,6 +17,11 @@ using CTBase
 using Markdown
 using MarkdownAST: MarkdownAST
 
+# NoExt.repl: show errors raised when an extension is not loaded (see noext.jl)
+include(joinpath(@__DIR__, "noext.jl"))
+# DocLogs.run: show warnings without the build machine's source paths (see doclogs.jl)
+include(joinpath(@__DIR__, "doclogs.jl"))
+
 # trigger extensions
 using ADNLPModels
 using CUDA
@@ -37,7 +42,7 @@ using UnoSolver
 using Zygote
 
 # Make extension modules available in Main so that @docs blocks can resolve
-# qualified bindings like CTFlowsSciMLIntegrator.SciMLIntegrationResult.
+# qualified bindings like CTSolversSciMLIntegrator.SciMLIntegrationResult.
 for _ext_sym in (
     :CTSolversADNLPModels,
     :CTSolversCUDA,
@@ -117,6 +122,11 @@ with_api_reference(src_dir, ext_dir) do api_pages
             # index.md is the VitePress root — not listed here
             "Getting Started" => "getting-started.md",
             "Architecture" => "architecture.md",
+            "Using CTSolvers" => [
+                "Strategies Catalogue" => "using/strategies.md",
+                "Integration Results" => "using/integration_results.md",
+                "GPU Execution" => "using/gpu.md",
+            ],
             "Developer Guides" => [
                 "Implementing a Solver" => "guides/implementing_a_solver.md",
                 "Implementing an Integrator" => "guides/implementing_an_integrator.md",
@@ -136,8 +146,12 @@ end
 # ═══════════════════════════════════════════════════════════════════════════════
 bases_file = joinpath(@__DIR__, "build", "bases.txt")
 if isfile(bases_file)
+    # PR previews are opt-in: CTActions sets DOCUMENTER_PUSH_PREVIEW to "true" only on a
+    # PR carrying the `documentation push preview` label.
     DocumenterVitepress.deploydocs(;
-        repo=repo_url * ".git", devbranch="main", push_preview=true
+        repo=repo_url * ".git",
+        devbranch="main",
+        push_preview=get(ENV, "DOCUMENTER_PUSH_PREVIEW", "false") == "true",
     )
 else
     @info "Skipping deployment: no bases were built (prerelease with existing higher stable release)."

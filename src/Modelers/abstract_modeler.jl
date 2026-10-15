@@ -7,10 +7,11 @@ $(TYPEDEF)
 
 Abstract base type for all modeler strategies.
 
-Modeler strategies are responsible for converting discretized optimization
-problems (`Optimization.AbstractOptimizationProblem`) into NLP backend models.
-They implement the `Strategies.AbstractStrategy` contract together with named
-model- and solution-building methods.
+A modeler selects the NLP backend used for an `Optimization.AbstractOptimizationProblem`
+and carries its validated options. It does not build anything itself: the NLP model and
+the problem-level solution are built by `Optimization.build_model` /
+`Optimization.build_solution`, implemented by the package providing the problem for each
+concrete `(problem, modeler)` pair.
 
 # Implementation Requirements
 All concrete modeler strategies must:
