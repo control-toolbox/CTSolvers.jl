@@ -76,12 +76,13 @@ CTBase.Strategies.id(CTSolvers.Solvers.Ipopt)
 ```
 
 ```julia
-using CTBase.Strategies: CPU
+using CTBase: CTBase
 
-CTBase.Strategies.default_parameter(::Type{<:Solvers.Ipopt}) = CPU
+CTBase.Strategies.default_parameter(::Type{<:Solvers.Ipopt}) =
+    CTBase.Strategies.CPU
 CTBase.Strategies.parameter(
     ::Type{<:Solvers.Ipopt{P}},
-) where {P<:CPU} = P
+) where {P<:CTBase.Strategies.CPU} = P
 ```
 
 ### Step 4 — Constructors with Tag Dispatch
@@ -138,15 +139,18 @@ Main.NoExt.repl("CTSolvers.Solvers.MadNLP()")
 ```julia
 struct IpoptTag <: Core.AbstractTag end
 
-using CTBase.Strategies: CPU, AbstractStrategyParameter
+using CTBase: CTBase
 
-struct Ipopt{P<:CPU} <: AbstractNLPSolver
+struct Ipopt{P<:CTBase.Strategies.CPU} <: AbstractNLPSolver
     options::CTBase.Strategies.StrategyOptions
 end
 
 CTBase.Strategies.id(::Type{<:Solvers.Ipopt}) = :ipopt
-CTBase.Strategies.default_parameter(::Type{<:Solvers.Ipopt}) = CPU
-CTBase.Strategies.parameter(::Type{<:Solvers.Ipopt{P}}) where {P<:CPU} = P
+CTBase.Strategies.default_parameter(::Type{<:Solvers.Ipopt}) =
+    CTBase.Strategies.CPU
+CTBase.Strategies.parameter(
+    ::Type{<:Solvers.Ipopt{P}}
+) where {P<:CTBase.Strategies.CPU} = P
 
 # Constructors — resolve the parameter, then dispatch via tag
 # (types, not instances)
@@ -155,13 +159,15 @@ function Solvers.Ipopt(; mode = :strict, kwargs...)
     return Solvers.Ipopt{P}(; mode, kwargs...)
 end
 
-Solvers.Ipopt{P}(; mode = :strict, kwargs...) where {P<:CPU} =
+Solvers.Ipopt{P}(; mode = :strict, kwargs...) where {
+    P<:CTBase.Strategies.CPU
+} =
     _build_ipopt_solver(IpoptTag, P; mode, kwargs...)
 
 # Stub — throws until NLPModelsIpopt is loaded
 _build_ipopt_solver(
     ::Type{<:Core.AbstractTag},
-    ::Type{<:AbstractStrategyParameter};
+    ::Type{<:CTBase.Strategies.AbstractStrategyParameter};
     kwargs...,
 ) = throw(Exceptions.ExtensionError(:NLPModelsIpopt))
 ```
@@ -169,17 +175,19 @@ _build_ipopt_solver(
 **`ext/CTSolversIpopt.jl`** — real implementations, loaded only with `using NLPModelsIpopt`:
 
 ```julia
-using CTBase.Strategies: CPU, AbstractStrategyParameter
+using CTBase: CTBase
 
 # Option definitions (parameterized on P)
-CTBase.Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:CPU} =
+CTBase.Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {
+    P<:CTBase.Strategies.CPU
+} =
     StrategyMetadata(...)
 
 # Real constructor — validates options for the parameterized type and
 # builds the struct
 function _build_ipopt_solver(
     ::Type{Solvers.IpoptTag},
-    P::Type{<:AbstractStrategyParameter};
+    P::Type{<:CTBase.Strategies.AbstractStrategyParameter};
     mode,
     kwargs...,
 )
@@ -207,18 +215,20 @@ solver simply widens the bound and provides GPU-specific defaults through the
 parameterized metadata:
 
 ```julia
-using CTBase.Strategies: CPU, GPU
+using CTBase: CTBase
 
-struct MadNLP{P<:Union{CPU,GPU}} <: AbstractNLPSolver
+struct MadNLP{
+    P<:Union{CTBase.Strategies.CPU,CTBase.Strategies.GPU}
+} <: AbstractNLPSolver
     options::CTBase.Strategies.StrategyOptions
 end
 
 # GPU-specific option defaults (CUDA) selected by the parameter
-CTBase.Strategies.metadata(::Type{Solvers.MadNLP{GPU}}) =
+CTBase.Strategies.metadata(::Type{Solvers.MadNLP{CTBase.Strategies.GPU}}) =
     StrategyMetadata(...)
 
 # requires the CUDA-related extensions
-Solvers.MadNLP{GPU}(max_iter = 1000)
+Solvers.MadNLP{CTBase.Strategies.GPU}(max_iter = 1000)
 ```
 
 See the Strategy Parameters guide in CTBase.jl documentation for the full parameter contract.
