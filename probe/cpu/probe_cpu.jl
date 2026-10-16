@@ -102,7 +102,8 @@ function nlp_cell(make_modeler, make_solver)
         return check_close(obj, F_STAR; rtol=T == Float32 ? 1e-3 : 1e-6)
     end
     # KN_new fails with -520 when no Knitro license is found on the machine
-    occursin("KN_new: -520", cell.note) && return Cell(:fail, "no Knitro license (KN_new: -520)")
+    occursin("KN_new: -520", cell.note) &&
+        return Cell(:fail, "no Knitro license (KN_new: -520)")
     return cell
 end
 
@@ -138,7 +139,7 @@ let rows = first.(STRATEGIES), cols = ["CPU", "GPU"], cells = Dict()
             s = S{P}()
             CTBase.Strategies.parameter(typeof(s)) === P ||
                 return Cell(:warn, "parameter is $(CTBase.Strategies.parameter(typeof(s)))")
-            Cell(:ok, "")
+            return Cell(:ok, "")
         end
     end
     print_matrix(
@@ -174,8 +175,11 @@ end
 function integration_cell(u0, inplace, which)
     return probe_cell() do
         integ = Integrators.SciML()
-        options = which == "point" ? Integrators.options_point(integ) :
-                  Integrators.options_trajectory(integ)
+        options = if which == "point"
+            Integrators.options_point(integ)
+        else
+            Integrators.options_trajectory(integ)
+        end
         r = solve(ode_problem(u0, inplace), integ; options=options)
         xf = Integrators.final_state(r)
         typeof(xf) == typeof(u0) || return Cell(:warn, "final state is $(typeof(xf))")
@@ -185,8 +189,9 @@ function integration_cell(u0, inplace, which)
         which == "trajectory" || return Cell(:ok, "")
         Integrators.is_dense(r) || return Cell(:warn, "trajectory result not dense")
         err_mid = maximum(abs.(Integrators.evaluate_at(r, 0.5) .- u0 .* exp(-0.5)))
-        err_mid < tol || return Cell(:warn, @sprintf("evaluate_at(0.5) error %.2e", err_mid))
-        Cell(:ok, "")
+        err_mid < tol ||
+            return Cell(:warn, @sprintf("evaluate_at(0.5) error %.2e", err_mid))
+        return Cell(:ok, "")
     end
 end
 
@@ -194,7 +199,9 @@ let rows = first.(STATES), cols = ["point", "trajectory"], cells = Dict()
     for (name, (u0, inplace)) in STATES, which in cols
         cells[(name, which)] = integration_cell(u0, inplace, which)
     end
-    print_matrix("C. Integrators.SciML (Tsit5) on CPU — state type × options", rows, cols, cells)
+    print_matrix(
+        "C. Integrators.SciML (Tsit5) on CPU — state type × options", rows, cols, cells
+    )
 end
 
 println("\nDone.")

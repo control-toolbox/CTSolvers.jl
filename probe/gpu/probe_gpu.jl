@@ -55,13 +55,21 @@ let rows = ["Modelers.Exa{GPU}", "Solvers.MadNLP{GPU}", "Solvers.MadNCL{GPU}"],
 
     cells[("Modelers.Exa{GPU}", "default")] = probe_cell() do
         b = Modelers.Exa{GPU}()[:backend]
-        b isa CUDA.CUDABackend ? Cell(:ok, "backend = $b") : Cell(:warn, "backend = $b")
+        return if b isa CUDA.CUDABackend
+            Cell(:ok, "backend = $b")
+        else
+            Cell(:warn, "backend = $b")
+        end
     end
-    for (name, S) in ("Solvers.MadNLP{GPU}" => Solvers.MadNLP, "Solvers.MadNCL{GPU}" => Solvers.MadNCL)
+    for (name, S) in
+        ("Solvers.MadNLP{GPU}" => Solvers.MadNLP, "Solvers.MadNCL{GPU}" => Solvers.MadNCL)
         cells[(name, "default")] = probe_cell() do
             ls = S{GPU}()[:linear_solver]
-            ls === MadNLPGPU.CUDSSSolver ? Cell(:ok, "linear_solver = $ls") :
-            Cell(:warn, "linear_solver = $ls")
+            return if ls === MadNLPGPU.CUDSSSolver
+                Cell(:ok, "linear_solver = $ls")
+            else
+                Cell(:warn, "linear_solver = $ls")
+            end
         end
     end
     print_matrix("A. Defaults selected by the GPU parameter", rows, cols, cells)
@@ -119,17 +127,24 @@ let rows = first.(MODELERS), cols = first.(SOLVERS), cells = Dict()
             T = eltype(nlp.meta.x0)
             t = @elapsed stats = solve(nlp, sk(T); display=false)
             obj, iter, _, _, status, ok = Solvers.extract_solver_infos(stats)
-            ok || return Cell(:warn, "not successful: status $status after $iter iterations")
-            check_close(
-                Float64(obj), F_STAR; rtol=T == Float32 ? 1e-4 : 1e-7,
+            ok ||
+                return Cell(:warn, "not successful: status $status after $iter iterations")
+            return check_close(
+                Float64(obj),
+                F_STAR;
+                rtol=T == Float32 ? 1e-4 : 1e-7,
                 note=@sprintf(
                     "max violation %.2e, %d iterations, %.2f s (with compilation)",
-                    max_violation(stats.solution), iter, t,
+                    max_violation(stats.solution),
+                    iter,
+                    t,
                 ),
             )
         end
     end
-    print_matrix("B. NLP on the device — modeler (rows) × solver (columns)", rows, cols, cells)
+    print_matrix(
+        "B. NLP on the device — modeler (rows) × solver (columns)", rows, cols, cells
+    )
 end
 
 # =============================================================================
@@ -149,7 +164,8 @@ const INTEGRATORS = ["SciML{GPU}" => GPU, "SciML{CPU}" => CPU]
 function device_problem(u0_host, inplace)
     u0 = CUDA.CuArray(u0_host)
     T = eltype(u0_host)
-    inplace && return SciMLBase.ODEProblem((du, u, p, t) -> (du .= .-u), u0, (zero(T), one(T)))
+    inplace &&
+        return SciMLBase.ODEProblem((du, u, p, t) -> (du .= .-u), u0, (zero(T), one(T)))
     return SciMLBase.ODEProblem((u, p, t) -> .-u, u0, (zero(T), one(T)))
 end
 
@@ -157,11 +173,17 @@ let rows = first.(STATES),
     cols = [i * " " * w for (i, _) in INTEGRATORS for w in ("point", "trajectory")],
     cells = Dict()
 
-    for (sname, (u0, inplace)) in STATES, (iname, P) in INTEGRATORS, which in ("point", "trajectory")
+    for (sname, (u0, inplace)) in STATES,
+        (iname, P) in INTEGRATORS,
+        which in ("point", "trajectory")
+
         cells[(sname, iname * " " * which)] = probe_cell() do
             integ = Integrators.SciML{P}()
-            options = which == "point" ? Integrators.options_point(integ) :
-                      Integrators.options_trajectory(integ)
+            options = if which == "point"
+                Integrators.options_point(integ)
+            else
+                Integrators.options_trajectory(integ)
+            end
             r = solve(device_problem(u0, inplace), integ; options=options)
             xf = Integrators.final_state(r)
             xf isa CUDA.CuArray || return Cell(:warn, "final state is $(typeof(xf))")
@@ -171,11 +193,17 @@ let rows = first.(STATES),
             which == "trajectory" || return Cell(:ok, "")
             mid = Integrators.evaluate_at(r, 0.5)
             err_mid = maximum(abs.(Array(mid) .- u0 .* exp(-0.5)))
-            err_mid < tol || return Cell(:warn, @sprintf("evaluate_at(0.5) error %.2e", err_mid))
-            Cell(:ok, "")
+            err_mid < tol ||
+                return Cell(:warn, @sprintf("evaluate_at(0.5) error %.2e", err_mid))
+            return Cell(:ok, "")
         end
     end
-    print_matrix("C. Integrators.SciML with CuArray states — state × integrator/options", rows, cols, cells)
+    print_matrix(
+        "C. Integrators.SciML with CuArray states — state × integrator/options",
+        rows,
+        cols,
+        cells,
+    )
 end
 
 println("\nDone.")
