@@ -23,7 +23,14 @@ struct Cell
     note::String
 end
 
-symbol(c::Cell) = c.mark === :ok ? "✓" : c.mark === :warn ? "⚠" : "✗"
+symbol(c::Cell) =
+    if c.mark === :ok
+        "✓"
+    elseif c.mark === :warn
+        "⚠"
+    else
+        "✗"
+    end
 
 """
 Logger that only records the messages of warnings (and above).
@@ -47,8 +54,11 @@ First line of an exception's message. CTBase exceptions carry it in `msg` (their
 `showerror` starts with a source locator instead).
 """
 function error_message(e)
-    msg = hasproperty(e, :msg) && getproperty(e, :msg) isa AbstractString ? e.msg :
-          sprint(showerror, e)
+    msg = if hasproperty(e, :msg) && getproperty(e, :msg) isa AbstractString
+        e.msg
+    else
+        sprint(showerror, e)
+    end
     line = string(first(split(strip(msg), '\n')))
     prefix = string(nameof(typeof(e)), ": ")
     return startswith(line, prefix) ? line[(length(prefix) + 1):end] : line
