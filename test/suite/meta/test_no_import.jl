@@ -20,6 +20,14 @@ const DOTTED_USING_RE = r"^\s*using\s+[A-Za-z_]\w*\.[A-Za-z_]"
 const IMPORT_EXEMPT = ("CHANGELOG.md",)
 const DOTTED_USING_EXEMPT = ()
 
+function _report_violations(violations)
+    println(stderr, "Found forbidden import syntax:")
+    for violation in violations
+        println(stderr, "  ", violation)
+    end
+    return false
+end
+
 function test_no_import()
     Test.@testset "No `import` / no dotted `using Pkg.Sub` (MOD3, MOD4)" verbose = VERBOSE showtiming =
         SHOWTIMING begin
@@ -28,19 +36,24 @@ function test_no_import()
             f -> endswith(f, ".jl") || endswith(f, ".md"),
             readlines(Cmd(`git ls-files`; dir=repo_root)),
         )
+        violations = String[]
         for relpath in tracked
             path = joinpath(repo_root, relpath)
             check_import = !(basename(relpath) in IMPORT_EXEMPT)
             check_dotted = !(basename(relpath) in DOTTED_USING_EXEMPT)
-            for line in eachline(path)
-                if check_import
-                    Test.@test !occursin(IMPORT_RE, line)
+            for (line_number, line) in enumerate(eachline(path))
+                if check_import && occursin(IMPORT_RE, line)
+                    push!(violations, "$relpath:$line_number: `import`: $(strip(line))")
                 end
-                if check_dotted
-                    Test.@test !occursin(DOTTED_USING_RE, line)
+                if check_dotted && occursin(DOTTED_USING_RE, line)
+                    push!(
+                        violations,
+                        "$relpath:$line_number: dotted `using`: $(strip(line))",
+                    )
                 end
             end
         end
+        Test.@test isempty(violations) || _report_violations(violations)
     end
 end
 
