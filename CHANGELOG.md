@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`PiecewiseIntegrationResult` grid without duplicates**
+  ([#266](https://github.com/control-toolbox/CTSolvers.jl/issues/266)): the grid of a
+  multi-phase result holds each switching time **once**, instead of twice (end of one
+  segment, start of the next). Both copies returned the same left value, so the duplicate
+  carried no information, and a grid with a repeated time is not strictly monotone. A
+  multi-phase `times(r)` is now shorter by `n − 1` for `n` segments. Evaluation is
+  unchanged: still left-continuous at a switching time.
+
+### Added
+
+- `Integrators.switching_times(r)`: the switching times of a result (none for a
+  single-phase result).
+- `Integrators.right_limit(r, i)`: the value just after the `i`-th switching time, after
+  any jump. With `evaluate_at(r, tᵢ)`, it gives both limits at a jump. Used by CTFlows to
+  plot jumps as vertical segments
+  ([control-toolbox/CTFlows.jl#443](https://github.com/control-toolbox/CTFlows.jl/issues/443)).
+
 ---
 
 ## [0.6.1] - 2026-10-15

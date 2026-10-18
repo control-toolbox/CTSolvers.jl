@@ -115,8 +115,18 @@ Integrators.evaluate_at(rm, 1.0 + 1e-12)   # second phase, after the jump
 
 The merged trajectory is **left-continuous** at a switching time: at `t = 1.0` it returns
 the end of the first phase (before the jump), and any later time belongs to the second.
-The switching time appears twice in `times(rm)`. `successful(rm)` is `true` only if every
-phase succeeded, and `status(rm)` is the status of the first failed phase.
+[`Integrators.switching_times`](@ref) lists the switching times, and
+[`Integrators.right_limit`](@ref) returns the value just after one of them, so both limits
+at a jump are available:
+
+```@repl res
+Integrators.switching_times(rm)
+Integrators.right_limit(rm, 1)             # after the jump at the first switching time
+```
+
+The grid `times(rm)` holds each switching time **once**, so it stays strictly monotone.
+`successful(rm)` is `true` only if every phase succeeded, and `status(rm)` is the status of
+the first failed phase.
 
 ## Failures and `unsafe`
 
