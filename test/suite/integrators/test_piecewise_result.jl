@@ -37,9 +37,13 @@ function test_piecewise_result()
 
         Test.@testset "type and grid" begin
             Test.@test merged isa Integrators.PiecewiseIntegrationResult
+            # one copy of the switching time: the second segment's first time is dropped
             Test.@test Integrators.times(merged) ==
-                vcat(Integrators.times(r1), Integrators.times(r2))
-            Test.@test count(==(ts), Integrators.times(merged)) == 2
+                vcat(Integrators.times(r1), Integrators.times(r2)[2:end])
+            Test.@test count(==(ts), Integrators.times(merged)) == 1
+            Test.@test length(Integrators.times(merged)) ==
+                length(Integrators.times(r1)) + length(Integrators.times(r2)) - 1
+            Test.@test issorted(Integrators.times(merged); lt=(<=))   # strictly increasing
             Test.@test Integrators.final_state(merged) == Integrators.final_state(r2)
             Test.@test Integrators.is_dense(merged)
         end
@@ -55,14 +59,43 @@ function test_piecewise_result()
             Test.@test Integrators.evaluate_at(merged, ts + 1e-12)[1] ≈ left + Δ atol = 1e-9
         end
 
+        Test.@testset "switching times and right limits" begin
+            Test.@test Integrators.switching_times(merged) == [ts]
+            # before / after the jump at ts
+            Test.@test Integrators.evaluate_at(merged, ts)[1] ≈ left atol = 1e-12
+            Test.@test Integrators.right_limit(merged, 1)[1] ≈ left + Δ atol = 1e-12
+            # without a jump, both limits agree
+            c = Integrators.merge([_segment(0.0, ts, 1.0), _segment(ts, 1.0, left)])
+            Test.@test Integrators.right_limit(c, 1)[1] ≈
+                Integrators.evaluate_at(c, ts)[1] atol = 1e-12
+            # a single-phase result has no switching time
+            Test.@test isempty(Integrators.switching_times(r1))
+            Test.@test eltype(Integrators.switching_times(r1)) ==
+                eltype(Integrators.times(r1))
+            single = Integrators.PiecewiseIntegrationResult([r1])
+            Test.@test isempty(Integrators.switching_times(single))
+            Test.@test Integrators.times(single) == Integrators.times(r1)
+        end
+
         Test.@testset "three phases" begin
             r3a = _segment(0.0, 0.3, 1.0)
-            r3b = _segment(0.3, 0.6, exp(-0.3))
-            r3c = _segment(0.6, 1.0, exp(-0.6))
+            r3b = _segment(0.3, 0.6, exp(-0.3) + 1.0)   # jump +1 at 0.3
+            r3c = _segment(0.6, 1.0, 2.0)                # reset to 2 at 0.6
             m3 = Integrators.merge([r3a, r3b, r3c])
+            exact3(t) =
+                t <= 0.3 ? exp(-t) :
+                t <= 0.6 ? (exp(-0.3) + 1.0) * exp(-(t - 0.3)) : 2.0 * exp(-(t - 0.6))
             for t in (0.0, 0.15, 0.3, 0.45, 0.6, 0.8, 1.0)
-                Test.@test Integrators.evaluate_at(m3, t)[1] ≈ exp(-t) atol = 1e-10
+                Test.@test Integrators.evaluate_at(m3, t)[1] ≈ exact3(t) atol = 1e-10
             end
+            T = Integrators.times(m3)
+            Test.@test count(==(0.3), T) == 1 && count(==(0.6), T) == 1
+            Test.@test length(T) ==
+                sum(length ∘ Integrators.times, (r3a, r3b, r3c)) - 2
+            Test.@test issorted(T; lt=(<=))
+            Test.@test Integrators.switching_times(m3) == [0.3, 0.6]
+            Test.@test Integrators.right_limit(m3, 1)[1] ≈ exp(-0.3) + 1.0 atol = 1e-12
+            Test.@test Integrators.right_limit(m3, 2)[1] ≈ 2.0 atol = 1e-12
         end
 
         Test.@testset "backward integration" begin
@@ -72,6 +105,12 @@ function test_piecewise_result()
             Test.@test Integrators.evaluate_at(mb, 0.75)[1] ≈ exp(0.25) atol = 1e-10
             Test.@test Integrators.evaluate_at(mb, 0.5)[1] ≈ exp(0.5) atol = 1e-10   # left
             Test.@test Integrators.evaluate_at(mb, 0.25)[1] ≈ 2exp(0.75) atol = 1e-9
+            # "right" follows the integration order: the start of the second segment
+            Test.@test Integrators.right_limit(mb, 1)[1] ≈ 2exp(0.5) atol = 1e-10
+            Test.@test Integrators.switching_times(mb) == [0.5]
+            Tb = Integrators.times(mb)
+            Test.@test count(==(0.5), Tb) == 1
+            Test.@test issorted(Tb; lt=(>=))   # strictly decreasing
         end
 
         Test.@testset "non-dense segments" begin
@@ -87,6 +126,17 @@ function test_piecewise_result()
             Test.@test Integrators.status(merged) == :Success
         end
 
+        Test.@testset "Error: right limit out of range" begin
+            for i in (0, 2, -1)
+                Test.@test_throws Exceptions.IncorrectArgument Integrators.right_limit(
+                    merged, i
+                )
+            end
+            Test.@test_throws Exceptions.IncorrectArgument Integrators.right_limit(
+                Integrators.PiecewiseIntegrationResult([r1]), 1
+            )
+        end
+
         Test.@testset "Error: no segment" begin
             Test.@test_throws Exceptions.IncorrectArgument Integrators.PiecewiseIntegrationResult(
                 typeof(r1)[]
@@ -97,6 +147,9 @@ function test_piecewise_result()
             Test.@test_nowarn Test.@inferred Integrators.times(merged)
             Test.@test_nowarn Test.@inferred Integrators.evaluate_at(merged, 0.3)
             Test.@test_nowarn Test.@inferred Integrators.final_state(merged)
+            Test.@test_nowarn Test.@inferred Integrators.switching_times(merged)
+            Test.@test_nowarn Test.@inferred Integrators.switching_times(r1)
+            Test.@test_nowarn Test.@inferred Integrators.right_limit(merged, 1)
         end
     end
 end

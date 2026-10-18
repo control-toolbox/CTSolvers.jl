@@ -71,7 +71,9 @@ function test_regrid()
                 1e-10
             gs = Integrators.regrid(r, [0.0, ts, 1.0])
             Test.@test Integrators.evaluate_at(gs, ts)[1] ≈ exp(-ts) atol = 1e-12   # left
-            Test.@test count(==(ts), Integrators.times(r)) == 2                    # unchanged
+            Test.@test count(==(ts), Integrators.times(r)) == 1                    # unchanged
+            Test.@test Integrators.switching_times(gs) == [ts]
+            Test.@test Integrators.right_limit(gs, 1)[1] ≈ exp(-ts) + Δ atol = 1e-12
         end
 
         Test.@testset "non-dense result" begin

@@ -77,6 +77,6 @@ export AbstractIntegrationResult,
 export options_point, options_trajectory
 
 # Public API - multi-phase
-export merge, regrid, PiecewiseIntegrationResult
+export merge, regrid, PiecewiseIntegrationResult, switching_times, right_limit
 
 end # module Integrators
