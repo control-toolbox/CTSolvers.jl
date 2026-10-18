@@ -148,6 +148,7 @@ function right_limit(r::PiecewiseIntegrationResult, i::Integer)
             "no switching time with this index";
             got="i = $i",
             expected=n == 0 ? "no index: the result has a single segment" : "1 ≤ i ≤ $n",
+            suggestion="use an index of switching_times(r)",
             context="Integrators.right_limit",
         ),
     )
