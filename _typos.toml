@@ -16,5 +16,6 @@ extend-exclude = [
     "*.json",
     "*.toml",
     "*.svg",
-    ".conventions/",
+    ".ct-conventions/",
+    ".ct-agents/",
 ]
