@@ -50,7 +50,7 @@ CTSolversZygote = "Zygote"
 ADNLPModels = "0.8"
 Aqua = "0.8"
 BenchmarkTools = "1"
-CTBase = "0.30"
+CTBase = "0.30.12"
 CTModels = "0.19"
 CUDA = "6"
 CUDSS = "0.7, 0.8"
@@ -104,4 +104,4 @@ UnoSolver = "1baa60ac-02f7-4b39-a7a8-2f4f58486b05"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [targets]
-test = ["ADNLPModels", "Aqua", "BenchmarkTools", "CUDA", "CUDSS", "DiffEqBase", "Enzyme", "ExaModels", "ForwardDiff", "JET", "MadNCL", "MadNLP", "MadNLPGPU", "NLPModels", "NLPModelsIpopt", "OrderedCollections", "OrdinaryDiffEqTsit5", "Random", "SciMLBase", "Test", "UnoSolver", "Zygote"]
+test = ["ADNLPModels", "Aqua", "BenchmarkTools", "CUDA", "CUDSS", "DiffEqBase", "Enzyme", "ExaModels", "ForwardDiff", "JET", "MadNCL", "MadNLP", "MadNLPGPU", "NLPModels", "NLPModelsIpopt", "NLPModelsKnitro", "OrderedCollections", "OrdinaryDiffEqTsit5", "Random", "SciMLBase", "Test", "UnoSolver", "Zygote"]
