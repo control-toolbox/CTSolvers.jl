@@ -66,8 +66,8 @@ function test_piecewise_result()
             Test.@test Integrators.right_limit(merged, 1)[1] ≈ left + Δ atol = 1e-12
             # without a jump, both limits agree
             c = Integrators.merge([_segment(0.0, ts, 1.0), _segment(ts, 1.0, left)])
-            Test.@test Integrators.right_limit(c, 1)[1] ≈
-                Integrators.evaluate_at(c, ts)[1] atol = 1e-12
+            Test.@test Integrators.right_limit(c, 1)[1] ≈ Integrators.evaluate_at(c, ts)[1] atol =
+                1e-12
             # a single-phase result has no switching time
             Test.@test isempty(Integrators.switching_times(r1))
             Test.@test eltype(Integrators.switching_times(r1)) ==
@@ -83,15 +83,19 @@ function test_piecewise_result()
             r3c = _segment(0.6, 1.0, 2.0)                # reset to 2 at 0.6
             m3 = Integrators.merge([r3a, r3b, r3c])
             exact3(t) =
-                t <= 0.3 ? exp(-t) :
-                t <= 0.6 ? (exp(-0.3) + 1.0) * exp(-(t - 0.3)) : 2.0 * exp(-(t - 0.6))
+                if t <= 0.3
+                    exp(-t)
+                elseif t <= 0.6
+                    (exp(-0.3) + 1.0) * exp(-(t - 0.3))
+                else
+                    2.0 * exp(-(t - 0.6))
+                end
             for t in (0.0, 0.15, 0.3, 0.45, 0.6, 0.8, 1.0)
                 Test.@test Integrators.evaluate_at(m3, t)[1] ≈ exact3(t) atol = 1e-10
             end
             T = Integrators.times(m3)
             Test.@test count(==(0.3), T) == 1 && count(==(0.6), T) == 1
-            Test.@test length(T) ==
-                sum(length ∘ Integrators.times, (r3a, r3b, r3c)) - 2
+            Test.@test length(T) == sum(length ∘ Integrators.times, (r3a, r3b, r3c)) - 2
             Test.@test issorted(T; lt=(<=))
             Test.@test Integrators.switching_times(m3) == [0.3, 0.6]
             Test.@test Integrators.right_limit(m3, 1)[1] ≈ exp(-0.3) + 1.0 atol = 1e-12
