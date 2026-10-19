@@ -18,17 +18,7 @@ using MadNLP: MadNLP
 using MadNLPGPU: MadNLPGPU
 using NLPModels: NLPModels
 using NLPModelsIpopt: NLPModelsIpopt
-
-# KNITRO_jll ships no binary for macOS x64: loading Knitro raises there. Loading it is
-# therefore optional, and the extension-quality check is skipped when it is unavailable
-# (CTBase.DevTools.test_extensions_quality requires every extension to be loaded).
-const KNITRO_LOADABLE = try
-    @eval using NLPModelsKnitro: NLPModelsKnitro
-    true
-catch
-    false
-end
-
+using NLPModelsKnitro: NLPModelsKnitro
 using OrdinaryDiffEqTsit5: OrdinaryDiffEqTsit5
 using DiffEqBase: DiffEqBase
 using SciMLBase: SciMLBase
@@ -52,11 +42,7 @@ function test_aqua()
         )
         # do not warn about ambiguities in dependencies
         Aqua.test_ambiguities(CTSolvers)
-        if KNITRO_LOADABLE
-            CTBase.DevTools.test_extensions_quality(CTSolvers)
-        else
-            Test.@test_skip "extensions quality: NLPModelsKnitro cannot be loaded on this platform"
-        end
+        CTBase.DevTools.test_extensions_quality(CTSolvers)
     end
 end
 
