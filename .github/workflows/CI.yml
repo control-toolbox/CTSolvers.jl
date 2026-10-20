@@ -67,7 +67,7 @@ jobs:
   # On a push (main, tags): a single GPU run, on kkt unless it is offline, else occidata
   # (CTActions ci-gpu.yml). A busy kkt is waited for.
   test-gpu-main:
-    if: github.event_name != 'pull_request'
+    if: true  # TEMPORARY: exercise test-gpu-main on the PR
     uses: control-toolbox/CTActions/.github/workflows/ci-gpu.yml@main
     with:
       use_ct_registry: true
