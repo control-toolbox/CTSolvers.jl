@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+---
+
+## [0.6.2] - 2026-10-19
+
+### ✨ New Features
 
 - **`PiecewiseIntegrationResult` grid without duplicates**
   ([#266](https://github.com/control-toolbox/CTSolvers.jl/issues/266)): the grid of a
@@ -19,16 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   multi-phase `times(r)` is now shorter by `n − 1` for `n` segments. Evaluation is
   unchanged: still left-continuous at a switching time.
 
-### Added
-
 - `Integrators.switching_times(r)`: the switching times of a result (none for a
   single-phase result).
 - `Integrators.right_limit(r, i)`: the value just after the `i`-th switching time, after
   any jump. With `evaluate_at(r, tᵢ)`, it gives both limits at a jump. Used by CTFlows to
   plot jumps as vertical segments
   ([control-toolbox/CTFlows.jl#443](https://github.com/control-toolbox/CTFlows.jl/issues/443)).
-
----
 
 ### 📚 Documentation
 
@@ -45,6 +45,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ReleaseTag.yml` (tag and GitHub release of a merged release PR) call CTActions;
   `Breakage.yml` moves to `breakage-suite.yml` (one report, the `REL1` check of a release
   PR) and also runs on push to `main`; `Documentation.yml` accepts `workflow_dispatch`.
+
+### ✅ Compatibility
+
+- **No breaking changes.** See [BREAKING.md](BREAKING.md).
+
+---
 
 ## [0.6.1] - 2026-10-15
 

@@ -11,6 +11,12 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## v0.6.2 (2026-10-19)
+
+**No breaking changes.**
+
+---
+
 ## v0.6.1 (2026-10-15)
 
 **No breaking changes.**
