@@ -38,9 +38,13 @@ jobs:
     with:
       use_ct_registry: true
       # Publish then upgrade (CTActions documentation.yml): the GitHub-hosted `build`
-      # always deploys first; `build-gpu` then rebuilds on the kkt GPU runner so that
-      # the GPU page shows real GPU output. Push/tag only, never fails the workflow.
-      gpu_runner: '["kkt"]'
-      gpu_timeout_minutes: 120
+      # always deploys first; `build-gpu` then rebuilds on a GPU runner so that the GPU
+      # page shows real GPU output: kkt unless it is offline, else occidata ('auto').
+      # Push/tag only, never fails the workflow. The timeout is sized for the occidata
+      # fallback (a cold build takes ~40 min there).
+      gpu_runner: 'auto'
+      gpu_timeout_minutes: 180
     secrets:
       SSH_KEY: ${{ secrets.SSH_KEY }}
+      CT_RUNNERS_CLIENT_ID: ${{ secrets.CT_RUNNERS_CLIENT_ID }}
+      CT_RUNNERS_PRIVATE_KEY: ${{ secrets.CT_RUNNERS_PRIVATE_KEY }}
