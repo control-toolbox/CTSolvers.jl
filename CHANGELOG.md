@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 📚 Documentation
+
+- ct-agents pinned at `v0.3.0` in `AGENTS.md`: at the close of a release the agent runs
+  `release.jl audit`, which checks the trail the release left.
+
 ## [0.6.2] - 2026-10-19
 
 ### ✨ New Features
