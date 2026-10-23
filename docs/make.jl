@@ -124,6 +124,7 @@ with_api_reference(src_dir, ext_dir) do api_pages
             "Using CTSolvers" => [
                 "Strategies Catalogue" => "using/strategies.md",
                 "Integration Results" => "using/integration_results.md",
+                "Multiplier Convention" => "using/multipliers.md",
                 "GPU Execution" => "using/gpu.md",
             ],
             "Developer Guides" => [

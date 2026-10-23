@@ -7,7 +7,33 @@ and provides migration guides for users upgrading between versions.
 
 ## Unreleased
 
-**No breaking changes.**
+### One multiplier convention for every solver
+
+`CommonSolve.solve(nlp, solver)` returns the multipliers in one convention, the same for
+every solver ([#288](https://github.com/control-toolbox/CTSolvers.jl/issues/288)): the
+multipliers of the equivalent minimisation (`min f` and `max -f` have the same), nonnegative
+bound multipliers (`∇F_min + Jᵀy − zL + zU = 0`), and a nonnegative multiplier for a row
+with a single finite bound. Equalities and two-sided rows keep the signed `y = μU − μL`.
+
+Changed: the multipliers of a maximisation (Ipopt, Uno: all; MadNLP, MadNCL: the rows), of
+a row with only a lower bound (every solver), the lower-bound multipliers of Uno, and the
+bound multipliers of Knitro (no longer swapped).
+
+**Migration**:
+
+```julia
+# Before: native multipliers, e.g. for a row lcon ≤ c(x) with ucon = Inf
+stats = CommonSolve.solve(nlp, Solvers.Ipopt())
+μ = -stats.multipliers[i]
+
+# After: the multiplier of a one-sided row is already nonnegative
+stats = CommonSolve.solve(nlp, Solvers.Ipopt())
+μ = stats.multipliers[i]
+
+# The raw multipliers of a backend are those of the extension's solve_with_<solver>
+CTSolversIpopt = Base.get_extension(CTSolvers, :CTSolversIpopt)
+raw = CTSolversIpopt.solve_with_ipopt(nlp; print_level=0)
+```
 
 ---
 
