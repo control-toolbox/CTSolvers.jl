@@ -240,14 +240,28 @@ Solve an NLP problem using Knitro.
 - `display::Bool`: Whether to show solver output (default: true)
 
 # Returns
-- `SolverCore.GenericExecutionStats`: Solver execution statistics
+- `SolverCore.GenericExecutionStats`: Solver execution statistics,
+  with the multipliers in the convention of CTSolvers (see
+  `Solvers.normalize_multipliers!`)
 """
 function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::Solvers.Knitro; display::Bool=true
 )::SolverCore.GenericExecutionStats
     options = Strategies.options_dict(solver)
     options[:outlev] = display ? options[:outlev] : 0
-    return solve_with_knitro(nlp; options...)
+    stats = solve_with_knitro(nlp; options...)
+    return _normalize_multipliers!(stats, solver, nlp)
+end
+
+# Multipliers in the convention of CTSolvers (see `Solvers.normalize_multipliers!`).
+function _normalize_multipliers!(stats, solver, nlp::NLPModels.AbstractNLPModel)
+    return Solvers.normalize_multipliers!(
+        stats,
+        solver,
+        NLPModels.get_lcon(nlp),
+        NLPModels.get_ucon(nlp),
+        NLPModels.get_minimize(nlp),
+    )
 end
 
 # ============================================================================

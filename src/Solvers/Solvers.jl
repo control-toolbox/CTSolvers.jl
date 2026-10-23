@@ -62,6 +62,7 @@ include(joinpath(@__DIR__, "uno.jl"))
 include(joinpath(@__DIR__, "contract.jl"))
 include(joinpath(@__DIR__, "orchestration.jl"))
 include(joinpath(@__DIR__, "solver_info.jl"))
+include(joinpath(@__DIR__, "multipliers.jl"))
 
 # Public API - abstract and concrete types
 export AbstractNLPSolver
@@ -69,5 +70,6 @@ export Ipopt, MadNLP, MadNCL, Knitro, Uno
 
 # Public API - solver utilities
 export extract_solver_infos
+export normalize_multipliers!, reference_multipliers!
 
 end # module Solvers

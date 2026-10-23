@@ -587,14 +587,28 @@ Solve an NLP problem using Ipopt.
 - `display::Bool`: Whether to show solver output (default: true)
 
 # Returns
-- `SolverCore.GenericExecutionStats`: Solver execution statistics
+- `SolverCore.GenericExecutionStats`: Solver execution statistics,
+  with the multipliers in the convention of CTSolvers (see
+  `Solvers.normalize_multipliers!`)
 """
 function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::Solvers.Ipopt; display::Bool=true
 )::SolverCore.GenericExecutionStats
     options = Strategies.options_dict(solver)
     options[:print_level] = display ? options[:print_level] : 0
-    return solve_with_ipopt(nlp; options...)
+    stats = solve_with_ipopt(nlp; options...)
+    return _normalize_multipliers!(stats, solver, nlp)
+end
+
+# Multipliers in the convention of CTSolvers (see `Solvers.normalize_multipliers!`).
+function _normalize_multipliers!(stats, solver, nlp::NLPModels.AbstractNLPModel)
+    return Solvers.normalize_multipliers!(
+        stats,
+        solver,
+        NLPModels.get_lcon(nlp),
+        NLPModels.get_ucon(nlp),
+        NLPModels.get_minimize(nlp),
+    )
 end
 
 # ============================================================================

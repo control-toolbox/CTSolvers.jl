@@ -400,7 +400,9 @@ Solve an NLP problem using MadNCL.
 - `display::Bool`: Whether to show solver output (default: true)
 
 # Returns
-- `MadNCL.NCLStats`: MadNCL execution statistics
+- `MadNCL.NCLStats`: MadNCL execution statistics,
+  with the multipliers in the convention of CTSolvers (see
+  `Solvers.normalize_multipliers!`)
 """
 function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::Solvers.MadNCL; display::Bool=true
@@ -419,7 +421,19 @@ function CommonSolve.solve(
         options[:ncl_options] = MadNCL.NCLOptions{BaseType}(; ncl_opts_dict...)
     end
 
-    return solve_with_madncl(nlp; options...)
+    stats = solve_with_madncl(nlp; options...)
+    return _normalize_multipliers!(stats, solver, nlp)
+end
+
+# Multipliers in the convention of CTSolvers (see `Solvers.normalize_multipliers!`).
+function _normalize_multipliers!(stats, solver, nlp::NLPModels.AbstractNLPModel)
+    return Solvers.normalize_multipliers!(
+        stats,
+        solver,
+        NLPModels.get_lcon(nlp),
+        NLPModels.get_ucon(nlp),
+        NLPModels.get_minimize(nlp),
+    )
 end
 
 # ============================================================================
