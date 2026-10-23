@@ -180,8 +180,12 @@ const SOLVERS = [
 #
 #     ∇F + Jᵀy + sL·zL + sU·zU = 0,
 #
-# where `y` is the multiplier of the rows of the constraint vector (J is their Jacobian),
-# and `zL`, `zU` are the multipliers of the lower and upper bounds.
+# where `y` gathers the multipliers of the rows `lcon ≤ c(x) ≤ ucon` (the equality, the
+# inequality, and the bound written as a row): one signed value per row, `y = μU - μL` with
+# `μL, μU ≥ 0` (for a minimisation) the multipliers of the lower and upper side of the row,
+# at most one of them nonzero, so `Jᵀy = Jᵀ(μU - μL)` and an equality has one signed `y`.
+# `J` is the Jacobian of the rows. `zL`, `zU` are the same for the bounds of the variables,
+# kept in two vectors (`multipliers_L`, `multipliers_U`) by the NLPModels interface.
 
 """
 A candidate convention: `sL` and `sU` are the signs of `zL` and `zU` in the stationarity.
@@ -333,7 +337,7 @@ function table(io, header, rows)
     for r in rows
         println(io, "| ", join(r, " | "), " |")
     end
-    println(io)
+    return println(io)
 end
 
 num(x) = @sprintf("%+.4f", x)
@@ -418,7 +422,7 @@ function report()
     println(io, "### Notation and conventions\n")
     println(
         io,
-        "`F` is the objective **as written in the model** (`F = -f` for `max -f`). `y` is the multiplier of the rows of the constraint vector (`J` is their Jacobian), `zL` and `zU` are those of the lower and upper bounds, and `x₅` has a single net multiplier. Two candidate conventions, both for the stationarity at the solution:\n",
+        "`F` is the objective **as written in the model** (`F = -f` for `max -f`). `y` gathers the multipliers of the rows `lcon ≤ c(x) ≤ ucon`, i.e. of the equality `c`, of the inequality `g` and, in the row form, of `-x₃ ≥ -a`: one signed value per row, `y = μU − μL`, where `μL, μU ≥ 0` (for a minimisation) are the multipliers of the lower and upper side of the row, at most one being nonzero. So `Jᵀy = Jᵀ(μU − μL)`, `J` being the Jacobian of the rows, and an equality has a single signed `y`. `zL` and `zU` are the same thing for the bounds of the variables `lvar ≤ x ≤ uvar`, stored in two vectors; `x₅`, fixed, has a single net multiplier. Two candidate conventions, both for the stationarity at the solution:\n",
     )
     for conv in CONVENTIONS
         println(io, "- **", conv.name, "**: `", conv.text, "`")
@@ -441,7 +445,9 @@ function report()
                 [string(i), num(t[:y_c]), num(t[:y_g]), bx, num(t[:z_x4]), num(t[:z_x5])],
             )
         end
-        table(io, ["#", "y_c", "y_g", "x₃", "zL(x₄)", "net(x₅)"], rows)
+        table(
+            io, ["#", "y_c (equality)", "y_g (inequality)", "x₃", "zL(x₄)", "net(x₅)"], rows
+        )
     end
 
     println(io, "### What each solver returns\n")
