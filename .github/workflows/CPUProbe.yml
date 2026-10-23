@@ -1,7 +1,8 @@
 name: CPU probe
 
-# Runs the standalone CPU capability probe (probe/cpu/probe_cpu.jl) on an Ubuntu
-# runner. Diagnostic only: it prints capability matrices and always succeeds
+# Runs the standalone CPU capability probe (probe/cpu/probe_cpu.jl) and the multiplier
+# sign probe (probe/signs/probe_signs.jl, whose Markdown report goes to the job summary)
+# on an Ubuntu runner. Diagnostic only: it prints capability matrices and always succeeds
 # (experiments are individually try/catch'd). See probe/README.md.
 
 on:
@@ -38,3 +39,8 @@ jobs:
 
       - name: Run CPU probe
         run: julia --project=probe/cpu probe/cpu/probe_cpu.jl
+
+      - name: Run multiplier sign probe
+        run: |
+          julia --project=probe/signs probe/signs/probe_signs.jl probe/signs/report.md
+          cat probe/signs/report.md >> "$GITHUB_STEP_SUMMARY"
