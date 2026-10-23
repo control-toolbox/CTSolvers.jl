@@ -175,37 +175,90 @@ const SOLVERS = [
 # Conventions, expected multipliers, and what a solver returned
 # =============================================================================
 #
-# Both conventions write the stationarity of the Lagrangian at the solution for the
-# objective F AS WRITTEN IN THE MODEL (so for `max -f` it is `F = -f`, not `f`):
+# A convention is the choice of three things, not only of the signs in one equation:
 #
-#     ∇F + Jᵀy + sL·zL + sU·zU = 0,
+#   1. the stationarity of the Lagrangian at the solution, for the objective F AS WRITTEN IN
+#      THE MODEL (for `max -f` it is `F = -f`, not `f`):
 #
-# where `y` gathers the multipliers of the rows `lcon ≤ c(x) ≤ ucon` (the equality, the
-# inequality, and the bound written as a row): one signed value per row, `y = μU - μL` with
-# `μL, μU ≥ 0` (for a minimisation) the multipliers of the lower and upper side of the row,
-# at most one of them nonzero, so `Jᵀy = Jᵀ(μU - μL)` and an equality has one signed `y`.
-# `J` is the Jacobian of the rows. `zL`, `zU` are the same for the bounds of the variables,
-# kept in two vectors (`multipliers_L`, `multipliers_U`) by the NLPModels interface.
+#          ∇F + Jᵀy + sL·zL + sU·zU = 0,
+#
+#      where `y` gathers the multipliers of the rows `lcon ≤ c(x) ≤ ucon` (the equality, the
+#      inequality, and the bound written as a row): one signed value per row, `y = μU - μL`
+#      with `μL, μU ≥ 0` the multipliers of the lower and upper side of the row, at most one
+#      of them nonzero, so `Jᵀy = Jᵀ(μU - μL)` and an equality has one signed `y`. `J` is the
+#      Jacobian of the rows. `zL`, `zU` are the same for the bounds of the variables, kept in
+#      two vectors (`multipliers_L`, `multipliers_U`) by the NLPModels interface;
+#   2. the dual feasibility, i.e. the sign of the multipliers for a minimisation: `μL`, `μU`,
+#      and the part of `zL`, `zU` that enters with a minus sign, are nonnegative;
+#   3. the rule for a maximisation. A solver maximises F by minimising -F, so it can report
+#      either the multipliers of F as written (`:written`: they all change sign with the
+#      sense, and dual feasibility flips), or those of the equivalent minimisation min(-F)
+#      (`:min_equivalent`: they do not change sign, and dual feasibility is the one of a
+#      minimisation). For a minimisation the two rules coincide.
 
 """
-A candidate convention: `sL` and `sU` are the signs of `zL` and `zU` in the stationarity.
+A convention: the signs `sL` and `sU` of `zL` and `zU` in the stationarity (`stationarity` is
+its name), and the `rule` for a maximisation, `:written` or `:min_equivalent`. The dual
+feasibility is implied by the stationarity signs: a multiplier enters the stationarity with
+the sign that makes it nonnegative for a minimisation.
 """
 struct Convention
-    name::Symbol
+    stationarity::Symbol
     sL::Int
     sU::Int
+    rule::Symbol
     text::String
 end
 
-const CONVENTIONS = [
-    Convention(:A, -1, +1, "∇F + Jᵀy − zL + zU = 0   (zL ≥ 0, zU ≥ 0 for a minimisation)"),
-    Convention(:B, +1, +1, "∇F + Jᵀy + zL + zU = 0   (zL ≤ 0, zU ≥ 0 for a minimisation)"),
+const STATIONARITIES = [
+    (:A, -1, +1, "∇F + Jᵀy − zL + zU = 0, with μL, μU, zL, zU ≥ 0 for a minimisation"),
+    (
+        :B,
+        +1,
+        +1,
+        "∇F + Jᵀy + zL + zU = 0, with μL, μU, zU ≥ 0 and zL ≤ 0 for a minimisation",
+    ),
 ]
+
+const CONVENTIONS = [
+    Convention(name, sL, sU, rule, text) for (name, sL, sU, text) in STATIONARITIES for
+    rule in (:written, :min_equivalent)
+]
+
+"Name of `conv` as it applies to `k`: the rule only matters for a maximisation."
+function shortname(conv::Convention, k::Case)
+    k.sense === :min && return string(conv.stationarity)
+    return string(
+        conv.stationarity, ", ", conv.rule === :written ? "as written" : "min-equiv."
+    )
+end
+
+"Long name of `conv`."
+function longname(conv::Convention)
+    return string(
+        conv.stationarity, ", ", conv.rule === :written ? "as written" : "min-equiv."
+    )
+end
+
+"""
+Whether the expected multipliers `t` of `k` satisfy the dual feasibility of `conv`: for a
+minimisation, the multiplier of an active upper side is `≥ 0`, that of an active lower side
+`≤ 0` (`y = μU - μL`), and `zU`, and `-sL·zL`, are `≥ 0`. For a maximisation with the
+`:written` rule every sign flips.
+"""
+function dual_feasible(conv::Convention, t, k::Case)
+    m = conv.rule === :written && k.sense === :max ? -1 : 1
+    ok = m * t[:y_g] * (k.ineq === :le ? 1 : -1) ≥ -MATCH
+    ok &= m * conv.sL * t[:z_x4] ≤ MATCH
+    ok &= k.box === :bound ? m * t[:z_x3] ≥ -MATCH : m * t[:y_x3] ≤ MATCH
+    return ok
+end
 
 """
 Expected multipliers of `nlp` at `XSTAR` under `conv`, as a `Dict(group => value)`. The
 active set is the one of the problem (see the header), so they come from one square linear
-system. A fixed variable has a single net multiplier, `sL·zL + sU·zU`.
+system. A fixed variable has a single net multiplier, `sL·zL + sU·zU`. With the
+`:min_equivalent` rule, a maximisation is solved as the minimisation of `-F`.
 """
 function expected(conv::Convention, nlp, k::Case)
     G = NLPModels.grad(nlp, XSTAR)
@@ -215,7 +268,8 @@ function expected(conv::Convention, nlp, k::Case)
     k.box === :bound && push!(cols, reshape(conv.sU * e(3), :, 1))      # zU on x₃
     push!(cols, reshape(conv.sL * e(4), :, 1))                          # zL on x₄
     push!(cols, reshape(e(5), :, 1))                                    # net on x₅
-    w = hcat(cols...) \ (-G)
+    m = conv.rule === :min_equivalent && k.sense === :max ? -1.0 : 1.0
+    w = hcat(cols...) \ (-m * G)
     out = Dict{Symbol,Float64}(:y_c => w[1], :y_g => w[2])
     if k.box === :bound
         out[:z_x3], out[:z_x4], out[:z_x5] = w[3], w[4], w[5]
@@ -260,33 +314,106 @@ function mismatches(obs, exp, k::Case)
 end
 
 """
-Verdict of one solver on one case: the name of the convention it follows, or, if it follows
-none, the closest one and the groups that differ. Also returns the raw multipliers, to
-compare solvers with each other, and the observations under the first convention, to compare
-`min f` with `max -f`.
+What one solver returned for one case: for each entry of `CONVENTIONS`, the groups where its
+multipliers differ from the expected ones (`bads`) and the multipliers as read under that
+convention (`obs`); the raw multipliers, to compare solvers with each other; the solver
+status; and an error message if the run failed (`err`).
 """
-function verdict(stats, nlp, k::Case)
-    obs1 = observed(CONVENTIONS[1], stats, k)
-    obs1 === nothing && return ("n/a", Float64[], Dict{Symbol,Float64}())
-    best = nothing
-    for conv in CONVENTIONS
-        bad = mismatches(observed(conv, stats, k), expected(conv, nlp, k), k)
-        (best === nothing || length(bad) < length(best.bad)) && (best = (; conv, bad))
-    end
+struct Outcome
+    bads::Vector{Vector{Symbol}}
+    obs::Vector{Dict{Symbol,Float64}}
+    raw::Vector{Float64}
+    status::String
+    err::String
+end
+
+Outcome(err::AbstractString) = Outcome([], [], Float64[], "", String(err))
+
+function measure(stats, nlp, k::Case)
+    observed(CONVENTIONS[1], stats, k) === nothing && return Outcome("n/a")
+    obs = [observed(conv, stats, k) for conv in CONVENTIONS]
+    bads = [
+        mismatches(obs[j], expected(conv, nlp, k), k) for
+        (j, conv) in enumerate(CONVENTIONS)
+    ]
     raw = vcat(
         field(stats, :multipliers),
         field(stats, :multipliers_L),
         field(stats, :multipliers_U),
     )
-    status = string(getproperty(stats, :status))
-    converged = status in
-    ("first_order", "SOLVE_SUCCEEDED", "acceptable", "SOLVED_TO_ACCEPTABLE_LEVEL")
-    text = if isempty(best.bad)
-        "**$(best.conv.name)**"
-    else
-        "≈$(best.conv.name) ✗ " * join(string.(best.bad), ", ")
+    return Outcome(bads, obs, raw, string(getproperty(stats, :status)), "")
+end
+
+function conv_index(name::Symbol, rule::Symbol)
+    return findfirst(c -> c.stationarity == name && c.rule === rule, CONVENTIONS)
+end
+
+"""
+Stationarity convention (`:A` or `:B`) followed by a solver on every minimisation case, or
+`nothing`. For a minimisation the two rules coincide, so this is the part of the convention
+that is read without ambiguity.
+"""
+function stationarity_of(mname, sname)
+    mins = [i for (i, k) in enumerate(CASES) if k.sense === :min]
+    for (name, _, _, _) in STATIONARITIES
+        j = conv_index(name, :written)
+        all(
+            !isempty(results[(mname, sname, i)].bads) &&
+                isempty(results[(mname, sname, i)].bads[j]) for i in mins
+        ) && return name
     end
-    return (converged ? text : text * " ⚠ $status", raw, obs1)
+    return nothing
+end
+
+"The multipliers are checked in two classes: the rows `y`, and everything on the variables."
+const ROW_GROUPS = [:y_c, :y_g, :y_x3]
+const VAR_GROUPS = [:z_x3, :z_x4, :z_x5]
+
+"""
+For a maximisation, how a solver that follows stationarity `S` treats a class of
+multipliers: `"as written"`, `"min-equiv."`, or `"neither"`.
+"""
+function class_rule(bw, be, class)
+    any(g -> g in bw, class) || return "as written"
+    any(g -> g in be, class) || return "min-equiv."
+    return "neither"
+end
+
+"""
+Rules of a solver on case `i`, as `(rows, variables)`, or `nothing` when it follows no
+stationarity convention on the minimisations.
+"""
+function rules(mname, sname, i)
+    o = results[(mname, sname, i)]
+    S = stationarity_of(mname, sname)
+    (S === nothing || isempty(o.bads)) && return nothing
+    bw, be = o.bads[conv_index(S, :written)], o.bads[conv_index(S, :min_equivalent)]
+    return (class_rule(bw, be, ROW_GROUPS), class_rule(bw, be, VAR_GROUPS))
+end
+
+"""
+Cell of the verdict tables: the convention a solver follows on a case when all its
+multipliers match it, `none` otherwise.
+"""
+function cell(mname, sname, i)
+    o = results[(mname, sname, i)]
+    isempty(o.bads) && return o.err
+    k = CASES[i]
+    S = stationarity_of(mname, sname)
+    text = if S === nothing
+        "**none**"
+    elseif k.sense === :min
+        isempty(o.bads[conv_index(S, :written)]) ? "**$S**" : "**none**"
+    elseif isempty(o.bads[conv_index(S, :written)])
+        "**$S, as written**"
+    elseif isempty(o.bads[conv_index(S, :min_equivalent)])
+        "**$S, min-equiv.**"
+    else
+        "**none**"
+    end
+    ok = o.status in
+    ("first_order", "SOLVE_SUCCEEDED", "acceptable", "SOLVED_TO_ACCEPTABLE_LEVEL")
+    return ok ? text : text * " ⚠ " * o.status
 end
 
 # =============================================================================
@@ -295,14 +422,14 @@ end
 
 println("CTSolvers multiplier sign probe — Julia ", VERSION)
 
-# results[(modeler, solver, case index)] = (verdict, raw multipliers, observed multipliers)
-results = Dict{Tuple{String,String,Int},Tuple{String,Vector{Float64},Dict{Symbol,Float64}}}()
+# results[(modeler, solver, case index)] = Outcome
+results = Dict{Tuple{String,String,Int},Outcome}()
 for (mname, build) in MODELERS, (sname, run) in SOLVERS, (i, k) in enumerate(CASES)
     results[(mname, sname, i)] = try
         nlp = build(k)
-        verdict(run(nlp), nlp, k)
+        measure(run(nlp), nlp, k)
     catch e
-        ("ERR " * first(sprint(showerror, e), 40), Float64[], Dict{Symbol,Float64}())
+        Outcome("ERR " * first(sprint(showerror, e), 40))
     end
 end
 
@@ -369,7 +496,9 @@ end
 function relations(sname, groups_of_class)
     rels = String[]
     for (mname, _) in MODELERS, (imin, imax) in PAIRS
-        omin, omax = results[(mname, sname, imin)][3], results[(mname, sname, imax)][3]
+        omin, omax = results[(mname, sname, imin)], results[(mname, sname, imax)]
+        (isempty(omin.obs) || isempty(omax.obs)) && continue
+        omin, omax = omin.obs[1], omax.obs[1]
         for gr in groups_of_class
             (haskey(omin, gr) && haskey(omax, gr)) &&
                 push!(rels, relation(omin[gr], omax[gr]))
@@ -422,23 +551,55 @@ function report()
     println(io, "### Notation and conventions\n")
     println(
         io,
-        "`F` is the objective **as written in the model** (`F = -f` for `max -f`). `y` gathers the multipliers of the rows `lcon ≤ c(x) ≤ ucon`, i.e. of the equality `c`, of the inequality `g` and, in the row form, of `-x₃ ≥ -a`: one signed value per row, `y = μU − μL`, where `μL, μU ≥ 0` (for a minimisation) are the multipliers of the lower and upper side of the row, at most one being nonzero. So `Jᵀy = Jᵀ(μU − μL)`, `J` being the Jacobian of the rows, and an equality has a single signed `y`. `zL` and `zU` are the same thing for the bounds of the variables `lvar ≤ x ≤ uvar`, stored in two vectors; `x₅`, fixed, has a single net multiplier. Two candidate conventions, both for the stationarity at the solution:\n",
+        "`F` is the objective **as written in the model** (`F = -f` for `max -f`), and the solvers maximise it by minimising `-F`. `y` gathers the multipliers of the rows `lcon ≤ c(x) ≤ ucon`, i.e. of the equality `c`, of the inequality `g` and, in the row form, of `-x₃ ≥ -a`: one signed value per row, `y = μU − μL`, where `μL, μU` are the multipliers of the lower and upper side of the row, at most one being nonzero. So `Jᵀy = Jᵀ(μU − μL)`, `J` being the Jacobian of the rows, and an equality has a single signed `y`. `zL` and `zU` are the same thing for the bounds of the variables `lvar ≤ x ≤ uvar`, stored in two vectors; `x₅`, fixed, has a single net multiplier.\n",
     )
-    for conv in CONVENTIONS
-        println(io, "- **", conv.name, "**: `", conv.text, "`")
-    end
+    println(io, "A **convention** is the choice of three things:\n")
     println(
         io,
-        "\nThey differ only in the sign of `zL`. With the active set above the multipliers are unique, so each convention gives one expected value per multiplier, computed from the gradient and Jacobian of the model at `x*`.\n",
+        "1. the stationarity of the Lagrangian at the solution, for `F` as written, i.e. the signs of the multipliers in `∇F + Jᵀy ± zL + zU = 0`;",
+    )
+    println(
+        io,
+        "2. the dual feasibility, i.e. which multipliers are nonnegative for a minimisation (`μL`, `μU`, `zU`, and `zL` or `-zL` according to its sign in the stationarity);",
+    )
+    println(
+        io,
+        "3. the rule for a **maximisation**: the solver reports either the multipliers of `F` as written (**as written**: every multiplier changes sign with the sense, and so does dual feasibility), or those of the equivalent minimisation `min(-F)` (**min-equiv.**: nothing changes sign). For a minimisation the two rules coincide.\n",
+    )
+    println(io, "That gives four conventions:\n")
+    table(
+        io,
+        ["Convention", "Stationarity and dual feasibility (minimisation)", "Maximisation"],
+        [
+            [
+                "**" *
+                string(conv.stationarity) *
+                ", " *
+                (conv.rule === :written ? "as written" : "min-equiv.") *
+                "**",
+                "`" * conv.text * "`",
+                if conv.rule === :written
+                    "multipliers of `F` as written: all flip"
+                else
+                    "multipliers of `min(-F)`: none flips"
+                end,
+            ] for conv in CONVENTIONS
+        ],
+    )
+    println(
+        io,
+        "With the active set above the multipliers are unique, so each convention gives one expected value per multiplier, computed from the gradient and Jacobian of the model at `x*`. A solver follows a convention if **all** its multipliers match.\n",
     )
 
     println(io, "### Expected values\n")
     model_for_truth = build_adnlp
+    all_feasible = true
     for conv in CONVENTIONS
-        println(io, "Convention **", conv.name, "**:\n")
+        println(io, "<details><summary>Convention <b>", longname(conv), "</b></summary>\n")
         rows = Vector{Vector{String}}()
         for (i, k) in enumerate(CASES)
             t = expected(conv, model_for_truth(k), k)
+            all_feasible &= dual_feasible(conv, t, k)
             bx = k.box === :bound ? "zU(x₃) = " * num(t[:z_x3]) : "y₃ = " * num(t[:y_x3])
             push!(
                 rows,
@@ -448,17 +609,24 @@ function report()
         table(
             io, ["#", "y_c (equality)", "y_g (inequality)", "x₃", "zL(x₄)", "net(x₅)"], rows
         )
+        println(io, "</details>\n")
     end
+    println(
+        io,
+        "The expected values satisfy the dual feasibility of their convention in every case: **",
+        all_feasible,
+        "**.\n",
+    )
 
     println(io, "### What each solver returns\n")
     println(
         io,
-        "A cell is the convention the solver follows (**A** or **B**) when all multipliers match it. Otherwise it is `≈X ✗ groups`: the closest convention and the multipliers that differ (`y_c`, `y_g`, `y_x3` row multipliers; `z_x3`, `z_x4` bound multipliers; `z_x5` net multiplier of the fixed variable). A bound multiplier on the wrong side counts as wrong. `⚠ status` marks a solve that did not converge.\n",
+        "A cell is the convention the solver follows when **all** its multipliers match it: **A** or **B** for a minimisation (the two rules for a maximisation coincide there), and **A, as written** / **A, min-equiv.** (or B) for a maximisation. If they match none of the considered conventions, the cell is **none**, and the multipliers that disagree are listed below. `⚠ status` marks a solve that did not converge.\n",
     )
     for (mname, _) in MODELERS
         println(io, "#### ", mname, "\n")
         rows = [
-            [sname; [results[(mname, sname, i)][1] for i in eachindex(CASES)]] for
+            [sname; [cell(mname, sname, i) for i in eachindex(CASES)]] for
             (sname, _) in SOLVERS
         ]
         table(io, vcat(["Solver"], string.(1:length(CASES))), rows)
@@ -477,19 +645,18 @@ function report()
 
     println(io, "#### Same on both modelers, and CTSolvers vs the raw solver\n")
     same_models = all(
-        results[("ADNLPModels", s, i)][1] == results[("ExaModels", s, i)][1] for
-        (s, _) in SOLVERS, i in eachindex(CASES)
+        cell("ADNLPModels", s, i) == cell("ExaModels", s, i) for (s, _) in SOLVERS,
+        i in eachindex(CASES)
     )
     println(
         io, "- ADNLPModels and ExaModels give the same verdicts: **", same_models, "**."
     )
     for name in ("Ipopt", "MadNLP", "Uno")
         same = all(
-            m == "n/a" || (
-                results[(m, name, i)][1] == results[(m, "CTSolvers." * name, i)][1] &&
-                isapprox(
-                    results[(m, name, i)][2],
-                    results[(m, "CTSolvers." * name, i)][2];
+            isempty(results[(m, name, i)].bads) || (
+                cell(m, name, i) == cell(m, "CTSolvers." * name, i) && isapprox(
+                    results[(m, name, i)].raw,
+                    results[(m, "CTSolvers." * name, i)].raw;
                     atol=1e-6,
                 )
             ) for (m, _) in MODELERS, i in eachindex(CASES)
@@ -506,6 +673,109 @@ function report()
         )
     end
     println(io)
+
+    # ---- multipliers that disagree with the conventions -------------------------------------
+    disagree = [
+        (sname, i) for (sname, _) in SOLVERS for
+        i in eachindex(CASES) if occursin("none", cell("ADNLPModels", sname, i)) &&
+        !startswith(sname, "CTSolvers.") ||
+        (sname == "CTSolvers.MadNCL" && occursin("none", cell("ADNLPModels", sname, i)))
+    ]
+    if !isempty(disagree)
+        println(io, "#### Multipliers that disagree with the conventions\n")
+        println(
+            io,
+            "For the cases where a solver follows none of the conventions (ADNLPModels; ExaModels is identical), its multipliers next to the expected ones for its own stationarity convention (the one it follows on every minimisation), under both rules for a maximisation. The solver's value is in **bold** when it matches neither rule.\n",
+        )
+        for sname in unique(first.(disagree))
+            S = stationarity_of("ADNLPModels", sname)
+            println(
+                io,
+                "<details><summary><b>",
+                sname,
+                "</b> (stationarity ",
+                S,
+                ")</summary>\n",
+            )
+            rows = Vector{Vector{String}}()
+            for (sn, i) in disagree
+                sn == sname || continue
+                k = CASES[i]
+                o = results[("ADNLPModels", sname, i)]
+                jw, je = conv_index(S, :written), conv_index(S, :min_equivalent)
+                tw = expected(CONVENTIONS[jw], build_adnlp(k), k)
+                te = expected(CONVENTIONS[je], build_adnlp(k), k)
+                for gr in groups(k)
+                    v = o.obs[jw][gr]
+                    miss = !(abs(v - tw[gr]) < MATCH) && !(abs(v - te[gr]) < MATCH)
+                    push!(
+                        rows,
+                        [
+                            string(i),
+                            string(gr),
+                            miss ? "**" * num(v) * "**" : num(v),
+                            num(tw[gr]),
+                            num(te[gr]),
+                        ],
+                    )
+                end
+            end
+            table(
+                io, ["#", "multiplier", "solver", "$S, as written", "$S, min-equiv."], rows
+            )
+            println(io, "</details>\n")
+        end
+    end
+
+    # ---- conclusion --------------------------------------------------------------------------
+    println(io, "### Conclusion\n")
+    rows = Vector{Vector{String}}()
+    for (sname, _) in SOLVERS
+        S = stationarity_of("ADNLPModels", sname)
+        S2 = stationarity_of("ExaModels", sname)
+        sty = S === nothing ? "none" : (S == S2 ? string(S) : "differs between modelers")
+        mx = unique(
+            filter(
+                !isnothing,
+                [
+                    rules(m, sname, i) for (m, _) in MODELERS for
+                    (i, k) in enumerate(CASES) if k.sense === :max
+                ],
+            ),
+        )
+        behaviour = if S === nothing
+            "n/a"
+        elseif length(mx) == 1 && mx[1][1] == mx[1][2] == "as written"
+            "**" * string(S) * ", as written** — every multiplier changes sign"
+        elseif length(mx) == 1 && mx[1][1] == mx[1][2] == "min-equiv."
+            "**" * string(S) * ", min-equiv.** — no multiplier changes sign"
+        elseif length(mx) == 1
+            "**none**, inconsistent: the rows follow *" *
+            mx[1][1] *
+            "*, the bounds and fixed variable *" *
+            mx[1][2] *
+            "*"
+        else
+            "**none**, varies with the case"
+        end
+        push!(rows, [sname, sty, behaviour])
+    end
+    table(io, ["Solver", "Stationarity (read on `min f`)", "Maximisation (`max -f`)"], rows)
+    fam = Dict{String,Vector{String}}()
+    for (sname, _) in SOLVERS
+        S = stationarity_of("ADNLPModels", sname)
+        S === nothing || push!(get!(fam, string(S), String[]), sname)
+    end
+    for S in sort(collect(keys(fam)))
+        println(io, "- Stationarity **", S, "**: ", join("`" .* fam[S] .* "`", ", "), ".")
+    end
+    println(io)
+    if any(r -> occursin("inconsistent", r[3]), rows)
+        println(
+            io,
+            "A solver marked **none** has the stationarity of its family on `min f`, but on `max -f` it mixes the two rules: some multipliers change sign between `min f` and `max -f` (those of the rows), others do not (those of the bounds and of fixed variables). No single convention, as defined above, describes its output.\n",
+        )
+    end
     return String(take!(io))
 end
 
