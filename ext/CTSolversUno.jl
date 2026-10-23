@@ -28,6 +28,7 @@ Return metadata defining Uno options and their specifications.
 """
 function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:Strategies.CPU}
     return Strategies.StrategyMetadata(
+        Solvers.__multipliers_option(),
         # ====================================================================
         # Presets
         # ====================================================================
@@ -341,9 +342,10 @@ function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::Solvers.Uno; display::Bool=true
 )::UnoSolver.UnoExecutionStats
     options = Strategies.options_dict(solver)
+    mult = pop!(options, :multipliers)
     options[:logger] = display ? options[:logger] : "SILENT"
     stats = solve_with_uno(nlp; options...)
-    return _normalize_multipliers!(stats, solver, nlp)
+    return mult === :native ? stats : _normalize_multipliers!(stats, solver, nlp)
 end
 
 # Multipliers in the convention of CTSolvers (see `Solvers.normalize_multipliers!`).

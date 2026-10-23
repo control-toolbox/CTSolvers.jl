@@ -30,9 +30,8 @@ stats = CommonSolve.solve(nlp, Solvers.Ipopt())
 stats = CommonSolve.solve(nlp, Solvers.Ipopt())
 μ = stats.multipliers[i]
 
-# The raw multipliers of a backend are those of the extension's solve_with_<solver>
-CTSolversIpopt = Base.get_extension(CTSolvers, :CTSolversIpopt)
-raw = CTSolversIpopt.solve_with_ipopt(nlp; print_level=0)
+# The raw multipliers of the backend, as before
+stats = CommonSolve.solve(nlp, Solvers.Ipopt(; multipliers=:native))
 ```
 
 ---

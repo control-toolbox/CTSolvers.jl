@@ -27,8 +27,10 @@ Bring the multipliers `stats.multipliers`, `stats.multipliers_L` and
 `stats.multipliers_U` returned by `solver` to the convention of CTSolvers, in place, and
 return `stats`.
 
-The convention does not depend on the solver, on the sense of the objective, nor on the
-way a constraint is written:
+The convention is the one of the ecosystem (ct-conventions `SGN1`–`SGN3`, see
+<https://github.com/control-toolbox/ct-conventions/blob/main/rules/signs.md>). It does not
+depend on the solver, on the sense of the objective, nor on the way a constraint is
+written:
 
 - `max F` is the minimisation of `-F`: `min f` and `max -f` have the **same** multipliers.
 - The bound multipliers `multipliers_L` (`zL`) and `multipliers_U` (`zU`) are
@@ -201,4 +203,36 @@ function _one_sided_rows!(y::AbstractVector, lcon::AbstractVector, ucon::Abstrac
     ]
     y .*= copyto!(similar(y), s)
     return y
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Definition of the `multipliers` option shared by every solver: `:normalized` (default)
+returns the multipliers in the convention of CTSolvers (see
+[`Solvers.normalize_multipliers!`](@ref)), `:native` the raw multipliers of the backend, in
+its own convention. The option is consumed by CTSolvers and never passed to the backend.
+
+# Throws
+
+- [`CTBase.Exceptions.IncorrectArgument`](@extref): when the value is neither `:normalized`
+  nor `:native`.
+"""
+function __multipliers_option()
+    return Strategies.OptionDefinition(;
+        name=:multipliers,
+        type=Symbol,
+        default=:normalized,
+        description="Convention of the returned multipliers: :normalized (the convention of CTSolvers, the same for every solver: ct-conventions SGN1–SGN3) or :native (the raw multipliers of the solver).",
+        validator=x ->
+            x in (:normalized, :native) || throw(
+                Exceptions.IncorrectArgument(
+                    "Invalid multipliers value";
+                    got="multipliers=:$x",
+                    expected=":normalized or :native",
+                    suggestion="Use multipliers=:native for the raw multipliers of the solver",
+                    context="multipliers option validation",
+                ),
+            ),
+    )
 end

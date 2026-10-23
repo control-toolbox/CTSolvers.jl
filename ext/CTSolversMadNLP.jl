@@ -160,6 +160,7 @@ function Strategies.metadata(
     ::Type{Solvers.MadNLP{P}}
 ) where {P<:Strategies.AbstractStrategyParameter}
     return Strategies.StrategyMetadata(
+        Solvers.__multipliers_option(),
         Strategies.OptionDefinition(;
             name=:max_iter,
             type=Integer,
@@ -508,9 +509,10 @@ function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::Solvers.MadNLP; display::Bool=true
 )::MadNLP.MadNLPExecutionStats
     options = Strategies.options_dict(solver)
+    mult = pop!(options, :multipliers)
     options[:print_level] = display ? options[:print_level] : MadNLP.ERROR
     stats = solve_with_madnlp(nlp; options...)
-    return _normalize_multipliers!(stats, solver, nlp)
+    return mult === :native ? stats : _normalize_multipliers!(stats, solver, nlp)
 end
 
 # Multipliers in the convention of CTSolvers (see `Solvers.normalize_multipliers!`).

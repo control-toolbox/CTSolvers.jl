@@ -28,6 +28,7 @@ Return metadata defining Ipopt options and their specifications.
 """
 function Strategies.metadata(::Type{Solvers.Ipopt{P}}) where {P<:Strategies.CPU}
     return Strategies.StrategyMetadata(
+        Solvers.__multipliers_option(),
         # ====================================================================
         # Termination options
         # ====================================================================
@@ -595,9 +596,10 @@ function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::Solvers.Ipopt; display::Bool=true
 )::SolverCore.GenericExecutionStats
     options = Strategies.options_dict(solver)
+    mult = pop!(options, :multipliers)
     options[:print_level] = display ? options[:print_level] : 0
     stats = solve_with_ipopt(nlp; options...)
-    return _normalize_multipliers!(stats, solver, nlp)
+    return mult === :native ? stats : _normalize_multipliers!(stats, solver, nlp)
 end
 
 # Multipliers in the convention of CTSolvers (see `Solvers.normalize_multipliers!`).

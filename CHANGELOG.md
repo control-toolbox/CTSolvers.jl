@@ -42,9 +42,8 @@ stats = CommonSolve.solve(nlp, Solvers.Ipopt())
 stats = CommonSolve.solve(nlp, Solvers.Ipopt())
 μ = stats.multipliers[i]
 
-# The raw multipliers of a backend are those of the extension's solve_with_<solver>
-CTSolversIpopt = Base.get_extension(CTSolvers, :CTSolversIpopt)
-raw = CTSolversIpopt.solve_with_ipopt(nlp; print_level=0)
+# The raw multipliers of the backend, as before
+stats = CommonSolve.solve(nlp, Solvers.Ipopt(; multipliers=:native))
 ```
 
 See [BREAKING.md](BREAKING.md).
@@ -54,6 +53,9 @@ See [BREAKING.md](BREAKING.md).
 - `Solvers.normalize_multipliers!(stats, solver, lcon, ucon, minimize)`: brings the
   multipliers of a solver to the convention of CTSolvers; called by the solve method of
   each backend extension.
+- **Option `multipliers`** on every solver: `:normalized` (default) or `:native`, the raw
+  multipliers of the backend. Consumed by CTSolvers, never passed to the backend; reachable
+  from OptimalControl like any solver option.
 - `Solvers.reference_multipliers!(solver, y, zL, zU, minimize)`: the native convention of
   a solver, one method per solver (contract of `AbstractNLPSolver`; `NotImplemented` for a
   solver with no method). Knitro's method is derived from its manual and from

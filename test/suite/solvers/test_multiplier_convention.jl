@@ -3,6 +3,7 @@ module TestMultiplierConvention
 using Test: Test
 using CTBase: Exceptions
 using CTBase: Strategies
+using CTBase: Options
 using CTSolvers: Solvers
 
 const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
@@ -157,6 +158,15 @@ function test_multiplier_convention()
         # ====================================================================
         # CONTRACT TESTS - exports
         # ====================================================================
+
+        Test.@testset "multipliers option" begin
+            def = Solvers.__multipliers_option()
+            Test.@test Options.name(def) === :multipliers
+            Test.@test Options.default(def) === :normalized
+            Test.@test def.validator(:native)
+            Test.@test def.validator(:normalized)
+            Test.@test_throws Exceptions.IncorrectArgument def.validator(:raw)
+        end
 
         Test.@testset "Exports" begin
             Test.@test :normalize_multipliers! in names(Solvers)

@@ -54,6 +54,7 @@ native convention as a map from the reference multipliers.
 struct SolverCase
     name::String
     strategy::Solvers.AbstractNLPSolver
+    native_strategy::Solvers.AbstractNLPSolver   # the same with multipliers=:native
     raw::Function
     native::Function
 end
@@ -77,24 +78,28 @@ const SOLVERS = [
     SolverCase(
         "Ipopt (NLPModelsIpopt $(pkgversion(NLPModelsIpopt)))",
         Solvers.Ipopt(; print_level=0, tol=TOL),
+        Solvers.Ipopt(; print_level=0, tol=TOL, multipliers=:native),
         nlp -> CTSolversIpopt.solve_with_ipopt(nlp; print_level=0, tol=TOL),
         native_as_written,
     ),
     SolverCase(
         "MadNLP $(pkgversion(MadNLP))",
         Solvers.MadNLP(; tol=TOL),
+        Solvers.MadNLP(; tol=TOL, multipliers=:native),
         nlp -> CTSolversMadNLP.solve_with_madnlp(nlp; print_level=MadNLP.ERROR, tol=TOL),
         native_rows_only,
     ),
     SolverCase(
         "MadNCL $(pkgversion(MadNCL))",
         Solvers.MadNCL(; tol=TOL),
+        Solvers.MadNCL(; tol=TOL, multipliers=:native),
         raw_madncl,
         native_rows_only,
     ),
     SolverCase(
         "Uno (UnoSolver $(pkgversion(UnoSolver)))",
         Solvers.Uno(; primal_tolerance=TOL, dual_tolerance=TOL),
+        Solvers.Uno(; primal_tolerance=TOL, dual_tolerance=TOL, multipliers=:native),
         nlp -> CTSolversUno.solve_with_uno(
             nlp; logger="SILENT", primal_tolerance=TOL, dual_tolerance=TOL
         ),
@@ -140,6 +145,12 @@ function test_multiplier_signs()
                 expected = sc.native(MultiplierSigns.reference(k)..., s)
                 σ = sc.native === native_uno ? 1.0 : -1.0
                 check(sc.raw(build(k)), expected; σ=σ)
+                # the option multipliers=:native returns the same raw multipliers
+                check(
+                    CommonSolve.solve(build(k), sc.native_strategy; display=false),
+                    expected;
+                    σ=σ,
+                )
             end
         end
 

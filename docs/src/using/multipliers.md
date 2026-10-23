@@ -11,10 +11,11 @@ not agree on their signs. CTSolvers brings them to **one convention**, the same 
 solver, so that the duals of an optimal control problem do not depend on the solver, nor
 on the way the problem is written.
 
-The convention is discussed in
-[OptimalControl.jl#1014](https://github.com/control-toolbox/OptimalControl.jl/discussions/1014)
-and implemented in
-[CTSolvers.jl#288](https://github.com/control-toolbox/CTSolvers.jl/issues/288).
+The convention is the one of the whole ecosystem, stated in
+[ct-conventions, `SGN1`–`SGN6`](https://github.com/control-toolbox/ct-conventions/blob/main/rules/signs.md)
+(discussed in
+[OptimalControl.jl#1014](https://github.com/control-toolbox/OptimalControl.jl/discussions/1014),
+implemented in [CTSolvers.jl#288](https://github.com/control-toolbox/CTSolvers.jl/issues/288)).
 
 ## The convention
 
@@ -22,13 +23,13 @@ A multiplier belongs to a **constraint** and to a **problem**, not to the way th
 written.
 
 1. **`min f` and `max -f` are the same problem**: they have the same multipliers. A
-   maximisation `max F` is treated as the minimisation `min -F`.
+   maximisation `max F` is treated as the minimisation `min -F` (`SGN1`).
 2. **Inequalities have nonnegative multipliers.** The bound multipliers `zL` and `zU` are
    nonnegative, and so is the multiplier of a constraint row with a **single** finite bound:
-   `g(x) ≤ 0` and `-g(x) ≥ 0` are the same constraint, with the same multiplier.
+   `g(x) ≤ 0` and `-g(x) ≥ 0` are the same constraint, with the same multiplier (`SGN2`).
 3. **An equality keeps its sign**, the one of the stationarity below: `c(x) = 0` and
    `-c(x) = 0` have opposite multipliers, as they must, since an equality has no preferred
-   side.
+   side (`SGN3`).
 
 For the equivalent minimisation of `F_min` (`F_min = F` for `min F`, `-F` for `max F`):
 
@@ -127,8 +128,23 @@ The tests pin these native conventions separately from the normalised output: if
 changes its convention upstream, the test of its native convention fails and names the
 solver and its version; if only the normalised output is wrong, the bug is in CTSolvers.
 
-The raw multipliers of a backend are still available from the functions the extensions
-call (`solve_with_ipopt`, `solve_with_madnlp`, …), which do not normalise.
+## Raw multipliers
+
+Every solver has the option `multipliers`: `:normalized` (the default) returns the
+convention above, `:native` the raw multipliers of the backend, in its own convention.
+The option is consumed by CTSolvers, never passed to the backend.
+
+```@example mult
+s = solve(nlp(; sense=:max, ineq=:ge), Solvers.Ipopt(; print_level=0, multipliers=:native);
+    display=false)
+round.(s.multipliers; digits=4)    # Ipopt, raw: the multipliers of -f as written, with y = μU − μL
+```
+
+Compared with the normalised `(0.5359, 0.1547)`: the equality changes sign (Ipopt returns
+the multipliers of the objective as written, `-f`), and the inequality, changed twice (by
+the sense, and by the row `-g ≥ 0`, a lower side), comes back to `+0.1547`.
+
+Through OptimalControl, the option is given to `solve` like any other solver option.
 
 ## Downstream
 
