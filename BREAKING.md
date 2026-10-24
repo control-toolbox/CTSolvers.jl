@@ -5,7 +5,7 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
-## Unreleased
+## v0.7.0 (2026-10-24)
 
 ### One multiplier convention for every solver
 

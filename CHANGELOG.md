@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-24
+
 ### 💥 Breaking Changes
 
 #### One multiplier convention for every solver
@@ -83,6 +85,7 @@ See [BREAKING.md](BREAKING.md).
 
 - **Breaking**: the multipliers returned by `CommonSolve.solve(nlp, solver)` (see
   *Breaking Changes* above). See [BREAKING.md](BREAKING.md).
+- CTModels `0.21` is accepted (`[compat]`: `0.19, 0.20, 0.21`); the suite passes against 0.21.0.
 
 ## [0.6.2] - 2026-10-19
 
