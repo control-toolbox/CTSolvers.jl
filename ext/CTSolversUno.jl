@@ -28,6 +28,7 @@ Return metadata defining Uno options and their specifications.
 """
 function Strategies.metadata(::Type{Solvers.Uno{P}}) where {P<:Strategies.CPU}
     return Strategies.StrategyMetadata(
+        Solvers.__multipliers_option(),
         # ====================================================================
         # Presets
         # ====================================================================
@@ -331,7 +332,9 @@ Solve an NLP problem using Uno.
 - `display::Bool`: Whether to show solver output (default: true)
 
 # Returns
-- `UnoSolver.UnoExecutionStats`: Solver execution statistics
+- `UnoSolver.UnoExecutionStats`: Solver execution statistics,
+  with the multipliers in the convention of CTSolvers (see
+  `Solvers.normalize_multipliers!`)
 
 See also: [`CTSolversUno.solve_with_uno`](@extref), [`CTSolvers.Solvers.extract_solver_infos`](@extref)
 """
@@ -339,8 +342,21 @@ function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::Solvers.Uno; display::Bool=true
 )::UnoSolver.UnoExecutionStats
     options = Strategies.options_dict(solver)
+    mult = pop!(options, :multipliers)
     options[:logger] = display ? options[:logger] : "SILENT"
-    return solve_with_uno(nlp; options...)
+    stats = solve_with_uno(nlp; options...)
+    return mult === :native ? stats : _normalize_multipliers!(stats, solver, nlp)
+end
+
+# Multipliers in the convention of CTSolvers (see `Solvers.normalize_multipliers!`).
+function _normalize_multipliers!(stats, solver, nlp::NLPModels.AbstractNLPModel)
+    return Solvers.normalize_multipliers!(
+        stats,
+        solver,
+        NLPModels.get_lcon(nlp),
+        NLPModels.get_ucon(nlp),
+        NLPModels.get_minimize(nlp),
+    )
 end
 
 # ============================================================================

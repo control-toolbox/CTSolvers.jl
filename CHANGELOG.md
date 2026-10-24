@@ -9,10 +9,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 💥 Breaking Changes
+
+#### One multiplier convention for every solver
+
+- **`CommonSolve.solve(nlp, solver)` returns the multipliers in one convention**, the same
+  for Ipopt, MadNLP, MadNCL, Uno and Knitro
+  ([#288](https://github.com/control-toolbox/CTSolvers.jl/issues/288), following
+  [OptimalControl.jl#1014](https://github.com/control-toolbox/OptimalControl.jl/discussions/1014)):
+  `min f` and `max -f` have the same multipliers (those of the equivalent minimisation);
+  the bound multipliers `multipliers_L`, `multipliers_U` are nonnegative, with the
+  stationarity `∇F_min + Jᵀy − zL + zU = 0`; the multiplier of a constraint row with a
+  single finite bound is nonnegative (`g ≤ 0` and `-g ≥ 0` have the same multiplier);
+  equalities and two-sided rows keep the signed `y = μU − μL`.
+- **What changes**: for a **maximisation**, the multipliers no longer change sign with the
+  sense (all of them for Ipopt and Uno, the rows for MadNLP and MadNCL); the multiplier of
+  a row with **only a lower bound** changes sign (now `≥ 0`) for every solver; with **Uno**
+  the lower-bound multipliers change sign (now `≥ 0`); with **Knitro** the lower- and
+  upper-bound multipliers are no longer swapped. Minimisations with Ipopt, MadNLP or MadNCL
+  and rows with an upper bound only, equalities, two-sided rows are unchanged.
+- **Why**: the duals of an optimal control problem depended on the NLP solver and on the
+  way a constraint or the criterion was written.
+
+**Migration**:
+
+```julia
+# Before: native multipliers, e.g. for a row lcon ≤ c(x) with ucon = Inf
+stats = CommonSolve.solve(nlp, Solvers.Ipopt())
+μ = -stats.multipliers[i]
+
+# After: the multiplier of a one-sided row is already nonnegative
+stats = CommonSolve.solve(nlp, Solvers.Ipopt())
+μ = stats.multipliers[i]
+
+# The raw multipliers of the backend, as before
+stats = CommonSolve.solve(nlp, Solvers.Ipopt(; multipliers=:native))
+```
+
+See [BREAKING.md](BREAKING.md).
+
+### ✨ New Features
+
+- `Solvers.normalize_multipliers!(stats, solver, lcon, ucon, minimize)`: brings the
+  multipliers of a solver to the convention of CTSolvers; called by the solve method of
+  each backend extension.
+- **Option `multipliers`** on every solver: `:normalized` (default) or `:native`, the raw
+  multipliers of the backend. Consumed by CTSolvers, never passed to the backend; reachable
+  from OptimalControl like any solver option.
+- `Solvers.reference_multipliers!(solver, y, zL, zU, minimize)`: the native convention of
+  a solver, one method per solver (contract of `AbstractNLPSolver`; `NotImplemented` for a
+  solver with no method). Knitro's method is derived from its manual and from
+  NLPModelsKnitro, not tested (license).
+
+### 🧪 Testing
+
+- `test/suite/extensions/test_multiplier_signs.jl`: the problem of the sign probe written in
+  eight ways (`min f` / `max -f`, `g ≤ 0` / `-g ≥ 0`, a bound / a row), on ADNLPModels and
+  ExaModels. It pins the **native** convention of each solver (a failure names the solver
+  and its version: a convention moved upstream) and checks that the **normalised** output
+  is the same in every case (a failure there is a bug of CTSolvers).
+- `test/suite/solvers/test_multiplier_convention.jl`: unit tests on fake statistics, Knitro
+  included.
+
 ### 📚 Documentation
 
+- New page *Multiplier Convention* (Using CTSolvers): the convention, an example with the
+  eight ways of writing a problem, the native convention of each solver and what CTSolvers
+  changes. *Implementing a Solver* describes the multiplier hook.
 - ct-agents pinned at `v0.3.0` in `AGENTS.md`: at the close of a release the agent runs
   `release.jl audit`, which checks the trail the release left.
+
+### ✅ Compatibility
+
+- **Breaking**: the multipliers returned by `CommonSolve.solve(nlp, solver)` (see
+  *Breaking Changes* above). See [BREAKING.md](BREAKING.md).
 
 ## [0.6.2] - 2026-10-19
 

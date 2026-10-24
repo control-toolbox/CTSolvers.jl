@@ -47,6 +47,7 @@ function Strategies.metadata(
     ::Type{Solvers.MadNCL{P}}
 ) where {P<:Strategies.AbstractStrategyParameter}
     return Strategies.StrategyMetadata(
+        Solvers.__multipliers_option(),
         Strategies.OptionDefinition(;
             name=:max_iter,
             type=Integer,
@@ -400,12 +401,15 @@ Solve an NLP problem using MadNCL.
 - `display::Bool`: Whether to show solver output (default: true)
 
 # Returns
-- `MadNCL.NCLStats`: MadNCL execution statistics
+- `MadNCL.NCLStats`: MadNCL execution statistics,
+  with the multipliers in the convention of CTSolvers (see
+  `Solvers.normalize_multipliers!`)
 """
 function CommonSolve.solve(
     nlp::NLPModels.AbstractNLPModel, solver::Solvers.MadNCL; display::Bool=true
 )::MadNCL.NCLStats
     options = Strategies.options_dict(solver)
+    mult = pop!(options, :multipliers)
     options[:print_level] = display ? options[:print_level] : MadNLP.ERROR
 
     # Handle ncl_options verbose flag
@@ -419,7 +423,19 @@ function CommonSolve.solve(
         options[:ncl_options] = MadNCL.NCLOptions{BaseType}(; ncl_opts_dict...)
     end
 
-    return solve_with_madncl(nlp; options...)
+    stats = solve_with_madncl(nlp; options...)
+    return mult === :native ? stats : _normalize_multipliers!(stats, solver, nlp)
+end
+
+# Multipliers in the convention of CTSolvers (see `Solvers.normalize_multipliers!`).
+function _normalize_multipliers!(stats, solver, nlp::NLPModels.AbstractNLPModel)
+    return Solvers.normalize_multipliers!(
+        stats,
+        solver,
+        NLPModels.get_lcon(nlp),
+        NLPModels.get_ucon(nlp),
+        NLPModels.get_minimize(nlp),
+    )
 end
 
 # ============================================================================

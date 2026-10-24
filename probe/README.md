@@ -10,7 +10,7 @@ the others. They are the ground truth for the capability claims of the documenta
 | :--- | :--- | :--- |
 | [`cpu/`](cpu/probe_cpu.jl) | GitHub-hosted Ubuntu (`CPUProbe.yml`) | NLP modeler × solver on CPU, strategy × execution parameter, `Integrators.SciML` × state type |
 | [`gpu/`](gpu/probe_gpu.jl) | self-hosted `kkt` runner, NVIDIA/CUDA (`GPUProbe.yml`) | GPU defaults, NLP modeler × solver on the device, `Integrators.SciML` with `CuArray` states |
-| [`signs/`](signs/probe_signs.jl) | GitHub-hosted Ubuntu (`CPUProbe.yml`) | sign convention of the multipliers each solver returns, for `min f` vs `max -f`, `g ≤ 0` vs `-g ≥ 0`, bound vs constraint row; writes a Markdown report |
+| [`signs/`](signs/probe_signs.jl) | GitHub-hosted Ubuntu (`CPUProbe.yml`) | sign convention of the multipliers each solver returns, for `min f` vs `max -f`, `g ≤ 0` vs `-g ≥ 0`, bound vs constraint row; writes a Markdown report. Since #288 the `CTSolvers.*` rows are normalised: they follow a fifth convention, **CTSolvers** (ct-conventions `SGN1`–`SGN3`), the same for the eight cases; the `CTSolvers.* (native)` rows (`multipliers=:native`) give the raw multipliers |
 
 Run them on a PR with the `run probe` label, from the Actions tab (`workflow_dispatch`), or
 locally:

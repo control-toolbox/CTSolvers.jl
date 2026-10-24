@@ -319,7 +319,11 @@ function CommonSolve.solve(
 )::SolverCore.GenericExecutionStats
     options = CTBase.Strategies.options_dict(solver)
     options[:print_level] = display ? options[:print_level] : 0
-    return solve_with_ipopt(nlp; options...)
+    stats = solve_with_ipopt(nlp; options...)
+    return Solvers.normalize_multipliers!(
+        stats, solver, NLPModels.get_lcon(nlp), NLPModels.get_ucon(nlp),
+        NLPModels.get_minimize(nlp),
+    )
 end
 
 function solve_with_ipopt(nlp::NLPModels.AbstractNLPModel; kwargs...)
@@ -332,6 +336,27 @@ end # module CTSolversIpopt
 
 !!! info "Display handling"
     The `display` parameter controls solver output. When `display = false`, the solver sets `print_level = 0` to suppress all output. This is a convention shared by all CTSolvers solvers.
+
+**4. Multiplier convention** — the statistics returned by `CommonSolve.solve` carry the
+multipliers in the convention of CTSolvers (see [Multiplier Convention](@ref)), whatever the
+native convention of the backend. The solve method calls
+[`Solvers.normalize_multipliers!`](@ref) (above), which needs one method of
+[`Solvers.reference_multipliers!`](@ref) for the solver: the change from its native
+convention to the stationarity `∇F_min + Jᵀy − zL + zU = 0` of the equivalent minimisation.
+For Ipopt, the multipliers are those of the objective as written, so they all change sign
+for a maximisation:
+
+```julia
+# In src/Solvers/multipliers.jl
+function reference_multipliers!(
+    ::Ipopt, y::AbstractVector, zL::AbstractVector, zU::AbstractVector, minimize::Bool
+)
+    minimize || _negate!(y, zL, zU)
+    return nothing
+end
+```
+
+Without a method, `normalize_multipliers!` throws `NotImplemented`.
 
 ## CommonSolve Integration
 
@@ -383,12 +408,13 @@ To add a new solver (e.g., `MySolver` backed by `MyBackend`):
 - Implement `CTBase.Strategies.id(::Type{<:MySolver}) = :my_solver`, `CTBase.Strategies.default_parameter(::Type{<:MySolver}) = CTBase.Strategies.CPU`, and `CTBase.Strategies.parameter(::Type{<:MySolver{P}}) where {P<:CTBase.Strategies.CPU} = P`
 - Write the constructor chain: `MySolver(; ...)` → `MySolver{P}(; ...)` → `build_my_solver(MyTag, P; mode, kwargs...)`
 - Write stub: `build_my_solver(::Type{<:Core.AbstractTag}, ::Type{<:CTBase.Strategies.AbstractStrategyParameter}; kwargs...) = throw(ExtensionError(...))`
+- Implement `Solvers.reference_multipliers!(::MySolver, y, zL, zU, minimize)`: the native multiplier convention of the backend (see [Multiplier Convention](@ref))
 
 ### In `ext/CTSolversMyBackend.jl`
 
 - Implement `CTBase.Strategies.metadata(::Type{MySolver{P}}) where {P<:CTBase.Strategies.CPU}` with all option definitions
 - Implement `Solvers.build_my_solver(::Type{Solvers.MyTag}, parameter::Type{<:CTBase.Strategies.AbstractStrategyParameter}; kwargs...)` — real constructor
-- Implement `CommonSolve.solve(nlp, solver::MySolver; display)` — solve method invoking the backend
+- Implement `CommonSolve.solve(nlp, solver::MySolver; display)` — solve method invoking the backend, ending with `Solvers.normalize_multipliers!`
 
 ### In `Project.toml`
 
@@ -399,3 +425,4 @@ To add a new solver (e.g., `MySolver` backed by `MyBackend`):
 - **Contract test**: `CTBase.Strategies.id(MySolver)`, `CTBase.Strategies.metadata(MySolver)`, and `CTBase.Strategies.options(MySolver())` (requires extension loaded)
 - **Solve test**: `CommonSolve.solve(nlp, solver; display = false)` returns `AbstractExecutionStats`
 - **Extension error test**: without `using MyBackend`, `MySolver()` throws `ExtensionError`
+- **Multiplier test**: add the solver to `test/suite/extensions/test_multiplier_signs.jl` — its native convention, and the normalised output on every way of writing the problem

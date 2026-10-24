@@ -169,6 +169,25 @@ const SOLVERS = [
         nlp -> CommonSolve.solve(
             nlp, Solvers.Uno(; primal_tolerance=TOL, dual_tolerance=TOL); display=false
         ),
+    # the same with multipliers=:native: the raw multipliers of the backend
+    "CTSolvers.Ipopt (native)" =>
+        nlp -> CommonSolve.solve(
+            nlp,
+            Solvers.Ipopt(; print_level=0, tol=TOL, multipliers=:native);
+            display=false,
+        ),
+    "CTSolvers.MadNLP (native)" =>
+        nlp -> CommonSolve.solve(
+            nlp, Solvers.MadNLP(; tol=TOL, multipliers=:native); display=false
+        ),
+    "CTSolvers.Uno (native)" =>
+        nlp -> CommonSolve.solve(
+            nlp,
+            Solvers.Uno(;
+                primal_tolerance=TOL, dual_tolerance=TOL, multipliers=:native
+            );
+            display=false,
+        ),
 ]
 
 # =============================================================================
@@ -279,6 +298,19 @@ function expected(conv::Convention, nlp, k::Case)
     return out
 end
 
+"""
+Expected multipliers of `nlp` in the convention of CTSolvers (ct-conventions `SGN1`–`SGN3`):
+the multipliers of the equivalent minimisation with the stationarity A, and the multiplier
+of a row with a single finite **lower** bound made nonnegative (`μL = −y`). Here those rows
+are `-g ≥ 0` and `-x₃ ≥ -1`. The eight cases then give the same numbers.
+"""
+function expected_ctsolvers(nlp, k::Case)
+    t = expected(CONVENTIONS[conv_index(:A, :min_equivalent)], nlp, k)
+    k.ineq === :ge && (t[:y_g] = -t[:y_g])
+    k.box === :row && (t[:y_x3] = -t[:y_x3])
+    return t
+end
+
 field(s, name) =
     try
         Float64.(collect(getproperty(s, name)))
@@ -325,9 +357,10 @@ struct Outcome
     raw::Vector{Float64}
     status::String
     err::String
+    ctsolvers::Bool   # matches the convention of CTSolvers (see `expected_ctsolvers`)
 end
 
-Outcome(err::AbstractString) = Outcome([], [], Float64[], "", String(err))
+Outcome(err::AbstractString) = Outcome([], [], Float64[], "", String(err), false)
 
 function measure(stats, nlp, k::Case)
     observed(CONVENTIONS[1], stats, k) === nothing && return Outcome("n/a")
@@ -341,7 +374,8 @@ function measure(stats, nlp, k::Case)
         field(stats, :multipliers_L),
         field(stats, :multipliers_U),
     )
-    return Outcome(bads, obs, raw, string(getproperty(stats, :status)), "")
+    ct = isempty(mismatches(obs[1], expected_ctsolvers(nlp, k), k))
+    return Outcome(bads, obs, raw, string(getproperty(stats, :status)), "", ct)
 end
 
 function conv_index(name::Symbol, rule::Symbol)
@@ -400,7 +434,12 @@ function cell(mname, sname, i)
     isempty(o.bads) && return o.err
     k = CASES[i]
     S = stationarity_of(mname, sname)
-    text = if S === nothing
+    # CTSolvers coincides with A on some cases: claim it only for a solver that follows it
+    # in every case
+    ct_row = all(results[(mname, sname, j)].ctsolvers for j in eachindex(CASES))
+    text = if ct_row
+        "**CTSolvers**"
+    elseif S === nothing
         "**none**"
     elseif k.sense === :min
         isempty(o.bads[conv_index(S, :written)]) ? "**$S**" : "**none**"
@@ -588,6 +627,10 @@ function report()
     )
     println(
         io,
+        "A fifth convention, **CTSolvers**, is the one `CommonSolve.solve(nlp, solver)` returns (ct-conventions `SGN1`–`SGN3`): stationarity A for the equivalent minimisation (`max -f` has the multipliers of `min f`), and a nonnegative multiplier for a row with a single finite bound (`-g ≥ 0` has the multiplier of `g ≤ 0`, the row `-x₃ ≥ -a` that of the bound `x₃ ≤ a`). All eight cases give the same numbers. The raw multipliers of the backend are returned with `multipliers=:native` (the rows `CTSolvers.* (native)`).\n",
+    )
+    println(
+        io,
         "With the active set above the multipliers are unique, so each convention gives one expected value per multiplier, computed from the gradient and Jacobian of the model at `x*`. A solver follows a convention if **all** its multipliers match.\n",
     )
 
@@ -611,6 +654,17 @@ function report()
         )
         println(io, "</details>\n")
     end
+    println(io, "<details><summary>Convention <b>CTSolvers</b></summary>\n")
+    rows = Vector{Vector{String}}()
+    for (i, k) in enumerate(CASES)
+        t = expected_ctsolvers(model_for_truth(k), k)
+        bx = k.box === :bound ? "zU(x₃) = " * num(t[:z_x3]) : "y₃ = " * num(t[:y_x3])
+        push!(
+            rows, [string(i), num(t[:y_c]), num(t[:y_g]), bx, num(t[:z_x4]), num(t[:z_x5])]
+        )
+    end
+    table(io, ["#", "y_c (equality)", "y_g (inequality)", "x₃", "zL(x₄)", "net(x₅)"], rows)
+    println(io, "</details>\n")
     println(
         io,
         "The expected values satisfy the dual feasibility of their convention in every case: **",
@@ -644,6 +698,17 @@ function report()
     )
 
     println(io, "#### Same on both modelers, and CTSolvers vs the raw solver\n")
+    ct_all = all(
+        results[(m, s, i)].ctsolvers for (m, _) in MODELERS,
+        s in ("CTSolvers.Ipopt", "CTSolvers.MadNLP", "CTSolvers.MadNCL", "CTSolvers.Uno"),
+        i in eachindex(CASES)
+    )
+    println(
+        io,
+        "- `CTSolvers.*` (normalised) follow the **CTSolvers** convention in every case, on both modelers: **",
+        ct_all,
+        "**.",
+    )
     same_models = all(
         cell("ADNLPModels", s, i) == cell("ExaModels", s, i) for (s, _) in SOLVERS,
         i in eachindex(CASES)
@@ -654,9 +719,10 @@ function report()
     for name in ("Ipopt", "MadNLP", "Uno")
         same = all(
             isempty(results[(m, name, i)].bads) || (
-                cell(m, name, i) == cell(m, "CTSolvers." * name, i) && isapprox(
+                cell(m, name, i) == cell(m, "CTSolvers." * name * " (native)", i) &&
+                isapprox(
                     results[(m, name, i)].raw,
-                    results[(m, "CTSolvers." * name, i)].raw;
+                    results[(m, "CTSolvers." * name * " (native)", i)].raw;
                     atol=1e-6,
                 )
             ) for (m, _) in MODELERS, i in eachindex(CASES)
@@ -665,7 +731,7 @@ function report()
             io,
             "- `CTSolvers.",
             name,
-            "` returns the same multipliers as the raw `",
+            " (native)` (`multipliers=:native`) returns the same multipliers as the raw `",
             name,
             "`: **",
             same,
@@ -731,6 +797,17 @@ function report()
     println(io, "### Conclusion\n")
     rows = Vector{Vector{String}}()
     for (sname, _) in SOLVERS
+        if all(results[(m, sname, i)].ctsolvers for (m, _) in MODELERS, i in eachindex(CASES))
+            push!(
+                rows,
+                [
+                    sname,
+                    "CTSolvers",
+                    "**CTSolvers** — the same multipliers for the eight cases",
+                ],
+            )
+            continue
+        end
         S = stationarity_of("ADNLPModels", sname)
         S2 = stationarity_of("ExaModels", sname)
         sty = S === nothing ? "none" : (S == S2 ? string(S) : "differs between modelers")
@@ -763,11 +840,18 @@ function report()
     table(io, ["Solver", "Stationarity (read on `min f`)", "Maximisation (`max -f`)"], rows)
     fam = Dict{String,Vector{String}}()
     for (sname, _) in SOLVERS
-        S = stationarity_of("ADNLPModels", sname)
+        S = if all(
+            results[(m, sname, i)].ctsolvers for (m, _) in MODELERS, i in eachindex(CASES)
+        )
+            "CTSolvers"
+        else
+            stationarity_of("ADNLPModels", sname)
+        end
         S === nothing || push!(get!(fam, string(S), String[]), sname)
     end
     for S in sort(collect(keys(fam)))
-        println(io, "- Stationarity **", S, "**: ", join("`" .* fam[S] .* "`", ", "), ".")
+        label_S = S == "CTSolvers" ? "Convention **CTSolvers**" : "Stationarity **" * S * "**"
+        println(io, "- ", label_S, ": ", join("`" .* fam[S] .* "`", ", "), ".")
     end
     println(io)
     if any(r -> occursin("inconsistent", r[3]), rows)
