@@ -183,9 +183,7 @@ const SOLVERS = [
     "CTSolvers.Uno (native)" =>
         nlp -> CommonSolve.solve(
             nlp,
-            Solvers.Uno(;
-                primal_tolerance=TOL, dual_tolerance=TOL, multipliers=:native
-            );
+            Solvers.Uno(; primal_tolerance=TOL, dual_tolerance=TOL, multipliers=:native);
             display=false,
         ),
 ]
@@ -282,7 +280,7 @@ system. A fixed variable has a single net multiplier, `sL·zL + sU·zU`. With th
 function expected(conv::Convention, nlp, k::Case)
     G = NLPModels.grad(nlp, XSTAR)
     J = NLPModels.jac(nlp, XSTAR)
-    e(i) = (v = zeros(NVAR); v[i] = 1.0; v)
+    e(i) = (v=zeros(NVAR); v[i]=1.0; v)
     cols = Matrix{Float64}[Matrix(J')]   # y, one per row
     k.box === :bound && push!(cols, reshape(conv.sU * e(3), :, 1))      # zU on x₃
     push!(cols, reshape(conv.sL * e(4), :, 1))                          # zL on x₄
@@ -710,8 +708,8 @@ function report()
         "**.",
     )
     same_models = all(
-        cell("ADNLPModels", s, i) == cell("ExaModels", s, i) for (s, _) in SOLVERS,
-        i in eachindex(CASES)
+        cell("ADNLPModels", s, i) == cell("ExaModels", s, i) for
+        (s, _) in SOLVERS, i in eachindex(CASES)
     )
     println(
         io, "- ADNLPModels and ExaModels give the same verdicts: **", same_models, "**."
@@ -745,7 +743,7 @@ function report()
         (sname, i) for (sname, _) in SOLVERS for
         i in eachindex(CASES) if occursin("none", cell("ADNLPModels", sname, i)) &&
         !startswith(sname, "CTSolvers.") ||
-        (sname == "CTSolvers.MadNCL" && occursin("none", cell("ADNLPModels", sname, i)))
+            (sname == "CTSolvers.MadNCL" && occursin("none", cell("ADNLPModels", sname, i)))
     ]
     if !isempty(disagree)
         println(io, "#### Multipliers that disagree with the conventions\n")
@@ -797,7 +795,9 @@ function report()
     println(io, "### Conclusion\n")
     rows = Vector{Vector{String}}()
     for (sname, _) in SOLVERS
-        if all(results[(m, sname, i)].ctsolvers for (m, _) in MODELERS, i in eachindex(CASES))
+        if all(
+            results[(m, sname, i)].ctsolvers for (m, _) in MODELERS, i in eachindex(CASES)
+        )
             push!(
                 rows,
                 [
@@ -840,17 +840,20 @@ function report()
     table(io, ["Solver", "Stationarity (read on `min f`)", "Maximisation (`max -f`)"], rows)
     fam = Dict{String,Vector{String}}()
     for (sname, _) in SOLVERS
-        S = if all(
-            results[(m, sname, i)].ctsolvers for (m, _) in MODELERS, i in eachindex(CASES)
-        )
-            "CTSolvers"
-        else
-            stationarity_of("ADNLPModels", sname)
-        end
+        S =
+            if all(
+                results[(m, sname, i)].ctsolvers for
+                (m, _) in MODELERS, i in eachindex(CASES)
+            )
+                "CTSolvers"
+            else
+                stationarity_of("ADNLPModels", sname)
+            end
         S === nothing || push!(get!(fam, string(S), String[]), sname)
     end
     for S in sort(collect(keys(fam)))
-        label_S = S == "CTSolvers" ? "Convention **CTSolvers**" : "Stationarity **" * S * "**"
+        label_S =
+            S == "CTSolvers" ? "Convention **CTSolvers**" : "Stationarity **" * S * "**"
         println(io, "- ", label_S, ": ", join("`" .* fam[S] .* "`", ", "), ".")
     end
     println(io)

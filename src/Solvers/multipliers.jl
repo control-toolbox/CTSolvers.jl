@@ -64,7 +64,10 @@ of `solve_with_<solver>` in the extension.
 See also: [`reference_multipliers!`](@ref).
 """
 function normalize_multipliers!(
-    stats, solver::AbstractNLPSolver, lcon::AbstractVector, ucon::AbstractVector,
+    stats,
+    solver::AbstractNLPSolver,
+    lcon::AbstractVector,
+    ucon::AbstractVector,
     minimize::Bool,
 )
     y, zL, zU = stats.multipliers, stats.multipliers_L, stats.multipliers_U
@@ -111,7 +114,10 @@ Each concrete solver implements this method; it is called by
 See also: [`normalize_multipliers!`](@ref).
 """
 function reference_multipliers!(
-    solver::AbstractNLPSolver, y::AbstractVector, zL::AbstractVector, zU::AbstractVector,
+    solver::AbstractNLPSolver,
+    y::AbstractVector,
+    zL::AbstractVector,
+    zU::AbstractVector,
     minimize::Bool,
 )
     return throw(
