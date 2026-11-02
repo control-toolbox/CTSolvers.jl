@@ -41,7 +41,7 @@ Tests the complete Solvers.MadNLP functionality including metadata, constructor,
 options handling, display flag, and problem solving on CPU (and GPU if available).
 """
 function test_madnlp_extension()
-    Test.@testset "MadNLP Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "MadNLP Extension" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Metadata and Options
@@ -239,7 +239,7 @@ function test_madnlp_extension()
             Test.@test stats isa MadNLP.MadNLPExecutionStats
             Test.@test Symbol(stats.status) in
                 (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)
-            Test.@test stats.solution ≈ ros.sol atol=1e-4
+            Test.@test stats.solution ≈ ros.sol atol = 1e-4
         end
 
         Test.@testset "Elec Problem - CPU" begin
@@ -277,8 +277,9 @@ function test_madnlp_extension()
             Test.@test Symbol(stats.status) in
                 (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)
             Test.@test length(stats.solution) == 1
-            Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
-            Test.@test stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
+            Test.@test stats.solution[1] ≈ max_prob.sol[1] atol = 1e-6
+            Test.@test stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol =
+                1e-6
         end
 
         # ====================================================================
@@ -302,8 +303,9 @@ function test_madnlp_extension()
                         ros.prob, ros.init, gpu_modeler, gpu_solver; display=false
                     )
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
-                    Test.@test Array(sol.solution) ≈ ros.sol atol=1e-6
-                    Test.@test sol.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
+                    Test.@test Array(sol.solution) ≈ ros.sol atol = 1e-6
+                    Test.@test sol.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol =
+                        1e-6
                 end
 
                 Test.@testset "Elec - GPU" begin
@@ -322,7 +324,7 @@ function test_madnlp_extension()
                     )
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test length(sol.solution) == 1
-                    Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
+                    Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol = 1e-6
                 end
             else
                 Test.@test_skip "GPU solve needs a functional CUDA device and an armed CUDSS"
@@ -544,12 +546,13 @@ function test_madnlp_extension()
             linear_solver_names = ["Umfpack", "Mumps"]
 
             # Rosenbrock: start at the known solution and enforce max_iter=0
-            Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Rosenbrock" verbose = VERBOSE showtiming = SHOWTIMING begin
                 ros = TestProblems.Rosenbrock()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in
                         zip(linear_solvers, linear_solver_names)
-                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose =
+                            VERBOSE showtiming = SHOWTIMING begin
                             local opts = Dict(:max_iter => 0, :print_level => MadNLP.ERROR)
                             sol = CommonSolve.solve(
                                 ros.prob,
@@ -557,19 +560,20 @@ function test_madnlp_extension()
                                 modeler,
                                 Solvers.MadNLP(; opts..., linear_solver=linear_solver),
                             )
-                            Test.@test sol.solution ≈ ros.sol atol=1e-4
+                            Test.@test sol.solution ≈ ros.sol atol = 1e-4
                         end
                     end
                 end
             end
 
             # Elec
-            Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Elec" verbose = VERBOSE showtiming = SHOWTIMING begin
                 elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in
                         zip(linear_solvers, linear_solver_names)
-                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose =
+                            VERBOSE showtiming = SHOWTIMING begin
                             local opts = Dict(:max_iter => 0, :print_level => MadNLP.ERROR)
                             sol = CommonSolve.solve(
                                 elec.prob,
@@ -579,7 +583,7 @@ function test_madnlp_extension()
                             )
                             Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                             Test.@test sol.solution ≈
-                                vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
+                                vcat(elec.init.x, elec.init.y, elec.init.z) atol = 1e-6
                         end
                     end
                 end
@@ -600,31 +604,33 @@ function test_madnlp_extension()
             linear_solvers = [MadNLP.UmfpackSolver, MadNLP.MumpsSolver]
             linear_solver_names = ["Umfpack", "Mumps"]
 
-            Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Rosenbrock" verbose = VERBOSE showtiming = SHOWTIMING begin
                 ros = TestProblems.Rosenbrock()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in
                         zip(linear_solvers, linear_solver_names)
-                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose =
+                            VERBOSE showtiming = SHOWTIMING begin
                             nlp = Optimization.build_model(ros.prob, ros.init, modeler).nlp
                             sol = CTSolversMadNLP.solve_with_madnlp(
                                 nlp; linear_solver=linear_solver, madnlp_options...
                             )
                             Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
-                            Test.@test sol.solution ≈ ros.sol atol=1e-4
+                            Test.@test sol.solution ≈ ros.sol atol = 1e-4
                             Test.@test sol.objective ≈
-                                TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
+                                TestProblems.rosenbrock_objective(ros.sol) atol = 1e-6
                         end
                     end
                 end
             end
 
-            Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Elec" verbose = VERBOSE showtiming = SHOWTIMING begin
                 elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in
                         zip(linear_solvers, linear_solver_names)
-                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose =
+                            VERBOSE showtiming = SHOWTIMING begin
                             nlp =
                                 Optimization.build_model(elec.prob, elec.init, modeler).nlp
                             sol = CTSolversMadNLP.solve_with_madnlp(
@@ -636,12 +642,13 @@ function test_madnlp_extension()
                 end
             end
 
-            Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Max1MinusX2" verbose = VERBOSE showtiming = SHOWTIMING begin
                 max_prob = TestProblems.Max1MinusX2()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in
                         zip(linear_solvers, linear_solver_names)
-                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose =
+                            VERBOSE showtiming = SHOWTIMING begin
                             nlp = Optimization.build_model(
                                 max_prob.prob, max_prob.init, modeler
                             ).nlp
@@ -650,9 +657,9 @@ function test_madnlp_extension()
                             )
                             Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                             Test.@test length(sol.solution) == 1
-                            Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
+                            Test.@test sol.solution[1] ≈ max_prob.sol[1] atol = 1e-6
                             Test.@test sol.objective ≈
-                                TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
+                                TestProblems.max1minusx2_objective(max_prob.sol) atol = 1e-6
                         end
                     end
                 end
@@ -678,8 +685,9 @@ function test_madnlp_extension()
                     nlp = Optimization.build_model(ros.prob, ros.init, gpu_modeler).nlp
                     sol = CTSolversMadNLP.solve_with_madnlp(nlp; madnlp_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
-                    Test.@test Array(sol.solution) ≈ ros.sol atol=1e-6
-                    Test.@test sol.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
+                    Test.@test Array(sol.solution) ≈ ros.sol atol = 1e-6
+                    Test.@test sol.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol =
+                        1e-6
                 end
 
                 Test.@testset "Elec - GPU" begin
@@ -697,7 +705,7 @@ function test_madnlp_extension()
                     sol = CTSolversMadNLP.solve_with_madnlp(nlp; madnlp_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test length(sol.solution) == 1
-                    Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
+                    Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol = 1e-6
                 end
             else
                 Test.@test_skip "GPU solve needs a functional CUDA device and an armed CUDSS"
@@ -723,7 +731,7 @@ function test_madnlp_extension()
                         ros.prob, ros.sol, gpu_modeler, gpu_solver_0; display=false
                     )
                     Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
-                    Test.@test Array(sol.solution) ≈ ros.sol atol=1e-6
+                    Test.@test Array(sol.solution) ≈ ros.sol atol = 1e-6
                 end
 
                 Test.@testset "Elec - GPU" begin
@@ -733,7 +741,7 @@ function test_madnlp_extension()
                     )
                     Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                     expected = vcat(elec.init.x, elec.init.y, elec.init.z)
-                    Test.@test Array(sol.solution) ≈ expected atol=1e-6
+                    Test.@test Array(sol.solution) ≈ expected atol = 1e-6
                 end
             else
                 Test.@test_skip "GPU solve needs a functional CUDA device and an armed CUDSS"

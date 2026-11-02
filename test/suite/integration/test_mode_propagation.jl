@@ -56,7 +56,7 @@ end
 # ============================================================================
 
 function test_mode_propagation()
-    Test.@testset "Mode Propagation Integration" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Mode Propagation Integration" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # INTEGRATION TESTS - Direct Constructor

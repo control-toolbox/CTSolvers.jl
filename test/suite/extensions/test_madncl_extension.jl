@@ -42,7 +42,7 @@ Tests the complete Solvers.MadNCL functionality including metadata, constructor,
 options handling (including ncl_options), display flag, and problem solving.
 """
 function test_madncl_extension()
-    Test.@testset "MadNCL Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "MadNCL Extension" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Metadata and Options
@@ -302,8 +302,9 @@ function test_madncl_extension()
             Test.@test Symbol(stats.status) in
                 (:SOLVE_SUCCEEDED, :SOLVED_TO_ACCEPTABLE_LEVEL)
             Test.@test length(stats.solution) == 1
-            Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
-            Test.@test stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
+            Test.@test stats.solution[1] ≈ max_prob.sol[1] atol = 1e-6
+            Test.@test stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol =
+                1e-6
         end
 
         # ====================================================================
@@ -390,12 +391,13 @@ function test_madncl_extension()
             linear_solvers = [MadNLP.UmfpackSolver, MadNLP.MumpsSolver]
             linear_solver_names = ["Umfpack", "Mumps"]
 
-            Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Elec" verbose = VERBOSE showtiming = SHOWTIMING begin
                 elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in
                         zip(linear_solvers, linear_solver_names)
-                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose =
+                            VERBOSE showtiming = SHOWTIMING begin
                             # Create NCLOptions with max_auglag_iter=0 to prevent outer iterations
                             ncl_opts = MadNCL.NCLOptions{BaseType}(
                                 verbose=false, max_auglag_iter=0
@@ -415,7 +417,7 @@ function test_madncl_extension()
                             )
                             Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                             Test.@test sol.solution ≈
-                                vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
+                                vcat(elec.init.x, elec.init.y, elec.init.z) atol = 1e-6
                         end
                     end
                 end
@@ -439,12 +441,13 @@ function test_madncl_extension()
             linear_solvers = [MadNLP.MumpsSolver]
             linear_solver_names = ["Mumps"]
 
-            Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Elec" verbose = VERBOSE showtiming = SHOWTIMING begin
                 elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in
                         zip(linear_solvers, linear_solver_names)
-                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose =
+                            VERBOSE showtiming = SHOWTIMING begin
                             nlp =
                                 Optimization.build_model(elec.prob, elec.init, modeler).nlp
                             sol = CTSolversMadNCL.solve_with_madncl(
@@ -456,12 +459,13 @@ function test_madncl_extension()
                 end
             end
 
-            Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Max1MinusX2" verbose = VERBOSE showtiming = SHOWTIMING begin
                 max_prob = TestProblems.Max1MinusX2()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
                     for (linear_solver, linear_solver_name) in
                         zip(linear_solvers, linear_solver_names)
-                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                        Test.@testset "$(modeler_name), $(linear_solver_name)" verbose =
+                            VERBOSE showtiming = SHOWTIMING begin
                             nlp = Optimization.build_model(
                                 max_prob.prob, max_prob.init, modeler
                             ).nlp
@@ -470,9 +474,9 @@ function test_madncl_extension()
                             )
                             Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                             Test.@test length(sol.solution) == 1
-                            Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
+                            Test.@test sol.solution[1] ≈ max_prob.sol[1] atol = 1e-6
                             Test.@test sol.objective ≈
-                                TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
+                                TestProblems.max1minusx2_objective(max_prob.sol) atol = 1e-6
                         end
                     end
                 end
@@ -510,7 +514,7 @@ function test_madncl_extension()
                     )
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test length(sol.solution) == 1
-                    Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
+                    Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol = 1e-6
                 end
             else
                 Test.@test_skip "GPU solve needs a functional CUDA device and an armed CUDSS"
@@ -547,7 +551,7 @@ function test_madncl_extension()
                     sol = CTSolversMadNCL.solve_with_madncl(nlp; madncl_options...)
                     Test.@test sol.status == MadNLP.SOLVE_SUCCEEDED
                     Test.@test length(sol.solution) == 1
-                    Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol=1e-6
+                    Test.@test Array(sol.solution)[1] ≈ max_prob.sol[1] atol = 1e-6
                 end
             else
                 Test.@test_skip "GPU solve needs a functional CUDA device and an armed CUDSS"
@@ -576,7 +580,7 @@ function test_madncl_extension()
                     )
                     Test.@test sol.status == MadNLP.MAXIMUM_ITERATIONS_EXCEEDED
                     expected = vcat(elec.init.x, elec.init.y, elec.init.z)
-                    Test.@test Array(sol.solution) ≈ expected atol=1e-6
+                    Test.@test Array(sol.solution) ≈ expected atol = 1e-6
                 end
             else
                 Test.@test_skip "GPU solve needs a functional CUDA device and an armed CUDSS"

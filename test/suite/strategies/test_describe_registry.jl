@@ -41,7 +41,7 @@ end
 # ============================================================================
 
 function test_describe_registry()
-    Test.@testset "describe(id, registry)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "describe(id, registry)" verbose = VERBOSE showtiming = SHOWTIMING begin
         registry = get_strategy_registry()
 
         # ====================================================================

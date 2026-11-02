@@ -24,7 +24,7 @@ Test type stability of critical solver functions.
 for performance-critical functions.
 """
 function test_type_stability()
-    Test.@testset "Type Stability Tests" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Type Stability Tests" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Solver Construction Type Stability

@@ -33,7 +33,8 @@ Strategies.id(::Type{FakeParam}) = :fake
 Integration tests for CPU-only parameterized strategies (ADNLP, Ipopt).
 """
 function test_cpu_only_parameters_integration()
-    Test.@testset "CPU-Only Parameters Integration" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "CPU-Only Parameters Integration" verbose = VERBOSE showtiming =
+        SHOWTIMING begin
 
         # ====================================================================
         # INTEGRATION TESTS - Registry with CPU-only strategies

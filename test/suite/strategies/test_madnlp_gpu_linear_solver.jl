@@ -15,7 +15,8 @@ const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 function test_madnlp_gpu_linear_solver()
-    Test.@testset "MadNLP/MadNCL Strategies.GPU Linear Solver Defaults" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "MadNLP/MadNCL Strategies.GPU Linear Solver Defaults" verbose = VERBOSE showtiming =
+        SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - MadNLP Strategies.CPU defaults

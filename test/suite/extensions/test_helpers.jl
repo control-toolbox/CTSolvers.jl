@@ -32,7 +32,7 @@ Tests helper functions in extensions that are not directly tested elsewhere:
 - error paths for missing GPU support
 """
 function test_helpers()
-    Test.@testset "Extension Helpers" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Extension Helpers" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - MadNCL base_type helper

@@ -27,7 +27,7 @@ Tests uncovered lines in exa.jl:
 - Lines 342-351: Parameterized constructor with deprecated aliases
 """
 function test_exa_gpu()
-    Test.@testset "Exa GPU Backend" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Exa GPU Backend" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Strategies.id()

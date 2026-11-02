@@ -327,7 +327,8 @@ end
 # ============================================================================
 
 function test_comprehensive_validation()
-    Test.@testset "Comprehensive Strict/Permissive Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Comprehensive Strict/Permissive Validation" verbose = VERBOSE showtiming =
+        SHOWTIMING begin
 
         # Create registries for testing
         modeler_registry = Strategies.create_registry(
@@ -761,7 +762,7 @@ function test_comprehensive_validation()
             Test.@testset "Option Consistency" begin
                 # Test that options are consistent across construction methods
                 local known_options = (backend=:default, show_time=false)
-                local unknown_options = (test_consistency=42)
+                local unknown_options = (test_consistency = 42)
 
                 local registry = Strategies.create_registry(
                     Modelers.AbstractNLPModeler => (

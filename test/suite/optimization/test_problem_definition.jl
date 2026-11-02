@@ -28,7 +28,8 @@ option was silently dropped, so GPU-strategy tests kept building CPU-resident
 models without any test noticing on CPU-only CI.
 """
 function test_problem_definition()
-    Test.@testset "Problem definition — modeler option forwarding" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Problem definition — modeler option forwarding" verbose = VERBOSE showtiming =
+        SHOWTIMING begin
 
         # ====================================================================
         # CONTRACT TESTS - Exa modeler

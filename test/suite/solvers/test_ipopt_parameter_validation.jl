@@ -26,7 +26,7 @@ Strategies.id(::Type{FakeParam}) = :fake
 Tests for Ipopt parameter validation.
 """
 function test_ipopt_parameter_validation()
-    Test.@testset "Ipopt Parameter Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Ipopt Parameter Validation" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Structure and Contract

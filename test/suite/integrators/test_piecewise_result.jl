@@ -27,7 +27,7 @@ phase is as accurate as a single-phase integration, and the trajectory is left-c
 a switching time.
 """
 function test_piecewise_result()
-    Test.@testset "Piecewise integration result" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Piecewise integration result" verbose = VERBOSE showtiming = SHOWTIMING begin
         ts, Δ = 0.5, 10.0
         left = exp(-ts)
         r1 = _segment(0.0, ts, 1.0)

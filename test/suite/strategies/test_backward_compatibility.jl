@@ -53,7 +53,7 @@ function TestStratB{P}(;
 end
 
 function test_backward_compatibility()
-    Test.@testset "Backward Compatibility" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Backward Compatibility" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Non-parameterized strategies still work

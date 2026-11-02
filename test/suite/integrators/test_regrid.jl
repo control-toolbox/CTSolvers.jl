@@ -31,7 +31,7 @@ CTFlows#435): the values on the new grid come from the (dense) interpolant, the 
 result is unchanged, and invalid grids are rejected.
 """
 function test_regrid()
-    Test.@testset "Integrators.regrid" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Integrators.regrid" verbose = VERBOSE showtiming = SHOWTIMING begin
         grid = [0.0, 0.1, 0.35, 0.6, 1.0]
 
         Test.@testset "SciML result" begin

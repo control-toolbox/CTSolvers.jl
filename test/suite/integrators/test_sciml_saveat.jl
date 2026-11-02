@@ -48,7 +48,7 @@ integration ignores it and keeps the dense interpolant; the result's time grid a
 match SciML's native `saveat` saving, at the same integration cost.
 """
 function test_sciml_saveat()
-    Test.@testset "SciML saveat as output grid" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "SciML saveat as output grid" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # Option resolution

@@ -35,7 +35,7 @@ struct DummyTag <: Core.AbstractTag end
 Tests for ADNLP parameter validation.
 """
 function test_adnlp_parameter_validation()
-    Test.@testset "ADNLP Parameter Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ADNLP Parameter Validation" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Valid Parameters

@@ -55,7 +55,7 @@ Tests the complete Solvers.Knitro functionality including metadata, constructor,
 options handling, display flag, and problem solving (requires Knitro license).
 """
 function test_knitro_extension()
-    Test.@testset "Knitro Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Knitro Extension" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Metadata and Options

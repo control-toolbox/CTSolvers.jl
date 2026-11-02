@@ -18,7 +18,7 @@ Tests uncovered lines in validation.jl:
 - Line 283: validate_optimization_direction() with non-Bool type
 """
 function test_validation_coverage()
-    Test.@testset "Validation Coverage" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Validation Coverage" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - validate_model_name() error branches

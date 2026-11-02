@@ -32,7 +32,7 @@ run on CPU; only the `CuArray` cases are gated behind `Main.TestCapabilities.CUD
 (with a visible `Test.@test_skip` when no device is present).
 """
 function test_sciml_parameter()
-    Test.@testset "SciML{P} parameterization" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "SciML{P} parameterization" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # CONTRACT - parameter / default_parameter / id (no extension needed)

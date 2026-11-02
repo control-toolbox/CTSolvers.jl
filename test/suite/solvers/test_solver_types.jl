@@ -20,7 +20,7 @@ Tests the basic type hierarchy and Strategies.id() contract for all solvers
 without requiring extensions to be loaded.
 """
 function test_solver_types()
-    Test.@testset "Solver Types and Contracts" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Solver Types and Contracts" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Type Hierarchy

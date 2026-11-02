@@ -19,7 +19,7 @@ Tests the basic type hierarchy and `Strategies.id()` contract without requiring
 extensions to be loaded.
 """
 function test_integrator_types()
-    Test.@testset "Integrator Types and Contracts" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Integrator Types and Contracts" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Type Hierarchy

@@ -20,7 +20,7 @@ This function tests the complete Solvers module exports including:
 - Strategy interface compliance
 """
 function test_solvers()
-    Test.@testset "Solvers Module" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Solvers Module" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # META TESTS - Exports / Public API surface

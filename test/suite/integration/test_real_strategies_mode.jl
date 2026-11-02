@@ -33,7 +33,8 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 # ============================================================================
 
 function test_real_strategies_mode()
-    Test.@testset "Real Strategies Mode Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Real Strategies Mode Validation" verbose = VERBOSE showtiming =
+        SHOWTIMING begin
 
         # ====================================================================
         # INTEGRATION TESTS - Real Modelers

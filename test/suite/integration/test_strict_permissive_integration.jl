@@ -109,7 +109,7 @@ end
 # ============================================================================
 
 function test_strict_permissive_integration()
-    Test.@testset "Strict/Permissive Integration" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Strict/Permissive Integration" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # INTEGRATION TESTS - Single Strategy Workflows

@@ -90,7 +90,7 @@ end
 # ============================================================================
 
 function test_alias_integration()
-    Test.@testset "Alias Integration Tests" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Alias Integration Tests" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Mock Strategy

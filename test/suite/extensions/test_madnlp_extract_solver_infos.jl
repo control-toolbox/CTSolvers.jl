@@ -20,7 +20,7 @@ from MadNLP execution statistics, including proper handling of objective sign
 correction and status codes.
 """
 function test_madnlp_extract_solver_infos()
-    Test.@testset "MadNLP Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "MadNLP Extension" verbose = VERBOSE showtiming = SHOWTIMING begin
         Test.@testset "extract_solver_infos with minimization" begin
             # Create a simple minimization problem: min (x-1)^2 + (y-2)^2
             # Solution: x=1, y=2, objective=0
@@ -69,7 +69,7 @@ function test_madnlp_extract_solver_infos()
             )
 
             # Verify results
-            Test.@test objective ≈ 0.0 atol=1e-6  # Optimal objective
+            Test.@test objective ≈ 0.0 atol = 1e-6  # Optimal objective
             Test.@test iterations > 0  # Should have done some iterations
             Test.@test constraints_violation < 1e-6  # No constraints, should be near zero
             Test.@test message == "MadNLP"
@@ -95,8 +95,8 @@ function test_madnlp_extract_solver_infos()
             objective_min, _, _, _, _, _ = Solvers.extract_solver_infos(stats_min)
 
             # For minimization, objective should equal stats.objective
-            Test.@test objective_min ≈ stats_min.objective atol=1e-10
-            Test.@test objective_min ≈ 0.0 atol=1e-6
+            Test.@test objective_min ≈ stats_min.objective atol = 1e-10
+            Test.@test objective_min ≈ 0.0 atol = 1e-6
 
             # Test that NLPModels.get_minimize works correctly
             Test.@test NLPModels.get_minimize(nlp_min) == true
@@ -130,8 +130,8 @@ function test_madnlp_extract_solver_infos()
             obj_min, _, _, _, _, _ = Solvers.extract_solver_infos(stats_min)
 
             # For minimization, extracted objective should equal raw stats objective
-            Test.@test obj_min ≈ stats_min.objective atol=1e-10
-            Test.@test obj_min ≈ 0.0 atol=1e-6
+            Test.@test obj_min ≈ stats_min.objective atol = 1e-10
+            Test.@test obj_min ≈ 0.0 atol = 1e-6
 
             # Verify the minimize flag is correctly read
             Test.@test NLPModels.get_minimize(nlp_min) == true
@@ -235,7 +235,7 @@ function test_madnlp_extract_solver_infos()
             objective_extracted, _, _, _, _, _ = Solvers.extract_solver_infos(stats_max)
 
             # The extracted objective should be the true maximization objective (≈ 1.0)
-            Test.@test objective_extracted ≈ 1.0 atol=1e-6
+            Test.@test objective_extracted ≈ 1.0 atol = 1e-6
 
             # Test the consistency logic: (flip_madnlp && flip_extract) || (!flip_madnlp && !flip_extract)
             # We need to determine if MadNLP flips the sign internally
@@ -280,11 +280,11 @@ function test_madnlp_extract_solver_infos()
 
             # Test case 1: minimization (should not flip)
             obj_min, _, _, _, _, _ = Solvers.extract_solver_infos(stats_min)
-            Test.@test obj_min ≈ original_objective atol=1e-10
+            Test.@test obj_min ≈ original_objective atol = 1e-10
 
             # Test case 2: maximization (should flip)
             obj_max, _, _, _, _, _ = Solvers.extract_solver_infos(stats_min)
-            Test.@test obj_max ≈ -original_objective atol=1e-10
+            Test.@test obj_max ≈ -original_objective atol = 1e-10
 
             # Verify the flip logic
             Test.@test obj_max == -obj_min

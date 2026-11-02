@@ -31,7 +31,8 @@ correction and status codes.
 🧪 **Applying Testing Rule**: Unit Tests + Integration Tests
 """
 function test_madncl_extract_solver_infos()
-    Test.@testset "MadNCL Extension - extract_solver_infos" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "MadNCL Extension - extract_solver_infos" verbose = VERBOSE showtiming =
+        SHOWTIMING begin
         Test.@testset "extract_solver_infos with minimization (Rosenbrock)" begin
             # Use Rosenbrock problem which is known to work
             ros = TestProblems.Rosenbrock()
@@ -57,7 +58,7 @@ function test_madncl_extract_solver_infos()
             )
 
             # Verify results
-            Test.@test objective ≈ 0.0 atol=1e-4  # Optimal objective for Rosenbrock
+            Test.@test objective ≈ 0.0 atol = 1e-4  # Optimal objective for Rosenbrock
             Test.@test iterations > 0  # Should have done some iterations
             Test.@test message == "MadNCL"
             Test.@test status isa Symbol
@@ -65,7 +66,7 @@ function test_madncl_extract_solver_infos()
             Test.@test successful == true
 
             # For minimization, objective should equal stats.objective
-            Test.@test objective ≈ stats.objective atol=1e-10
+            Test.@test objective ≈ stats.objective atol = 1e-10
         end
 
         Test.@testset "maximization problem - objective sign consistency (Max1MinusX2)" begin
@@ -96,7 +97,7 @@ function test_madncl_extract_solver_infos()
 
             # The extracted objective should be the true maximization objective (≈ 1.0)
             expected_objective = TestProblems.max1minusx2_objective(max_prob.sol)
-            Test.@test objective_extracted ≈ expected_objective atol=1e-6
+            Test.@test objective_extracted ≈ expected_objective atol = 1e-6
 
             # Test the consistency logic: (flip_madncl && flip_extract) || (!flip_madncl && !flip_extract)
             # We need to determine if MadNCL flips the sign internally
@@ -147,12 +148,12 @@ function test_madncl_extract_solver_infos()
 
             # Test case 1: minimization (should not flip)
             obj_min, _, _, _, _, _ = Solvers.extract_solver_infos(stats)
-            Test.@test obj_min ≈ original_objective atol=1e-10
+            Test.@test obj_min ≈ original_objective atol = 1e-10
 
             # Test case 2: maximization (MadNCL returns correct sign, so we should NOT flip)
             # This is different from MadNLP!
             obj_max, _, _, _, _, _ = Solvers.extract_solver_infos(stats)
-            Test.@test obj_max ≈ original_objective atol=1e-10  # Same value, no flip
+            Test.@test obj_max ≈ original_objective atol = 1e-10  # Same value, no flip
 
             # Verify: for MadNCL, both should be equal (no flip)
             Test.@test obj_max == obj_min

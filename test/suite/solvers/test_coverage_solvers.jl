@@ -22,7 +22,7 @@ struct CovUnimplementedSolver <: Solvers.AbstractNLPSolver
 end
 
 function test_coverage_solvers()
-    Test.@testset "Coverage: Solvers" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Coverage: Solvers" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - AbstractNLPSolver callable (abstract_solver.jl)

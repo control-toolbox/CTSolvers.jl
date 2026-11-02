@@ -15,7 +15,7 @@ const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 function test_describe_parameters()
-    Test.@testset "Parameter Describe" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Parameter Describe" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ================================================================
         # UNIT TESTS - Type-direct describe
