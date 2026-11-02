@@ -12,7 +12,7 @@ const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 function test_type_stability()
-    Test.@testset "Integrator Type Stability" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Integrator Type Stability" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # Strategies contract

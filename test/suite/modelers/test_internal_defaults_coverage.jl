@@ -17,7 +17,7 @@ Tests uncovered lines:
 - common_solve_api.jl:16 - __display()
 """
 function test_internal_defaults_coverage()
-    Test.@testset "Internal Defaults Coverage" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Internal Defaults Coverage" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - __adnlp_model_backend()

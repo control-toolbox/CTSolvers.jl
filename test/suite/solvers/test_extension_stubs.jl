@@ -22,7 +22,7 @@ Tests that stub functions throw appropriate ExtensionError when extensions
 are not loaded, with helpful error messages.
 """
 function test_extension_stubs()
-    Test.@testset "Extension Stubs" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Extension Stubs" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - MadNLP/MadNCL GPU Stub

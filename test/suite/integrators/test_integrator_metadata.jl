@@ -27,7 +27,7 @@ Tests `Strategies.metadata`, construction, and the cached option-dict accessors 
 SciML extension active.
 """
 function test_integrator_metadata()
-    Test.@testset "Integrator Metadata" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Integrator Metadata" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # Metadata is available once the extension is loaded
@@ -97,7 +97,7 @@ function test_integrator_metadata()
             )
 
             # permissive mode: unknown options accepted (with warning), value validation still applies
-            Test.@test_logs (:warn, r"") match_mode=:any Integrators.SciML(;
+            Test.@test_logs (:warn, r"") match_mode = :any Integrators.SciML(;
                 alg=Tsit5(), unknown_option=42, mode=:permissive
             )
         end

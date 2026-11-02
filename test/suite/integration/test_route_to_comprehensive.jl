@@ -301,7 +301,7 @@ end
 # ============================================================================
 
 function test_route_to_comprehensive()
-    Test.@testset "Route To Comprehensive Tests" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Route To Comprehensive Tests" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # BASIC ROUTE_TO SYNTAX TESTS

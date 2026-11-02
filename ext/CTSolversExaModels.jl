@@ -56,7 +56,8 @@ function Strategies.metadata(
                     param_str = P == Strategies.CPU ? "CPU" : "GPU"
                     backend_str =
                         backend === nothing ? "no backend" : string(typeof(backend))
-                    @warn "Inconsistent backend ($backend_str) for $param_str parameter" maxlog=1
+                    @warn "Inconsistent backend ($backend_str) for $param_str parameter" maxlog =
+                        1
                 end
                 return backend
             end,
@@ -95,7 +96,7 @@ function Modelers._build_exa_modeler(
     kwargs...,
 )
     if haskey(kwargs, :exa_backend)
-        @warn "exa_backend is deprecated, use backend instead" maxlog=1
+        @warn "exa_backend is deprecated, use backend instead" maxlog = 1
     end
     opts = Strategies.build_strategy_options(Modelers.Exa{parameter}; mode=mode, kwargs...)
     return Modelers.Exa{parameter}(opts)

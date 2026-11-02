@@ -31,7 +31,8 @@ and other solvers that follow the SolverCore interface.
 🧪 **Applying Testing Rule**: Unit Tests + Contract Tests
 """
 function test_generic_extract_solver_infos()
-    Test.@testset "Generic Extension - extract_solver_infos" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Generic Extension - extract_solver_infos" verbose = VERBOSE showtiming =
+        SHOWTIMING begin
         Test.@testset "extract_solver_infos with minimization" begin
             # Create a simple minimization problem: min (x-1)^2 + (y-2)^2
             # Solution: x=1, y=2, objective=0
@@ -79,9 +80,9 @@ function test_generic_extract_solver_infos()
             )
 
             # Verify results
-            Test.@test objective ≈ 0.0 atol=1e-10
+            Test.@test objective ≈ 0.0 atol = 1e-10
             Test.@test iterations == 10
-            Test.@test constraints_violation ≈ 1e-8 atol=1e-10
+            Test.@test constraints_violation ≈ 1e-8 atol = 1e-10
             Test.@test message == "Ipopt/generic"
             Test.@test status == :first_order
             Test.@test successful == true

@@ -22,7 +22,7 @@ Tests uncovered lines in solver files:
 - ipopt.jl:77, 145
 """
 function test_solver_metadata()
-    Test.@testset "Solver Metadata and IDs" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Solver Metadata and IDs" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Strategies.id() for solver types

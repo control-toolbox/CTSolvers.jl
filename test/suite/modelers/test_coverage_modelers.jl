@@ -26,7 +26,7 @@ struct CovFakeProblem <: Optimization.AbstractOptimizationProblem end
 struct CovFakeStats <: SolverCore.AbstractExecutionStats end
 
 function test_coverage_modelers()
-    Test.@testset "Coverage: Modelers" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Coverage: Modelers" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - AbstractNLPModeler (abstract_modeler.jl)

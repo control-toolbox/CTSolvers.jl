@@ -20,7 +20,7 @@ Integrates a raw `ODEProblem` with a `SciML` integrator and checks the result in
 against the known analytic solution u' = -u, u(0) = 1 ⇒ u(1) = exp(-1).
 """
 function test_integrator_solve()
-    Test.@testset "Integrator Solve (end-to-end)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Integrator Solve (end-to-end)" verbose = VERBOSE showtiming = SHOWTIMING begin
         integ = Integrators.SciML(; alg=Tsit5())
         prob = ODEProblem((u, p, t) -> -u, [1.0], (0.0, 1.0))
 
@@ -33,14 +33,14 @@ function test_integrator_solve()
             Test.@test r isa Integrators.AbstractIntegrationResult
 
             fs = Integrators.final_state(r)
-            Test.@test fs[1] ≈ exp(-1) atol=1e-6
+            Test.@test fs[1] ≈ exp(-1) atol = 1e-6
 
             ts = Integrators.times(r)
             Test.@test first(ts) == 0.0
             Test.@test last(ts) == 1.0
 
             # Continuous evaluation via interpolation (dense trajectory options)
-            Test.@test Integrators.evaluate_at(r, 0.5)[1] ≈ exp(-0.5) atol=1e-5
+            Test.@test Integrators.evaluate_at(r, 0.5)[1] ≈ exp(-0.5) atol = 1e-5
 
             Test.@test Integrators.successful(r) == true
             Test.@test Integrators.status(r) == :Success
@@ -52,7 +52,7 @@ function test_integrator_solve()
 
         Test.@testset "solve with explicit options" begin
             r = CommonSolve.solve(prob, integ; options=Integrators.options_point(integ))
-            Test.@test Integrators.final_state(r)[1] ≈ exp(-1) atol=1e-6
+            Test.@test Integrators.final_state(r)[1] ≈ exp(-1) atol = 1e-6
         end
 
         # ====================================================================
@@ -100,8 +100,8 @@ function test_integrator_solve()
 
         Test.@testset "evaluate_at boundary points" begin
             r = CommonSolve.solve(prob, integ)
-            Test.@test Integrators.evaluate_at(r, 0.0)[1] ≈ 1.0 atol=1e-10
-            Test.@test Integrators.evaluate_at(r, 1.0)[1] ≈ exp(-1) atol=1e-6
+            Test.@test Integrators.evaluate_at(r, 0.0)[1] ≈ 1.0 atol = 1e-10
+            Test.@test Integrators.evaluate_at(r, 1.0)[1] ≈ exp(-1) atol = 1e-6
         end
 
         # ====================================================================

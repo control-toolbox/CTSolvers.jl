@@ -98,7 +98,7 @@ end
 Tests for error cases and edge cases in the Optimization contract.
 """
 function test_error_cases()
-    Test.@testset "Error Cases and Edge Cases" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Error Cases and Edge Cases" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # CONTRACT NOT IMPLEMENTED ERRORS

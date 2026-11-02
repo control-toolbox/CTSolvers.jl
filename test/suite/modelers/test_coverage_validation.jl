@@ -20,7 +20,7 @@ const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 struct DummyTag <: Core.AbstractTag end
 
 function test_coverage_validation()
-    Test.@testset "Coverage: Modelers Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Coverage: Modelers Validation" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - validate_adnlp_backend

@@ -29,7 +29,7 @@ Tests that core contract stubs throw the right errors when no concrete implement
 matches (extension not loaded, or a foreign integrator/result type).
 """
 function test_integrator_stubs()
-    Test.@testset "Integrator Extension Stubs" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Integrator Extension Stubs" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # _build_sciml_integrator stub (DummyTag never implemented)

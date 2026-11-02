@@ -52,7 +52,7 @@ Tests the CommonSolve.solve() interface with fake solvers to verify
 proper routing and display flag handling.
 """
 function test_common_solve_api()
-    Test.@testset "CommonSolve API" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "CommonSolve API" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - solve(nlp, solver)
@@ -143,7 +143,7 @@ function test_common_solve_api()
             nlp_quadratic = ADNLPModels.ADNLPModel(x -> sum(x .^ 2), [1.0, 2.0, 3.0])
             nlp_linear = ADNLPModels.ADNLPModel(x -> sum(x), [1.0, 2.0])
             nlp_rosenbrock = ADNLPModels.ADNLPModel(
-                x -> (1 - x[1])^2 + 100*(x[2] - x[1]^2)^2, [0.0, 0.0]
+                x -> (1 - x[1])^2 + 100 * (x[2] - x[1]^2)^2, [0.0, 0.0]
             )
 
             # All should work with CommonSolve

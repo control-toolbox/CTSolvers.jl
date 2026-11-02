@@ -79,7 +79,7 @@ function test_end_to_end()
                 Test.@test status isa Symbol
                 Test.@test success isa Bool
             catch e
-                @warn "MadNLP solver test skipped" exception=e
+                @warn "MadNLP solver test skipped" exception = e
             end
         end
 

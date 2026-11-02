@@ -89,7 +89,8 @@ function IntegrationStratB{P}(;
 end
 
 function test_integration_parameters()
-    Test.@testset "Integration Tests - Parameterized Strategies" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Integration Tests - Parameterized Strategies" verbose = VERBOSE showtiming =
+        SHOWTIMING begin
 
         # ====================================================================
         # INTEGRATION TESTS - Complete workflow

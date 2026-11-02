@@ -85,7 +85,7 @@ Tests for the Optimization module:
 - Solver utilities (`extract_solver_infos` — lives in `Solvers`, tested here for workflow integration)
 """
 function test_optimization()
-    Test.@testset "Optimization Module" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Optimization Module" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # META TESTS - Exports / Public API surface

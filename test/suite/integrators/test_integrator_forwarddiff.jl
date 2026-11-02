@@ -12,7 +12,8 @@ const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 function test_integrator_forwarddiff()
-    Test.@testset "Integrator ForwardDiff (end-to-end)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Integrator ForwardDiff (end-to-end)" verbose = VERBOSE showtiming =
+        SHOWTIMING begin
 
         # ODE:  u' = -u,  u(0) = u0
         # Analytical solution: u(t) = u0 * exp(-t)
@@ -38,10 +39,10 @@ function test_integrator_forwarddiff()
             fs = Integrators.final_state(r)
 
             # Value part matches the analytic solution
-            Test.@test ForwardDiff.value(fs[1]) ≈ exp(-1) atol=1e-5
+            Test.@test ForwardDiff.value(fs[1]) ≈ exp(-1) atol = 1e-5
 
             # Partial (sensitivity of final state w.r.t. u0) = exp(-1)
-            Test.@test ForwardDiff.partials(fs[1])[1] ≈ exp(-1) atol=1e-5
+            Test.@test ForwardDiff.partials(fs[1])[1] ≈ exp(-1) atol = 1e-5
         end
 
         # ====================================================================
@@ -55,8 +56,8 @@ function test_integrator_forwarddiff()
             r = CommonSolve.solve(prob, integ)
 
             mid = Integrators.evaluate_at(r, 0.5)
-            Test.@test ForwardDiff.value(mid[1]) ≈ exp(-0.5) atol=1e-4
-            Test.@test ForwardDiff.partials(mid[1])[1] ≈ exp(-0.5) atol=1e-4
+            Test.@test ForwardDiff.value(mid[1]) ≈ exp(-0.5) atol = 1e-4
+            Test.@test ForwardDiff.partials(mid[1])[1] ≈ exp(-0.5) atol = 1e-4
         end
 
         # ====================================================================

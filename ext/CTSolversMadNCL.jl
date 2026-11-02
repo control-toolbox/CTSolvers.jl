@@ -96,7 +96,8 @@ function Strategies.metadata(
             validator=function (linear_solver)
                 if !Solvers.__madnlp_suite_consistent_linear_solver(P, linear_solver)
                     param_str = P == Strategies.CPU ? "CPU" : "GPU"
-                    @warn "Inconsistent linear solver ($linear_solver) for $param_str parameter" maxlog=1
+                    @warn "Inconsistent linear solver ($linear_solver) for $param_str parameter" maxlog =
+                        1
                 end
                 return linear_solver
             end,

@@ -21,7 +21,7 @@ Tests uncovered lines in adnlp.jl:
 - Line 134: Strategies.id()
 """
 function test_adnlp_metadata()
-    Test.@testset "ADNLP Metadata" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "ADNLP Metadata" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Strategies.id()

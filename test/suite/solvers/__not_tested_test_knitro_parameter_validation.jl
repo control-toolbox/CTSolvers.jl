@@ -26,7 +26,7 @@ Strategies.id(::Type{FakeParam}) = :fake
 Tests for Knitro parameter validation.
 """
 function test_knitro_parameter_validation()
-    Test.@testset "Knitro Parameter Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Knitro Parameter Validation" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Structure and Contract

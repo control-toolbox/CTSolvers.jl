@@ -15,7 +15,7 @@ const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 function test_validation_mode()
-    Test.@testset "Mode Parameter Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Mode Parameter Validation" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Mode Parameter Validation
@@ -29,7 +29,7 @@ function test_validation_mode()
             Test.@test opts[:max_iter] == 100
 
             # :permissive should work
-            opts = Test.@test_logs (:warn,) match_mode=:any begin
+            opts = Test.@test_logs (:warn,) match_mode = :any begin
                 Strategies.build_strategy_options(
                     Solvers.Ipopt; max_iter=100, custom=1, mode=:permissive
                 )

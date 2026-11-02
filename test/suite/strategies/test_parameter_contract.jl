@@ -41,7 +41,7 @@ Verifies that:
 - Non-parameterized strategies are properly rejected
 """
 function test_parameter_contract()
-    Test.@testset "Parameter Contract Enforcement" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Parameter Contract Enforcement" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Fallback Behavior

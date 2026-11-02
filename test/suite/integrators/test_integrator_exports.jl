@@ -8,7 +8,7 @@ const VERBOSE = isdefined(Main, :TestData) ? Main.TestData.VERBOSE : true
 const SHOWTIMING = isdefined(Main, :TestData) ? Main.TestData.SHOWTIMING : true
 
 function test_integrator_exports()
-    Test.@testset "Integrators Module Exports" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Integrators Module Exports" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # CTSolvers exposes the Integrators submodule

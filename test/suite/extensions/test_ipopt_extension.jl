@@ -34,7 +34,7 @@ Tests the complete Solvers.Ipopt functionality including metadata, constructor,
 options handling, display flag, and problem solving.
 """
 function test_ipopt_extension()
-    Test.@testset "Ipopt Extension" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Ipopt Extension" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Metadata and Options
@@ -164,8 +164,9 @@ function test_ipopt_extension()
 
             # Check convergence
             Test.@test stats.status == :first_order
-            Test.@test stats.solution ≈ ros.sol atol=1e-6
-            Test.@test stats.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
+            Test.@test stats.solution ≈ ros.sol atol = 1e-6
+            Test.@test stats.objective ≈ TestProblems.rosenbrock_objective(ros.sol) atol =
+                1e-6
         end
 
         Test.@testset "Elec Problem - ADNLPModels" begin
@@ -201,8 +202,9 @@ function test_ipopt_extension()
             # Check convergence
             Test.@test stats.status == :first_order
             Test.@test length(stats.solution) == 1
-            Test.@test stats.solution[1] ≈ max_prob.sol[1] atol=1e-6
-            Test.@test stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
+            Test.@test stats.solution[1] ≈ max_prob.sol[1] atol = 1e-6
+            Test.@test stats.objective ≈ TestProblems.max1minusx2_objective(max_prob.sol) atol =
+                1e-6
         end
 
         # ====================================================================
@@ -257,32 +259,34 @@ function test_ipopt_extension()
             modelers_names = ["Modelers.ADNLP", "Modelers.Exa (CPU)"]
 
             # Rosenbrock: start at the known solution and enforce max_iter=0
-            Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Rosenbrock" verbose = VERBOSE showtiming = SHOWTIMING begin
                 ros = TestProblems.Rosenbrock()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
-                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    Test.@testset "$(modeler_name)" verbose = VERBOSE showtiming =
+                        SHOWTIMING begin
                         local opts = Dict(:max_iter => 0, :print_level => 0, :sb => "yes")
                         sol = CommonSolve.solve(
                             ros.prob, ros.sol, modeler, Solvers.Ipopt(; opts...)
                         )
                         Test.@test sol.status == :max_iter
-                        Test.@test sol.solution ≈ ros.sol atol=1e-6
+                        Test.@test sol.solution ≈ ros.sol atol = 1e-6
                     end
                 end
             end
 
             # Elec: expect solution to remain equal to the initial guess vector
-            Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Elec" verbose = VERBOSE showtiming = SHOWTIMING begin
                 elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
-                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    Test.@testset "$(modeler_name)" verbose = VERBOSE showtiming =
+                        SHOWTIMING begin
                         local opts = Dict(:max_iter => 0, :print_level => 0, :sb => "yes")
                         sol = CommonSolve.solve(
                             elec.prob, elec.init, modeler, Solvers.Ipopt(; opts...)
                         )
                         Test.@test sol.status == :max_iter
                         Test.@test sol.solution ≈
-                            vcat(elec.init.x, elec.init.y, elec.init.z) atol=1e-6
+                            vcat(elec.init.x, elec.init.y, elec.init.z) atol = 1e-6
                     end
                 end
             end
@@ -305,24 +309,26 @@ function test_ipopt_extension()
                 :sb => "yes",
             )
 
-            Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Rosenbrock" verbose = VERBOSE showtiming = SHOWTIMING begin
                 ros = TestProblems.Rosenbrock()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
-                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    Test.@testset "$(modeler_name)" verbose = VERBOSE showtiming =
+                        SHOWTIMING begin
                         nlp = Optimization.build_model(ros.prob, ros.init, modeler).nlp
                         sol = CTSolversIpopt.solve_with_ipopt(nlp; ipopt_options...)
                         Test.@test sol.status == :first_order
-                        Test.@test sol.solution ≈ ros.sol atol=1e-6
+                        Test.@test sol.solution ≈ ros.sol atol = 1e-6
                         Test.@test sol.objective ≈
-                            TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
+                            TestProblems.rosenbrock_objective(ros.sol) atol = 1e-6
                     end
                 end
             end
 
-            Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Elec" verbose = VERBOSE showtiming = SHOWTIMING begin
                 elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
-                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    Test.@testset "$(modeler_name)" verbose = VERBOSE showtiming =
+                        SHOWTIMING begin
                         nlp = Optimization.build_model(elec.prob, elec.init, modeler).nlp
                         sol = CTSolversIpopt.solve_with_ipopt(nlp; ipopt_options...)
                         Test.@test sol.status == :first_order
@@ -330,18 +336,19 @@ function test_ipopt_extension()
                 end
             end
 
-            Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Max1MinusX2" verbose = VERBOSE showtiming = SHOWTIMING begin
                 max_prob = TestProblems.Max1MinusX2()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
-                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    Test.@testset "$(modeler_name)" verbose = VERBOSE showtiming =
+                        SHOWTIMING begin
                         nlp =
                             Optimization.build_model(max_prob.prob, max_prob.init, modeler).nlp
                         sol = CTSolversIpopt.solve_with_ipopt(nlp; ipopt_options...)
                         Test.@test sol.status == :first_order
                         Test.@test length(sol.solution) == 1
-                        Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
+                        Test.@test sol.solution[1] ≈ max_prob.sol[1] atol = 1e-6
                         Test.@test sol.objective ≈
-                            TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
+                            TestProblems.max1minusx2_objective(max_prob.sol) atol = 1e-6
                     end
                 end
             end
@@ -364,25 +371,27 @@ function test_ipopt_extension()
                 :sb => "yes",
             )
 
-            Test.@testset "Rosenbrock" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Rosenbrock" verbose = VERBOSE showtiming = SHOWTIMING begin
                 ros = TestProblems.Rosenbrock()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
-                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    Test.@testset "$(modeler_name)" verbose = VERBOSE showtiming =
+                        SHOWTIMING begin
                         sol = CommonSolve.solve(
                             ros.prob, ros.init, modeler, Solvers.Ipopt(; ipopt_options...)
                         )
                         Test.@test sol.status == :first_order
-                        Test.@test sol.solution ≈ ros.sol atol=1e-6
+                        Test.@test sol.solution ≈ ros.sol atol = 1e-6
                         Test.@test sol.objective ≈
-                            TestProblems.rosenbrock_objective(ros.sol) atol=1e-6
+                            TestProblems.rosenbrock_objective(ros.sol) atol = 1e-6
                     end
                 end
             end
 
-            Test.@testset "Elec" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Elec" verbose = VERBOSE showtiming = SHOWTIMING begin
                 elec = TestProblems.Elec()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
-                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    Test.@testset "$(modeler_name)" verbose = VERBOSE showtiming =
+                        SHOWTIMING begin
                         sol = CommonSolve.solve(
                             elec.prob, elec.init, modeler, Solvers.Ipopt(; ipopt_options...)
                         )
@@ -391,10 +400,11 @@ function test_ipopt_extension()
                 end
             end
 
-            Test.@testset "Max1MinusX2" verbose=VERBOSE showtiming=SHOWTIMING begin
+            Test.@testset "Max1MinusX2" verbose = VERBOSE showtiming = SHOWTIMING begin
                 max_prob = TestProblems.Max1MinusX2()
                 for (modeler, modeler_name) in zip(modelers, modelers_names)
-                    Test.@testset "$(modeler_name)" verbose=VERBOSE showtiming=SHOWTIMING begin
+                    Test.@testset "$(modeler_name)" verbose = VERBOSE showtiming =
+                        SHOWTIMING begin
                         sol = CommonSolve.solve(
                             max_prob.prob,
                             max_prob.init,
@@ -403,9 +413,9 @@ function test_ipopt_extension()
                         )
                         Test.@test sol.status == :first_order
                         Test.@test length(sol.solution) == 1
-                        Test.@test sol.solution[1] ≈ max_prob.sol[1] atol=1e-6
+                        Test.@test sol.solution[1] ≈ max_prob.sol[1] atol = 1e-6
                         Test.@test sol.objective ≈
-                            TestProblems.max1minusx2_objective(max_prob.sol) atol=1e-6
+                            TestProblems.max1minusx2_objective(max_prob.sol) atol = 1e-6
                     end
                 end
             end

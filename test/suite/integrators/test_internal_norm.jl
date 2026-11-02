@@ -18,7 +18,8 @@ the array overload (`CTSolversSciMLIntegrator`), and the ForwardDiff dual overlo
 (`CTSolversForwardDiff`).
 """
 function test_internal_norm()
-    Test.@testset "Internal Norm (grid invariance)" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Internal Norm (grid invariance)" verbose = VERBOSE showtiming =
+        SHOWTIMING begin
 
         # ====================================================================
         # Scalar fallbacks (core)

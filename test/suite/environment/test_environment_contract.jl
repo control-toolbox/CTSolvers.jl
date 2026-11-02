@@ -79,7 +79,7 @@ function _silent_cuda_guard_offenders()
 end
 
 function test_environment_contract()
-    Test.@testset "Test-environment contract" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Test-environment contract" verbose = VERBOSE showtiming = SHOWTIMING begin
         Test.@testset "GPU solver extension is armed" begin
             # Runs on every runner, including CPU-only laptops: "armed" comes from packages
             # being loaded (Project.toml + using in test/runtests.jl), not from a driver

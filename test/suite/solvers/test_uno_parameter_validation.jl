@@ -28,7 +28,7 @@ Tests for Uno parameter validation.
 🧪 **Applying Testing Rule**: Unit Tests for parameter validation
 """
 function test_uno_parameter_validation()
-    Test.@testset "Uno Parameter Validation" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Uno Parameter Validation" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - Structure and Contract

@@ -131,7 +131,7 @@ function check(stats, (y, zL, zU); σ=-1.0)
 end
 
 function test_multiplier_signs()
-    Test.@testset "Multiplier signs" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Multiplier signs" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # INTEGRATION TESTS - (1) native convention of each backend

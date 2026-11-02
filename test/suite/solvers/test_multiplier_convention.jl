@@ -76,7 +76,7 @@ const SOLVERS = [
 ]
 
 function test_multiplier_convention()
-    Test.@testset "Multiplier convention" verbose=VERBOSE showtiming=SHOWTIMING begin
+    Test.@testset "Multiplier convention" verbose = VERBOSE showtiming = SHOWTIMING begin
 
         # ====================================================================
         # UNIT TESTS - native convention → reference, per solver

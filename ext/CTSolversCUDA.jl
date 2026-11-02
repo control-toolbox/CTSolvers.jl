@@ -28,7 +28,8 @@ Return the CUDA backend for GPU execution.
 """
 function Modelers.__get_cuda_backend(::Type{Strategies.GPU})
     if !CUDA.functional()
-        @warn "CUDA is loaded but not functional. GPU backend may not work properly." maxlog=1
+        @warn "CUDA is loaded but not functional. GPU backend may not work properly." maxlog =
+            1
     end
     return CUDA.CUDABackend()
 end
