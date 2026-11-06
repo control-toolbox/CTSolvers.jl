@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🐛 Bug Fixes
+
+- **`mu_init` and `mu_min` of MadNLP and MadNCL take effect**
+  ([#321](https://github.com/control-toolbox/CTSolvers.jl/issues/321)). They were accepted,
+  validated and then silently ignored: since MadNLP 0.10 the barrier parameter is read from
+  the option `barrier` only, and MadNCL reads it from `ncl_options` only.
+  - MadNLP: they now set `barrier=MadNLP.MonotoneUpdate(; mu_init, mu_min)`, built from
+    MadNLP's default barrier for the same `tol`, so that a `mu_min` not given keeps its
+    default computed from `tol`. Giving them with `barrier` throws `IncorrectArgument`.
+  - MadNCL: they now set the fields `mu_init` and `mu_min` of `ncl_options`.
+  - A solve with `mu_init` or `mu_min` other than the default now takes other iterates.
+
+### ✨ New Features
+
+- **Option `barrier` of MadNLP** (`MadNLP.AbstractBarrierUpdate`): the update rule of the
+  barrier parameter, e.g. `MadNLP.LOQOUpdate()` or `MadNLP.MonotoneUpdate(; mu_init=1e-3)`.
+  It no longer needs `bypass`.
+
+### 🧪 Testing
+
+- The options of MadNLP and MadNCL reach the solver: same NLP, other value, other iterates;
+  every declared option is an option of MadNLP or is handled by CTSolvers.
+
 ## [0.7.0] - 2026-10-24
 
 ### 💥 Breaking Changes

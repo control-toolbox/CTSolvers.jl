@@ -291,7 +291,7 @@ function Strategies.metadata(
             name=:mu_init,
             type=Real,
             default=Core.NotProvided,
-            description="Initial value for the barrier parameter mu.",
+            description="Initial value for the barrier parameter mu: the field `mu_init` of `ncl_options`, which it replaces.",
             validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(
@@ -307,7 +307,7 @@ function Strategies.metadata(
             name=:mu_min,
             type=Real,
             default=Core.NotProvided,
-            description="Minimum value for the barrier parameter mu.",
+            description="Minimum value for the barrier parameter mu: the field `mu_min` of `ncl_options`, which it replaces.",
             validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(
@@ -413,14 +413,20 @@ function CommonSolve.solve(
     mult = pop!(options, :multipliers)
     options[:print_level] = display ? options[:print_level] : MadNLP.ERROR
 
-    # Handle ncl_options verbose flag
-    if !display
+    # Fields of ncl_options set by the other options: the verbose flag, and the barrier
+    # parameter, which MadNCL reads from ncl_options only (#321): it sets the barrier of its
+    # interior-point solver itself, so `mu_init` and `mu_min` are ignored there.
+    fields = Dict{Symbol,Any}(
+        k => pop!(options, k) for k in (:mu_init, :mu_min) if haskey(options, k)
+    )
+    display || (fields[:verbose] = false)
+    if !isempty(fields)
         ncl_opts = options[:ncl_options]
         BaseType = base_type(ncl_opts)
         ncl_opts_dict = Dict(
             field => getfield(ncl_opts, field) for field in fieldnames(MadNCL.NCLOptions)
         )
-        ncl_opts_dict[:verbose] = false
+        merge!(ncl_opts_dict, fields)
         options[:ncl_options] = MadNCL.NCLOptions{BaseType}(; ncl_opts_dict...)
     end
 

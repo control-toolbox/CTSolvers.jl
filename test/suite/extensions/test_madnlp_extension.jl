@@ -114,6 +114,7 @@ function test_madnlp_extension()
             Test.@test Options.type(meta[:mu_init]) == Real
             Test.@test Options.type(meta[:mu_min]) == Real
             Test.@test Options.type(meta[:tau_min]) == Real
+            Test.@test Options.type(meta[:barrier]) == MadNLP.AbstractBarrierUpdate
 
             # Test default values
             Test.@test Options.default(meta[:max_iter]) isa Integer
@@ -500,6 +501,63 @@ function test_madnlp_extension()
 
                 Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNLP(tau_min=-0.1)
                 Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNLP(tau_min=1.1)
+            end
+        end
+
+        # ====================================================================
+        # UNIT TESTS - Barrier options reach MadNLP (#321)
+        # ====================================================================
+
+        Test.@testset "Barrier options reach MadNLP" begin
+            # Since MadNLP 0.10, the barrier parameter is read from `barrier` only.
+            nlp = ADNLPModels.ADNLPModel(
+                x -> (x[1] - 2)^2 + (x[2] - 1)^2 + x[1] * x[2],
+                [0.5, 0.5],
+                [0.0, 0.0],
+                [1.0, 10.0],
+            )
+            solve(; kwargs...) =
+                CommonSolve.solve(
+                    nlp,
+                    Solvers.MadNLP(; print_level=MadNLP.ERROR, kwargs...);
+                    display=false,
+                ).solution
+            default = solve()
+
+            # every declared option is an option of MadNLP, or is handled by CTSolvers
+            handled = (:multipliers, CTSolversMadNLP.BARRIER_PARAMETERS...)
+            for name in keys(Strategies.metadata(Solvers.MadNLP))
+                Test.@test name in handled ||
+                    name in fieldnames(MadNLP.MadNLPOptions{Float64})
+            end
+
+            # mu_init and mu_min change the iterates; mu_init at its default does not
+            Test.@test solve(; mu_init=0.1) == default
+            Test.@test solve(; mu_init=1e-5) != default
+            Test.@test solve(; mu_min=1e-3) != default
+            Test.@test solve(; barrier=MadNLP.LOQOUpdate()) != default
+            Test.@test solve(; barrier=MadNLP.MonotoneUpdate(; mu_init=1e-5)) ==
+                solve(; mu_init=1e-5, mu_min=1e-11)
+
+            # the other fields of the barrier keep MadNLP's defaults, mu_min computed from tol
+            options = CTSolversMadNLP._barrier!(
+                Dict{Symbol,Any}(:tol => 1e-6, :mu_init => 1e-3)
+            )
+            Test.@test !haskey(options, :mu_init)
+            Test.@test options[:barrier] isa MadNLP.MonotoneUpdate{Float64}
+            Test.@test options[:barrier].mu_init == 1e-3
+            Test.@test options[:barrier].mu_min == MadNLP.MonotoneUpdate(1e-6, 10.0).mu_min
+            Test.@test CTSolversMadNLP._barrier!(Dict{Symbol,Any}(:tol => 1e-6)) ==
+                Dict{Symbol,Any}(:tol => 1e-6)
+
+            redirect_stderr(devnull) do
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNLP(barrier=1.0)
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNLP(
+                    mu_init=1e-3, barrier=MadNLP.LOQOUpdate()
+                )
+                Test.@test_throws Exceptions.IncorrectArgument Solvers.MadNLP(
+                    mu_min=1e-9, barrier=MadNLP.LOQOUpdate()
+                )
             end
         end
 
