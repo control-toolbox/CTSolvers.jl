@@ -224,6 +224,47 @@ function test_madncl_extension()
         end
 
         # ====================================================================
+        # UNIT TESTS - Barrier options reach MadNCL (#321)
+        # ====================================================================
+
+        Test.@testset "Barrier options reach MadNCL" begin
+            # MadNCL reads the barrier parameter from ncl_options only.
+            nlp = ADNLPModels.ADNLPModel(
+                x -> (x[1] - 2)^2 + (x[2] - 1)^2 + x[1] * x[2],
+                [0.5, 0.5],
+                [0.0, 0.0],
+                [1.0, 10.0],
+                x -> [x[1] + x[2]],
+                [0.0],
+                [1.5],
+            )
+            solve(; kwargs...) =
+                CommonSolve.solve(
+                    nlp,
+                    Solvers.MadNCL(; print_level=MadNLP.ERROR, kwargs...);
+                    display=false,
+                ).solution
+            ncl(; kwargs...) = MadNCL.NCLOptions{Float64}(;
+                verbose=false, opt_tol=1e-8, feas_tol=1e-8, kwargs...
+            )
+            default = solve()
+
+            # every declared option is an option of MadNLP, or is handled by CTSolvers
+            handled = (:multipliers, :ncl_options, :mu_init, :mu_min)
+            for name in keys(Strategies.metadata(Solvers.MadNCL))
+                Test.@test name in handled ||
+                    name in fieldnames(MadNLP.MadNLPOptions{Float64})
+            end
+
+            # mu_init and mu_min are the fields of ncl_options; at their default, nothing changes
+            Test.@test solve(; mu_init=0.1) == default
+            Test.@test solve(; mu_init=1e-3) != default
+            Test.@test solve(; mu_init=1e-3) == solve(; ncl_options=ncl(; mu_init=1e-3))
+            Test.@test solve(; mu_min=1e-5) != default
+            Test.@test solve(; mu_min=1e-5) == solve(; ncl_options=ncl(; mu_min=1e-5))
+        end
+
+        # ====================================================================
         # UNIT TESTS - Display Flag Handling (Special for MadNCL)
         # ====================================================================
 

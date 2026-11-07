@@ -404,7 +404,7 @@ function Strategies.metadata(
             name=:mu_init,
             type=Real,
             default=Core.NotProvided,
-            description="Initial value for the barrier parameter mu.",
+            description="Initial value for the barrier parameter mu. Sets `barrier=MadNLP.MonotoneUpdate(; mu_init, mu_min)`, the other fields keeping MadNLP's defaults; not with `barrier`.",
             validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(
@@ -420,7 +420,7 @@ function Strategies.metadata(
             name=:mu_min,
             type=Real,
             default=Core.NotProvided,
-            description="Minimum value for the barrier parameter mu.",
+            description="Minimum value for the barrier parameter mu. Sets `barrier=MadNLP.MonotoneUpdate(; mu_init, mu_min)`, the other fields keeping MadNLP's defaults; not with `barrier`.",
             validator=x ->
                 x > 0 || throw(
                     Exceptions.IncorrectArgument(
@@ -431,6 +431,12 @@ function Strategies.metadata(
                         context="MadNLP mu_min validation",
                     ),
                 ),
+        ),
+        Strategies.OptionDefinition(;
+            name=:barrier,
+            type=MadNLP.AbstractBarrierUpdate,
+            default=Core.NotProvided,
+            description="Update rule of the barrier parameter, with its `mu_init` and `mu_min` (e.g., MadNLP.MonotoneUpdate(; mu_init=1e-3), MadNLP.LOQOUpdate(), MadNLP.QualityFunctionUpdate()). Default: MadNLP.MonotoneUpdate, with `mu_min` from `tol`.",
         ),
         Strategies.OptionDefinition(;
             name=:tau_min,
@@ -485,7 +491,44 @@ function Solvers._build_madnlp_solver(
     opts = Strategies.build_strategy_options(
         Solvers.MadNLP{parameter}; mode=mode, kwargs...
     )
+    options = Strategies.options_dict(opts)
+    if haskey(options, :barrier) && any(k -> haskey(options, k), BARRIER_PARAMETERS)
+        throw(
+            Exceptions.IncorrectArgument(
+                "Conflicting barrier options";
+                got="barrier together with $(join(filter(k -> haskey(options, k), BARRIER_PARAMETERS), ", "))",
+                expected="either barrier, or mu_init and mu_min",
+                suggestion="Set mu_init and mu_min in the barrier update, e.g. barrier=MadNLP.MonotoneUpdate(; mu_init=1e-3)",
+                context="MadNLP barrier options",
+            ),
+        )
+    end
     return Solvers.MadNLP{parameter}(opts)
+end
+
+# Since MadNLP 0.10 the barrier parameter is read from the option `barrier` only: MadNLP
+# ignores `mu_init` and `mu_min` given on their own (#321). They are moved into the default
+# barrier update of MadNLP, built with the same `tol`, so that its other fields keep their
+# defaults (`mu_min` computed from `tol`).
+const BARRIER_PARAMETERS = (:mu_init, :mu_min)
+
+function _barrier!(options::AbstractDict{Symbol})
+    given = filter(k -> haskey(options, k), BARRIER_PARAMETERS)
+    isempty(given) && return options
+    # `callback`, `kkt_system` and `linear_solver` have no default; they do not change the barrier.
+    defaults = (k => options[k] for k in (:tol, :barrier_tol_factor) if haskey(options, k))
+    barrier =
+        MadNLP.MadNLPOptions{Float64}(;
+            callback=MadNLP.SparseCallback,
+            kkt_system=MadNLP.SparseKKTSystem,
+            linear_solver=MadNLP.MumpsSolver,
+            defaults...,
+        ).barrier
+    for k in given
+        setfield!(barrier, k, Float64(pop!(options, k)))
+    end
+    options[:barrier] = barrier
+    return options
 end
 
 # ============================================================================
@@ -512,6 +555,7 @@ function CommonSolve.solve(
     options = Strategies.options_dict(solver)
     mult = pop!(options, :multipliers)
     options[:print_level] = display ? options[:print_level] : MadNLP.ERROR
+    _barrier!(options)
     stats = solve_with_madnlp(nlp; options...)
     return mult === :native ? stats : _normalize_multipliers!(stats, solver, nlp)
 end
