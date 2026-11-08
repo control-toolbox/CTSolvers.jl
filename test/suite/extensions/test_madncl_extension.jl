@@ -238,12 +238,11 @@ function test_madncl_extension()
                 [0.0],
                 [1.5],
             )
-            solve(; kwargs...) =
-                CommonSolve.solve(
-                    nlp,
-                    Solvers.MadNCL(; print_level=MadNLP.ERROR, kwargs...);
-                    display=false,
-                ).solution
+            solve(; kwargs...) = CommonSolve.solve(
+                nlp,
+                Solvers.MadNCL(; print_level=MadNLP.ERROR, kwargs...);
+                display=false,
+            ).solution
             ncl(; kwargs...) = MadNCL.NCLOptions{Float64}(;
                 verbose=false, opt_tol=1e-8, feas_tol=1e-8, kwargs...
             )
