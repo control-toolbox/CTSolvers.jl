@@ -516,12 +516,11 @@ function test_madnlp_extension()
                 [0.0, 0.0],
                 [1.0, 10.0],
             )
-            solve(; kwargs...) =
-                CommonSolve.solve(
-                    nlp,
-                    Solvers.MadNLP(; print_level=MadNLP.ERROR, kwargs...);
-                    display=false,
-                ).solution
+            solve(; kwargs...) = CommonSolve.solve(
+                nlp,
+                Solvers.MadNLP(; print_level=MadNLP.ERROR, kwargs...);
+                display=false,
+            ).solution
             default = solve()
 
             # every declared option is an option of MadNLP, or is handled by CTSolvers

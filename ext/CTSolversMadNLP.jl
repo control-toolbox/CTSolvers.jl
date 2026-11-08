@@ -517,13 +517,12 @@ function _barrier!(options::AbstractDict{Symbol})
     isempty(given) && return options
     # `callback`, `kkt_system` and `linear_solver` have no default; they do not change the barrier.
     defaults = (k => options[k] for k in (:tol, :barrier_tol_factor) if haskey(options, k))
-    barrier =
-        MadNLP.MadNLPOptions{Float64}(;
-            callback=MadNLP.SparseCallback,
-            kkt_system=MadNLP.SparseKKTSystem,
-            linear_solver=MadNLP.MumpsSolver,
-            defaults...,
-        ).barrier
+    barrier = MadNLP.MadNLPOptions{Float64}(;
+        callback=MadNLP.SparseCallback,
+        kkt_system=MadNLP.SparseKKTSystem,
+        linear_solver=MadNLP.MumpsSolver,
+        defaults...,
+    ).barrier
     for k in given
         setfield!(barrier, k, Float64(pop!(options, k)))
     end
