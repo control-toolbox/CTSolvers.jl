@@ -138,7 +138,7 @@ let rows = first.(MODELERS), cols = first.(SOLVERS), cells = Dict()
                     max_violation(stats.solution),
                     iter,
                     t,
-                )
+                ),
             )
         end
     end
