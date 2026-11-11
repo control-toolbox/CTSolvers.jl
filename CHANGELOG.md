@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The options of MadNLP and MadNCL reach the solver: same NLP, other value, other iterates;
   every declared option is an option of MadNLP or is handled by CTSolvers.
 
+### 📚 Documentation
+
+- Documentation previews now deploy only when requested with the
+  `documentation push preview` label ([#326](https://github.com/control-toolbox/CTSolvers.jl/issues/326)).
+
 ## [0.7.0] - 2026-10-24
 
 ### 💥 Breaking Changes
