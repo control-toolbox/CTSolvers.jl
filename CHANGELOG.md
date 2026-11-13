@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ✨ New Features
+
+- **Option `barrier` of MadNLP** (`MadNLP.AbstractBarrierUpdate`): the update rule of the
+  barrier parameter, e.g. `MadNLP.LOQOUpdate()` or `MadNLP.MonotoneUpdate(; mu_init=1e-3)`.
+  It no longer needs `bypass`.
+
 ### 🐛 Bug Fixes
 
 - **`mu_init` and `mu_min` of MadNLP and MadNCL take effect**
@@ -21,12 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - MadNCL: they now set the fields `mu_init` and `mu_min` of `ncl_options`.
   - A solve with `mu_init` or `mu_min` other than the default now takes other iterates.
 
-### ✨ New Features
-
-- **Option `barrier` of MadNLP** (`MadNLP.AbstractBarrierUpdate`): the update rule of the
-  barrier parameter, e.g. `MadNLP.LOQOUpdate()` or `MadNLP.MonotoneUpdate(; mu_init=1e-3)`.
-  It no longer needs `bypass`.
-
 ### 🧪 Testing
 
 - The options of MadNLP and MadNCL reach the solver: same NLP, other value, other iterates;
@@ -36,6 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Documentation previews now deploy only when requested with the
   `documentation push preview` label ([#326](https://github.com/control-toolbox/CTSolvers.jl/issues/326)).
+- ct-conventions pinned at `v0.13.0` and ct-agents at `v0.5.0` in `AGENTS.md`; the `Release` workflow of CTActions is called from `.github/workflows/Release.yml`.
+
+### ✅ Compatibility
+
+- **No breaking change recorded** in this section. See [BREAKING.md](BREAKING.md).
 
 ## [0.7.0] - 2026-10-24
 
