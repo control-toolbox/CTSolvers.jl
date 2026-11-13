@@ -5,6 +5,10 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
+## Non-breaking note (Unreleased)
+
+- **No breaking change recorded** in `[Unreleased]` so far. The pins of ct-conventions and ct-agents and the `Release` caller are documentation and CI only.
+
 ## v0.7.0 (2026-10-24)
 
 ### One multiplier convention for every solver
