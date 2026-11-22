@@ -14,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Option `barrier` of MadNLP** (`MadNLP.AbstractBarrierUpdate`): the update rule of the
   barrier parameter, e.g. `MadNLP.LOQOUpdate()` or `MadNLP.MonotoneUpdate(; mu_init=1e-3)`.
   It no longer needs `bypass`.
+- **Readable display of `DiscretizedModel` and `BuiltModel`**
+  ([#337](https://github.com/control-toolbox/CTSolvers.jl/issues/337)). Both now have a
+  `text/plain` tree and a one-line compact form, without type parameters, whose length no
+  longer depends on the grid size (73 639 characters before for `grid_size=1000` on the
+  double integrator, 174 now):
+
+  ```text
+  DiscretizedModel
+  ├─ problem: state ∈ R², control ∈ R, times [0, 1]
+  ├─ discretizer: Collocation(grid_size=100, scheme=trapeze, time_grid=nothing)
+  └─ cache: CTDirect.DOCPCache
+  ```
+
+  The new extension `CTSolversNLPModels` (triggered by `NLPModels`) adds the numbers of
+  variables and constraints of the NLP to the display of `BuiltModel`.
 
 ### 🐛 Bug Fixes
 
@@ -29,6 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🧪 Testing
 
+- Display of `DiscretizedModel` and `BuiltModel`: exact output with fakes, real `CTModels`
+  models (fixed, free and control-free cases), real ADNLP and Exa NLP models, and
+  non-regression on the output size (independent of the grid) and on colors.
 - The options of MadNLP and MadNCL reach the solver: same NLP, other value, other iterates;
   every declared option is an option of MadNLP or is handled by CTSolvers.
 

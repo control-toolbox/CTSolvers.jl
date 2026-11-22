@@ -20,13 +20,15 @@ module Optimization
 
 # Imports
 using CTBase: Core
-using DocStringExtensions: TYPEDEF
+using DocStringExtensions: TYPEDEF, TYPEDSIGNATURES
 
 # Submodules
 include(joinpath(@__DIR__, "abstract_types.jl"))
 include(joinpath(@__DIR__, "built_model.jl"))
 # Declares the generic `build_model` / `build_solution`; contract stubs live in Modelers.
 include(joinpath(@__DIR__, "building.jl"))
+# `Base.show` for `BuiltModel` and the display helpers shared with DOCP.
+include(joinpath(@__DIR__, "display.jl"))
 
 # Public API - Abstract types
 export AbstractOptimizationProblem
