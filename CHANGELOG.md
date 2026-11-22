@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Option `barrier` of MadNLP** (`MadNLP.AbstractBarrierUpdate`): the update rule of the
   barrier parameter, e.g. `MadNLP.LOQOUpdate()` or `MadNLP.MonotoneUpdate(; mu_init=1e-3)`.
   It no longer needs `bypass`.
+- **Accessors `nlp_model` and `ocp_model` of a built DOCP**
+  ([#338](https://github.com/control-toolbox/CTSolvers.jl/issues/338)):
+  `DOCP.nlp_model(built)` returns the NLP and `DOCP.ocp_model(built)` the original problem
+  of a `BuiltModel` whose problem is a `DiscretizedModel`, instead of the fields
+  `built.nlp` and `built.problem.ocp`. They are new methods of the existing accessors; on a
+  `BuiltModel` of another problem type they throw a `MethodError`.
 
 ### 🐛 Bug Fixes
 
@@ -31,9 +37,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The options of MadNLP and MadNCL reach the solver: same NLP, other value, other iterates;
   every declared option is an option of MadNLP or is handled by CTSolvers.
+- `nlp_model` and `ocp_model` of a built DOCP: unit, contract (ADNLP and Exa backends),
+  error (`MethodError` for another problem type) and integration tests.
 
 ### 📚 Documentation
 
+- The guide *Implementing an optimization problem* and the architecture page show the
+  accessors `nlp_model(built)` / `ocp_model(built)` of a built DOCP; the performance guide
+  names `DOCP.nlp_model` instead of the wrong path `Modelers.nlp_model`.
 - Documentation previews now deploy only when requested with the
   `documentation push preview` label ([#326](https://github.com/control-toolbox/CTSolvers.jl/issues/326)).
 - ct-conventions pinned at `v0.13.0` and ct-agents at `v0.5.0` in `AGENTS.md`; the `Release` workflow of CTActions is called from `.github/workflows/Release.yml`.
