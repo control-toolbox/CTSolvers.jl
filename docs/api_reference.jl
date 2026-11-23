@@ -41,6 +41,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                 joinpath("DOCP", "discretized_model.jl"),
                 joinpath("DOCP", "contract.jl"),
                 joinpath("DOCP", "conveniences.jl"),
+                joinpath("DOCP", "display.jl"),
             ),
         ),
         (
@@ -65,6 +66,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                 joinpath("Optimization", "abstract_types.jl"),
                 joinpath("Optimization", "built_model.jl"),
                 joinpath("Optimization", "building.jl"),
+                joinpath("Optimization", "display.jl"),
             ),
         ),
         (
@@ -122,6 +124,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
     for (sym, files) in [
         (:CTSolversADNLPModels, ext("CTSolversADNLPModels.jl")),
         (:CTSolversExaModels, ext("CTSolversExaModels.jl")),
+        (:CTSolversNLPModels, ext("CTSolversNLPModels.jl")),
         (:CTSolversIpopt, ext("CTSolversIpopt.jl")),
         (:CTSolversMadNLP, ext("CTSolversMadNLP.jl")),
         (:CTSolversMadNCL, ext("CTSolversMadNCL.jl")),

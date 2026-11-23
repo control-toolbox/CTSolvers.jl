@@ -140,6 +140,48 @@ function CTSolvers.build_solution(
 end
 ```
 
+## Displaying DiscretizedModel and BuiltModel
+
+CTSolvers provides `Base.show` methods for both types. In the REPL, they are shown as a
+short tree, whose length does not depend on the grid size. This is the output for the
+double integrator discretized by CTDirect with `grid_size=100` and the trapeze scheme:
+
+```text
+julia> docp = CTSolvers.DOCP.discretize(ocp, CTDirect.Collocation(grid_size=100, scheme=:trapeze))
+DiscretizedModel
+├─ problem: state ∈ R², control ∈ R, times [0, 1]
+├─ discretizer: Collocation(grid_size=100, scheme=trapeze, time_grid=nothing)
+└─ cache: CTDirect.DOCPCache
+
+julia> built = CTSolvers.Optimization.build_model(docp, init, CTSolvers.Modelers.ADNLP())
+BuiltModel
+├─ problem: DiscretizedModel(Collocation(grid_size=100, scheme=trapeze, time_grid=nothing))
+├─ nlp: ADNLPModels.ADNLPModel (nvar=303, ncon=204)
+└─ cache: CTSolvers.Optimization.NoCache
+```
+
+The compact form, used by `print` and inside other displays, fits on one line:
+
+```text
+julia> print(docp)
+DiscretizedModel(Collocation(grid_size=100, scheme=trapeze, time_grid=nothing))
+```
+
+What each line shows:
+
+- **problem**: for a `CTModels` model, the state, control and variable spaces (a space of
+  dimension zero is omitted) and the time interval, where a free time is written by its
+  name. For any other problem type, only its type name.
+- **discretizer**: the compact display of the strategy, with its options.
+- **nlp**: the type name of the NLP model with its numbers of variables and constraints.
+  The sizes come from the `CTSolversNLPModels` extension, which is loaded whenever
+  `NLPModels` is, for instance through `ADNLPModels` or `ExaModels`. Without it, only the
+  type name is shown.
+- **cache**: only the type name. The cache is opaque to CTSolvers, and its contents
+  (bounds, time grid, …) grow with the grid.
+
+None of these lines contains type parameters.
+
 ## Integration with the Pipeline
 
 The complete data flow from user call to solution:
@@ -176,3 +218,4 @@ To add a new optimization problem type that plugs into the CTSolvers pipeline:
 - Implement `CTSolvers.Optimization.build_solution(built::BuiltModel{<:MyProblem}, stats, modeler::ADNLP)` returning your domain solution
 - Optionally add methods for other modelers (`Exa`, future backends) following the same dispatch pattern
 - If `build_model` produces auxiliary data needed by `build_solution`, store it in a custom `<: CTBase.Core.AbstractCache` subtype rather than `NoCache`
+- Optionally define `Base.show` for `MyProblem`: the display of a `BuiltModel` shows its problem by its type name only (see [Displaying DiscretizedModel and BuiltModel](#Displaying-DiscretizedModel-and-BuiltModel))
