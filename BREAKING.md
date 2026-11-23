@@ -7,7 +7,15 @@ and provides migration guides for users upgrading between versions.
 
 ## Non-breaking note (Unreleased)
 
-- **No breaking change recorded** in `[Unreleased]` so far. The pins of ct-conventions and ct-agents and the `Release` caller are documentation and CI only.
+- **`DOCP.ocp_solution` restricted to a built DOCP**
+  ([#338](https://github.com/control-toolbox/CTSolvers.jl/issues/338)). Its first argument is
+  now a `BuiltModel{<:DiscretizedModel}` instead of any `BuiltModel`, like the new accessors
+  `nlp_model(built)` and `ocp_model(built)`. On the `BuiltModel` of another problem type it
+  throws a `MethodError` instead of forwarding to `build_solution`. **No breaking change** in
+  practice: every known caller passes a `BuiltModel` of a `DiscretizedModel`. A caller with
+  another problem type calls `Optimization.build_solution(built, stats, modeler)` instead,
+  which `ocp_solution` was forwarding to.
+- The pins of ct-conventions and ct-agents and the `Release` caller are documentation and CI only.
 
 ## v0.7.0 (2026-10-24)
 

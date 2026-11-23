@@ -16,7 +16,7 @@ CTSolvers modules, loaded in dependency order:
 | :--- | :------- | :-------------- |
 | 1 | `Optimization` | Abstract problem types (`AbstractOptimizationProblem`), `BuiltModel`/`NoCache`, `build_model`/`build_solution` |
 | 2 | `Modelers` | NLP backend adapters: `Modelers.ADNLP`, `Modelers.Exa` |
-| 3 | `DOCP` | `AbstractDiscretizer`, `DiscretizedModel` (an OCP paired with its discretizer), `discretize` stub, `nlp_model`/`ocp_solution` conveniences |
+| 3 | `DOCP` | `AbstractDiscretizer`, `DiscretizedModel` (an OCP paired with its discretizer), `discretize` stub, `nlp_model`/`ocp_solution` conveniences, `nlp_model`/`ocp_model` accessors of a built DOCP |
 | 4 | `Solvers` | NLP solver wrappers: `Solvers.Ipopt`, `Solvers.MadNLP`, `Solvers.MadNCL`, `Solvers.Knitro`, `Solvers.Uno` |
 | 5 | `Integrators` | ODE integrator wrapper `Integrators.SciML`, integration results (`AbstractIntegrationResult`, `PiecewiseIntegrationResult`) |
 
@@ -96,6 +96,9 @@ BuiltModel{TP, TN, TC}                      (problem + NLP + cache, immutable)
 └─ .cache    → TC <: AbstractCache
        └─► NoCache  (for backends needing no auxiliary storage)
 ```
+
+For a `BuiltModel` of a `DiscretizedModel`, the DOCP module provides the accessors
+`nlp_model(built)` (the NLP) and `ocp_model(built)` (the original OCP).
 
 ## Module Dependencies
 

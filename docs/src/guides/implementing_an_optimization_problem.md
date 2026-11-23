@@ -65,6 +65,21 @@ end
 
 The accessor `ocp_model(docp)` returns the original OCP.
 
+Once built, the `BuiltModel` of a `DiscretizedModel` has the same accessors: use them
+rather than its fields.
+
+```julia
+built = CTSolvers.build_model(docp, init, modeler)
+nlp = CTSolvers.DOCP.nlp_model(built)  # the NLP, not built.nlp
+ocp = CTSolvers.DOCP.ocp_model(built)  # the OCP, same as ocp_model(docp)
+stats = ipopt(nlp)
+sol = CTSolvers.DOCP.ocp_solution(built, stats, modeler)
+```
+
+These two methods, like `ocp_solution`, only exist for a `BuiltModel` of a
+`DiscretizedModel`: on the `BuiltModel` of another problem type they throw a `MethodError`;
+call `build_solution` directly for it.
+
 ### Step 2 — Construct via `discretize` (in CTDirect)
 
 `DiscretizedModel` is not constructed by calling the struct directly. CTSolvers owns a

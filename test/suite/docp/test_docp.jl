@@ -37,6 +37,12 @@ Fake backend cache attached to a DiscretizedModel.
 struct FakeCache <: CTBase.Core.AbstractCache end
 
 """
+Fake optimization problem that is not a DiscretizedModel, to check that the DOCP
+accessors of a BuiltModel and `ocp_solution` are restricted to a built DOCP.
+"""
+struct FakeOtherProblem <: Optimization.AbstractOptimizationProblem end
+
+"""
 Mock execution statistics for testing.
 """
 mutable struct MockExecutionStats <: SolverCore.AbstractExecutionStats
@@ -168,6 +174,34 @@ function test_docp()
                 Test.@test retrieved_ocp.name == "my_ocp"
                 Test.@test_nowarn Test.@inferred DOCP.ocp_model(docp)
             end
+
+            Test.@testset "ocp_model of a BuiltModel" begin
+                ocp = FakeOCP("my_ocp")
+                docp = DOCP.DiscretizedModel(ocp, FakeDiscretizer(), FakeCache())
+                built = Optimization.BuiltModel(docp, :fake_nlp, Optimization.NoCache())
+
+                Test.@test DOCP.ocp_model(built) === ocp
+                Test.@test DOCP.ocp_model(built) === DOCP.ocp_model(docp)
+                Test.@test_nowarn Test.@inferred DOCP.ocp_model(built)
+            end
+
+            Test.@testset "nlp_model of a BuiltModel" begin
+                docp = fake_docp()
+                nlp = ADNLPModels.ADNLPModel(z -> sum(z .^ 2), [1.0, 2.0])
+                built = Optimization.BuiltModel(docp, nlp, Optimization.NoCache())
+
+                Test.@test DOCP.nlp_model(built) === nlp
+                Test.@test_nowarn Test.@inferred DOCP.nlp_model(built)
+            end
+
+            Test.@testset "Methods of the existing accessors, not new functions" begin
+                # The BuiltModel accessors extend the generic functions DOCP.nlp_model
+                # and DOCP.ocp_model: one function each, one more method each.
+                Test.@test length(methods(DOCP.nlp_model)) == 2
+                Test.@test length(methods(DOCP.ocp_model)) == 2
+                Test.@test parentmodule(DOCP.nlp_model) === DOCP
+                Test.@test parentmodule(DOCP.ocp_model) === DOCP
+            end
         end
 
         # ====================================================================
@@ -191,6 +225,19 @@ function test_docp()
                 Test.@test NLPModels.obj(built2.nlp, x0) ≈ 5.0
             end
 
+            Test.@testset "accessors of a built DOCP with ADNLP backend" begin
+                modeler = FakeModelerDOCP(:adnlp)
+                x0 = [1.0, 2.0]
+                built = Optimization.build_model(docp, x0, modeler)
+
+                Test.@test DOCP.nlp_model(built) === built.nlp
+                Test.@test DOCP.nlp_model(built) isa ADNLPModels.ADNLPModel
+                Test.@test DOCP.ocp_model(built) === docp.ocp
+                # Same NLP as the building convenience nlp_model(docp, init, modeler)
+                Test.@test NLPModels.obj(DOCP.nlp_model(built), x0) ≈
+                    NLPModels.obj(DOCP.nlp_model(docp, x0, modeler), x0)
+            end
+
             Test.@testset "nlp_model with Exa backend" begin
                 modeler = FakeModelerDOCP(:exa)
                 x0 = [1.0, 2.0]
@@ -203,6 +250,19 @@ function test_docp()
                 built2 = Optimization.build_model(docp, x0, modeler)
                 Test.@test built2.nlp isa ExaModels.ExaModel{Float64}
                 Test.@test NLPModels.obj(built2.nlp, x0) ≈ 5.0
+            end
+
+            Test.@testset "accessors of a built DOCP with Exa backend" begin
+                modeler = FakeModelerDOCP(:exa)
+                x0 = [1.0, 2.0]
+                built = Optimization.build_model(docp, x0, modeler)
+
+                Test.@test DOCP.nlp_model(built) === built.nlp
+                Test.@test DOCP.nlp_model(built) isa ExaModels.ExaModel{Float64}
+                Test.@test DOCP.ocp_model(built) === docp.ocp
+                # Same NLP as the building convenience nlp_model(docp, init, modeler)
+                Test.@test NLPModels.obj(DOCP.nlp_model(built), x0) ≈
+                    NLPModels.obj(DOCP.nlp_model(docp, x0, modeler), x0)
             end
 
             Test.@testset "ocp_solution with ADNLP backend" begin
@@ -258,6 +318,30 @@ function test_docp()
         end
 
         # ====================================================================
+        # ERROR TESTS - Accessors and ocp_solution restricted to a built DOCP
+        # ====================================================================
+
+        Test.@testset "DOCP methods on a BuiltModel of another problem" begin
+            nlp = ADNLPModels.ADNLPModel(z -> sum(z .^ 2), [1.0, 2.0])
+            built = Optimization.BuiltModel(FakeOtherProblem(), nlp, Optimization.NoCache())
+
+            Test.@testset "nlp_model throws MethodError" begin
+                Test.@test_throws MethodError DOCP.nlp_model(built)
+            end
+
+            Test.@testset "ocp_model throws MethodError" begin
+                Test.@test_throws MethodError DOCP.ocp_model(built)
+            end
+
+            Test.@testset "ocp_solution throws MethodError" begin
+                stats = MockExecutionStats(1.0, 1, 1e-8, :first_order)
+                Test.@test_throws MethodError DOCP.ocp_solution(
+                    built, stats, FakeModelerDOCP(:adnlp)
+                )
+            end
+        end
+
+        # ====================================================================
         # INTEGRATION TESTS
         # ====================================================================
 
@@ -269,8 +353,11 @@ function test_docp()
                 modeler = FakeModelerDOCP(:adnlp)
                 x0 = [1.0, 2.0, 3.0]
                 built = Optimization.build_model(docp, x0, modeler)
-                Test.@test built.nlp isa ADNLPModels.ADNLPModel
-                Test.@test NLPModels.obj(built.nlp, x0) ≈ 14.0
+                nlp = DOCP.nlp_model(built)
+                Test.@test nlp isa ADNLPModels.ADNLPModel
+                Test.@test NLPModels.obj(nlp, x0) ≈ 14.0
+                Test.@test DOCP.ocp_model(built) === DOCP.ocp_model(docp)
+                Test.@test DOCP.ocp_model(built).name == "integration_test_ocp"
 
                 stats = MockExecutionStats(14.0, 20, 1e-8, :first_order)
                 sol = DOCP.ocp_solution(built, stats, modeler)
@@ -285,8 +372,10 @@ function test_docp()
                 modeler = FakeModelerDOCP(:exa)
                 x0 = [1.0, 2.0, 3.0]
                 built = Optimization.build_model(docp, x0, modeler)
-                Test.@test built.nlp isa ExaModels.ExaModel{Float64}
-                Test.@test NLPModels.obj(built.nlp, x0) ≈ 14.0
+                nlp = DOCP.nlp_model(built)
+                Test.@test nlp isa ExaModels.ExaModel{Float64}
+                Test.@test NLPModels.obj(nlp, x0) ≈ 14.0
+                Test.@test DOCP.ocp_model(built) === DOCP.ocp_model(docp)
 
                 stats = MockExecutionStats(14.0, 25, 1e-7, :acceptable)
                 sol = DOCP.ocp_solution(built, stats, modeler)

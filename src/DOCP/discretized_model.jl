@@ -55,6 +55,6 @@ Extract the original optimal control problem from a discretized problem.
 ocp = ocp_model(docp)
 ```
 
-See also: `DiscretizedModel`
+See also: [`CTSolvers.DOCP.DiscretizedModel`](@extref), [`CTSolvers.DOCP.nlp_model`](@extref)
 """
 ocp_model(docp::DiscretizedModel) = docp.ocp

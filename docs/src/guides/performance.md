@@ -27,7 +27,7 @@ CTSolvers code falls into two categories:
   `Strategies.options`/`Options.extract_raw_options`,
   `route_to`/`Strategies.RoutedOption`, `Optimization.build_model` /
   `build_solution`, `DOCP.DiscretizedModel` construction, and the
-  `Modelers.nlp_model`/`ocp_solution` convenience wrappers. Runtime dispatch
+  `DOCP.nlp_model`/`ocp_solution` convenience wrappers. Runtime dispatch
   here is **acceptable and by design** — CTSolvers' strategy registry is
   deliberately built for runtime extensibility, and the cost is paid once, not
   per iteration.
@@ -135,7 +135,7 @@ This is expected and does not indicate a regression:
   code and is paid once per problem, before any solve.
 - **NLP model/solution building** (`Optimization.build_model`,
   `Optimization.build_solution`, `DOCP.DiscretizedModel` construction,
-  `Modelers.nlp_model`/`ocp_solution`) dispatches on the concrete
+  `DOCP.nlp_model`/`ocp_solution`) dispatches on the concrete
   problem/modeler pair by multiple dispatch, resolved once per solve.
 
 ## Investigating a regression
