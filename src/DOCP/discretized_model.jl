@@ -25,6 +25,10 @@ multiple dispatch on `(DiscretizedModel, modeler)` through the `build_model` /
 - `TD <: AbstractDiscretizer`
 - `TC <: CTBase.Core.AbstractCache`
 
+# Display
+Shown in the REPL as a short tree (problem spaces and times, discretizer options, cache
+type name) whose length does not depend on the grid size, and by `print` on one line.
+
 See also: `ocp_model`, `discretize`, `build_model`, `build_solution`.
 """
 struct DiscretizedModel{

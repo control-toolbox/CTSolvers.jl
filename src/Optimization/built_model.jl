@@ -44,6 +44,11 @@ NLP (e.g. an ExaModels getter) is stored here once, never mutated.
 - `TN`
 - `TC <: CTBase.Core.AbstractCache`
 
+# Display
+Shown in the REPL as a short tree (problem, NLP type with its numbers of variables and
+constraints, cache type name) whose length does not depend on the problem size, and by
+`print` on one line. The NLP sizes require `NLPModels` to be loaded.
+
 See also: [`CTSolvers.Optimization.build_model`](@extref), [`CTSolvers.Optimization.build_solution`](@extref), [`CTSolvers.Optimization.NoCache`](@extref).
 """
 struct BuiltModel{TP<:AbstractOptimizationProblem,TN,TC<:Core.AbstractCache}

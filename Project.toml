@@ -41,6 +41,7 @@ CTSolversKnitro = ["NLPModels", "NLPModelsKnitro"]
 CTSolversMadNCL = ["MadNCL", "MadNLP", "NLPModels"]
 CTSolversMadNLP = ["MadNLP", "NLPModels"]
 CTSolversMadNLPGPU = ["MadNLPGPU", "CUDA", "CUDSS"]
+CTSolversNLPModels = "NLPModels"
 CTSolversOrdinaryDiffEqTsit5 = "OrdinaryDiffEqTsit5"
 CTSolversSciMLIntegrator = ["DiffEqBase", "SciMLBase"]
 CTSolversUno = ["NLPModels", "UnoSolver"]
