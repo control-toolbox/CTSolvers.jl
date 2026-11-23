@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   of a `BuiltModel` whose problem is a `DiscretizedModel`, instead of the fields
   `built.nlp` and `built.problem.ocp`. They are new methods of the existing accessors; on a
   `BuiltModel` of another problem type they throw a `MethodError`.
+- **`ocp_solution` restricted to a built DOCP** (#338): its first argument is now a
+  `BuiltModel{<:DiscretizedModel}`, like the accessors above; another problem type calls
+  `build_solution` directly. Near-breaking, see [BREAKING.md](BREAKING.md).
 
 ### 🐛 Bug Fixes
 
@@ -38,7 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The options of MadNLP and MadNCL reach the solver: same NLP, other value, other iterates;
   every declared option is an option of MadNLP or is handled by CTSolvers.
 - `nlp_model` and `ocp_model` of a built DOCP: unit, contract (ADNLP and Exa backends),
-  error (`MethodError` for another problem type) and integration tests.
+  error (`MethodError` for another problem type, also for `ocp_solution`) and integration
+  tests.
 
 ### 📚 Documentation
 
@@ -53,7 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✅ Compatibility
 
-- **No breaking change recorded** in this section. See [BREAKING.md](BREAKING.md).
+- **No breaking change.** Near-breaking: `ocp_solution` accepts only a `BuiltModel` of a
+  `DiscretizedModel`. See [BREAKING.md](BREAKING.md).
 
 ## [0.7.0] - 2026-10-24
 

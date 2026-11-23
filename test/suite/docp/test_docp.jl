@@ -38,7 +38,7 @@ struct FakeCache <: CTBase.Core.AbstractCache end
 
 """
 Fake optimization problem that is not a DiscretizedModel, to check that the DOCP
-accessors of a BuiltModel are restricted to a built DOCP.
+accessors of a BuiltModel and `ocp_solution` are restricted to a built DOCP.
 """
 struct FakeOtherProblem <: Optimization.AbstractOptimizationProblem end
 
@@ -318,10 +318,10 @@ function test_docp()
         end
 
         # ====================================================================
-        # ERROR TESTS - Accessors restricted to a built DOCP
+        # ERROR TESTS - Accessors and ocp_solution restricted to a built DOCP
         # ====================================================================
 
-        Test.@testset "Accessors of a BuiltModel of another problem" begin
+        Test.@testset "DOCP methods on a BuiltModel of another problem" begin
             nlp = ADNLPModels.ADNLPModel(z -> sum(z .^ 2), [1.0, 2.0])
             built = Optimization.BuiltModel(FakeOtherProblem(), nlp, Optimization.NoCache())
 
@@ -331,6 +331,13 @@ function test_docp()
 
             Test.@testset "ocp_model throws MethodError" begin
                 Test.@test_throws MethodError DOCP.ocp_model(built)
+            end
+
+            Test.@testset "ocp_solution throws MethodError" begin
+                stats = MockExecutionStats(1.0, 1, 1e-8, :first_order)
+                Test.@test_throws MethodError DOCP.ocp_solution(
+                    built, stats, FakeModelerDOCP(:adnlp)
+                )
             end
         end
 

@@ -76,8 +76,9 @@ stats = ipopt(nlp)
 sol = CTSolvers.DOCP.ocp_solution(built, stats, modeler)
 ```
 
-These two methods only exist for a `BuiltModel` of a `DiscretizedModel`: on the
-`BuiltModel` of another problem type they throw a `MethodError`.
+These two methods, like `ocp_solution`, only exist for a `BuiltModel` of a
+`DiscretizedModel`: on the `BuiltModel` of another problem type they throw a `MethodError`;
+call `build_solution` directly for it.
 
 ### Step 2 — Construct via `discretize` (in CTDirect)
 

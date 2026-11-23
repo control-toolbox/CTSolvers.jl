@@ -1,7 +1,7 @@
 # DOCP conveniences
 #
 # Convenience wrappers (`nlp_model`, `ocp_solution`) over the modeler contract,
-# specialized for `DiscretizedModel` / its `BuiltModel`, and the accessors
+# restricted to `DiscretizedModel` / its `BuiltModel`, and the accessors
 # (`nlp_model`, `ocp_model`) of a built `DiscretizedModel`.
 
 """
@@ -101,17 +101,22 @@ $(TYPEDSIGNATURES)
 
 Build an optimal control solution from NLP execution statistics.
 
-This is a convenience wrapper around `build_solution` that dispatches on the
-[`CTSolvers.Optimization.BuiltModel`](@extref) returned by `build_model` and ensures the return type is an
-optimal control solution.
+This is a convenience wrapper around `build_solution` for the
+[`CTSolvers.Optimization.BuiltModel`](@extref) returned by `build_model` for a
+[`CTSolvers.DOCP.DiscretizedModel`](@extref). A `BuiltModel` of another problem type has no
+such method: call `build_solution` directly for it.
 
 # Arguments
-- `built::BuiltModel`: The built model bundle returned by `build_model`
+- `built::Optimization.BuiltModel{<:DiscretizedModel}`: The built model bundle returned by
+  `build_model` for a `DiscretizedModel`
 - `model_solution::SolverCore.AbstractExecutionStats`: NLP solver output
 - `modeler`: The modeler used for building
 
 # Returns
-- `AbstractSolution`: The OCP solution
+- The OCP solution, as returned by `build_solution`
+
+# Throws
+- `MethodError`: if `built` holds a problem that is not a `DiscretizedModel`
 
 # Example
 ```julia
@@ -123,7 +128,7 @@ See also: [`CTSolvers.DOCP.nlp_model`](@extref), [`CTSolvers.Optimization.build_
 [`CTSolvers.Optimization.BuiltModel`](@extref)
 """
 function ocp_solution(
-    built::Optimization.BuiltModel,
+    built::Optimization.BuiltModel{<:DiscretizedModel},
     model_solution::SolverCore.AbstractExecutionStats,
     modeler::Modelers.AbstractNLPModeler,
 )
