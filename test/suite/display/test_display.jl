@@ -90,10 +90,7 @@ function fixed_times_ocp()
     CTModels.Building.time!(pre; t0=0, tf=1)
     CTModels.Building.dynamics!(pre, double_integrator!)
     CTModels.Building.objective!(pre, :min; lagrange=energy)
-    CTModels.Building.definition!(
-        pre,
-        quote end,
-    )
+    CTModels.Building.definition!(pre, quote end)
     CTModels.Building.time_dependence!(pre; autonomous=true)
     return CTModels.Building.build(pre)
 end
@@ -106,10 +103,7 @@ function free_final_time_ocp()
     CTModels.Building.time!(pre; t0=0, indf=1)
     CTModels.Building.dynamics!(pre, double_integrator!)
     CTModels.Building.objective!(pre, :min; mayer=minimum_time)
-    CTModels.Building.definition!(
-        pre,
-        quote end,
-    )
+    CTModels.Building.definition!(pre, quote end)
     CTModels.Building.time_dependence!(pre; autonomous=true)
     return CTModels.Building.build(pre)
 end
@@ -122,10 +116,7 @@ function free_times_ocp()
     CTModels.Building.time!(pre; ind0=1, indf=2)
     CTModels.Building.dynamics!(pre, pure_control!)
     CTModels.Building.objective!(pre, :min; mayer=duration)
-    CTModels.Building.definition!(
-        pre,
-        quote end,
-    )
+    CTModels.Building.definition!(pre, quote end)
     CTModels.Building.time_dependence!(pre; autonomous=true)
     return CTModels.Building.build(pre)
 end
@@ -136,10 +127,7 @@ function control_free_ocp()
     CTModels.Building.time!(pre; t0=0.0, tf=2.5)
     CTModels.Building.dynamics!(pre, decay!)
     CTModels.Building.objective!(pre, :min; mayer=final_state)
-    CTModels.Building.definition!(
-        pre,
-        quote end,
-    )
+    CTModels.Building.definition!(pre, quote end)
     CTModels.Building.time_dependence!(pre; autonomous=true)
     return CTModels.Building.build(pre)
 end
