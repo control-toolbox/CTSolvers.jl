@@ -5,7 +5,7 @@ and provides migration guides for users upgrading between versions.
 
 ---
 
-## Non-breaking note (Unreleased)
+## Non-breaking note (0.7.1)
 
 - **`DOCP.ocp_solution` restricted to a built DOCP**
   ([#338](https://github.com/control-toolbox/CTSolvers.jl/issues/338)). Its first argument is

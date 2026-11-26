@@ -1,0 +1,56 @@
+# The request of the release of CTSolvers v0.7.1, for the release workflow of CTActions.
+# Written by `release.jl facts`, completed by the agent after the human's validation, checked
+# by `release.jl request` and again by the workflow. The proposal is in .releases/v0.7.1.md.
+
+[release]
+package = "CTSolvers"
+version = "0.7.1"
+kind = "stable"
+mode = "autonomous" # supervised or autonomous: the human's choice
+requested_by = "ocots" # the GitHub login of the person who validated the proposal
+reference = "0.7.0"
+base = "4240e00b78865aa5f57ea65472967b7b0f1509d3"
+
+[versions]
+ct_agents = "v0.5.0"
+ct_conventions = "v0.15.0"
+ctactions = "dc60661"
+
+[facts]
+expected_version = "0.7.1"
+breaking = false
+feature = true
+rel4 = true
+rel7 = 24
+jump = "none"
+labels = ["run breakage", "run ci github-runner", "run ci kkt-runner", "run documentation", "documentation push preview"]
+
+[[review]]
+id = "pr-296"
+what = "#296 [AUTO] JuliaFormatter.jl run — touches src; not cited in the changelog since `v0.7.0`"
+verdict = "not-user-facing"   # covered, added, not-user-facing
+note = "Automatic JuliaFormatter run: whitespace only, no behaviour change."
+
+[[review]]
+id = "pr-315"
+what = "#315 Widen [compat] for JET 0.13 — touches docs; not cited in the changelog since `v0.7.0`"
+verdict = "added"   # covered, added, not-user-facing
+note = "Widens the [compat] of JET to 0.13 for the tests and the docs; added to the Compatibility section of 0.7.1."
+
+[[review]]
+id = "pr-316"
+what = "#316 [AUTO] JuliaFormatter.jl run — touches ext; not cited in the changelog since `v0.7.0`"
+verdict = "not-user-facing"   # covered, added, not-user-facing
+note = "Automatic JuliaFormatter run on the extensions: formatting only."
+
+[[review]]
+id = "pr-327"
+what = "#327 [AUTO] JuliaFormatter.jl run — touches ext; not cited in the changelog since `v0.7.0`"
+verdict = "not-user-facing"   # covered, added, not-user-facing
+note = "Automatic JuliaFormatter run on the extensions: formatting only."
+
+[[review]]
+id = "pr-332"
+what = "#332 [AUTO] JuliaFormatter.jl run — touches docs; not cited in the changelog since `v0.7.0`"
+verdict = "not-user-facing"   # covered, added, not-user-facing
+note = "Automatic JuliaFormatter run on the docs: formatting only."

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-26
+
 ### ✨ New Features
 
 - **`reverse(r)` for an integration result**
@@ -85,6 +87,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **No breaking change.** Near-breaking: `ocp_solution` accepts only a `BuiltModel` of a
   `DiscretizedModel`. See [BREAKING.md](BREAKING.md).
+- `[compat]` of the tests and the docs widened to JET `0.13`
+  ([#315](https://github.com/control-toolbox/CTSolvers.jl/pull/315)).
 
 ## [0.7.0] - 2026-10-24
 
