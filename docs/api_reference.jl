@@ -96,6 +96,7 @@ function generate_api_reference(src_dir::String, ext_dir::String)
                 joinpath("Integrators", "abstract_integrator.jl"),
                 joinpath("Integrators", "integration_result.jl"),
                 joinpath("Integrators", "piecewise_result.jl"),
+                joinpath("Integrators", "reversed_result.jl"),
                 joinpath("Integrators", "sciml.jl"),
                 joinpath("Integrators", "contract.jl"),
                 joinpath("Integrators", "internal_norm.jl"),

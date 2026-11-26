@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ New Features
 
+- **`reverse(r)` for an integration result**
+  ([#355](https://github.com/control-toolbox/CTSolvers.jl/issues/355)): the same trajectory,
+  read in the other direction of time, without integrating again. After a backward
+  integration, `times(reverse(r))` is increasing and `final_state(reverse(r))` is the state at
+  the largest time. A single result is wrapped in a `ReversedIntegrationResult` (same
+  interpolant, `regrid` on the reversed grid); a `PiecewiseIntegrationResult` gives the
+  piecewise result of its reversed segments, in reverse order, left-continuous in the new
+  direction. Used by CTFlows to return every trajectory in increasing time.
 - **Option `barrier` of MadNLP** (`MadNLP.AbstractBarrierUpdate`): the update rule of the
   barrier parameter, e.g. `MadNLP.LOQOUpdate()` or `MadNLP.MonotoneUpdate(; mu_init=1e-3)`.
   It no longer needs `bypass`.

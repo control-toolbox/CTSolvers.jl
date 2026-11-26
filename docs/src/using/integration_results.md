@@ -91,6 +91,30 @@ Integrators.times(Integrators.regrid(r, range(0, 1; length = 5)))
 The grid must contain at least two times, be strictly monotone in the integration
 direction, and lie in the integration span; otherwise `regrid` throws `IncorrectArgument`.
 
+## A backward integration read forward
+
+A result keeps the order of its integration: on a backward span, `times(r)` decreases and
+`final_state(r)` is the state at the smaller time. `reverse(r)` reads the same trajectory in
+the other direction, without integrating again, with the same interpolant:
+
+```@example res
+decay(u, p, t) = -u
+rb = solve(ODEProblem(decay, [1.0], (1.0, 0.0)), integ)   # from u(1) = 1, down to t = 0
+rf = reverse(rb)
+nothing # hide
+```
+
+```@repl res
+Integrators.times(rb)[[1, end]]
+Integrators.times(rf)[[1, end]]
+Integrators.final_state(rf)                 # the state at t = 1, the initial condition
+Integrators.evaluate_at(rf, 0.5) == Integrators.evaluate_at(rb, 0.5)
+```
+
+`reverse(reverse(r))` gives `r` back. On a multi-phase result (below), `reverse` reverses the
+order of the phases and of the switching times, and the trajectory stays left-continuous in
+the new direction.
+
 ## Multi-phase results
 
 [`Integrators.merge`](@ref) combines the consecutive results of a multi-phase integration
@@ -100,7 +124,6 @@ interpolant, so a dense multi-phase trajectory is as accurate as a single-phase 
 Below, the state jumps by `+1` at `t = 1`:
 
 ```@example res
-decay(u, p, t) = -u
 r1 = solve(ODEProblem(decay, [1.0], (0.0, 1.0)), integ)
 u1 = Integrators.final_state(r1) .+ 1    # the jump
 r2 = solve(ODEProblem(decay, u1, (1.0, 2.0)), integ)

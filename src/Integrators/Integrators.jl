@@ -64,6 +64,7 @@ include(joinpath(@__DIR__, "integration_result.jl"))
 include(joinpath(@__DIR__, "piecewise_result.jl"))
 include(joinpath(@__DIR__, "sciml.jl"))
 include(joinpath(@__DIR__, "contract.jl"))
+include(joinpath(@__DIR__, "reversed_result.jl"))
 include(joinpath(@__DIR__, "internal_norm.jl"))
 
 # Public API - abstract and concrete types
@@ -78,5 +79,6 @@ export options_point, options_trajectory
 
 # Public API - multi-phase
 export merge, regrid, PiecewiseIntegrationResult, switching_times, right_limit
+export ReversedIntegrationResult
 
 end # module Integrators
